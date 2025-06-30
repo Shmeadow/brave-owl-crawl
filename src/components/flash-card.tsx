@@ -53,8 +53,7 @@ export function FlashCard({ front, back, isFlipped, onClick }: FlashCardProps) {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{
-        perspective: '1000px', // Moved here
-        transformStyle: "preserve-3d", // Moved here
+        perspective: '1000px', // Perspective remains on the parent
         transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`, // Apply wobble transform
       }}
     >
@@ -63,7 +62,7 @@ export function FlashCard({ front, back, isFlipped, onClick }: FlashCardProps) {
           "relative w-full h-full transition-transform duration-500 ease-in-out",
           isFlipped ? "rotate-y-180" : "",
         )}
-        // Removed transformStyle from here
+        style={{ transformStyle: "preserve-3d" }} // transformStyle moved here
       >
         {/* Front Face */}
         <div
