@@ -7,6 +7,7 @@ import { supabase } from './client';
 interface SupabaseContextType {
   supabase: SupabaseClient;
   session: Session | null;
+  loading: boolean; // Add loading state to context
 }
 
 const SupabaseContext = createContext<SupabaseContextType | undefined>(undefined);
@@ -30,8 +31,8 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
   }, []);
 
   return (
-    <SupabaseContext.Provider value={{ supabase, session }}>
-      {!loading && children}
+    <SupabaseContext.Provider value={{ supabase, session, loading }}>
+      {children} {/* Always render children */}
     </SupabaseContext.Provider>
   );
 }
