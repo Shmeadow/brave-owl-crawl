@@ -35,7 +35,7 @@ export default function LoginPage() {
         <CardContent>
           <Auth
             supabaseClient={supabase}
-            providers={[]} // No third-party providers unless specified
+            providers={['google', 'linkedin', 'facebook']} // Added social providers
             appearance={{
               theme: ThemeSupa,
               variables: {
