@@ -186,6 +186,11 @@ export default function FlashCardsPage() {
     setIsFlipped(false);
   };
 
+  const handleReorderCards = (newOrder: CardData[]) => {
+    setCards(newOrder);
+    toast.success("Flashcards reordered!");
+  };
+
   return (
     <DashboardLayout>
       <div className="flex flex-col h-full py-8">
@@ -220,6 +225,7 @@ export default function FlashCardsPage() {
                 onUpdateCard={handleUpdateCard}
                 onToggleStar={handleToggleStar}
                 onMarkAsLearned={handleMarkAsLearned}
+                onReorderCards={handleReorderCards}
               />
             </div>
           </ResizablePanel>
