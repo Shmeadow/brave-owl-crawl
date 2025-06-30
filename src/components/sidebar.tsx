@@ -34,10 +34,12 @@ export function Sidebar({ className }: SidebarProps) {
                 Time Tracker
               </Button>
             </Link>
-            <Button variant="ghost" className="w-full justify-start">
-              <BookOpen className="mr-2 h-4 w-4" />
-              Flash Cards
-            </Button>
+            <Link href="/flash-cards">
+              <Button variant={isActive("/flash-cards") ? "secondary" : "ghost"} className="w-full justify-start">
+                <BookOpen className="mr-2 h-4 w-4" />
+                Flash Cards
+              </Button>
+            </Link>
             <Button variant="ghost" className="w-full justify-start">
               <Goal className="mr-2 h-4 w-4" />
               Goal Focus
