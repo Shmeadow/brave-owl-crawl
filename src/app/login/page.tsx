@@ -8,17 +8,21 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function LoginPage() {
-  const { supabase, session } = useSupabase();
+  const { supabase, session, loading } = useSupabase(); // Get loading state
   const router = useRouter();
 
   useEffect(() => {
-    if (session) {
+    if (!loading && session) { // Only redirect if not loading and session exists
       router.push('/'); // Redirect to dashboard if already logged in
     }
-  }, [session, router]);
+  }, [session, loading, router]);
 
-  if (session) {
-    return null; // Don't render login form if already logged in
+  if (loading || session) { // Don't render login form if loading or already logged in
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Checking authentication status...</p>
+      </div>
+    );
   }
 
   return (

@@ -7,17 +7,25 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function Home() {
-  const { session } = useSupabase();
+  const { session, loading } = useSupabase(); // Get loading state
   const router = useRouter();
 
   useEffect(() => {
-    if (!session) {
+    if (!loading && !session) { // Only redirect if not loading and no session
       router.push('/login');
     }
-  }, [session, router]);
+  }, [session, loading, router]);
+
+  if (loading) { // Show loading state while session is being fetched
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Loading application...</p>
+      </div>
+    );
+  }
 
   if (!session) {
-    return null; // Or a loading spinner
+    return null; // Should be caught by useEffect redirect, but as a fallback
   }
 
   return (
