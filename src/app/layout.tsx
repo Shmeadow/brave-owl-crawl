@@ -3,9 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { SessionContextProvider } from "@/integrations/supabase/auth"; // Import the context provider
+import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { redirect } from "next/navigation";
-import { supabase } from "@/integrations/supabase/client"; // Import supabase client
+import { supabase } from "@/integrations/supabase/client";
+import { headers } from 'next/headers'; // Import headers
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,10 +29,12 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const { data: { session } } = await supabase.auth.getSession();
+  const headersList = headers();
+  const pathname = headersList.get('x-pathname') || '/'; // Get the pathname from headers
 
-  if (!session && !['/login'].includes(location.pathname)) { // Check if not logged in and not on login page
+  if (!session && pathname !== '/login') {
     redirect('/login');
-  } else if (session && ['/login'].includes(location.pathname)) { // Check if logged in and on login page
+  } else if (session && pathname === '/login') {
     redirect('/');
   }
 
