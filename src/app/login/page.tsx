@@ -49,7 +49,7 @@ export default function LoginPage() {
         <CardContent>
           <Auth
             supabaseClient={supabase}
-            providers={['google', 'linkedin', 'facebook']} // Added social providers
+            providers={['google', 'linkedin', 'facebook']}
             appearance={{
               theme: ThemeSupa,
               variables: {
@@ -61,8 +61,8 @@ export default function LoginPage() {
                 },
               },
             }}
-            theme="light" // Default to light theme, can be adjusted by user's theme preference
-            redirectTo={typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000/'} // Use window.location.origin for deployed environments
+            theme="light"
+            redirectTo="/" // Changed this line to redirect to the root path
           />
         </CardContent>
       </Card>
