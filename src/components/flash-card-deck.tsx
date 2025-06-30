@@ -3,10 +3,12 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FlashCard } from "@/components/flash-card";
-import { ArrowLeft, ArrowRight, Star, Trash2, Shuffle, CheckCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Star, Trash2, Shuffle, CheckCircle, Edit } from "lucide-react";
 import { toast } from "sonner";
 import { AddFlashCardForm } from "@/components/add-flash-card-form";
+import { EditFlashCardForm } from "@/components/edit-flash-card-form"; // Import the new edit form
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"; // Import Dialog components
 import { cn } from "@/lib/utils";
 
 interface CardData {
@@ -29,6 +31,7 @@ export function FlashCardDeck() {
   const [cards, setCards] = useState<CardData[]>(defaultCards);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false); // State for edit dialog
 
   const currentCard = cards[currentCardIndex];
   const totalCards = cards.length;
@@ -131,6 +134,15 @@ export function FlashCardDeck() {
     toast.info(currentCard.status === 'learned' ? "Card marked as new." : "Card marked as learned!");
   };
 
+  const handleUpdateCard = (updatedData: { front: string; back: string }) => {
+    setCards((prevCards) =>
+      prevCards.map((card) =>
+        card.id === currentCard.id ? { ...card, ...updatedData } : card
+      )
+    );
+    setIsEditDialogOpen(false); // Close dialog after saving
+  };
+
   return (
     <div className="flex flex-col items-center gap-8 w-full max-w-md mx-auto">
       {totalCards > 0 ? (
@@ -162,6 +174,26 @@ export function FlashCardDeck() {
               <Shuffle className="h-5 w-5" />
               <span className="sr-only">Shuffle Cards</span>
             </Button>
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" disabled={totalCards === 0}>
+                  <Edit className="h-5 w-5" />
+                  <span className="sr-only">Edit Card</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Edit Flashcard</DialogTitle>
+                </DialogHeader>
+                {currentCard && (
+                  <EditFlashCardForm
+                    initialData={{ front: currentCard.front, back: currentCard.back }}
+                    onSave={handleUpdateCard}
+                    onCancel={() => setIsEditDialogOpen(false)}
+                  />
+                )}
+              </DialogContent>
+            </Dialog>
             <Button onClick={handleDeleteCard} variant="ghost" size="icon" className="text-red-500">
               <Trash2 className="h-5 w-5" />
               <span className="sr-only">Delete Card</span>
