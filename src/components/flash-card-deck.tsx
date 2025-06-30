@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useId } from "react"; // Added useId
 import { Button } from "@/components/ui/button";
 import { FlashCard } from "@/components/flash-card";
 import { ArrowLeft, ArrowRight, Star, Trash2, Shuffle, CheckCircle, Edit } from "lucide-react";
@@ -49,6 +49,7 @@ export function FlashCardDeck({
   onUpdateCard,
 }: FlashCardDeckProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const dialogTitleId = useId(); // Generate a unique ID for the dialog title
 
   const currentCard = cards[currentCardIndex];
   const totalCards = cards.length;
@@ -119,9 +120,9 @@ export function FlashCardDeck({
                   <span className="sr-only">Edit Card</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]" aria-labelledby="edit-flashcard-title-deck">
+              <DialogContent className="sm:max-w-[425px]" aria-labelledby={dialogTitleId}>
                 <DialogHeader>
-                  <DialogTitle id="edit-flashcard-title-deck">Edit Flashcard</DialogTitle>
+                  <DialogTitle id={dialogTitleId}>Edit Flashcard</DialogTitle>
                 </DialogHeader>
                 {currentCard && (
                   <EditFlashCardForm
