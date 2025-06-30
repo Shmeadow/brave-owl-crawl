@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useId } from "react"; // Added useId
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -83,6 +83,7 @@ function SortableFlashCardItem({
   };
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const dialogTitleId = useId(); // Generate a unique ID for the dialog title
 
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent selecting card when clicking edit
@@ -172,9 +173,9 @@ function SortableFlashCardItem({
       </div>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]" aria-labelledby={`edit-flashcard-title-${card.id}`}>
+        <DialogContent className="sm:max-w-[425px]" aria-labelledby={dialogTitleId}>
           <DialogHeader>
-            <DialogTitle id={`edit-flashcard-title-${card.id}`}>Edit Flashcard</DialogTitle>
+            <DialogTitle id={dialogTitleId}>Edit Flashcard</DialogTitle>
           </DialogHeader>
           <EditFlashCardForm
             initialData={{ front: card.front, back: card.back }}
