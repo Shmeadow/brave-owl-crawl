@@ -3,7 +3,7 @@
 import React from "react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, Menu } from "lucide-react"; // Import Menu icon
+import { Moon, Sun, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react"; // Import Menu icon and new panel icons
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,29 +13,52 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"; // Import Sheet components
 import { Sidebar } from "@/components/sidebar"; // Import Sidebar
 
-export function Header() {
+interface HeaderProps {
+  toggleSidebarCollapse: () => void;
+  isSidebarCollapsed: boolean;
+}
+
+export function Header({ toggleSidebarCollapse, isSidebarCollapsed }: HeaderProps) {
   const { setTheme } = useTheme();
 
   return (
     <header className="flex h-16 items-center justify-between px-4 border-b">
-      {/* Mobile Menu Button */}
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden" // Only show on small screens
-          >
-            <Menu className="h-5 w-5" />
-            <span className="sr-only">Open sidebar</span>
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="p-0 w-64"> {/* Adjust width as needed */}
-          <Sidebar />
-        </SheetContent>
-      </Sheet>
+      <div className="flex items-center gap-2">
+        {/* Mobile Menu Button */}
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden" // Only show on small screens
+            >
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">Open sidebar</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-64"> {/* Adjust width as needed */}
+            <Sidebar />
+          </SheetContent>
+        </Sheet>
 
-      <h1 className="text-xl font-semibold ml-4 lg:ml-0">Productivity Hub</h1> {/* Adjust margin for mobile */}
+        {/* Desktop Sidebar Toggle Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleSidebarCollapse}
+          className="hidden lg:inline-flex" // Only show on large screens
+        >
+          {isSidebarCollapsed ? (
+            <PanelLeftOpen className="h-5 w-5" />
+          ) : (
+            <PanelLeftClose className="h-5 w-5" />
+          )}
+          <span className="sr-only">Toggle sidebar</span>
+        </Button>
+
+        <h1 className="text-xl font-semibold ml-2">Productivity Hub</h1> {/* Adjust margin */}
+      </div>
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="icon">

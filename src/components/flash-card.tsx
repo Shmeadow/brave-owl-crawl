@@ -49,7 +49,7 @@ export function FlashCard({ front, back, isFlipped, onClick }: FlashCardProps) {
         "overflow-hidden",
         "transition-transform duration-100 ease-out",
         "hover:scale-[1.01] hover:shadow-lg",
-        "hover:ring-2 hover:ring-gold hover:ring-offset-2" // Added golden ring effect on hover
+        "hover:shadow-[0_0_15px_5px_hsl(var(--gold))] transition-shadow" // Subtle golden shadow effect on hover
       )}
       onClick={onClick}
       onMouseMove={handleMouseMove}
