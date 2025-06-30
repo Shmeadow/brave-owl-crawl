@@ -62,7 +62,7 @@ export default function LoginPage() {
               },
             }}
             theme="light" // Default to light theme, can be adjusted by user's theme preference
-            redirectTo={process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000/'}
+            redirectTo={typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000/'} // Use window.location.origin for deployed environments
           />
         </CardContent>
       </Card>
