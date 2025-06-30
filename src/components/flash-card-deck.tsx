@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FlashCard } from "@/components/flash-card";
 import { ArrowLeft, ArrowRight, Star, Trash2, Shuffle, CheckCircle, Edit } from "lucide-react";
 import { toast } from "sonner";
 import { AddFlashCardForm } from "@/components/add-flash-card-form";
-import { EditFlashCardForm } from "@/components/edit-flash-card-form"; // Import the new edit form
+import { EditFlashCardForm } from "@/components/edit-flash-card-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"; // Import Dialog components
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 interface CardData {
@@ -17,26 +17,39 @@ interface CardData {
   back: string;
   starred: boolean;
   status: 'new' | 'learned';
+  seen: boolean;
 }
 
 const defaultCards: CardData[] = [
-  { id: "1", front: "What is React?", back: "A JavaScript library for building user interfaces.", starred: false, status: 'new' },
-  { id: "2", front: "What is Next.js?", back: "A React framework for building full-stack web applications.", starred: false, status: 'new' },
-  { id: "3", front: "What is Tailwind CSS?", back: "A utility-first CSS framework.", starred: false, status: 'new' },
-  { id: "4", front: "What is TypeScript?", back: "A superset of JavaScript that adds static typing.", starred: false, status: 'new' },
-  { id: "5", front: "What is a component?", back: "An independent, reusable piece of UI.", starred: false, status: 'new' },
+  { id: "1", front: "What is React?", back: "A JavaScript library for building user interfaces.", starred: false, status: 'new', seen: false },
+  { id: "2", front: "What is Next.js?", back: "A React framework for building full-stack web applications.", starred: false, status: 'new', seen: false },
+  { id: "3", front: "What is Tailwind CSS?", back: "A utility-first CSS framework.", starred: false, status: 'new', seen: false },
+  { id: "4", front: "What is TypeScript?", back: "A superset of JavaScript that adds static typing.", starred: false, status: 'new', seen: false },
+  { id: "5", front: "What is a component?", back: "An independent, reusable piece of UI.", starred: false, status: 'new', seen: false },
 ];
 
 export function FlashCardDeck() {
   const [cards, setCards] = useState<CardData[]>(defaultCards);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false); // State for edit dialog
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const currentCard = cards[currentCardIndex];
   const totalCards = cards.length;
   const learnedCards = cards.filter(card => card.status === 'learned').length;
   const starredCards = cards.filter(card => card.starred).length;
+  const seenCards = cards.filter(card => card.seen).length;
+
+  // Mark current card as seen when index changes
+  useEffect(() => {
+    if (totalCards > 0 && !cards[currentCardIndex].seen) {
+      setCards(prevCards =>
+        prevCards.map((card, index) =>
+          index === currentCardIndex ? { ...card, seen: true } : card
+        )
+      );
+    }
+  }, [currentCardIndex, totalCards, cards]);
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
@@ -66,6 +79,7 @@ export function FlashCardDeck() {
       ...newCardData,
       starred: false,
       status: 'new',
+      seen: false, // New cards are not seen initially
     };
     setCards((prevCards) => [...prevCards, newCard]);
     toast.success("Flashcard added successfully!");
@@ -106,7 +120,7 @@ export function FlashCardDeck() {
       return;
     }
     const shuffledCards = [...cards].sort(() => Math.random() - 0.5);
-    setCards(shuffledCards);
+    setCards(shuffledCards.map(card => ({ ...card, seen: false, status: 'new' }))); // Reset seen/learned status on shuffle for a fresh start
     setCurrentCardIndex(0); // Reset to first card after shuffle
     setIsFlipped(false);
     toast.success("Flashcards shuffled!");
@@ -202,6 +216,11 @@ export function FlashCardDeck() {
           <div className="text-sm text-muted-foreground flex flex-col items-center">
             <p>Card {currentCardIndex + 1} of {totalCards}</p>
             <p>{learnedCards} learned, {starredCards} starred</p>
+          </div>
+          {/* Progress display */}
+          <div className="w-full text-center text-sm text-muted-foreground">
+            <p>Progress: {totalCards > 0 ? ((seenCards / totalCards) * 100).toFixed(0) : 0}% seen</p>
+            <p>Learned: {totalCards > 0 ? ((learnedCards / totalCards) * 100).toFixed(0) : 0}%</p>
           </div>
         </>
       ) : (

@@ -15,17 +15,19 @@ export function FlashCard({ front, back, isFlipped, onClick }: FlashCardProps) {
   return (
     <Card
       className={cn(
-        "relative w-full max-w-md h-64 cursor-pointer perspective-1000",
+        "relative w-full max-w-md h-64 cursor-pointer",
         "transition-transform duration-500 ease-in-out",
-        isFlipped ? "rotate-y-180" : ""
+        isFlipped ? "rotate-y-180" : "",
+        "overflow-hidden"
       )}
       onClick={onClick}
       style={{ transformStyle: "preserve-3d" }}
     >
       <div
         className={cn(
-          "absolute w-full h-full backface-hidden rounded-lg flex items-center justify-center p-4 text-center",
-          "bg-card text-card-foreground shadow-md"
+          "absolute inset-0 w-full h-full backface-hidden rounded-lg flex items-center justify-center p-4 text-center",
+          "bg-card text-card-foreground shadow-md",
+          "z-[1]" // Front on top when not flipped
         )}
       >
         <CardContent className="flex items-center justify-center h-full text-xl font-semibold">
@@ -34,9 +36,10 @@ export function FlashCard({ front, back, isFlipped, onClick }: FlashCardProps) {
       </div>
       <div
         className={cn(
-          "absolute w-full h-full backface-hidden rounded-lg flex items-center justify-center p-4 text-center",
+          "absolute inset-0 w-full h-full backface-hidden rounded-lg flex items-center justify-center p-4 text-center",
           "bg-primary text-primary-foreground shadow-md",
-          "rotate-y-180"
+          "rotate-y-180",
+          "z-[0]" // Back below front when not flipped
         )}
       >
         <CardContent className="flex items-center justify-center h-full text-xl font-semibold">
