@@ -16,6 +16,8 @@ interface CardData {
   seen: boolean;
 }
 
+const LOCAL_STORAGE_KEY = "flashcards";
+
 const defaultCards: CardData[] = [
   { id: "1", front: "What is React?", back: "A JavaScript library for building user interfaces.", starred: false, status: 'new', seen: false },
   { id: "2", front: "What is Next.js?", back: "A React framework for building full-stack web applications.", starred: false, status: 'new', seen: false },
@@ -25,9 +27,22 @@ const defaultCards: CardData[] = [
 ];
 
 export default function FlashCardsPage() {
-  const [cards, setCards] = useState<CardData[]>(defaultCards);
+  const [cards, setCards] = useState<CardData[]>(() => {
+    if (typeof window !== 'undefined') {
+      const savedCards = localStorage.getItem(LOCAL_STORAGE_KEY);
+      return savedCards ? JSON.parse(savedCards) : defaultCards;
+    }
+    return defaultCards;
+  });
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+
+  // Save cards to local storage whenever the cards state changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cards));
+    }
+  }, [cards]);
 
   // Mark current card as seen when index changes
   useEffect(() => {
