@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FlashCard } from "@/components/flash-card";
 import { ArrowLeft, ArrowRight, Star, Trash2, Shuffle, CheckCircle, Edit } from "lucide-react";
-import { toast } from "sonner";
 import { AddFlashCardForm } from "@/components/add-flash-card-form";
 import { EditFlashCardForm } from "@/components/edit-flash-card-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,18 +19,35 @@ interface CardData {
   seen: boolean;
 }
 
-const defaultCards: CardData[] = [
-  { id: "1", front: "What is React?", back: "A JavaScript library for building user interfaces.", starred: false, status: 'new', seen: false },
-  { id: "2", front: "What is Next.js?", back: "A React framework for building full-stack web applications.", starred: false, status: 'new', seen: false },
-  { id: "3", front: "What is Tailwind CSS?", back: "A utility-first CSS framework.", starred: false, status: 'new', seen: false },
-  { id: "4", front: "What is TypeScript?", back: "A superset of JavaScript that adds static typing.", starred: false, status: 'new', seen: false },
-  { id: "5", front: "What is a component?", back: "An independent, reusable piece of UI.", starred: false, status: 'new', seen: false },
-];
+interface FlashCardDeckProps {
+  cards: CardData[];
+  currentCardIndex: number;
+  isFlipped: boolean;
+  onFlip: () => void;
+  onNext: () => void;
+  onPrevious: () => void;
+  onAddCard: (card: { front: string; back: string }) => void;
+  onDeleteCard: (cardId: string) => void;
+  onShuffleCards: () => void;
+  onToggleStar: (cardId: string) => void;
+  onMarkAsLearned: (cardId: string) => void;
+  onUpdateCard: (cardId: string, updatedData: { front: string; back: string }) => void;
+}
 
-export function FlashCardDeck() {
-  const [cards, setCards] = useState<CardData[]>(defaultCards);
-  const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
+export function FlashCardDeck({
+  cards,
+  currentCardIndex,
+  isFlipped,
+  onFlip,
+  onNext,
+  onPrevious,
+  onAddCard,
+  onDeleteCard,
+  onShuffleCards,
+  onToggleStar,
+  onMarkAsLearned,
+  onUpdateCard,
+}: FlashCardDeckProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const currentCard = cards[currentCardIndex];
@@ -40,139 +56,29 @@ export function FlashCardDeck() {
   const starredCards = cards.filter(card => card.starred).length;
   const seenCards = cards.filter(card => card.seen).length;
 
-  // Mark current card as seen when index changes
-  useEffect(() => {
-    if (totalCards > 0 && !cards[currentCardIndex].seen) {
-      setCards(prevCards =>
-        prevCards.map((card, index) =>
-          index === currentCardIndex ? { ...card, seen: true } : card
-        )
-      );
+  const handleDeleteCurrentCard = () => {
+    if (currentCard) {
+      onDeleteCard(currentCard.id);
     }
-  }, [currentCardIndex, totalCards, cards]);
-
-  const handleFlip = () => {
-    setIsFlipped(!isFlipped);
   };
 
-  const handleNext = () => {
-    setIsFlipped(false);
-    setTimeout(() => {
-      if (totalCards === 0) return;
-
-      let nextIndex = -1;
-      // Try to find the next 'new' card starting from the next position
-      for (let i = 1; i <= totalCards; i++) {
-        const potentialNextIndex = (currentCardIndex + i) % totalCards;
-        if (cards[potentialNextIndex].status === 'new') {
-          nextIndex = potentialNextIndex;
-          break;
-        }
-      }
-
-      if (nextIndex !== -1) {
-        setCurrentCardIndex(nextIndex);
-        toast.info("Next unlearned card!");
-      } else {
-        // If all cards are 'learned', just cycle through them
-        setCurrentCardIndex((prevIndex) => (prevIndex + 1) % totalCards);
-        toast.info("Cycling through learned cards!");
-      }
-    }, 100);
-  };
-
-  const handlePrevious = () => {
-    setIsFlipped(false);
-    setTimeout(() => {
-      setCurrentCardIndex((prevIndex) =>
-        prevIndex === 0 ? totalCards - 1 : prevIndex - 1
-      );
-      toast.info("Previous card!");
-    }, 100);
-  };
-
-  const handleAddCard = (newCardData: { front: string; back: string }) => {
-    const newCard: CardData = {
-      id: Date.now().toString(), // Simple unique ID
-      ...newCardData,
-      starred: false,
-      status: 'new',
-      seen: false, // New cards are not seen initially
-    };
-    setCards((prevCards) => [...prevCards, newCard]);
-    toast.success("Flashcard added successfully!");
-  };
-
-  const handleDeleteCard = () => {
-    if (totalCards === 0) {
-      toast.error("No cards to delete.");
-      return;
+  const handleToggleStarCurrentCard = () => {
+    if (currentCard) {
+      onToggleStar(currentCard.id);
     }
+  };
 
-    const cardToDeleteId = currentCard.id;
-    const updatedCards = cards.filter(card => card.id !== cardToDeleteId);
-
-    if (updatedCards.length === 0) {
-      setCards([]);
-      setCurrentCardIndex(0);
-      setIsFlipped(false);
-      toast.success("Last flashcard deleted. Deck is now empty.");
-      return;
+  const handleMarkAsLearnedCurrentCard = () => {
+    if (currentCard) {
+      onMarkAsLearned(currentCard.id);
     }
+  };
 
-    // Adjust index if the deleted card was the last one in the array
-    let newIndex = currentCardIndex;
-    if (newIndex >= updatedCards.length) {
-      newIndex = updatedCards.length - 1;
+  const handleUpdateCurrentCard = (updatedData: { front: string; back: string }) => {
+    if (currentCard) {
+      onUpdateCard(currentCard.id, updatedData);
+      setIsEditDialogOpen(false);
     }
-
-    setCards(updatedCards);
-    setCurrentCardIndex(newIndex);
-    setIsFlipped(false);
-    toast.success("Flashcard deleted.");
-  };
-
-  const handleShuffleCards = () => {
-    if (totalCards <= 1) {
-      toast.info("Need at least two cards to shuffle.");
-      return;
-    }
-    const shuffledCards = [...cards].sort(() => Math.random() - 0.5);
-    setCards(shuffledCards.map(card => ({ ...card, seen: false, status: 'new' }))); // Reset seen/learned status on shuffle for a fresh start
-    setCurrentCardIndex(0); // Reset to first card after shuffle
-    setIsFlipped(false);
-    toast.success("Flashcards shuffled!");
-  };
-
-  const handleToggleStar = () => {
-    if (totalCards === 0) return;
-
-    setCards((prevCards) =>
-      prevCards.map((card) =>
-        card.id === currentCard.id ? { ...card, starred: !card.starred } : card
-      )
-    );
-    toast.info(currentCard.starred ? "Card unstarred." : "Card starred for later!");
-  };
-
-  const handleMarkAsLearned = () => {
-    if (totalCards === 0) return;
-
-    setCards((prevCards) =>
-      prevCards.map((card) =>
-        card.id === currentCard.id ? { ...card, status: card.status === 'learned' ? 'new' : 'learned' } : card
-      )
-    );
-    toast.info(currentCard.status === 'learned' ? "Card marked as new." : "Card marked as learned!");
-  };
-
-  const handleUpdateCard = (updatedData: { front: string; back: string }) => {
-    setCards((prevCards) =>
-      prevCards.map((card) =>
-        card.id === currentCard.id ? { ...card, ...updatedData } : card
-      )
-    );
-    setIsEditDialogOpen(false); // Close dialog after saving
   };
 
   return (
@@ -183,26 +89,26 @@ export function FlashCardDeck() {
             front={currentCard.front}
             back={currentCard.back}
             isFlipped={isFlipped}
-            onClick={handleFlip}
+            onClick={onFlip}
           />
           <div className="flex gap-2 w-full justify-center">
-            <Button onClick={handlePrevious} variant="outline" disabled={totalCards <= 1}>
+            <Button onClick={onPrevious} variant="outline" disabled={totalCards <= 1}>
               <ArrowLeft className="mr-2 h-4 w-4" /> Previous
             </Button>
-            <Button onClick={handleNext} disabled={totalCards <= 0}> {/* Disable if no cards */}
+            <Button onClick={onNext} disabled={totalCards <= 0}>
               Next <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
           <div className="flex gap-2 w-full justify-center">
-            <Button onClick={handleToggleStar} variant="ghost" size="icon" className={cn(currentCard.starred && "text-yellow-500")}>
+            <Button onClick={handleToggleStarCurrentCard} variant="ghost" size="icon" className={cn(currentCard.starred && "text-yellow-500")}>
               <Star className="h-5 w-5 fill-current" />
               <span className="sr-only">Toggle Star</span>
             </Button>
-            <Button onClick={handleMarkAsLearned} variant="ghost" size="icon" className={cn(currentCard.status === 'learned' && "text-green-500")}>
+            <Button onClick={handleMarkAsLearnedCurrentCard} variant="ghost" size="icon" className={cn(currentCard.status === 'learned' && "text-green-500")}>
               <CheckCircle className="h-5 w-5 fill-current" />
               <span className="sr-only">Mark as Learned</span>
             </Button>
-            <Button onClick={handleShuffleCards} variant="ghost" size="icon">
+            <Button onClick={onShuffleCards} variant="ghost" size="icon">
               <Shuffle className="h-5 w-5" />
               <span className="sr-only">Shuffle Cards</span>
             </Button>
@@ -220,13 +126,13 @@ export function FlashCardDeck() {
                 {currentCard && (
                   <EditFlashCardForm
                     initialData={{ front: currentCard.front, back: currentCard.back }}
-                    onSave={handleUpdateCard}
+                    onSave={handleUpdateCurrentCard}
                     onCancel={() => setIsEditDialogOpen(false)}
                   />
                 )}
               </DialogContent>
             </Dialog>
-            <Button onClick={handleDeleteCard} variant="ghost" size="icon" className="text-red-500">
+            <Button onClick={handleDeleteCurrentCard} variant="ghost" size="icon" className="text-red-500">
               <Trash2 className="h-5 w-5" />
               <span className="sr-only">Delete Card</span>
             </Button>
@@ -257,7 +163,7 @@ export function FlashCardDeck() {
           <CardTitle>Add New Flashcard</CardTitle>
         </CardHeader>
         <CardContent>
-          <AddFlashCardForm onAddCard={handleAddCard} />
+          <AddFlashCardForm onAddCard={onAddCard} />
         </CardContent>
       </Card>
     </div>
