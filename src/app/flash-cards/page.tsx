@@ -308,7 +308,7 @@ export default function FlashCardsPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col h-full py-8">
+      <div className="flex flex-col flex-1 py-8"> {/* Changed h-full to flex-1 */}
         <h1 className="text-3xl font-bold mb-8 text-center">Flash Cards</h1>
         <ResizablePanelGroup direction="horizontal" className="flex-1 rounded-lg border">
           <ResizablePanel defaultSize={70} minSize={40}>

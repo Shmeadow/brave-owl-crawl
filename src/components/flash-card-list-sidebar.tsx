@@ -220,11 +220,11 @@ export function FlashCardListSidebar({
       <CardHeader>
         <CardTitle className="text-lg">Your Flashcards</CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 p-0">
+      <CardContent className="flex-1 p-0 flex flex-col"> {/* Added flex flex-col */}
         {cards.length === 0 ? (
           <p className="p-4 text-muted-foreground text-sm">No flashcards added yet.</p>
         ) : (
-          <ScrollArea className="h-[calc(100vh-250px)]">
+          <ScrollArea className="flex-1"> {/* Changed h-[calc(...)] to flex-1 */}
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
