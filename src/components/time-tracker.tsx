@@ -1,0 +1,81 @@
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Play, Pause, RotateCcw } from "lucide-react";
+import { toast } from "sonner";
+
+export function TimeTracker() {
+  const [time, setTime] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (isRunning) {
+      intervalRef.current = setInterval(() => {
+        setTime((prevTime) => prevTime + 1);
+      }, 1000);
+    } else if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isRunning]);
+
+  const formatTime = (totalSeconds: number) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    return [hours, minutes, seconds]
+      .map((unit) => String(unit).padStart(2, "0"))
+      .join(":");
+  };
+
+  const handleStart = () => {
+    setIsRunning(true);
+    toast.success("Time tracking started!");
+  };
+
+  const handlePause = () => {
+    setIsRunning(false);
+    toast.info("Time tracking paused.");
+  };
+
+  const handleReset = () => {
+    setIsRunning(false);
+    setTime(0);
+    toast.warning("Time tracking reset.");
+  };
+
+  return (
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle>Time Tracker</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col items-center gap-6">
+        <div className="text-6xl font-bold font-mono">
+          {formatTime(time)}
+        </div>
+        <div className="flex gap-4">
+          {!isRunning ? (
+            <Button onClick={handleStart} size="lg">
+              <Play className="mr-2 h-5 w-5" /> Start
+            </Button>
+          ) : (
+            <Button onClick={handlePause} size="lg" variant="outline">
+              <Pause className="mr-2 h-5 w-5" /> Pause
+            </Button>
+          )}
+          <Button onClick={handleReset} size="lg" variant="secondary">
+            <RotateCcw className="mr-2 h-5 w-5" /> Reset
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

@@ -4,10 +4,16 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Clock, LayoutDashboard, Goal, BookOpen, Settings } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function Sidebar({ className }: SidebarProps) {
+  const pathname = usePathname();
+
+  const isActive = (path: string) => pathname === path;
+
   return (
     <div className={cn("pb-12", className)}>
       <div className="space-y-4 py-4">
@@ -16,14 +22,18 @@ export function Sidebar({ className }: SidebarProps) {
             Overview
           </h2>
           <div className="space-y-1">
-            <Button variant="ghost" className="w-full justify-start">
-              <LayoutDashboard className="mr-2 h-4 w-4" />
-              Dashboard
-            </Button>
-            <Button variant="ghost" className="w-full justify-start">
-              <Clock className="mr-2 h-4 w-4" />
-              Time Tracker
-            </Button>
+            <Link href="/">
+              <Button variant={isActive("/") ? "secondary" : "ghost"} className="w-full justify-start">
+                <LayoutDashboard className="mr-2 h-4 w-4" />
+                Dashboard
+              </Button>
+            </Link>
+            <Link href="/time-tracker">
+              <Button variant={isActive("/time-tracker") ? "secondary" : "ghost"} className="w-full justify-start">
+                <Clock className="mr-2 h-4 w-4" />
+                Time Tracker
+              </Button>
+            </Link>
             <Button variant="ghost" className="w-full justify-start">
               <BookOpen className="mr-2 h-4 w-4" />
               Flash Cards
