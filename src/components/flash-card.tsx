@@ -60,9 +60,11 @@ export function FlashCard({ front, back, isFlipped, onClick }: FlashCardProps) {
       <div
         className={cn(
           "relative w-full h-full transition-transform duration-500 ease-in-out",
-          isFlipped ? "rotate-y-180" : "",
         )}
-        style={{ transformStyle: "preserve-3d" }} // transformStyle moved here
+        style={{ 
+          transformStyle: "preserve-3d",
+          transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)" // Explicitly control rotation here
+        }}
       >
         {/* Front Face */}
         <div
@@ -81,8 +83,8 @@ export function FlashCard({ front, back, isFlipped, onClick }: FlashCardProps) {
           className={cn(
             "absolute inset-0 w-full h-full backface-hidden rounded-lg flex items-center justify-center p-4 text-center",
             "bg-primary text-primary-foreground shadow-md",
-            "rotate-y-180", // Initially rotated to be the back
           )}
+          style={{ transform: "rotateY(180deg)" }} // Explicitly rotate the back face
         >
           <CardContent className="flex items-center justify-center h-full text-xl font-semibold">
             {back}
