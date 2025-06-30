@@ -45,9 +45,10 @@ export function FlashCard({ front, back, isFlipped, onClick }: FlashCardProps) {
     <Card
       ref={cardRef}
       className={cn(
-        "relative w-full max-w-md h-56 cursor-pointer", // Changed height from h-64 to h-56
+        "relative w-full max-w-md h-60 cursor-pointer", // Adjusted height to h-60
         "overflow-hidden",
-        "transition-transform duration-100 ease-out" // Transition for the wobble effect
+        "transition-transform duration-100 ease-out", // Transition for the wobble effect
+        "hover:scale-[1.01] hover:shadow-lg" // Added hover effects
       )}
       onClick={onClick}
       onMouseMove={handleMouseMove}
@@ -73,7 +74,7 @@ export function FlashCard({ front, back, isFlipped, onClick }: FlashCardProps) {
             "bg-card text-card-foreground shadow-md",
           )}
         >
-          <CardContent className="flex items-center justify-center h-full text-lg font-semibold"> {/* Changed text-xl to text-lg */}
+          <CardContent className="flex items-center justify-center h-full text-xl font-semibold"> {/* Changed text-lg to text-xl */}
             {front}
           </CardContent>
         </div>
@@ -86,7 +87,7 @@ export function FlashCard({ front, back, isFlipped, onClick }: FlashCardProps) {
           )}
           style={{ transform: "rotateY(180deg)" }} // Explicitly rotate the back face
         >
-          <CardContent className="flex items-center justify-center h-full text-lg font-semibold"> {/* Changed text-xl to text-lg */}
+          <CardContent className="flex items-center justify-center h-full text-xl font-semibold"> {/* Changed text-lg to text-xl */}
             {back}
           </CardContent>
         </div>

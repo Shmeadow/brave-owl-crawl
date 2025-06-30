@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useId } from "react"; // Added useId
+import React, { useState, useId } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,7 +42,7 @@ interface FlashCardListSidebarProps {
   onUpdateCard: (cardId: string, updatedData: { front: string; back: string }) => void;
   onToggleStar: (cardId: string) => void;
   onMarkAsLearned: (cardId: string) => void;
-  onReorderCards: (newOrder: CardData[]) => void; // New prop for reordering
+  onReorderCards: (newOrder: CardData[]) => void;
 }
 
 interface SortableFlashCardItemProps {
@@ -78,15 +78,15 @@ function SortableFlashCardItem({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 10 : 0, // Bring dragged item to front
+    zIndex: isDragging ? 10 : 0,
     opacity: isDragging ? 0.7 : 1,
   };
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const dialogTitleId = useId(); // Generate a unique ID for the dialog title
+  const dialogTitleId = useId();
 
   const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent selecting card when clicking edit
+    e.stopPropagation();
     setIsEditDialogOpen(true);
   };
 
@@ -104,70 +104,70 @@ function SortableFlashCardItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex items-center justify-between p-3 border rounded-md cursor-pointer transition-colors",
+        "flex items-center justify-between p-2 border rounded-md cursor-pointer transition-colors", // Reduced padding from p-3 to p-2
         "hover:bg-accent hover:text-accent-foreground",
         index === currentCardIndex && "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground",
         isDragging && "ring-2 ring-primary"
       )}
       onClick={() => onSelectCard(index)}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1"> {/* Reduced gap from gap-2 to gap-1 */}
         <Button
           variant="ghost"
           size="icon"
           className={cn(
-            "h-7 w-7 cursor-grab",
+            "h-6 w-6 cursor-grab", // Reduced size from h-7 w-7 to h-6 w-6
             index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent"
           )}
           {...listeners}
           {...attributes}
         >
-          <GripVertical className="h-4 w-4" />
+          <GripVertical className="h-3.5 w-3.5" /> {/* Reduced icon size from h-4 w-4 to h-3.5 w-3.5 */}
           <span className="sr-only">Drag to reorder</span>
         </Button>
         <div className="flex-1 truncate pr-2">
-          <p className="font-medium text-sm">{card.front}</p>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+          <p className="font-medium text-xs">{card.front}</p> {/* Changed text-sm to text-xs */}
+          <div className="flex items-center gap-1 text-[0.65rem] text-muted-foreground mt-1"> {/* Reduced gap and font size */}
             {card.starred && <Star className={cn("h-3 w-3", index === currentCardIndex ? "text-yellow-300" : "text-yellow-500")} fill="currentColor" />}
             {card.status === 'learned' && <CheckCircle className={cn("h-3 w-3", index === currentCardIndex ? "text-green-300" : "text-green-500")} fill="currentColor" />}
           </div>
         </div>
       </div>
-      <div className="flex gap-1">
+      <div className="flex gap-0.5"> {/* Reduced gap from gap-1 to gap-0.5 */}
         <Button
           variant="ghost"
           size="icon"
-          className={cn("h-7 w-7", index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent")}
+          className={cn("h-6 w-6", index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent")} // Reduced size
           onClick={(e) => { e.stopPropagation(); onToggleStar(card.id); }}
         >
-          <Star className={cn("h-4 w-4", card.starred && (index === currentCardIndex ? "text-yellow-300" : "text-yellow-500"))} fill="currentColor" />
+          <Star className={cn("h-3.5 w-3.5", card.starred && (index === currentCardIndex ? "text-yellow-300" : "text-yellow-500"))} fill="currentColor" /> {/* Reduced icon size */}
           <span className="sr-only">Toggle Star</span>
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          className={cn("h-7 w-7", index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent")}
+          className={cn("h-6 w-6", index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent")} // Reduced size
           onClick={(e) => { e.stopPropagation(); onMarkAsLearned(card.id); }}
         >
-          <CheckCircle className={cn("h-4 w-4", card.status === 'learned' && (index === currentCardIndex ? "text-green-300" : "text-green-500"))} fill="currentColor" />
+          <CheckCircle className={cn("h-3.5 w-3.5", card.status === 'learned' && (index === currentCardIndex ? "text-green-300" : "text-green-500"))} fill="currentColor" /> {/* Reduced icon size */}
           <span className="sr-only">Mark as Learned</span>
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          className={cn("h-7 w-7", index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent")}
+          className={cn("h-6 w-6", index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent")} // Reduced size
           onClick={handleEditClick}
         >
-          <Edit className="h-4 w-4" />
+          <Edit className="h-3.5 w-3.5" /> {/* Reduced icon size */}
           <span className="sr-only">Edit Card</span>
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          className={cn("h-7 w-7", index === currentCardIndex ? "text-red-300 hover:bg-primary/80" : "text-red-500 hover:bg-accent")}
+          className={cn("h-6 w-6", index === currentCardIndex ? "text-red-300 hover:bg-primary/80" : "text-red-500 hover:bg-accent")} // Reduced size
           onClick={(e) => { e.stopPropagation(); onDeleteCard(card.id); }}
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash2 className="h-3.5 w-3.5" /> {/* Reduced icon size */}
           <span className="sr-only">Delete Card</span>
         </Button>
       </div>
@@ -217,7 +217,7 @@ export function FlashCardListSidebar({
         const [movedCard] = newCards.splice(oldIndex, 1);
         newCards.splice(newIndex, 0, movedCard);
         onReorderCards(newCards);
-        onSelectCard(newIndex); // Select the card at its new position
+        onSelectCard(newIndex);
       }
     }
   }
@@ -241,7 +241,7 @@ export function FlashCardListSidebar({
                 items={cards.map(card => card.id)}
                 strategy={verticalListSortingStrategy}
               >
-                <div className="p-4 space-y-2">
+                <div className="p-2 space-y-1"> {/* Reduced padding and space-y */}
                   {cards.map((card, index) => (
                     <SortableFlashCardItem
                       key={card.id}
