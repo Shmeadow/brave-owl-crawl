@@ -121,8 +121,8 @@ function SortableFlashCardItem({
           <p className="font-medium text-xs">{card.front}</p>
           <div className="flex items-center gap-1 text-[0.65rem] text-muted-foreground mt-1">
             {card.starred && <Star className={cn("h-3 w-3", index === currentCardIndex ? "text-yellow-300" : "text-yellow-500")} fill="currentColor" />}
-            {card.status === 'learned' && <CheckCircle className={cn("h-3 w-3", index === currentCardIndex ? "text-green-300" : "text-green-500")} fill="currentColor" />}
-            {card.seenCount > 0 && <span className="ml-1">({card.seenCount} views)</span>}
+            {card.status === 'mastered' && <CheckCircle className={cn("h-3 w-3", index === currentCardIndex ? "text-green-300" : "text-green-500")} fill="currentColor" />}
+            {card.seen_count > 0 && <span className="ml-1">({card.seen_count} views)</span>}
           </div>
         </div>
       </div>
@@ -142,7 +142,7 @@ function SortableFlashCardItem({
           className={cn("h-6 w-6", index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent")}
           onClick={(e) => { e.stopPropagation(); onMarkAsLearned(card.id); }}
         >
-          <CheckCircle className={cn("h-3.5 w-3.5", card.status === 'learned' && (index === currentCardIndex ? "text-green-300" : "text-green-500"))} fill="currentColor" />
+          <CheckCircle className={cn("h-3.5 w-3.5", card.status === 'mastered' && (index === currentCardIndex ? "text-green-300" : "text-green-500"))} fill="currentColor" />
           <span className="sr-only">Mark as Learned</span>
         </Button>
         <Button

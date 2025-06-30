@@ -51,10 +51,10 @@ export function FlashCardDeck({
 
   const currentCard = cards[currentCardIndex];
   const totalCards = cards.length;
-  const learnedCards = cards.filter(card => card.status === 'learned').length;
+  const masteredCards = cards.filter(card => card.status === 'mastered').length;
   const starredCards = cards.filter(card => card.starred).length;
-  const seenCardsCount = cards.reduce((sum, card) => sum + card.seenCount, 0);
-  const uniqueSeenCards = new Set(cards.filter(card => card.seenCount > 0).map(card => card.id)).size;
+  const seenCardsCount = cards.reduce((sum, card) => sum + card.seen_count, 0);
+  const uniqueSeenCards = new Set(cards.filter(card => card.seen_count > 0).map(card => card.id)).size;
 
 
   const handleDeleteCurrentCard = () => {
@@ -105,7 +105,7 @@ export function FlashCardDeck({
               <Star className="h-5 w-5 fill-current" />
               <span className="sr-only">Toggle Star</span>
             </Button>
-            <Button onClick={handleMarkAsLearnedCurrentCard} variant="ghost" size="icon" className={cn(currentCard.status === 'learned' && "text-green-500")}>
+            <Button onClick={handleMarkAsLearnedCurrentCard} variant="ghost" size="icon" className={cn(currentCard.status === 'mastered' && "text-green-500")}>
               <CheckCircle className="h-5 w-5 fill-current" />
               <span className="sr-only">Mark as Learned</span>
             </Button>
@@ -140,13 +140,13 @@ export function FlashCardDeck({
           </div>
           <div className="text-sm text-muted-foreground flex flex-col items-center">
             <p>Card {currentCardIndex + 1} of {totalCards}</p>
-            <p>{learnedCards} learned, {starredCards} starred</p>
+            <p>{masteredCards} mastered, {starredCards} starred</p>
           </div>
           {/* Progress display */}
           <div className="w-full text-center text-sm text-muted-foreground">
             <p>Progress: {totalCards > 0 ? ((uniqueSeenCards / totalCards) * 100).toFixed(0) : 0}% seen ({uniqueSeenCards}/{totalCards} unique cards)</p>
             <p>Total views: {seenCardsCount}</p>
-            <p>Learned: {totalCards > 0 ? ((learnedCards / totalCards) * 100).toFixed(0) : 0}%</p>
+            <p>Mastered: {totalCards > 0 ? ((masteredCards / totalCards) * 100).toFixed(0) : 0}%</p>
           </div>
         </>
       ) : (
