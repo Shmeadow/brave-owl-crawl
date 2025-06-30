@@ -19,6 +19,7 @@ export function FlashCard({ front, back, isFlipped, onClick }: FlashCardProps) {
         "overflow-hidden",
       )}
       onClick={onClick}
+      style={{ perspective: '1000px' }} // Added perspective for 3D effect
     >
       <div
         className={cn(
