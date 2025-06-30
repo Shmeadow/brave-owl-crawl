@@ -1,4 +1,4 @@
-"use client"; // Make this a client component to use useRouter
+"use client";
 
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { MadeWithDyad } from "@/components/made-with-dyad";
@@ -7,26 +7,9 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function Home() {
-  const { session, loading } = useSupabase(); // Get loading state
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !session) { // Only redirect if not loading and no session
-      router.push('/login');
-    }
-  }, [session, loading, router]);
-
-  if (loading) { // Show loading state while session is being fetched
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p>Loading application...</p>
-      </div>
-    );
-  }
-
-  if (!session) {
-    return null; // Should be caught by useEffect redirect, but as a fallback
-  }
+  // Removed mandatory redirect. User can now access this page without logging in.
+  // The session and loading states are still available via useSupabase if needed for conditional rendering.
+  const { session, loading } = useSupabase();
 
   return (
     <DashboardLayout>
@@ -35,6 +18,11 @@ export default function Home() {
         <p className="text-muted-foreground">
           Use the sidebar to navigate between your tools.
         </p>
+        {!loading && !session && (
+          <p className="text-sm text-muted-foreground">
+            You are currently browsing as a guest. Some features may require you to log in.
+          </p>
+        )}
       </div>
       <MadeWithDyad />
     </DashboardLayout>

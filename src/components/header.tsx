@@ -3,7 +3,7 @@
 import React from "react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, Menu, PanelLeftClose, PanelLeftOpen, LogOut } from "lucide-react"; // Import Menu icon and new panel icons
+import { Moon, Sun, Menu, PanelLeftClose, PanelLeftOpen, LogOut, User } from "lucide-react"; // Import User icon
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +15,7 @@ import { Sidebar } from "@/components/sidebar"; // Import Sidebar
 import { useSupabase } from "@/integrations/supabase/auth"; // Import useSupabase
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Link from "next/link"; // Import Link
 
 interface HeaderProps {
   toggleSidebarCollapse: () => void;
@@ -23,11 +24,11 @@ interface HeaderProps {
 
 export function Header({ toggleSidebarCollapse, isSidebarCollapsed }: HeaderProps) {
   const { setTheme } = useTheme();
-  const { supabase } = useSupabase();
+  const { supabase, session } = useSupabase(); // Get session state
   const router = useRouter();
 
   const handleLogout = async () => {
-    if (!supabase) { // Add check
+    if (!supabase) {
       toast.error("Supabase client not available. Cannot log out.");
       return;
     }
@@ -36,7 +37,7 @@ export function Header({ toggleSidebarCollapse, isSidebarCollapsed }: HeaderProp
       toast.error("Failed to log out: " + error.message);
     } else {
       toast.success("Logged out successfully!");
-      router.push('/login');
+      router.push('/account'); // Redirect to account page after logout
     }
   };
 
@@ -102,10 +103,20 @@ export function Header({ toggleSidebarCollapse, isSidebarCollapsed }: HeaderProp
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button variant="outline" size="icon" onClick={handleLogout}>
-          <LogOut className="h-5 w-5" />
-          <span className="sr-only">Logout</span>
-        </Button>
+
+        {session ? (
+          <Button variant="outline" size="icon" onClick={handleLogout}>
+            <LogOut className="h-5 w-5" />
+            <span className="sr-only">Logout</span>
+          </Button>
+        ) : (
+          <Link href="/account">
+            <Button variant="outline" size="icon">
+              <User className="h-5 w-5" />
+              <span className="sr-only">Account</span>
+            </Button>
+          </Link>
+        )}
       </div>
     </header>
   );

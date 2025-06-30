@@ -7,16 +7,10 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function TimeTrackerPage() {
-  const { session, loading } = useSupabase(); // Get loading state
-  const router = useRouter();
+  // Removed mandatory redirect. User can now access this page without logging in.
+  const { session, loading } = useSupabase();
 
-  useEffect(() => {
-    if (!loading && !session) { // Only redirect if not loading and no session
-      router.push('/login');
-    }
-  }, [session, loading, router]);
-
-  if (loading) { // Show loading state while session is being fetched
+  if (loading) {
     return (
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center h-full py-8">
@@ -26,14 +20,15 @@ export default function TimeTrackerPage() {
     );
   }
 
-  if (!session) {
-    return null; // Should be caught by useEffect redirect, but as a fallback
-  }
-
   return (
     <DashboardLayout>
       <div className="flex flex-col items-center justify-center h-full py-8">
         <TimeTracker />
+        {!session && (
+          <p className="text-sm text-muted-foreground mt-4">
+            You are currently browsing as a guest. Your time tracking data will not be saved unless you log in.
+          </p>
+        )}
       </div>
     </DashboardLayout>
   );
