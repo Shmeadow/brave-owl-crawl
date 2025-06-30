@@ -54,6 +54,9 @@ export function Header() {
           <DropdownMenuItem onClick={() => setTheme("system")}>
             System
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setTheme("cozy")}>
+            Cozy
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>

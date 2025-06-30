@@ -59,7 +59,8 @@ export default {
   				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
-  			}
+  			},
+            gold: 'hsl(var(--gold))', /* Added gold color */
   		},
   		borderRadius: {
   			lg: 'var(--radius)',

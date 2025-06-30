@@ -45,17 +45,18 @@ export function FlashCard({ front, back, isFlipped, onClick }: FlashCardProps) {
     <Card
       ref={cardRef}
       className={cn(
-        "relative w-full max-w-md h-60 cursor-pointer", // Adjusted height to h-60
+        "relative w-full max-w-md h-60 cursor-pointer",
         "overflow-hidden",
-        "transition-transform duration-100 ease-out", // Transition for the wobble effect
-        "hover:scale-[1.01] hover:shadow-lg" // Added hover effects
+        "transition-transform duration-100 ease-out",
+        "hover:scale-[1.01] hover:shadow-lg",
+        "hover:ring-2 hover:ring-gold hover:ring-offset-2" // Added golden ring effect on hover
       )}
       onClick={onClick}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{
-        perspective: '1000px', // Perspective remains on the parent
-        transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`, // Apply wobble transform
+        perspective: '1000px',
+        transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
       }}
     >
       <div
@@ -64,7 +65,7 @@ export function FlashCard({ front, back, isFlipped, onClick }: FlashCardProps) {
         )}
         style={{
           transformStyle: "preserve-3d",
-          transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)" // Explicitly control rotation here
+          transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)"
         }}
       >
         {/* Front Face */}
@@ -74,7 +75,7 @@ export function FlashCard({ front, back, isFlipped, onClick }: FlashCardProps) {
             "bg-card text-card-foreground shadow-md",
           )}
         >
-          <CardContent className="flex items-center justify-center h-full text-xl font-semibold"> {/* Changed text-lg to text-xl */}
+          <CardContent className="flex items-center justify-center h-full text-xl font-semibold">
             {front}
           </CardContent>
         </div>
@@ -85,9 +86,9 @@ export function FlashCard({ front, back, isFlipped, onClick }: FlashCardProps) {
             "absolute inset-0 w-full h-full backface-hidden rounded-lg flex items-center justify-center p-4 text-center",
             "bg-primary text-primary-foreground shadow-md",
           )}
-          style={{ transform: "rotateY(180deg)" }} // Explicitly rotate the back face
+          style={{ transform: "rotateY(180deg)" }}
         >
-          <CardContent className="flex items-center justify-center h-full text-xl font-semibold"> {/* Changed text-lg to text-xl */}
+          <CardContent className="flex items-center justify-center h-full text-xl font-semibold">
             {back}
           </CardContent>
         </div>
