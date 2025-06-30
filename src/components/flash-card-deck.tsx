@@ -1,23 +1,15 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useId } from "react"; // Added useId
+import React, { useState, useEffect, useRef, useId } from "react";
 import { Button } from "@/components/ui/button";
 import { FlashCard } from "@/components/flash-card";
-import { ArrowLeft, ArrowRight, Star, Trash2, Shuffle, CheckCircle, Edit } from "lucide-react";
+import { ArrowLeft, ArrowRight, Star, Trash2, Shuffle, CheckCircle, Edit, RefreshCcw } from "lucide-react";
 import { AddFlashCardForm } from "@/components/add-flash-card-form";
 import { EditFlashCardForm } from "@/components/edit-flash-card-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-
-interface CardData {
-  id: string;
-  front: string;
-  back: string;
-  starred: boolean;
-  status: 'new' | 'learned';
-  seen: boolean;
-}
+import { CardData } from "@/app/flash-cards/page"; // Import CardData from the page file
 
 interface FlashCardDeckProps {
   cards: CardData[];
@@ -32,6 +24,9 @@ interface FlashCardDeckProps {
   onToggleStar: (cardId: string) => void;
   onMarkAsLearned: (cardId: string) => void;
   onUpdateCard: (cardId: string, updatedData: { front: string; back: string }) => void;
+  filterMode: 'all' | 'starred' | 'learned';
+  setFilterMode: (mode: 'all' | 'starred' | 'learned') => void;
+  onResetProgress: () => void;
 }
 
 export function FlashCardDeck({
@@ -47,15 +42,20 @@ export function FlashCardDeck({
   onToggleStar,
   onMarkAsLearned,
   onUpdateCard,
+  filterMode,
+  setFilterMode,
+  onResetProgress,
 }: FlashCardDeckProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const dialogTitleId = useId(); // Generate a unique ID for the dialog title
+  const dialogTitleId = useId();
 
   const currentCard = cards[currentCardIndex];
   const totalCards = cards.length;
   const learnedCards = cards.filter(card => card.status === 'learned').length;
   const starredCards = cards.filter(card => card.starred).length;
-  const seenCards = cards.filter(card => card.seen).length;
+  const seenCardsCount = cards.reduce((sum, card) => sum + card.seenCount, 0);
+  const uniqueSeenCards = new Set(cards.filter(card => card.seenCount > 0).map(card => card.id)).size;
+
 
   const handleDeleteCurrentCard = () => {
     if (currentCard) {
@@ -144,7 +144,8 @@ export function FlashCardDeck({
           </div>
           {/* Progress display */}
           <div className="w-full text-center text-sm text-muted-foreground">
-            <p>Progress: {totalCards > 0 ? ((seenCards / totalCards) * 100).toFixed(0) : 0}% seen</p>
+            <p>Progress: {totalCards > 0 ? ((uniqueSeenCards / totalCards) * 100).toFixed(0) : 0}% seen ({uniqueSeenCards}/{totalCards} unique cards)</p>
+            <p>Total views: {seenCardsCount}</p>
             <p>Learned: {totalCards > 0 ? ((learnedCards / totalCards) * 100).toFixed(0) : 0}%</p>
           </div>
         </>
@@ -165,6 +166,43 @@ export function FlashCardDeck({
         </CardHeader>
         <CardContent>
           <AddFlashCardForm onAddCard={onAddCard} />
+        </CardContent>
+      </Card>
+
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Options</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div>
+            <h3 className="text-md font-semibold mb-2">View Filters</h3>
+            <div className="flex gap-2">
+              <Button
+                variant={filterMode === 'all' ? 'default' : 'outline'}
+                onClick={() => setFilterMode('all')}
+              >
+                All Cards
+              </Button>
+              <Button
+                variant={filterMode === 'starred' ? 'default' : 'outline'}
+                onClick={() => setFilterMode('starred')}
+              >
+                Starred
+              </Button>
+              <Button
+                variant={filterMode === 'learned' ? 'default' : 'outline'}
+                onClick={() => setFilterMode('learned')}
+              >
+                Learned
+              </Button>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-md font-semibold mb-2">Progress Tracking</h3>
+            <Button onClick={onResetProgress} variant="secondary" className="w-full">
+              <RefreshCcw className="mr-2 h-4 w-4" /> Reset All Progress
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

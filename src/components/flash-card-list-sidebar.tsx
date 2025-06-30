@@ -24,15 +24,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-
-interface CardData {
-  id: string;
-  front: string;
-  back: string;
-  starred: boolean;
-  status: 'new' | 'learned';
-  seen: boolean;
-}
+import { CardData } from "@/app/flash-cards/page"; // Import CardData from the page file
 
 interface FlashCardListSidebarProps {
   cards: CardData[];
@@ -104,70 +96,71 @@ function SortableFlashCardItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex items-center justify-between p-2 border rounded-md cursor-pointer transition-colors", // Reduced padding from p-3 to p-2
+        "flex items-center justify-between p-2 border rounded-md cursor-pointer transition-colors",
         "hover:bg-accent hover:text-accent-foreground",
         index === currentCardIndex && "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground",
         isDragging && "ring-2 ring-primary"
       )}
       onClick={() => onSelectCard(index)}
     >
-      <div className="flex items-center gap-1"> {/* Reduced gap from gap-2 to gap-1 */}
+      <div className="flex items-center gap-1">
         <Button
           variant="ghost"
           size="icon"
           className={cn(
-            "h-6 w-6 cursor-grab", // Reduced size from h-7 w-7 to h-6 w-6
+            "h-6 w-6 cursor-grab",
             index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent"
           )}
           {...listeners}
           {...attributes}
         >
-          <GripVertical className="h-3.5 w-3.5" /> {/* Reduced icon size from h-4 w-4 to h-3.5 w-3.5 */}
+          <GripVertical className="h-3.5 w-3.5" />
           <span className="sr-only">Drag to reorder</span>
         </Button>
         <div className="flex-1 truncate pr-2">
-          <p className="font-medium text-xs">{card.front}</p> {/* Changed text-sm to text-xs */}
-          <div className="flex items-center gap-1 text-[0.65rem] text-muted-foreground mt-1"> {/* Reduced gap and font size */}
+          <p className="font-medium text-xs">{card.front}</p>
+          <div className="flex items-center gap-1 text-[0.65rem] text-muted-foreground mt-1">
             {card.starred && <Star className={cn("h-3 w-3", index === currentCardIndex ? "text-yellow-300" : "text-yellow-500")} fill="currentColor" />}
             {card.status === 'learned' && <CheckCircle className={cn("h-3 w-3", index === currentCardIndex ? "text-green-300" : "text-green-500")} fill="currentColor" />}
+            {card.seenCount > 0 && <span className="ml-1">({card.seenCount} views)</span>}
           </div>
         </div>
       </div>
-      <div className="flex gap-0.5"> {/* Reduced gap from gap-1 to gap-0.5 */}
+      <div className="flex gap-0.5">
         <Button
           variant="ghost"
           size="icon"
-          className={cn("h-6 w-6", index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent")} // Reduced size
+          className={cn("h-6 w-6", index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent")}
           onClick={(e) => { e.stopPropagation(); onToggleStar(card.id); }}
         >
-          <Star className={cn("h-3.5 w-3.5", card.starred && (index === currentCardIndex ? "text-yellow-300" : "text-yellow-500"))} fill="currentColor" /> {/* Reduced icon size */}
+          <Star className={cn("h-3.5 w-3.5", card.starred && (index === currentCardIndex ? "text-yellow-300" : "text-yellow-500"))} fill="currentColor" />
           <span className="sr-only">Toggle Star</span>
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          className={cn("h-6 w-6", index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent")} // Reduced size
+          className={cn("h-6 w-6", index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent")}
           onClick={(e) => { e.stopPropagation(); onMarkAsLearned(card.id); }}
         >
-          <CheckCircle className={cn("h-3.5 w-3.5", card.status === 'learned' && (index === currentCardIndex ? "text-green-300" : "text-green-500"))} fill="currentColor" /> {/* Reduced icon size */}
+          <CheckCircle className={cn("h-3.5 w-3.5", card.status === 'learned' && (index === currentCardIndex ? "text-green-300" : "text-green-500"))} fill="currentColor" />
           <span className="sr-only">Mark as Learned</span>
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          className={cn("h-6 w-6", index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent")} // Reduced size
+          className={cn("h-6 w-6", index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent")}
           onClick={handleEditClick}
         >
-          <Edit className="h-3.5 w-3.5" /> {/* Reduced icon size */}
+          <Edit className="h-3.5 w-3.5" />
           <span className="sr-only">Edit Card</span>
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          className={cn("h-6 w-6", index === currentCardIndex ? "text-red-300 hover:bg-primary/80" : "text-red-500 hover:bg-accent")} // Reduced size
+          className={cn("h-6 w-6", index === currentCardIndex ? "text-red-300 hover:bg-primary/80" : "text-red-500 hover:bg-accent")}
           onClick={(e) => { e.stopPropagation(); onDeleteCard(card.id); }}
         >
-          <Trash2 className="h-3.5 w-3.5" /> {/* Reduced icon size */}
+          <Trash2 className="h-3.5 w-3.5" />
           <span className="sr-only">Delete Card</span>
         </Button>
       </div>
@@ -241,7 +234,7 @@ export function FlashCardListSidebar({
                 items={cards.map(card => card.id)}
                 strategy={verticalListSortingStrategy}
               >
-                <div className="p-2 space-y-1"> {/* Reduced padding and space-y */}
+                <div className="p-2 space-y-1">
                   {cards.map((card, index) => (
                     <SortableFlashCardItem
                       key={card.id}
