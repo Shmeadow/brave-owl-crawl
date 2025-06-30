@@ -29,7 +29,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const { data: { session } } = await supabase.auth.getSession();
-  const headersList = headers();
+  const headersList = await headers(); // Await the headers() call
   const pathname = headersList.get('x-pathname') || '/'; // Get the pathname from headers
 
   if (!session && pathname !== '/login') {
