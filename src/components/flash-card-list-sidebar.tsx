@@ -134,9 +134,9 @@ export function FlashCardListSidebar({
       </CardContent>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px]" aria-labelledby="edit-flashcard-title-sidebar">
           <DialogHeader>
-            <DialogTitle>Edit Flashcard</DialogTitle>
+            <DialogTitle id="edit-flashcard-title-sidebar">Edit Flashcard</DialogTitle>
           </DialogHeader>
           {currentEditingCard && (
             <EditFlashCardForm

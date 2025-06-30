@@ -119,9 +119,9 @@ export function FlashCardDeck({
                   <span className="sr-only">Edit Card</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
+              <DialogContent className="sm:max-w-[425px]" aria-labelledby="edit-flashcard-title-deck">
                 <DialogHeader>
-                  <DialogTitle>Edit Flashcard</DialogTitle>
+                  <DialogTitle id="edit-flashcard-title-deck">Edit Flashcard</DialogTitle>
                 </DialogHeader>
                 {currentCard && (
                   <EditFlashCardForm
