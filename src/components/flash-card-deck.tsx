@@ -58,8 +58,26 @@ export function FlashCardDeck() {
   const handleNext = () => {
     setIsFlipped(false);
     setTimeout(() => {
-      setCurrentCardIndex((prevIndex) => (prevIndex + 1) % totalCards);
-      toast.info("Next card!");
+      if (totalCards === 0) return;
+
+      let nextIndex = -1;
+      // Try to find the next 'new' card starting from the next position
+      for (let i = 1; i <= totalCards; i++) {
+        const potentialNextIndex = (currentCardIndex + i) % totalCards;
+        if (cards[potentialNextIndex].status === 'new') {
+          nextIndex = potentialNextIndex;
+          break;
+        }
+      }
+
+      if (nextIndex !== -1) {
+        setCurrentCardIndex(nextIndex);
+        toast.info("Next unlearned card!");
+      } else {
+        // If all cards are 'learned', just cycle through them
+        setCurrentCardIndex((prevIndex) => (prevIndex + 1) % totalCards);
+        toast.info("Cycling through learned cards!");
+      }
     }, 100);
   };
 
@@ -171,7 +189,7 @@ export function FlashCardDeck() {
             <Button onClick={handlePrevious} variant="outline" disabled={totalCards <= 1}>
               <ArrowLeft className="mr-2 h-4 w-4" /> Previous
             </Button>
-            <Button onClick={handleNext} disabled={totalCards <= 1}>
+            <Button onClick={handleNext} disabled={totalCards <= 0}> {/* Disable if no cards */}
               Next <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
