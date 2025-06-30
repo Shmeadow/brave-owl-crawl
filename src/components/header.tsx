@@ -27,6 +27,10 @@ export function Header({ toggleSidebarCollapse, isSidebarCollapsed }: HeaderProp
   const router = useRouter();
 
   const handleLogout = async () => {
+    if (!supabase) { // Add check
+      toast.error("Supabase client not available. Cannot log out.");
+      return;
+    }
     const { error } = await supabase.auth.signOut();
     if (error) {
       toast.error("Failed to log out: " + error.message);

@@ -24,7 +24,7 @@ export interface CardData {
 type FilterMode = 'all' | 'starred' | 'learned';
 
 export default function FlashCardsPage() {
-  const { supabase, session } = useSupabase();
+  const { supabase, session, loading: authLoading } = useSupabase();
   const router = useRouter();
   const [cards, setCards] = useState<CardData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,8 +33,16 @@ export default function FlashCardsPage() {
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
 
   useEffect(() => {
+    if (authLoading) return; // Wait for auth to load
+
     if (!session) {
       router.push('/login');
+      return;
+    }
+
+    if (!supabase) { // Check if supabase client is available
+      toast.error("Supabase client not available. Cannot fetch flashcards.");
+      setLoading(false);
       return;
     }
 
@@ -56,7 +64,7 @@ export default function FlashCardsPage() {
     };
 
     fetchCards();
-  }, [session, supabase, router]);
+  }, [session, supabase, router, authLoading]);
 
   // Adjust currentCardIndex if it goes out of bounds after filtering
   const filteredCards = cards.filter(card => {
@@ -106,8 +114,8 @@ export default function FlashCardsPage() {
   };
 
   const handleAddCard = async (newCardData: { front: string; back: string }) => {
-    if (!session) {
-      toast.error("Please log in to add flashcards.");
+    if (!session || !supabase) {
+      toast.error("Please log in or Supabase client not available to add flashcards.");
       return;
     }
     const { data, error } = await supabase
@@ -135,8 +143,8 @@ export default function FlashCardsPage() {
   };
 
   const handleDeleteCard = async (cardId: string) => {
-    if (!session) {
-      toast.error("Please log in to delete flashcards.");
+    if (!session || !supabase) {
+      toast.error("Please log in or Supabase client not available to delete flashcards.");
       return;
     }
     const { error } = await supabase
@@ -178,8 +186,8 @@ export default function FlashCardsPage() {
   };
 
   const handleToggleStar = async (cardId: string) => {
-    if (!session) {
-      toast.error("Please log in to star flashcards.");
+    if (!session || !supabase) {
+      toast.error("Please log in or Supabase client not available to star flashcards.");
       return;
     }
     const cardToUpdate = cards.find(card => card.id === cardId);
@@ -204,8 +212,8 @@ export default function FlashCardsPage() {
   };
 
   const handleMarkAsLearned = async (cardId: string) => {
-    if (!session) {
-      toast.error("Please log in to mark flashcards.");
+    if (!session || !supabase) {
+      toast.error("Please log in or Supabase client not available to mark flashcards.");
       return;
     }
     const cardToUpdate = cards.find(card => card.id === cardId);
@@ -237,8 +245,8 @@ export default function FlashCardsPage() {
   };
 
   const handleUpdateCard = async (cardId: string, updatedData: { front: string; back: string }) => {
-    if (!session) {
-      toast.error("Please log in to update flashcards.");
+    if (!session || !supabase) {
+      toast.error("Please log in or Supabase client not available to update flashcards.");
       return;
     }
     const { data, error } = await supabase
@@ -271,8 +279,8 @@ export default function FlashCardsPage() {
   };
 
   const handleResetProgress = async () => {
-    if (!session) {
-      toast.error("Please log in to reset progress.");
+    if (!session || !supabase) {
+      toast.error("Please log in or Supabase client not available to reset progress.");
       return;
     }
     const { error } = await supabase
@@ -291,7 +299,7 @@ export default function FlashCardsPage() {
     }
   };
 
-  if (loading || !session) {
+  if (authLoading || loading || !session) {
     return (
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center h-full py-8">

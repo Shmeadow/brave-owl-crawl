@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function LoginPage() {
-  const { supabase, session, loading } = useSupabase(); // Get loading state
+  const { supabase, session, loading } = useSupabase();
   const router = useRouter();
 
   useEffect(() => {
@@ -21,6 +21,20 @@ export default function LoginPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p>Checking authentication status...</p>
+      </div>
+    );
+  }
+
+  // Only render Auth component if supabase client is available
+  if (!supabase) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <Card className="w-full max-w-md p-6">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold">Authentication Error</CardTitle>
+            <p className="text-muted-foreground">Supabase client is not initialized. Please check environment variables.</p>
+          </CardHeader>
+        </Card>
       </div>
     );
   }
