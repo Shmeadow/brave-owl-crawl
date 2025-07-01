@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
-import { PomodoroWidget } => {
+import { PomodoroWidget } from "@/components/pomodoro-widget"; // Corrected import statement
 import { Toaster } from "@/components/ui/sonner";
 
 const LOCAL_STORAGE_POMODORO_POS_KEY = 'pomodoro_widget_position';
