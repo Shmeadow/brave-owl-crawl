@@ -16,13 +16,8 @@ interface Message {
 }
 
 export function ChatPanel() {
-  const messages: Message[] = [
-    { id: "1", author: "@PlanetCalm", text: "Hey everyone, welcome to Shmeadow's Room!", isUser: false },
-    { id: "2", author: "You", text: "Hi! This space is awesome!", isUser: true },
-    { id: "3", author: "@ChillVibes", text: "Loving the lofi beats today!", isUser: false },
-    { id: "4", author: "@StudyBuddy", text: "Anyone else working on flashcards?", isUser: false },
-    { id: "5", author: "You", text: "Yep, just added a few new ones!", isUser: true },
-  ];
+  // Messages will be dynamically loaded or added here
+  const messages: Message[] = []; // Empty the messages array for a clean start
 
   return (
     <Card className="h-full flex flex-col bg-card/80 backdrop-blur-md border-border">
@@ -32,39 +27,40 @@ export function ChatPanel() {
       <CardContent className="flex-1 p-4 overflow-hidden flex flex-col">
         <ScrollArea className="flex-1 pr-4">
           <div className="space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={cn(
-                  "flex",
-                  message.isUser ? "justify-end" : "justify-start"
-                )}
-              >
+            {messages.length === 0 ? (
+              <p className="text-center text-muted-foreground text-sm">No messages yet. Start the conversation!</p>
+            ) : (
+              messages.map((message) => (
                 <div
+                  key={message.id}
                   className={cn(
-                    "max-w-[70%] p-3 rounded-lg",
-                    message.isUser
-                      ? "bg-primary text-primary-foreground rounded-br-none"
-                      : "bg-muted text-muted-foreground rounded-bl-none"
+                    "flex",
+                    message.isUser ? "justify-end" : "justify-start"
                   )}
                 >
-                  {!message.isUser && (
-                    <p className="text-xs font-semibold mb-1">{message.author}</p>
-                  )}
-                  <p className="text-sm">{message.text}</p>
+                  <div
+                    className={cn(
+                      "max-w-[70%] p-3 rounded-lg",
+                      message.isUser
+                        ? "bg-primary text-primary-foreground rounded-br-none"
+                        : "bg-muted text-muted-foreground rounded-bl-none"
+                    )}
+                  >
+                    {!message.isUser && (
+                      <p className="text-xs font-semibold mb-1">{message.author}</p>
+                    )}
+                    <p className="text-sm">{message.text}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </ScrollArea>
-        <div className="mt-4 p-2 bg-card/80 backdrop-blur-md rounded-md text-center text-sm text-muted-foreground">
-          <p>Invite your friends and start chatting! 👋</p>
-          <p>Share your room link here.</p>
-        </div>
+        {/* Removed the "Invite your friends..." text */}
       </CardContent>
       <CardFooter className="p-4 border-t border-border">
         <div className="flex w-full items-center space-x-2">
-          <Input placeholder="Say something..." className="flex-1 bg-input/50 border-border focus:border-primary" />
+          <Input placeholder="Type your message..." className="flex-1 bg-input/50 border-border focus:border-primary" />
           <Button type="submit" size="icon">
             <Send className="h-4 w-4" />
             <span className="sr-only">Send Message</span>

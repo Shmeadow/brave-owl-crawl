@@ -1,8 +1,6 @@
 "use client";
 
 import React from "react";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { ChatPanel } from "@/components/chat-panel";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { useSidebar } from "@/components/sidebar/sidebar-context"; // Import useSidebar
 import { SpacesPanel } from "@/components/panels/spaces-panel";
@@ -52,29 +50,22 @@ export default function HomePage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen w-full pt-16"> {/* Padding top for fixed header */}
-      <ResizablePanelGroup direction="horizontal" className="flex-1">
-        {/* Main Content Area (contains active panel and ChatPanel) */}
-        <ResizablePanel defaultSize={65} minSize={40} className="p-4 overflow-y-auto">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activePanel}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="h-full" // Ensure motion.div takes full height
-            >
-              {renderActivePanel()}
-            </motion.div>
-          </AnimatePresence>
-          <MadeWithDyad />
-        </ResizablePanel>
-        <ResizableHandle withHandle className="bg-border/50 hover:bg-primary/50 transition-colors" />
-        <ResizablePanel defaultSize={35} minSize={25} className="p-4">
-          <ChatPanel />
-        </ResizablePanel>
-      </ResizablePanelGroup>
+    <div className="flex flex-col min-h-screen w-full pt-16 pr-80"> {/* Added pr-80 for fixed chat */}
+      <div className="flex-1 p-4 overflow-y-auto">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activePanel}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="h-full" // Ensure motion.div takes full height
+          >
+            {renderActivePanel()}
+          </motion.div>
+        </AnimatePresence>
+        <MadeWithDyad />
+      </div>
     </div>
   );
 }

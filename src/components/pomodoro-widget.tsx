@@ -50,11 +50,12 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, onClose }: Pomodor
   return (
     <Card
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50", // Full width at the bottom
-        "bg-background/50 backdrop-blur-md shadow-lg border-t", // Border on top
+        "fixed bottom-4 right-[336px] z-50", // Fixed position: bottom-4, right-4 + chat width (320px) + gap (12px) = 336px
+        "bg-background/50 backdrop-blur-md shadow-lg border rounded-lg", // Added border and rounded-lg
         "flex transition-all duration-300 ease-in-out",
+        "w-[224px]", // Fixed width for both states (50% of max-w-md which is 448px)
         isMinimized
-          ? "flex-row items-center justify-center px-2 py-1 h-16 cursor-pointer" // Smaller height for minimized
+          ? "flex-row items-center justify-between px-2 py-1 h-16 cursor-pointer" // Smaller height for minimized
           : "flex-col items-center p-3 gap-3 h-auto" // Auto height for expanded
       )}
       onClick={isMinimized ? () => setIsMinimized(false) : undefined}

@@ -13,6 +13,7 @@ import { LofiAudioPlayer } from "@/components/lofi-audio-player";
 import { SpotifyEmbedModal } from "@/components/spotify-embed-modal";
 import { SidebarProvider, useSidebar } from "@/components/sidebar/sidebar-context"; // Import SidebarProvider and useSidebar
 import { Sidebar } from "@/components/sidebar/sidebar"; // Import the new Sidebar
+import { ChatPanel } from "@/components/chat-panel"; // Import ChatPanel
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
 const LOCAL_STORAGE_POMODORO_VISIBLE_KEY = 'pomodoro_widget_visible';
@@ -80,7 +81,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
       <Sidebar /> {/* Render the new Sidebar */}
       <main
         className={`flex flex-col flex-1 w-full h-full transition-all duration-300 ease-in-out`}
-        style={{ marginLeft: isSidebarOpen ? '60px' : '4px' }} // Adjust margin based on sidebar open state
+        style={{ marginLeft: isSidebarOpen ? '60px' : '4px', marginRight: '320px' }} // Adjust margin based on sidebar open state and fixed chat
       >
         {children}
       </main>
@@ -97,6 +98,10 @@ function AppWrapperContent({ children }: AppWrapperProps) {
       <LofiAudioPlayer />
       <SpotifyEmbedModal isOpen={isSpotifyModalOpen} onClose={() => setIsSpotifyModalOpen(false)} />
       <Toaster />
+      {/* Fixed Chat Panel */}
+      <div className="fixed right-0 top-16 bottom-0 w-80 bg-card/80 backdrop-blur-md border-l border-border">
+        <ChatPanel />
+      </div>
     </>
   );
 }
