@@ -231,6 +231,23 @@ export function usePomodoroState() {
     setState(prevState => ({ ...prevState, editableTimeString: value }));
   }, []);
 
+  // New function to update custom times from settings modal
+  const setCustomTime = useCallback((mode: PomodoroMode, newTimeInSeconds: number) => {
+    setState(prevState => {
+      const updatedCustomTimes = {
+        ...prevState.customTimes,
+        [mode]: newTimeInSeconds,
+      };
+      // If the current mode's time is being updated, also update timeLeft
+      const newTimeLeft = prevState.mode === mode ? newTimeInSeconds : prevState.timeLeft;
+      return {
+        ...prevState,
+        customTimes: updatedCustomTimes,
+        timeLeft: newTimeLeft,
+      };
+    });
+  }, []);
+
   return {
     mode: state.mode,
     timeLeft: state.timeLeft,
@@ -244,5 +261,6 @@ export function usePomodoroState() {
     handleSwitchMode,
     handleTimeDisplayClick,
     handleTimeInputBlur,
+    setCustomTime, // Expose the new function
   };
 }

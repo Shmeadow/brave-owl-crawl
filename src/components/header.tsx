@@ -3,7 +3,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, LayoutDashboard, Clock, BookOpen, Goal, User, Settings } from "lucide-react";
+import { Menu, LayoutDashboard, Clock, BookOpen, Goal, User, Settings, Music, Timer } from "lucide-react";
 import { UserNav } from "@/components/user-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
@@ -11,8 +11,15 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { MainNavigation } from "@/components/main-navigation";
 import { useSupabase } from "@/integrations/supabase/auth";
+import { ClockDisplay } from "@/components/clock-display"; // Import ClockDisplay
 
-export function Header() {
+interface HeaderProps {
+  onTogglePomodoroVisibility: () => void;
+  isPomodoroVisible: boolean;
+  onOpenSpotifyModal: () => void;
+}
+
+export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSpotifyModal }: HeaderProps) {
   const pathname = usePathname();
   const isActive = (path: string) => pathname === path;
   const { session, loading, profile } = useSupabase(); // Get profile from context
@@ -68,10 +75,19 @@ export function Header() {
         </Link>
         {/* Desktop Navigation (MainNavigation component) - now part of the left group */}
         <MainNavigation />
+        <ClockDisplay /> {/* Add ClockDisplay here */}
       </div>
 
       {/* Right side: ThemeToggle and UserNav */}
       <div className="flex items-center gap-4 ml-auto">
+        <Button variant="ghost" size="icon" onClick={onOpenSpotifyModal} title="Open Spotify Embed">
+          <Music className="h-5 w-5" />
+          <span className="sr-only">Open Spotify Embed</span>
+        </Button>
+        <Button variant="ghost" size="icon" onClick={onTogglePomodoroVisibility} title={isPomodoroVisible ? "Hide Pomodoro Timer" : "Show Pomodoro Timer"}>
+          <Timer className="h-5 w-5" />
+          <span className="sr-only">{isPomodoroVisible ? "Hide Pomodoro Timer" : "Show Pomodoro Timer"}</span>
+        </Button>
         <ThemeToggle />
         <UserNav />
       </div>
