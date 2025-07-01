@@ -13,7 +13,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="flex min-h-screen w-full">
       <div className="flex flex-1 flex-col">
         <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-auto bg-background pb-20"> {/* Added pb-20 */}
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-auto bg-background pb-32"> {/* Increased pb-20 to pb-32 */}
           {children}
         </main>
       </div>

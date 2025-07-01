@@ -4,7 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { SessionContextProvider } from "@/integrations/supabase/auth";
-import { GoalReminderBar } from "@/components/goal-reminder-bar"; // Import the new component
+import { GoalReminderBar } from "@/components/goal-reminder-bar";
+import { PomodoroWidget } from "@/components/pomodoro-widget"; // Import the new component
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,7 +40,8 @@ export default async function RootLayout({
         >
           <SessionContextProvider>
             {children}
-            <GoalReminderBar /> {/* Render the new goal reminder bar */}
+            <GoalReminderBar />
+            <PomodoroWidget /> {/* Render the new Pomodoro widget */}
           </SessionContextProvider>
           <Toaster />
         </ThemeProvider>
