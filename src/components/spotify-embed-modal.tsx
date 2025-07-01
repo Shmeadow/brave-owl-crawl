@@ -78,10 +78,10 @@ export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-black/70 backdrop-blur-md border border-white/10 text-white shadow-xl">
         <DialogHeader>
-          <DialogTitle>Embed Spotify Player</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-white">Embed Spotify Player</DialogTitle>
+          <DialogDescription className="text-white/80">
             Paste a Spotify embed URL (e.g., from Spotify's "Embed track" option) to display it in your app.
           </DialogDescription>
         </DialogHeader>
@@ -92,9 +92,9 @@ export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
               name="url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Spotify Embed URL</FormLabel>
+                  <FormLabel className="text-white">Spotify Embed URL</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://open.spotify.com/embed/track/..." {...field} />
+                    <Input placeholder="https://open.spotify.com/embed/track/..." {...field} className="bg-white/10 text-white border-none focus:ring-1 focus:ring-primary" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -102,18 +102,18 @@ export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
             />
             <div className="flex justify-end gap-2">
               {embedUrl && (
-                <Button type="button" variant="outline" onClick={handleRemoveEmbed}>
+                <Button type="button" variant="outline" onClick={handleRemoveEmbed} className="bg-white/10 text-white/80 hover:bg-white/20">
                   Remove Embed
                 </Button>
               )}
-              <Button type="submit">Save Embed</Button>
+              <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">Save Embed</Button>
             </div>
           </form>
         </Form>
 
         {embedUrl && (
           <div className="mt-4">
-            <h3 className="text-md font-semibold mb-2">Current Embed:</h3>
+            <h3 className="text-md font-semibold mb-2 text-white">Current Embed:</h3>
             <div className="relative w-full" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */ }}>
               <iframe
                 src={embedUrl}

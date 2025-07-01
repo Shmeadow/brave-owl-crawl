@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { Loader2 } from "lucide-react";
 
-const LOCAL_STORAGE_UPGRADED_KEY = 'upgraded'; // Reusing the key from AdsBanner
+const LOCAL_STORAGE_UPGRADED_KEY = 'upgraded';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -28,7 +28,6 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
     setIsProcessing(true);
     try {
       if (session && supabase) {
-        // User is logged in, update Supabase profile
         const { error } = await supabase
           .from('profiles')
           .update({ is_premium: true })
@@ -39,11 +38,10 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
           console.error("Supabase upgrade error:", error);
         } else {
           toast.success("Account upgraded to Premium! Enjoy ad-free experience and more.");
-          await refreshProfile(); // Refresh profile to get updated is_premium status
+          await refreshProfile();
           onClose();
         }
       } else {
-        // Guest user, update local storage
         localStorage.setItem(LOCAL_STORAGE_UPGRADED_KEY, 'true');
         toast.success("Account upgraded to Premium! Enjoy ad-free experience and more.");
         onClose();
@@ -58,25 +56,25 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-black/70 backdrop-blur-md border border-white/10 text-white shadow-xl">
         <DialogHeader>
-          <DialogTitle>Upgrade to Premium</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-white">Upgrade to Premium</DialogTitle>
+          <DialogDescription className="text-white/80">
             Unlock exclusive features and an ad-free experience!
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          <p className="text-muted-foreground">
+          <p className="text-white/80">
             For just $9.99/month, you get:
           </p>
-          <ul className="list-disc list-inside space-y-1 text-foreground">
+          <ul className="list-disc list-inside space-y-1 text-white">
             <li>Ad-free experience</li>
             <li>Advanced analytics (coming soon!)</li>
             <li>Priority support (coming soon!)</li>
           </ul>
           <Button
             onClick={handleSimulatePayment}
-            className="w-full"
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
             disabled={isProcessing}
           >
             {isProcessing ? (
@@ -85,7 +83,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
               "Simulate Payment & Upgrade Now"
             )}
           </Button>
-          <p className="text-xs text-muted-foreground text-center">
+          <p className="text-xs text-white/70 text-center">
             (This is a simulated payment for demonstration purposes.)
           </p>
         </div>
