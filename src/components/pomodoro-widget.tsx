@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Play, Pause, RotateCcw, Coffee, Brain, Home, ChevronDown, ChevronUp } from "lucide-react";
+import { Play, Pause, RotateCcw, Coffee, Brain, Home, ChevronDown } from "lucide-react";
 import { usePomodoroState, formatTime, parseTimeToSeconds, PomodoroMode } from "@/hooks/use-pomodoro-state";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -51,9 +51,10 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
         "bg-background/50 backdrop-blur-md shadow-lg border",
         "flex transition-all duration-300 ease-in-out",
         isMinimized
-          ? "flex-row items-center justify-center p-1 w-fit h-fit" // Minimized: row, tighter padding, fit content
+          ? "flex-row items-center justify-center p-1 w-fit h-fit cursor-pointer" // Minimized: row, tighter padding, fit content, add cursor-pointer
           : "flex-col items-center p-4 gap-4 w-full max-w-sm h-auto" // Expanded: column, original padding
       )}
+      onClick={isMinimized ? () => setIsMinimized(false) : undefined} // Make whole card clickable to undock when minimized
     >
       {/* CardHeader - only visible when not minimized */}
       <CardHeader className={cn(
@@ -68,8 +69,8 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
           size="icon"
           className="h-8 w-8"
           onClick={(e) => {
-            e.stopPropagation();
-            setIsMinimized(!isMinimized);
+            e.stopPropagation(); // Prevent card's onClick from firing
+            setIsMinimized(true); // Always minimize when this button is clicked
           }}
           title="Minimize Pomodoro Timer"
         >
@@ -142,40 +143,15 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
         </div>
       </CardContent>
 
-      {/* Minimized content - new structure */}
+      {/* Minimized content - always display time, no editing, no expand button */}
       {isMinimized && (
-        <div className="relative flex items-center justify-center w-full h-full">
-          {isEditingTime ? (
-            <Input
-              ref={inputRef}
-              type="text"
-              value={editableTimeString}
-              onChange={(e) => setEditableTimeString(e.target.value)}
-              onBlur={handleTimeInputBlur}
-              onKeyDown={handleTimeInputKeyDown}
-              className="text-3xl font-bold font-mono text-center w-32 h-12 p-0" // Smaller input for minimized state
-            />
-          ) : (
-            <div
-              className="text-3xl font-bold font-mono cursor-pointer hover:text-primary transition-colors"
-              onClick={handleTimeDisplayClick}
-            >
-              {formatTime(timeLeft)}
-            </div>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8" // Position button absolutely
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsMinimized(!isMinimized);
-            }}
-            title="Expand Pomodoro Timer"
+        <div className="flex items-center justify-center w-full h-full">
+          <div
+            className="text-3xl font-bold font-mono" // No cursor-pointer here, as the whole card is clickable
           >
-            <ChevronUp className="h-5 w-5" />
-            <span className="sr-only">Expand Pomodoro</span>
-          </Button>
+            {formatTime(timeLeft)}
+          </div>
+          {/* Removed the ChevronUp button as the whole card is now the undock trigger */}
         </div>
       )}
     </Card>
