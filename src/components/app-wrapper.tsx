@@ -143,7 +143,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
       />
       <Sidebar />
       <main
-        className={`flex flex-col flex-1 w-full h-[calc(100vh-${HEADER_HEIGHT}px)] overflow-auto transition-all duration-300 ease-in-out`}
+        className={`flex flex-col flex-1 w-full min-h-[calc(100vh-${HEADER_HEIGHT}px)] overflow-auto transition-all duration-300 ease-in-out`} // Added min-h
         style={{ marginLeft: isSidebarOpen ? '60px' : '4px', marginRight: `${chatPanelCurrentWidth}px` }}
       >
         {children}

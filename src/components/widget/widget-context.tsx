@@ -57,27 +57,34 @@ const BOTTOM_DOCK_OFFSET = 16; // Corresponds to 'bottom-4' in Tailwind
 const MINIMIZED_WIDGET_WIDTH = 192; // w-48
 const MINIMIZED_WIDGET_HEIGHT = 48; // h-12 (to fit text better)
 
+// Helper to clamp widget position within bounds
+const clampPosition = (x: number, y: number, width: number, height: number, bounds: { left: number; top: number; width: number; height: number }) => {
+  const maxX = bounds.left + bounds.width - width;
+  const maxY = bounds.top + bounds.height - height;
+  const clampedX = Math.max(bounds.left, Math.min(x, maxX));
+  const clampedY = Math.max(bounds.top, Math.min(y, maxY));
+  return { x: clampedX, y: clampedY };
+};
+
 export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea }: WidgetProviderProps) {
   const [activeWidgets, setActiveWidgets] = useState<WidgetState[]>([]);
   const [maxZIndex, setMaxZIndex] = useState(900); // Start maxZIndex lower than Pomodoro (1001)
 
   const recalculateDockedWidgets = useCallback((currentWidgets: WidgetState[]) => {
     const docked = currentWidgets.filter(w => w.isDocked).sort((a, b) => a.id.localeCompare(b.id)); // Sort to maintain consistent order
-
-    // Calculate the right edge of the centered pomodoro widget
-    const pomodoroRightEdgeX = (window.innerWidth / 2) + (POMODORO_WIDGET_WIDTH / 2);
-    // Starting X for the first docked widget to the right of pomodoro
-    const startDockX = pomodoroRightEdgeX + DOCKED_WIDGET_HORIZONTAL_GAP;
+    let currentX = mainContentArea.left + DOCKED_WIDGET_HORIZONTAL_GAP; // Start from left edge of content area
 
     return currentWidgets.map(widget => {
       if (widget.isDocked) {
-        const index = docked.findIndex(d => d.id === widget.id);
+        const newPosition = {
+          x: currentX,
+          y: mainContentArea.top + mainContentArea.height - DOCKED_WIDGET_HEIGHT - BOTTOM_DOCK_OFFSET,
+        };
+        currentX += DOCKED_WIDGET_WIDTH + DOCKED_WIDGET_HORIZONTAL_GAP; // Increment for next widget
+
         return {
           ...widget,
-          position: {
-            x: startDockX + index * (DOCKED_WIDGET_WIDTH + DOCKED_WIDGET_HORIZONTAL_GAP),
-            y: window.innerHeight - BOTTOM_DOCK_OFFSET - DOCKED_WIDGET_HEIGHT, // Position from bottom
-          },
+          position: newPosition,
           size: {
             width: DOCKED_WIDGET_WIDTH,
             height: DOCKED_WIDGET_HEIGHT,
@@ -87,7 +94,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       }
       return widget;
     });
-  }, []);
+  }, [mainContentArea]); // mainContentArea is now a dependency
 
   useEffect(() => {
     const handleResize = () => {
@@ -105,18 +112,19 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
         const newMaxZIndex = maxZIndex + 1;
         setMaxZIndex(newMaxZIndex);
 
-        // Calculate center of the main content area
-        const centerX = mainContentArea.left + mainContentArea.width / 2;
-        const centerY = mainContentArea.top + mainContentArea.height / 2;
-
-        // Apply offset for stacking
-        const offsetAmount = 20; // pixels
+        // Calculate initial position, clamped within mainContentArea
+        const offsetAmount = 20; // pixels for stacking
         const offsetIndex = activeWidgets.length % 5; // Cycle through 5 different offsets
-        const offsetX = offsetIndex * offsetAmount;
-        const offsetY = offsetIndex * offsetAmount;
+        const initialX = mainContentArea.left + offsetIndex * offsetAmount;
+        const initialY = mainContentArea.top + offsetIndex * offsetAmount;
 
-        const initialX = centerX - (config.initialWidth / 2) + offsetX;
-        const initialY = centerY - (config.initialHeight / 2) + offsetY;
+        const clampedInitialPos = clampPosition(
+          initialX,
+          initialY,
+          config.initialWidth,
+          config.initialHeight,
+          mainContentArea
+        );
 
         setActiveWidgets(prev => {
           const newWidgets = [
@@ -124,7 +132,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
             {
               id,
               title,
-              position: { x: initialX, y: initialY },
+              position: clampedInitialPos,
               size: { width: config.initialWidth, height: config.initialHeight },
               zIndex: newMaxZIndex,
               isMinimized: false,
@@ -147,15 +155,40 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
 
   const updateWidgetPosition = useCallback((id: string, newPosition: { x: number; y: number }) => {
     setActiveWidgets(prev =>
-      prev.map(widget => (widget.id === id && !widget.isDocked ? { ...widget, position: newPosition } : widget))
+      prev.map(widget => {
+        if (widget.id === id && !widget.isDocked) {
+          const clampedPos = clampPosition(
+            newPosition.x,
+            newPosition.y,
+            widget.size.width,
+            widget.size.height,
+            mainContentArea
+          );
+          return { ...widget, position: clampedPos };
+        }
+        return widget;
+      })
     );
-  }, []);
+  }, [mainContentArea]); // mainContentArea is a dependency
 
   const updateWidgetSize = useCallback((id: string, newSize: { width: number; height: number }) => {
     setActiveWidgets(prev =>
-      prev.map(widget => (widget.id === id && !widget.isDocked && !widget.isMinimized ? { ...widget, size: newSize } : widget))
+      prev.map(widget => {
+        if (widget.id === id && !widget.isDocked && !widget.isMinimized) {
+          // When resizing, also clamp the position to ensure it doesn't go out of bounds
+          const clampedPos = clampPosition(
+            widget.position.x,
+            widget.position.y,
+            newSize.width,
+            newSize.height,
+            mainContentArea
+          );
+          return { ...widget, size: newSize, position: clampedPos };
+        }
+        return widget;
+      })
     );
-  }, []);
+  }, [mainContentArea]); // mainContentArea is a dependency
 
   const bringWidgetToFront = useCallback((id: string) => {
     setActiveWidgets(prev => {
@@ -178,7 +211,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
               ...widget,
               isDocked: false,
               isMinimized: false, // Maximize when un-docking
-              position: widget.previousPosition || config.initialPosition,
+              position: widget.previousPosition || clampPosition(config.initialPosition.x, config.initialPosition.y, config.initialWidth, config.initialHeight, mainContentArea), // Clamp restored position
               size: widget.previousSize || { width: config.initialWidth, height: config.initialHeight },
               previousPosition: undefined,
               previousSize: undefined,
@@ -208,7 +241,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       });
       return recalculateDockedWidgets(updatedWidgets); // Recalculate if a widget's docked state changes
     });
-  }, [initialWidgetConfigs, recalculateDockedWidgets]);
+  }, [initialWidgetConfigs, recalculateDockedWidgets, mainContentArea]); // mainContentArea is a dependency
 
   const toggleDocked = useCallback((id: string) => {
     setActiveWidgets(prev => {
@@ -221,7 +254,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
               ...widget,
               isDocked: false,
               isMinimized: false, // Ensure it's not minimized when un-docking
-              position: widget.previousPosition || config.initialPosition,
+              position: widget.previousPosition || clampPosition(config.initialPosition.x, config.initialPosition.y, config.initialWidth, config.initialHeight, mainContentArea), // Clamp restored position
               size: widget.previousSize || { width: config.initialWidth, height: config.initialHeight },
               previousPosition: undefined,
               previousSize: undefined,
@@ -242,7 +275,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       });
       return recalculateDockedWidgets(updatedWidgets);
     });
-  }, [initialWidgetConfigs, recalculateDockedWidgets]);
+  }, [initialWidgetConfigs, recalculateDockedWidgets, mainContentArea]); // mainContentArea is a dependency
 
   const closeWidget = useCallback((id: string) => {
     removeWidget(id);
