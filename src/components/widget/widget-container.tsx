@@ -16,37 +16,37 @@ import { GoalFocusPanel } from "@/components/panels/goal-focus-panel";
 export function WidgetContainer() {
   return (
     <>
-      <Widget id="spaces" title="Spaces" initialPosition={{ x: 100, y: 100 }} initialWidth="w-[600px]" initialHeight="h-[700px]">
+      <Widget id="spaces" title="Spaces" initialPosition={{ x: 100, y: 100 }} initialWidth={600} initialHeight={700}>
         <SpacesPanel />
       </Widget>
-      <Widget id="sounds" title="Ambient Sounds & Music" initialPosition={{ x: 200, y: 150 }} initialWidth="w-[500px]" initialHeight="h-[600px]">
+      <Widget id="sounds" title="Ambient Sounds & Music" initialPosition={{ x: 750, y: 100 }} initialWidth={500} initialHeight={600}>
         <SoundsPanel />
       </Widget>
-      <Widget id="calendar" title="Your Calendar" initialPosition={{ x: 300, y: 200 }} initialWidth="w-[800px]" initialHeight="h-[700px]">
+      <Widget id="calendar" title="Your Calendar" initialPosition={{ x: 100, y: 150 }} initialWidth={800} initialHeight={700}>
         <CalendarPanel />
       </Widget>
-      <Widget id="timer" title="Time Tracker" initialPosition={{ x: 400, y: 250 }} initialWidth="w-[400px]" initialHeight="h-[400px]">
+      <Widget id="timer" title="Time Tracker" initialPosition={{ x: 950, y: 150 }} initialWidth={400} initialHeight={400}>
         <TimerPanel />
       </Widget>
-      <Widget id="tasks" title="Your Goals" initialPosition={{ x: 500, y: 300 }} initialWidth="w-[500px]" initialHeight="h-[600px]">
+      <Widget id="tasks" title="Your Goals" initialPosition={{ x: 100, y: 200 }} initialWidth={500} initialHeight={600}>
         <GoalFocusPanel /> {/* Tasks now points to GoalFocusPanel */}
       </Widget>
-      <Widget id="notes" title="Your Notes" initialPosition={{ x: 600, y: 350 }} initialWidth="w-[500px]" initialHeight="h-[600px]">
+      <Widget id="notes" title="Your Notes" initialPosition={{ x: 650, y: 200 }} initialWidth={500} initialHeight={600}>
         <NotesPanel />
       </Widget>
-      <Widget id="media" title="Media Gallery" initialPosition={{ x: 700, y: 400 }} initialWidth="w-[600px]" initialHeight="h-[500px]">
+      <Widget id="media" title="Media Gallery" initialPosition={{ x: 100, y: 250 }} initialWidth={600} initialHeight={500}>
         <MediaPanel />
       </Widget>
-      <Widget id="fortune" title="Fortune Teller" initialPosition={{ x: 800, y: 450 }} initialWidth="w-[400px]" initialHeight="h-[300px]">
+      <Widget id="fortune" title="Fortune Teller" initialPosition={{ x: 750, y: 250 }} initialWidth={400} initialHeight={300}>
         <FortunePanel />
       </Widget>
-      <Widget id="breathe" title="Breathe" initialPosition={{ x: 900, y: 500 }} initialWidth="w-[400px]" initialHeight="h-[300px]">
+      <Widget id="breathe" title="Breathe" initialPosition={{ x: 100, y: 300 }} initialWidth={400} initialHeight={300}>
         <BreathePanel />
       </Widget>
-      <Widget id="flash-cards" title="Flash Cards" initialPosition={{ x: 100, y: 100 }} initialWidth="w-[900px]" initialHeight="h-[700px]">
+      <Widget id="flash-cards" title="Flash Cards" initialPosition={{ x: 550, y: 300 }} initialWidth={900} initialHeight={700}>
         <FlashCardsPanel />
       </Widget>
-      <Widget id="goal-focus" title="Goal Focus" initialPosition={{ x: 200, y: 200 }} initialWidth="w-[500px]" initialHeight="h-[600px]">
+      <Widget id="goal-focus" title="Goal Focus" initialPosition={{ x: 100, y: 350 }} initialWidth={500} initialHeight={600}>
         <GoalFocusPanel />
       </Widget>
     </>

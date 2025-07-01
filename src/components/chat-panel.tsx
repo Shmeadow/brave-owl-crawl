@@ -35,9 +35,10 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
 
   const fetchMessages = async () => {
     if (!supabase) return;
+    // Fetch messages without joining profiles initially for better reliability
     const { data, error } = await supabase
       .from('chat_messages')
-      .select('id, user_id, content, created_at, profiles(first_name, last_name)')
+      .select('id, user_id, content, created_at') // Removed profiles join
       .order('created_at', { ascending: true })
       .limit(50); // Limit to last 50 messages
 
@@ -50,7 +51,8 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
         user_id: msg.user_id,
         content: msg.content,
         created_at: msg.created_at,
-        author: msg.profiles ? `${msg.profiles.first_name || ''} ${msg.profiles.last_name || ''}`.trim() || msg.user_id.substring(0, 8) : msg.user_id.substring(0, 8),
+        // Use truncated user_id as author if profile is not available or names are null
+        author: profile?.id === msg.user_id ? (profile.first_name || profile.last_name || 'You') : msg.user_id.substring(0, 8),
       }));
       setMessages(formattedMessages);
     }
@@ -63,14 +65,19 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
 
     const subscription = supabase
       .channel('chat_room')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => {
-        const newMsg = payload.new as Message & { profiles: { first_name: string, last_name: string } };
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, async (payload) => {
+        const newMsg = payload.new as Message; // Payload won't have profiles directly
+        
+        // To get the author's name for the new message, we'd ideally fetch the profile.
+        // For simplicity and to avoid re-introducing the original error, we'll use a placeholder.
+        const authorName = profile?.id === newMsg.user_id ? (profile.first_name || profile.last_name || 'You') : newMsg.user_id.substring(0, 8);
+
         const formattedNewMsg = {
           id: newMsg.id,
           user_id: newMsg.user_id,
           content: newMsg.content,
           created_at: newMsg.created_at,
-          author: newMsg.profiles ? `${newMsg.profiles.first_name || ''} ${newMsg.profiles.last_name || ''}`.trim() || newMsg.user_id.substring(0, 8) : newMsg.user_id.substring(0, 8),
+          author: authorName,
         };
         setMessages((prevMessages) => [...prevMessages, formattedNewMsg]);
         if (!isOpen && newMsg.user_id !== session?.user?.id) {
@@ -82,7 +89,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, [supabase, isOpen, session?.user?.id, onNewUnreadMessage]);
+  }, [supabase, isOpen, session?.user?.id, onNewUnreadMessage, profile]); // Added profile to dependencies
 
   useEffect(() => {
     // Scroll to bottom when messages change or chat opens

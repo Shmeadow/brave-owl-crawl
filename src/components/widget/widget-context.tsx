@@ -6,7 +6,10 @@ import { toast } from 'sonner';
 export interface WidgetState {
   isOpen: boolean;
   isMinimized: boolean;
-  // We'll add position and zIndex later for drag-and-drop
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 interface WidgetContextType {
@@ -15,11 +18,22 @@ interface WidgetContextType {
   minimizeWidget: (id: string) => void;
   restoreWidget: (id: string) => void;
   closeWidget: (id: string) => void;
+  updateWidgetPosition: (id: string, x: number, y: number) => void;
+  updateWidgetSize: (id: string, width: number, height: number) => void;
 }
 
 const WidgetContext = createContext<WidgetContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_KEY = 'widget_states';
+
+const DEFAULT_WIDGET_STATE = {
+  isOpen: false,
+  isMinimized: false,
+  x: 50,
+  y: 50,
+  width: 400,
+  height: 500,
+};
 
 export function WidgetProvider({ children }: { children: React.ReactNode }) {
   const [widgetStates, setWidgetStates] = useState<Record<string, WidgetState>>({});
@@ -32,7 +46,13 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
       const savedStates = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (savedStates) {
         try {
-          setWidgetStates(JSON.parse(savedStates));
+          const parsedStates = JSON.parse(savedStates);
+          // Merge with default state to ensure new properties are initialized
+          const mergedStates = Object.keys(parsedStates).reduce((acc, key) => {
+            acc[key] = { ...DEFAULT_WIDGET_STATE, ...parsedStates[key] };
+            return acc;
+          }, {} as Record<string, WidgetState>);
+          setWidgetStates(mergedStates);
         } catch (e) {
           console.error("Failed to parse saved widget states:", e);
           // Fallback to default if parsing fails
@@ -51,7 +71,7 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
 
   const updateWidgetState = useCallback((id: string, updates: Partial<WidgetState>) => {
     setWidgetStates(prevStates => {
-      const currentState = prevStates[id] || { isOpen: false, isMinimized: false };
+      const currentState = prevStates[id] || DEFAULT_WIDGET_STATE;
       return {
         ...prevStates,
         [id]: { ...currentState, ...updates }
@@ -61,7 +81,7 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
 
   const toggleWidget = useCallback((id: string) => {
     setWidgetStates(prevStates => {
-      const currentState = prevStates[id] || { isOpen: false, isMinimized: false };
+      const currentState = prevStates[id] || DEFAULT_WIDGET_STATE;
       const newIsOpen = !currentState.isOpen;
       const newIsMinimized = newIsOpen ? false : currentState.isMinimized; // Unminimize if opening
 
@@ -73,7 +93,7 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
 
       return {
         ...prevStates,
-        [id]: { isOpen: newIsOpen, isMinimized: newIsMinimized }
+        [id]: { ...currentState, isOpen: newIsOpen, isMinimized: newIsMinimized }
       };
     });
   }, []);
@@ -93,13 +113,23 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
     toast.info(`${id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} closed.`);
   }, [updateWidgetState]);
 
+  const updateWidgetPosition = useCallback((id: string, x: number, y: number) => {
+    updateWidgetState(id, { x, y });
+  }, [updateWidgetState]);
+
+  const updateWidgetSize = useCallback((id: string, width: number, height: number) => {
+    updateWidgetState(id, { width, height });
+  }, [updateWidgetState]);
+
   const contextValue = React.useMemo(() => ({
     widgetStates,
     toggleWidget,
     minimizeWidget,
     restoreWidget,
     closeWidget,
-  }), [widgetStates, toggleWidget, minimizeWidget, restoreWidget, closeWidget]);
+    updateWidgetPosition,
+    updateWidgetSize,
+  }), [widgetStates, toggleWidget, minimizeWidget, restoreWidget, closeWidget, updateWidgetPosition, updateWidgetSize]);
 
   return (
     <WidgetContext.Provider value={contextValue}>
