@@ -20,6 +20,14 @@ interface WidgetProps {
   initialHeight?: number;
 }
 
+// Constants for docked widget size and position
+const MINIMIZED_WIDTH = 200;
+const MINIMIZED_HEIGHT = 50;
+const DOCKED_WIDTH = 180;
+const DOCKED_HEIGHT = 60;
+const DOCKED_OFFSET_RIGHT = 20;
+const DOCKED_OFFSET_BOTTOM = 20; // Adjust as needed to avoid chat overlap
+
 export function Widget({
   id,
   title,
@@ -45,10 +53,13 @@ export function Widget({
     return null; // Don't render if not open
   }
 
-  const MINIMIZED_WIDTH = 200;
-  const MINIMIZED_HEIGHT = 50;
-
   console.log(`Rendering Widget ${id}. State:`, state);
+
+  // Calculate dynamic position and size based on state
+  const currentX = state.isDocked ? (window.innerWidth - DOCKED_WIDTH - DOCKED_OFFSET_RIGHT) : state.x;
+  const currentY = state.isDocked ? (window.innerHeight - DOCKED_HEIGHT - DOCKED_OFFSET_BOTTOM) : state.y;
+  const currentWidth = state.isMinimized || state.isDocked ? MINIMIZED_WIDTH : state.width;
+  const currentHeight = state.isMinimized || state.isDocked ? MINIMIZED_HEIGHT : state.height;
 
   return (
     <AnimatePresence>
@@ -58,24 +69,26 @@ export function Widget({
         exit={{ opacity: 0, scale: 0.9 }}
         transition={{ duration: 0.2 }}
         className={cn(
-          "fixed z-40", // Lower z-index than chat (z-50)
+          "fixed",
+          state.isDocked ? "z-45" : "z-40", // Slightly higher z-index for docked widgets
           "bg-card/80 backdrop-blur-md border border-border rounded-lg shadow-xl",
           "flex flex-col overflow-hidden",
-          "transition-all duration-300 ease-in-out"
+          "transition-all duration-300 ease-in-out",
+          state.isDocked && "ring-2 ring-gold" // Golden border for docked
         )}
         style={{
-          left: `${state.x}px`, // Base position
-          top: `${state.y}px`, // Base position
+          left: `${currentX}px`,
+          top: `${currentY}px`,
+          width: currentWidth,
+          height: currentHeight,
           transform: CSS.Transform.toString(transform), // Apply drag offset
-          width: state.isMinimized ? MINIMIZED_WIDTH : state.width,
-          height: state.isMinimized ? MINIMIZED_HEIGHT : state.height,
         }}
       >
         <ResizableBox
-          width={state.isMinimized ? MINIMIZED_WIDTH : state.width}
-          height={state.isMinimized ? MINIMIZED_HEIGHT : state.height}
+          width={currentWidth}
+          height={currentHeight}
           minConstraints={[200, 150]} // Minimum width/height
-          maxConstraints={[window.innerWidth - state.x, window.innerHeight - state.y]} // Maximize to viewport
+          maxConstraints={[window.innerWidth - currentX, window.innerHeight - currentY]} // Maximize to viewport
           onResize={handleResize}
           handle={(handleAxis, ref) => (
             <span
@@ -94,7 +107,7 @@ export function Widget({
           resizeHandles={(state.isMinimized || state.isDocked) ? [] : ['sw', 'se', 'nw', 'ne', 'w', 'e', 'n', 's']}
           className={cn(
             "flex flex-col h-full w-full",
-            state.isMinimized ? "h-auto w-auto" : ""
+            state.isMinimized || state.isDocked ? "h-auto w-auto" : ""
           )}
         >
           <CardHeader
@@ -132,12 +145,12 @@ export function Widget({
               </Button>
             </div>
           </CardHeader>
-          {!state.isMinimized && (
+          {!(state.isMinimized || state.isDocked) && ( // Show full content if not minimized AND not docked
             <CardContent className="flex-1 p-4 overflow-y-auto">
               {children}
             </CardContent>
           )}
-          {state.isMinimized && (
+          {(state.isMinimized || state.isDocked) && ( // Show minimized content if minimized OR docked
             <CardContent className="flex-1 p-2 flex items-center justify-center">
               <span className="text-sm text-foreground truncate">{title}</span>
             </CardContent>
