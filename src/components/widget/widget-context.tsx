@@ -17,10 +17,10 @@ interface WidgetState {
   isMinimized: boolean;
   isMaximized: boolean;
   isPinned: boolean;
-  previousPosition?: { x: number; y: number };
-  previousSize?: { width: number; height: number };
-  normalSize?: { width: number; height: number };
-  normalPosition?: { x: number; y: number };
+  previousPosition?: { x: number; y: number }; // Stores position before pinning
+  previousSize?: { width: number; height: number }; // Stores size before pinning
+  normalSize?: { width: number; height: number }; // Stores size when not minimized/maximized
+  normalPosition?: { x: number; y: number }; // Stores position when not minimized/maximized
 }
 
 interface WidgetContextType {
@@ -229,28 +229,35 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
   const minimizeWidget = useCallback((id: string) => {
     setActiveWidgets(prev => {
       const updatedWidgets = prev.map(widget => {
-        if (widget.id === id && !widget.isPinned) {
-          if (widget.isMaximized) {
+        if (widget.id === id && !widget.isPinned) { // Pinned widgets are already minimized and handled by recalculatePinnedWidgets
+          if (widget.isMaximized) { // If currently maximized, go to minimized state
             return {
               ...widget,
               isMaximized: false,
-              isMinimized: false,
-              position: widget.normalPosition || initialWidgetConfigs[id].initialPosition,
-              size: widget.normalSize || { width: initialWidgetConfigs[id].initialWidth, height: initialWidgetConfigs[id].initialHeight },
+              isMinimized: true, // Go to minimized state
+              // Keep normalSize/Position as they were before maximizing
+              size: { width: MINIMIZED_WIDGET_WIDTH, height: MINIMIZED_WIDGET_HEIGHT },
+              position: clampPosition(
+                widget.normalPosition?.x || initialWidgetConfigs[id].initialPosition.x, // Use normal position as base for clamping
+                widget.normalPosition?.y || initialWidgetConfigs[id].initialPosition.y,
+                MINIMIZED_WIDGET_WIDTH,
+                MINIMIZED_WIDGET_HEIGHT,
+                mainContentArea
+              ),
             };
-          } else if (widget.isMinimized) {
+          } else if (widget.isMinimized) { // If currently minimized, unminimize to normal state
             return {
               ...widget,
               isMinimized: false,
               position: widget.normalPosition || initialWidgetConfigs[id].initialPosition,
               size: widget.normalSize || { width: initialWidgetConfigs[id].initialWidth, height: initialWidgetConfigs[id].initialHeight },
             };
-          } else {
+          } else { // If currently normal, minimize it
             return {
               ...widget,
               isMinimized: true,
-              normalSize: widget.size,
-              normalPosition: widget.position,
+              normalSize: widget.size, // Store current size as normal
+              normalPosition: widget.position, // Store current position as normal
               size: { width: MINIMIZED_WIDGET_WIDTH, height: MINIMIZED_WIDGET_HEIGHT },
               position: clampPosition(
                 widget.position.x,
@@ -271,8 +278,23 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
   const maximizeWidget = useCallback((id: string) => {
     setActiveWidgets(prev => {
       const updatedWidgets = prev.map(widget => {
-        if (widget.id === id && !widget.isPinned) {
-          if (widget.isMaximized) {
+        if (widget.id === id) {
+          if (widget.isPinned) { // If it's pinned, unpin it first, then maximize
+            const config = initialWidgetConfigs[id];
+            return {
+              ...widget,
+              isPinned: false,
+              isMinimized: false, // Unminimize when unpinned
+              isMaximized: true, // Then maximize
+              // Restore to the state it was in *before* it was pinned, then maximize from there
+              normalPosition: widget.previousPosition || clampPosition(config.initialPosition.x, config.initialPosition.y, config.initialWidth, config.initialHeight, mainContentArea),
+              normalSize: widget.previousSize || { width: config.initialWidth, height: config.initialHeight },
+              position: { x: mainContentArea.left, y: mainContentArea.top },
+              size: { width: mainContentArea.width, height: mainContentArea.height },
+              previousPosition: undefined,
+              previousSize: undefined,
+            };
+          } else if (widget.isMaximized) { // If already maximized, unmaximize
             return {
               ...widget,
               isMaximized: false,
@@ -280,13 +302,13 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
               position: widget.normalPosition || initialWidgetConfigs[id].initialPosition,
               size: widget.normalSize || { width: initialWidgetConfigs[id].initialWidth, height: initialWidgetConfigs[id].initialHeight },
             };
-          } else {
+          } else { // If normal or minimized, maximize
             return {
               ...widget,
               isMaximized: true,
               isMinimized: false,
-              normalSize: widget.size,
-              normalPosition: widget.position,
+              normalSize: widget.size, // Store current size as normal
+              normalPosition: widget.position, // Store current position as normal
               size: { width: mainContentArea.width, height: mainContentArea.height },
               position: { x: mainContentArea.left, y: mainContentArea.top },
             };
@@ -302,26 +324,31 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
     setActiveWidgets(prev => {
       const updatedWidgets = prev.map(widget => {
         if (widget.id === id) {
-          if (widget.isPinned) {
+          if (widget.isPinned) { // Unpinning
             const config = initialWidgetConfigs[id];
             return {
               ...widget,
               isPinned: false,
-              isMinimized: false,
+              isMinimized: false, // Unminimize when unpinned
               isMaximized: false,
+              // Restore to the state it was in *before* it was pinned
               position: widget.previousPosition || clampPosition(config.initialPosition.x, config.initialPosition.y, config.initialWidth, config.initialHeight, mainContentArea),
               size: widget.previousSize || { width: config.initialWidth, height: config.initialHeight },
-              previousPosition: undefined,
-              previousSize: undefined,
+              previousPosition: undefined, // Clear previous state
+              previousSize: undefined, // Clear previous state
             };
-          } else {
+          } else { // Pinning
+            // Store the *current normal* state before pinning
+            // If the widget is currently minimized, its normalSize/Position should already be set.
+            // If it's maximized, its normalSize/Position should also be set.
+            // If it's normal, its normalSize/Position are its current size/position.
             return {
               ...widget,
               isPinned: true,
-              isMinimized: true,
-              isMaximized: false,
-              previousPosition: widget.position,
-              previousSize: widget.size,
+              isMinimized: true, // Pinned widgets are always visually minimized
+              isMaximized: false, // Cannot be maximized when pinned
+              previousPosition: widget.normalPosition || widget.position, // Store the normal position
+              previousSize: widget.normalSize || widget.size, // Store the normal size
             };
           }
         }
