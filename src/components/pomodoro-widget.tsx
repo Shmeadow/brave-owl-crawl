@@ -51,7 +51,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
         "bg-background/50 backdrop-blur-md shadow-lg border",
         "flex transition-all duration-300 ease-in-out",
         isMinimized
-          ? "flex-row items-center justify-center p-2 w-fit h-fit gap-2" // Minimized: row, tighter padding, fit content, gap for clock and button
+          ? "flex-row items-center justify-center p-1 w-fit h-fit" // Minimized: row, tighter padding, fit content
           : "flex-col items-center p-4 gap-4 w-full max-w-sm h-auto" // Expanded: column, original padding
       )}
     >
@@ -63,7 +63,6 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
         <CardTitle className="text-xl font-bold flex-1 text-left">
           Pomodoro Timer
         </CardTitle>
-        {/* The minimize button is now part of the minimized content, so remove it from here */}
         <Button
           variant="ghost"
           size="icon"
@@ -145,17 +144,29 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
 
       {/* Minimized content - new structure */}
       {isMinimized && (
-        <div className="flex items-center justify-center gap-2 w-full h-full">
-          <div
-            className="text-3xl font-bold font-mono cursor-pointer hover:text-primary transition-colors"
-            onClick={handleTimeDisplayClick}
-          >
-            {formatTime(timeLeft)}
-          </div>
+        <div className="relative flex items-center justify-center w-full h-full">
+          {isEditingTime ? (
+            <Input
+              ref={inputRef}
+              type="text"
+              value={editableTimeString}
+              onChange={(e) => setEditableTimeString(e.target.value)}
+              onBlur={handleTimeInputBlur}
+              onKeyDown={handleTimeInputKeyDown}
+              className="text-3xl font-bold font-mono text-center w-32 h-12 p-0" // Smaller input for minimized state
+            />
+          ) : (
+            <div
+              className="text-3xl font-bold font-mono cursor-pointer hover:text-primary transition-colors"
+              onClick={handleTimeDisplayClick}
+            >
+              {formatTime(timeLeft)}
+            </div>
+          )}
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8"
+            className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8" // Position button absolutely
             onClick={(e) => {
               e.stopPropagation();
               setIsMinimized(!isMinimized);

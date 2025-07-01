@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Clock, BookOpen, Goal, User, Settings } from "lucide-react"; // Removed Timer
+import { LayoutDashboard, Clock, BookOpen, Goal, User, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSupabase } from "@/integrations/supabase/auth"; // Import useSupabase
+import { useSupabase } from "@/integrations/supabase/auth";
 
 const navItems = [
   { href: "/time-tracker", icon: Clock, label: "Time Tracker" },
@@ -16,8 +16,8 @@ const navItems = [
 export function MainNavigation() {
   const pathname = usePathname();
   const isActive = (path: string) => pathname === path;
-  const { session, loading } = useSupabase();
-  const isAdmin = session?.user?.user_metadata?.role === 'admin';
+  const { session, loading, profile } = useSupabase(); // Get profile from context
+  const isAdmin = profile?.role === 'admin'; // Use profile.role for admin check
 
   const filteredNavItems = isAdmin
     ? [...navItems, { href: "/admin-settings", icon: Settings, label: "Admin Settings" }]

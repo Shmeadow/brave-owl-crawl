@@ -3,25 +3,25 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, LayoutDashboard, Clock, BookOpen, Goal, User, Settings } from "lucide-react"; // Removed Timer
+import { Menu, LayoutDashboard, Clock, BookOpen, Goal, User, Settings } from "lucide-react";
 import { UserNav } from "@/components/user-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { MainNavigation } from "@/components/main-navigation";
-import { useSupabase } from "@/integrations/supabase/auth"; // Import useSupabase
+import { useSupabase } from "@/integrations/supabase/auth";
 
 export function Header() {
   const pathname = usePathname();
   const isActive = (path: string) => pathname === path;
-  const { session, loading } = useSupabase();
-  const isAdmin = session?.user?.user_metadata?.role === 'admin';
+  const { session, loading, profile } = useSupabase(); // Get profile from context
+  const isAdmin = profile?.role === 'admin'; // Use profile.role for admin check
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
       {/* Left side: Mobile Sheet Trigger, App Title, and Desktop Navigation */}
-      <div className="flex items-center gap-4 sm:gap-6"> {/* Adjusted gap for desktop */}
+      <div className="flex items-center gap-4 sm:gap-6">
         <Sheet>
           <SheetTrigger asChild>
             <Button size="icon" variant="outline" className="sm:hidden">
@@ -44,7 +44,6 @@ export function Header() {
                 <BookOpen className="h-4 w-4" />
                 Flash Cards
               </Link>
-              {/* Removed Pomodoro Link */}
               <Link href="/goal-focus" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary", isActive("/goal-focus") && "text-primary")}>
                 <Goal className="h-4 w-4" />
                 Goal Focus
@@ -53,7 +52,7 @@ export function Header() {
                 <User className="h-4 w-4" />
                 Account
               </Link>
-              {isAdmin && ( // Conditionally render Admin Settings link
+              {isAdmin && (
                 <Link href="/admin-settings" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary", isActive("/admin-settings") && "text-primary")}>
                   <Settings className="h-4 w-4" />
                   Admin Settings
@@ -72,7 +71,7 @@ export function Header() {
       </div>
 
       {/* Right side: ThemeToggle and UserNav */}
-      <div className="flex items-center gap-4 ml-auto"> {/* Added ml-auto to push to right */}
+      <div className="flex items-center gap-4 ml-auto">
         <ThemeToggle />
         <UserNav />
       </div>

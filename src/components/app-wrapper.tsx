@@ -5,6 +5,7 @@ import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
 import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { Toaster } from "@/components/ui/sonner";
+import { ContactWidget } from "@/components/contact-widget"; // Import ContactWidget
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
 
@@ -43,6 +44,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
           setIsMinimized={setIsPomodoroWidgetMinimized}
         />
       )}
+      <ContactWidget /> {/* Add the ContactWidget here */}
       <Toaster />
     </SessionContextProvider>
   );
