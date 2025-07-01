@@ -1,162 +1,227 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Minimize2, Maximize2, X, Pin, PinOff } from "lucide-react"; // Import Pin and PinOff
 import { cn } from "@/lib/utils";
-import { useWidget } from "./widget-context";
-import { AnimatePresence, motion } from "framer-motion";
-import { useDraggable } from "@dnd-kit/core";
-import { ResizableBox } from 'react-resizable';
-import { CSS } from "@dnd-kit/utilities";
+import { Minimize, X, Pin, PinOff, Maximize } from "lucide-react";
 
 interface WidgetProps {
   id: string;
   title: string;
   children: React.ReactNode;
-  initialPosition?: { x: number; y: number };
-  initialWidth?: number;
-  initialHeight?: number;
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  zIndex: number;
+  onPositionChange: (newPosition: { x: number; y: number }) => void;
+  onSizeChange: (newSize: { width: number; height: number }) => void;
+  onBringToFront: () => void;
+  onClose: (id: string) => void;
+  onMinimize: (id: string) => void;
+  isMinimized: boolean;
+  isDocked: boolean;
+  toggleDocked: (id: string) => void;
 }
-
-// Constants for docked widget size and position
-const MINIMIZED_WIDTH = 200;
-const MINIMIZED_HEIGHT = 50;
-const DOCKED_WIDTH = 180;
-const DOCKED_HEIGHT = 60;
-const DOCKED_OFFSET_RIGHT = 20;
-const DOCKED_OFFSET_BOTTOM = 20; // Adjust as needed to avoid chat overlap
 
 export function Widget({
   id,
   title,
   children,
-  initialPosition,
-  initialWidth,
-  initialHeight,
+  position,
+  size,
+  zIndex,
+  onPositionChange,
+  onSizeChange,
+  onBringToFront,
+  onClose,
+  onMinimize,
+  isMinimized,
+  isDocked,
+  toggleDocked,
 }: WidgetProps) {
-  const { widgetStates, minimizeWidget, restoreWidget, closeWidget, updateWidgetPosition, updateWidgetSize, toggleDocked } = useWidget();
-  const state = widgetStates[id] || { isOpen: false, isMinimized: false, isDocked: false, x: initialPosition?.x || 50, y: initialPosition?.y || 50, width: initialWidth || 400, height: initialHeight || 500, previousX: initialPosition?.x || 50, previousY: initialPosition?.y || 50, previousWidth: initialWidth || 400, previousHeight: initialHeight || 500 };
+  const cardRef = useRef<HTMLDivElement>(null);
+  const isResizingRef = useRef(false);
+  const isDraggingRef = useRef(false);
+  const initialMousePos = useRef({ x: 0, y: 0 });
+  const initialWidgetPos = useRef({ x: 0, y: 0 });
+  const initialWidgetSize = useRef({ width: 0, height: 0 });
+  const resizeDirection = useRef("");
 
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: `draggable-${id}`, // Unique ID for draggable
-    disabled: state.isMinimized || state.isDocked, // Disable dragging when minimized or docked
-  });
+  useEffect(() => {
+    onBringToFront(); // Bring to front when mounted or id changes
+  }, [id, onBringToFront]);
 
-  const handleResize = (event: any, { size }: { size: { width: number; height: number } }) => {
-    updateWidgetSize(id, size.width, size.height);
-  };
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (isDocked || isMinimized) return; // Prevent dragging/resizing when docked or minimized
 
-  if (!state.isOpen) {
-    console.log(`Widget ${id} is not open, returning null.`);
-    return null; // Don't render if not open
-  }
+    onBringToFront();
+    isDraggingRef.current = true;
+    initialMousePos.current = { x: e.clientX, y: e.clientY };
+    initialWidgetPos.current = { x: position.x, y: position.y };
 
-  console.log(`Rendering Widget ${id}. State:`, state);
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (isDraggingRef.current) {
+        const dx = moveEvent.clientX - initialMousePos.current.x;
+        const dy = moveEvent.clientY - initialMousePos.current.y;
+        onPositionChange({
+          x: initialWidgetPos.current.x + dx,
+          y: initialWidgetPos.current.y + dy,
+        });
+      }
+    };
 
-  // Calculate dynamic position and size based on state
-  const currentX = state.isDocked ? (window.innerWidth - DOCKED_WIDTH - DOCKED_OFFSET_RIGHT) : state.x;
-  const currentY = state.isDocked ? (window.innerHeight - DOCKED_HEIGHT - DOCKED_OFFSET_BOTTOM) : state.y;
-  const currentWidth = state.isMinimized || state.isDocked ? MINIMIZED_WIDTH : state.width;
-  const currentHeight = state.isMinimized || state.isDocked ? MINIMIZED_HEIGHT : state.height;
+    const handleMouseUp = () => {
+      isDraggingRef.current = false;
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+  }, [position, onPositionChange, onBringToFront, isDocked, isMinimized]);
+
+  const handleResizeMouseDown = useCallback((e: React.MouseEvent, direction: string) => {
+    if (isDocked || isMinimized) return; // Prevent dragging/resizing when docked or minimized
+
+    e.stopPropagation(); // Prevent dragging when resizing
+    onBringToFront();
+    isResizingRef.current = true;
+    resizeDirection.current = direction;
+    initialMousePos.current = { x: e.clientX, y: e.clientY };
+    initialWidgetSize.current = { width: size.width, height: size.height };
+    initialWidgetPos.current = { x: position.x, y: position.y };
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (isResizingRef.current) {
+        let newWidth = size.width;
+        let newHeight = size.height;
+        let newX = position.x;
+        let newY = position.y;
+
+        const dx = moveEvent.clientX - initialMousePos.current.x;
+        const dy = moveEvent.clientY - initialMousePos.current.y;
+
+        switch (resizeDirection.current) {
+          case "bottom-right":
+            newWidth = initialWidgetSize.current.width + dx;
+            newHeight = initialWidgetSize.current.height + dy;
+            break;
+          case "bottom-left":
+            newWidth = initialWidgetSize.current.width - dx;
+            newHeight = initialWidgetSize.current.height + dy;
+            newX = initialWidgetPos.current.x + dx;
+            break;
+          case "top-right":
+            newWidth = initialWidgetSize.current.width + dx;
+            newHeight = initialWidgetSize.current.height - dy;
+            newY = initialWidgetPos.current.y + dy;
+            break;
+          case "top-left":
+            newWidth = initialWidgetSize.current.width - dx;
+            newHeight = initialWidgetSize.current.height - dy;
+            newX = initialWidgetPos.current.x + dx;
+            newY = initialWidgetPos.current.y + dy;
+            break;
+          case "right":
+            newWidth = initialWidgetSize.current.width + dx;
+            break;
+          case "bottom":
+            newHeight = initialWidgetSize.current.height + dy;
+            break;
+          case "left":
+            newWidth = initialWidgetSize.current.width - dx;
+            newX = initialWidgetPos.current.x + dx;
+            break;
+          case "top":
+            newHeight = initialWidgetSize.current.height - dy;
+            newY = initialWidgetPos.current.y + dy;
+            break;
+        }
+
+        onSizeChange({ width: Math.max(newWidth, 200), height: Math.max(newHeight, 100) });
+        onPositionChange({ x: newX, y: newY });
+      }
+    };
+
+    const handleMouseUp = () => {
+      isResizingRef.current = false;
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+  }, [position, size, onPositionChange, onSizeChange, onBringToFront, isDocked, isMinimized]);
+
+  const handleDoubleClick = useCallback(() => {
+    if (!isDocked) { // Only minimize/maximize if not docked
+      onMinimize(id);
+    }
+  }, [id, onMinimize, isDocked]);
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        transition={{ duration: 0.2 }}
+    <Card
+      ref={cardRef}
+      className={cn(
+        "absolute bg-card text-card-foreground shadow-lg rounded-lg flex flex-col overflow-hidden transition-all duration-200 ease-in-out",
+        isMinimized ? "w-64 h-10" : "",
+        isDocked ? "relative !top-auto !left-auto !transform-none !w-full !h-auto" : ""
+      )}
+      style={!isDocked && !isMinimized ? {
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        width: `${size.width}px`,
+        height: `${size.height}px`,
+        zIndex: zIndex,
+      } : {}}
+    >
+      <CardHeader
+        onMouseDown={handleMouseDown}
+        onDoubleClick={handleDoubleClick}
         className={cn(
-          "fixed",
-          state.isDocked ? "z-45" : "z-40", // Slightly higher z-index for docked widgets
-          "bg-card/80 backdrop-blur-md border border-border rounded-lg shadow-xl",
-          "flex flex-col overflow-hidden",
-          "transition-all duration-300 ease-in-out",
-          state.isDocked && "ring-2 ring-gold" // Golden border for docked
+          "flex flex-row items-center justify-between p-2 border-b cursor-grab",
+          isDocked && "cursor-default"
         )}
-        style={{
-          left: `${currentX}px`,
-          top: `${currentY}px`,
-          width: currentWidth,
-          height: currentHeight,
-          transform: CSS.Transform.toString(transform), // Apply drag offset
-        }}
       >
-        <ResizableBox
-          width={currentWidth}
-          height={currentHeight}
-          minConstraints={[200, 150]} // Minimum width/height
-          maxConstraints={[window.innerWidth - currentX, window.innerHeight - currentY]} // Maximize to viewport
-          onResize={handleResize}
-          handle={(handleAxis, ref) => (
-            <span
-              className={`react-resizable-handle react-resizable-handle-${handleAxis}`}
-              ref={ref}
-              style={{
-                position: 'absolute',
-                background: 'transparent',
-                zIndex: 1,
-                // Only show handles when not minimized or docked
-                display: (state.isMinimized || state.isDocked) ? 'none' : 'block',
-              }}
-            />
-          )}
-          // Disable resizing when minimized or docked
-          resizeHandles={(state.isMinimized || state.isDocked) ? [] : ['sw', 'se', 'nw', 'ne', 'w', 'e', 'n', 's']}
-          className={cn(
-            "flex flex-col h-full w-full",
-            state.isMinimized || state.isDocked ? "h-auto w-auto" : ""
-          )}
-        >
-          <CardHeader
-            ref={setNodeRef} // Set ref for draggable handle
-            className={cn(
-              "flex flex-row items-center justify-between p-3 border-b border-border",
-              state.isMinimized ? "cursor-pointer" : (state.isDocked ? "cursor-default" : "cursor-grab") // Change cursor based on docked state
-            )}
-            onClick={state.isMinimized ? () => restoreWidget(id) : undefined}
-            {...listeners} // Apply listeners to the header for dragging
-            {...attributes} // Apply attributes for draggable
-          >
-            <CardTitle className="text-lg font-semibold flex-1 text-foreground">
-              {title}
-            </CardTitle>
-            <div className="flex gap-1">
-              <Button variant="ghost" size="icon" onClick={() => toggleDocked(id)} title={state.isDocked ? "Undock" : "Dock"}>
-                {state.isDocked ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-                <span className="sr-only">{state.isDocked ? "Undock" : "Dock"}</span>
-              </Button>
-              {state.isMinimized ? (
-                <Button variant="ghost" size="icon" onClick={() => restoreWidget(id)} title="Restore">
-                  <Maximize2 className="h-4 w-4" />
-                  <span className="sr-only">Restore</span>
-                </Button>
-              ) : (
-                <Button variant="ghost" size="icon" onClick={() => minimizeWidget(id)} title="Minimize">
-                  <Minimize2 className="h-4 w-4" />
-                  <span className="sr-only">Minimize</span>
-                </Button>
-              )}
-              <Button variant="ghost" size="icon" onClick={() => { console.log(`Close button clicked for widget ${id}`); closeWidget(id); }} title="Close">
-                <X className="h-4 w-4" />
-                <span className="sr-only">Close</span>
-              </Button>
-            </div>
-          </CardHeader>
-          {!(state.isMinimized || state.isDocked) && ( // Show full content if not minimized AND not docked
-            <CardContent className="flex-1 p-4 overflow-y-auto">
-              {children}
-            </CardContent>
-          )}
-          {(state.isMinimized || state.isDocked) && ( // Show minimized content if minimized OR docked
-            <CardContent className="flex-1 p-2 flex items-center justify-center">
-              <span className="text-sm text-foreground truncate">{title}</span>
-            </CardContent>
-          )}
-        </ResizableBox>
-      </motion.div>
-    </AnimatePresence>
+        <CardTitle className="text-sm font-semibold flex-grow truncate">
+          {title}
+        </CardTitle>
+        <div className="flex gap-1">
+          {/* Minimize/Maximize Button */}
+          <Button variant="ghost" size="icon" onClick={() => onMinimize(id)} title={isMinimized ? "Maximize" : "Minimize"}>
+            {isMinimized ? <Maximize className="h-4 w-4" /> : <Minimize className="h-4 w-4" />}
+            <span className="sr-only">{isMinimized ? "Maximize" : "Minimize"}</span>
+          </Button>
+          {/* Pin/Undock Button */}
+          <Button variant="ghost" size="icon" onClick={() => toggleDocked(id)} title={isDocked ? "Undock" : "Dock"}>
+            {isDocked ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+            <span className="sr-only">{isDocked ? "Undock" : "Dock"}</span>
+          </Button>
+          {/* Close Button */}
+          <Button variant="ghost" size="icon" onClick={() => onClose(id)} title="Close">
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </Button>
+        </div>
+      </CardHeader>
+      {!isMinimized && (
+        <CardContent className="flex-grow p-4 overflow-auto">
+          {children}
+        </CardContent>
+      )}
+      {!isDocked && !isMinimized && (
+        <>
+          {/* Resize handles */}
+          <div className="absolute w-2 h-2 bg-transparent cursor-nwse-resize top-0 left-0 -mt-1 -ml-1" onMouseDown={(e) => handleResizeMouseDown(e, "top-left")} />
+          <div className="absolute w-2 h-2 bg-transparent cursor-nesw-resize top-0 right-0 -mt-1 -mr-1" onMouseDown={(e) => handleResizeMouseDown(e, "top-right")} />
+          <div className="absolute w-2 h-2 bg-transparent cursor-nesw-resize bottom-0 left-0 -mb-1 -ml-1" onMouseDown={(e) => handleResizeMouseDown(e, "bottom-left")} />
+          <div className="absolute w-2 h-2 bg-transparent cursor-nwse-resize bottom-0 right-0 -mb-1 -mr-1" onMouseDown={(e) => handleResizeMouseDown(e, "bottom-right")} />
+          <div className="absolute w-full h-2 bg-transparent cursor-ns-resize top-0 left-0" onMouseDown={(e) => handleResizeMouseDown(e, "top")} />
+          <div className="absolute w-full h-2 bg-transparent cursor-ns-resize bottom-0 left-0" onMouseDown={(e) => handleResizeMouseDown(e, "bottom")} />
+          <div className="absolute w-2 h-full bg-transparent cursor-ew-resize left-0 top-0" onMouseDown={(e) => handleResizeMouseDown(e, "left")} />
+          <div className="absolute w-2 h-full bg-transparent cursor-ew-resize right-0 top-0" onMouseDown={(e) => handleResizeMouseDown(e, "right")} />
+        </>
+      )}
+    </Card>
   );
 }
