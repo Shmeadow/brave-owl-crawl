@@ -64,6 +64,24 @@ export function Widget({
   const isResizable = !isMaximized && !isVisuallyMinimized;
   const isDraggable = !isMaximized && !isPinned; // Draggable if not maximized or pinned (includes minimized)
 
+  const renderCardContent = () => {
+    // Content for minimized or pinned state
+    if (isMinimized || isPinned) {
+      return (
+        <div className="flex items-center justify-start gap-2 px-3 py-2 h-full w-full">
+          <Icon className="h-6 w-6 text-primary" />
+          <span className="text-sm font-medium truncate">{title}</span>
+        </div>
+      );
+    }
+    // Content for normal or maximized state
+    return (
+      <CardContent className="flex-grow p-0 overflow-hidden">
+        <Content />
+      </CardContent>
+    );
+  };
+
   return (
     <Card
       ref={setNodeRef} // Set node ref for draggable
@@ -101,41 +119,62 @@ export function Widget({
         )}
         {...(isDraggable && { ...listeners, ...attributes })}
       >
-        {/* Content for header (icon, title, buttons) */}
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <Icon className="h-6 w-6 text-primary" />
-          <CardTitle className="text-sm font-medium leading-none truncate">{title}</CardTitle>
-        </div>
-        <div className="flex gap-1">
-          {!isPinned && ( // Only show minimize/maximize/restore if not pinned
-            <>
-              {isMinimized ? (
-                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMinimize(id); }} title="Restore">
-                  <Maximize className="h-4 w-4" />
-                </Button>
-              ) : isMaximized ? (
-                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Restore">
-                  <Minimize className="h-4 w-4" />
-                </Button>
-              ) : (
+        {isVisuallyMinimized ? (
+          // Content for minimized/pinned header
+          <>
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <Icon className="h-6 w-6 text-primary" />
+              <CardTitle className="text-sm font-medium leading-none truncate">{title}</CardTitle>
+            </div>
+            <div className="flex gap-1">
+              {isPinned ? (
+                // Pinned controls
                 <>
-                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMinimize(id); }} title="Minimize">
-                    <Minimize className="h-4 w-4" />
-                  </Button>
                   <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
                     <Maximize className="h-4 w-4" />
                   </Button>
+                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title="Unpin">
+                    <PinOff className="h-4 w-4" />
+                  </Button>
+                </>
+              ) : (
+                // Floating minimized controls
+                <>
+                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
+                    <Maximize className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title="Pin">
+                    <Pin className="h-4 w-4" />
+                  </Button>
                 </>
               )}
-            </>
-          )}
-          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title={isPinned ? "Unpin" : "Pin"}>
-            {isPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-          </Button>
-          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onClose(id); }} title="Close">
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onClose(id); }} title="Close">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </>
+        ) : (
+          // Content for normal/maximized header
+          <>
+            <CardTitle className="text-lg font-medium leading-none">
+              {title}
+            </CardTitle>
+            <div className="flex gap-1">
+              <Button variant="ghost" size="icon" onClick={() => onMinimize(id)} title="Minimize">
+                <Minimize className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => onMaximize(id)} title="Maximize">
+                <Maximize className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => onPin(id)} title="Pin">
+                <Pin className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => onClose(id)} title="Close">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </>
+        )}
       </CardHeader>
 
       {/* Render content only if not visually minimized */}
@@ -151,13 +190,12 @@ export function Widget({
           minConstraints={[200, 150]}
           maxConstraints={[window.innerWidth, window.innerHeight]}
           className={cn(
-            "flex-grow flex flex-col overflow-hidden", // Changed overflow-auto to overflow-hidden
+            "flex-grow flex flex-col overflow-hidden", // This should be overflow-hidden to prevent ResizableBox from having its own scrollbar
             isMaximized ? "w-full h-full" : ""
           )}
           handle={null}
         >
-          {/* The actual content component */}
-          <Content />
+          {renderCardContent()}
         </ResizableBox>
       )}
     </Card>
