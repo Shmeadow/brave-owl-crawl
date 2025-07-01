@@ -11,17 +11,17 @@ import { ClockDisplay } from "@/components/clock-display";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/components/sidebar/sidebar-context"; // Import useSidebar
-import { Progress } from "@/components/ui/progress"; // Import Progress
+// Progress component removed from here
 
 interface HeaderProps {
   onTogglePomodoroVisibility: () => void;
   isPomodoroVisible: boolean;
   onOpenSpotifyModal: () => void;
   onOpenUpgradeModal: () => void;
-  dailyProgress: number; // New prop for daily progress
+  // dailyProgress removed from here
 }
 
-export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }: HeaderProps) {
+export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSpotifyModal, onOpenUpgradeModal }: HeaderProps) {
   const { setActivePanel } = useSidebar(); // Get setActivePanel from context
 
   return (
@@ -117,9 +117,7 @@ export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSp
       {/* Center Section: Title and Secondary Controls */}
       <div className="flex-1 flex flex-col items-center justify-center gap-1 px-4">
         <h1 className="text-xl font-bold text-foreground whitespace-nowrap hidden md:block">Shmeadow's Room</h1>
-        <div className="w-full max-w-[300px] hidden md:block">
-          <Progress value={dailyProgress} className="h-2 [&>*]:transition-all [&>*]:duration-1000 [&>*]:ease-linear [&>*]:bg-gradient-to-r [&>*]:from-primary [&>*]:to-accent" />
-        </div>
+        {/* Daily Progress bar moved to ClockDisplay */}
       </div>
 
       {/* Right Section: Search and User Controls */}
@@ -132,7 +130,7 @@ export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSp
             className="pl-8 w-[200px] lg:w-[300px] bg-card/50 border-border focus:border-primary"
           />
         </div>
-        <ClockDisplay />
+        <ClockDisplay dailyProgress={0} /> {/* dailyProgress will be passed from AppWrapper */}
         <Button variant="ghost" size="icon" onClick={onOpenSpotifyModal} title="Open Spotify Embed" className="hidden sm:flex">
           <Music className="h-5 w-5" />
           <span className="sr-only">Open Spotify Embed</span>

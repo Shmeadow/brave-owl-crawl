@@ -10,7 +10,7 @@ import { usePathname } from "next/navigation";
 import { Header } from "@/components/header";
 import { SpotifyEmbedModal } from "@/components/spotify-embed-modal";
 import { SidebarProvider, useSidebar } from "@/components/sidebar/sidebar-context"; // Import SidebarProvider and useSidebar
-import { Sidebar } from "@/components/sidebar/sidebar"; // Import the new Sidebar
+import { Sidebar } => "@/components/sidebar/sidebar"; // Import the new Sidebar
 import { ChatPanel } from "@/components/chat-panel"; // Import ChatPanel
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
@@ -103,7 +103,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
         isPomodoroVisible={isPomodoroBarVisible}
         onOpenSpotifyModal={handleOpenSpotifyModal}
         onOpenUpgradeModal={handleOpenUpgradeModal}
-        dailyProgress={dailyProgress} // Pass daily progress to Header
+        // dailyProgress removed from here
       />
       <Sidebar /> {/* Render the new Sidebar */}
       <main
@@ -122,7 +122,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
         />
       )}
       <SpotifyEmbedModal isOpen={isSpotifyModalOpen} onClose={() => setIsSpotifyModalOpen(false)} />
-      <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} /> {/* Render UpgradeModal */}
+      <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModal(false)} /> {/* Render UpgradeModal */}
       <Toaster />
       {/* Fixed Chat Panel */}
       <div className="fixed right-0 top-16 bottom-0 transition-all duration-300 ease-in-out" style={{ width: `${chatPanelCurrentWidth}px` }}>
