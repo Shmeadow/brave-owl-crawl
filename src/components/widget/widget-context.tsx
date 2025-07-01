@@ -16,6 +16,8 @@ interface WidgetState {
   zIndex: number;
   isMinimized: boolean;
   isDocked: boolean;
+  previousPosition?: { x: number; y: number }; // Store position before docking
+  previousSize?: { width: number; height: number }; // Store size before docking
 }
 
 interface WidgetContextType {
@@ -37,6 +39,10 @@ interface WidgetProviderProps {
   children: React.ReactNode;
   initialWidgetConfigs: { [key: string]: WidgetConfig };
 }
+
+const DOCKED_WIDGET_WIDTH = 300;
+const HEADER_HEIGHT = 64; // h-16
+const RIGHT_MARGIN = 4; // Small margin from the right edge
 
 export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProviderProps) {
   const [activeWidgets, setActiveWidgets] = useState<WidgetState[]>([]);
@@ -69,13 +75,13 @@ export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProvide
 
   const updateWidgetPosition = useCallback((id: string, newPosition: { x: number; y: number }) => {
     setActiveWidgets(prev =>
-      prev.map(widget => (widget.id === id ? { ...widget, position: newPosition } : widget))
+      prev.map(widget => (widget.id === id && !widget.isDocked ? { ...widget, position: newPosition } : widget))
     );
   }, []);
 
   const updateWidgetSize = useCallback((id: string, newSize: { width: number; height: number }) => {
     setActiveWidgets(prev =>
-      prev.map(widget => (widget.id === id ? { ...widget, size: newSize } : widget))
+      prev.map(widget => (widget.id === id && !widget.isDocked && !widget.isMinimized ? { ...widget, size: newSize } : widget))
     );
   }, []);
 
@@ -93,9 +99,18 @@ export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProvide
     setActiveWidgets(prev =>
       prev.map(widget => {
         if (widget.id === id) {
+          // If docked, un-dock and minimize
           if (widget.isDocked) {
-            // If docked, un-dock and minimize
-            return { ...widget, isDocked: false, isMinimized: true };
+            const config = initialWidgetConfigs[id];
+            return {
+              ...widget,
+              isDocked: false,
+              isMinimized: true,
+              position: widget.previousPosition || config.initialPosition,
+              size: widget.previousSize || { width: config.initialWidth, height: config.initialHeight },
+              previousPosition: undefined,
+              previousSize: undefined,
+            };
           } else {
             // If floating (normal or already minimized), toggle minimized state
             return { ...widget, isMinimized: !widget.isMinimized };
@@ -104,24 +119,47 @@ export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProvide
         return widget;
       })
     );
-  }, []);
+  }, [initialWidgetConfigs]);
 
   const toggleDocked = useCallback((id: string) => {
     setActiveWidgets(prev =>
       prev.map(widget => {
         if (widget.id === id) {
           if (widget.isDocked) {
-            // If docked, un-dock and return to normal floating size
-            return { ...widget, isDocked: false, isMinimized: false };
+            // Un-dock: restore previous state or default
+            const config = initialWidgetConfigs[id];
+            return {
+              ...widget,
+              isDocked: false,
+              isMinimized: false, // Ensure it's not minimized when un-docking
+              position: widget.previousPosition || config.initialPosition,
+              size: widget.previousSize || { width: config.initialWidth, height: config.initialHeight },
+              previousPosition: undefined,
+              previousSize: undefined,
+            };
           } else {
-            // If floating (normal or minimized), dock it and ensure it's not minimized
-            return { ...widget, isDocked: true, isMinimized: false };
+            // Dock: save current state, then set docked state
+            return {
+              ...widget,
+              isDocked: true,
+              isMinimized: false, // Ensure it's not minimized when docking
+              previousPosition: widget.position,
+              previousSize: widget.size,
+              position: {
+                x: window.innerWidth - DOCKED_WIDGET_WIDTH - RIGHT_MARGIN,
+                y: HEADER_HEIGHT,
+              },
+              size: {
+                width: DOCKED_WIDGET_WIDTH,
+                height: window.innerHeight - HEADER_HEIGHT,
+              },
+            };
           }
         }
         return widget;
       })
     );
-  }, []);
+  }, [initialWidgetConfigs]);
 
   const closeWidget = useCallback((id: string) => {
     removeWidget(id);

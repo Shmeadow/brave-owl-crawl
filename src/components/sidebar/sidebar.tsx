@@ -10,6 +10,7 @@ import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Spa
 const SIDEBAR_WIDTH = 60; // px
 const HOT_ZONE_WIDTH = 20; // px (includes the 4px visible strip)
 const UNDOCK_DELAY = 500; // ms
+const HEADER_HEIGHT_REM = 4; // 4rem = 64px
 
 export function Sidebar() {
   const { activePanel, setActivePanel, isSidebarOpen, setIsSidebarOpen } = useSidebar();
@@ -77,14 +78,15 @@ export function Sidebar() {
     <div
       ref={sidebarRef}
       className={cn(
-        "fixed left-0 top-0 h-screen z-50 flex flex-col items-center py-4",
+        "fixed left-0 top-16 z-50 flex flex-col items-center py-4", // Changed top-0 to top-16
         "bg-black/60 shadow-lg shadow-black/30 transition-transform duration-300 ease-in-out",
-        isSidebarOpen ? "translate-x-0 w-[60px]" : "translate-x-[calc(-100%+4px)] w-[60px]" // 4px hot zone
+        isSidebarOpen ? "translate-x-0 w-[60px]" : "translate-x-[calc(-100%+4px)] w-[60px]", // 4px hot zone
+        `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]` // Adjusted height
       )}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 overflow-y-auto h-full"> {/* Added overflow-y-auto and h-full */}
         {navItems.map((item) => (
           <SidebarItem
             key={item.id}

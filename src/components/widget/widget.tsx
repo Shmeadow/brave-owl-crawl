@@ -160,15 +160,21 @@ export function Widget({
     <Card
       ref={cardRef}
       className={cn(
-        "absolute bg-card text-card-foreground shadow-lg flex flex-col overflow-hidden transition-all duration-200 ease-in-out group pointer-events-auto",
-        isMinimized ? "w-48 h-10 rounded-lg" : "rounded-lg", // Apply rounded-lg when minimized, and adjust width
-        isDocked ? "relative !top-auto !left-auto !transform-none !w-full !h-auto" : ""
+        "shadow-lg flex flex-col overflow-hidden transition-all duration-200 ease-in-out group pointer-events-auto",
+        // Base styling for floating/minimized
+        !isDocked && (isMinimized ? "rounded-lg" : "rounded-lg"), // Always rounded when floating
+        // Docked specific styling
+        isDocked && "fixed top-16 right-0 h-[calc(100vh-4rem)] w-[300px] rounded-none", // Use fixed positioning for docked
+        // Background and text colors
+        "bg-card text-card-foreground",
+        // Z-index for floating widgets
+        !isDocked && "absolute"
       )}
-      style={!isDocked && !isMinimized ? {
+      style={!isDocked ? { // Apply style only if not docked
         left: `${position.x}px`,
         top: `${position.y}px`,
-        width: `${size.width}px`,
-        height: `${size.height}px`,
+        width: isMinimized ? '192px' : `${size.width}px`, // 192px for w-48
+        height: isMinimized ? '40px' : `${size.height}px`, // 40px for h-10
         zIndex: zIndex,
       } : {}}
     >
@@ -177,7 +183,7 @@ export function Widget({
         onDoubleClick={handleDoubleClick}
         className={cn(
           "flex flex-row items-center justify-between p-2 border-b cursor-grab",
-          isDocked && "cursor-default",
+          isDocked && "cursor-default", // Docked widgets are not draggable by header
           isMinimized && "cursor-grab" // Minimized widgets are still draggable
         )}
       >
@@ -191,9 +197,9 @@ export function Widget({
             <span className="sr-only">{isMinimized ? "Maximize" : "Minimize"}</span>
           </Button>
           {/* Pin/Undock Button */}
-          <Button variant="ghost" size="icon" onClick={() => toggleDocked(id)} title={isDocked ? "Undock" : "Dock"}>
+          <Button variant="ghost" size="icon" onClick={() => toggleDocked(id)} title={isDocked ? "Undock" : "Dock to Right"}>
             {isDocked ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-            <span className="sr-only">{isDocked ? "Undock" : "Dock"}</span>
+            <span className="sr-only">{isDocked ? "Undock" : "Dock to Right"}</span>
           </Button>
           {/* Close Button */}
           <Button variant="ghost" size="icon" onClick={() => onClose(id)} title="Close">
