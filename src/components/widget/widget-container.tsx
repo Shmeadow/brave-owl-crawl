@@ -40,15 +40,15 @@ export function WidgetContainer() {
     updateWidgetSize,
     bringWidgetToFront,
     minimizeWidget,
-    maximizeWidget, // Added
-    togglePinned, // Renamed
+    maximizeWidget,
+    togglePinned,
     closeWidget,
   } = useWidget();
 
   return (
-    <div className="fixed inset-0 z-[900] pointer-events-none"> {/* Re-added pointer-events-none, adjusted z-index */}
+    <div className="fixed inset-0 z-[900] pointer-events-none">
       {activeWidgets.map(widget => {
-        const WidgetIcon = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.icon;
+        const WidgetIcon = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.icon; // Corrected variable name
         const WidgetContent = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.content;
 
         if (!WidgetIcon || !WidgetContent) {
@@ -61,21 +61,21 @@ export function WidgetContainer() {
             key={widget.id}
             id={widget.id}
             title={widget.title}
-            icon={WidgetIcon} // Pass icon
-            content={WidgetContent} // Pass content
+            icon={WidgetIcon}
+            content={WidgetContent}
             position={widget.position}
             size={widget.size}
             zIndex={widget.zIndex}
             isMinimized={widget.isMinimized}
-            isMaximized={widget.isMaximized} // Pass isMaximized
-            isPinned={widget.isPinned} // Pass isPinned
-            isOpen={true} // Active widgets are always open
-            onPositionChange={(newPos) => updateWidgetPosition(widget.id, newPos)} // Renamed
-            onSizeChange={(newSize) => updateWidgetSize(widget.id, newSize)} // Renamed
+            isMaximized={widget.isMaximized}
+            isPinned={widget.isPinned}
+            isOpen={true}
+            onPositionChange={(newPos) => updateWidgetPosition(widget.id, newPos)}
+            onSizeChange={(newSize) => updateWidgetSize(widget.id, newSize)}
             onBringToFront={() => bringWidgetToFront(widget.id)}
             onMinimize={minimizeWidget}
-            onMaximize={maximizeWidget} // Pass maximizeWidget
-            onPin={togglePinned} // Pass togglePinned
+            onMaximize={maximizeWidget}
+            onPin={togglePinned}
             onClose={closeWidget}
           />
         );

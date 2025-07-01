@@ -7,10 +7,9 @@ import { Minimize, Maximize, Pin, PinOff, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDraggable } from "@dnd-kit/core";
 import { ResizableBox } from "@/components/resizable-box";
-import { WidgetId } from "@/hooks/use-widget-state";
 
 interface WidgetProps {
-  id: WidgetId;
+  id: string; // Changed from WidgetId to string
   title: string;
   icon: React.ElementType;
   content: React.ElementType;
@@ -24,10 +23,10 @@ interface WidgetProps {
   onPositionChange: (newPosition: { x: number; y: number }) => void;
   onSizeChange: (newSize: { width: number; height: number }) => void;
   onBringToFront: () => void;
-  onMinimize: (id: WidgetId) => void;
-  onMaximize: (id: WidgetId) => void;
-  onPin: (id: WidgetId) => void;
-  onClose: (id: WidgetId) => void;
+  onMinimize: (id: string) => void; // Changed from WidgetId to string
+  onMaximize: (id: string) => void; // Changed from WidgetId to string
+  onPin: (id: string) => void; // Changed from WidgetId to string
+  onClose: (id: string) => void; // Changed from WidgetId to string
 }
 
 export function Widget({
@@ -94,8 +93,9 @@ export function Widget({
         isMinimized ? "w-56 h-12" : `w-[${size.width}px] h-[${size.height}px]`,
         isPinned ? "relative !w-auto !h-auto" : "", // Pinned widgets are relative, not absolute
         isPinned && !isMinimized && !isMaximized ? "flex-grow" : "", // Pinned and normal size
-        !isPinned && !isMaximized && !isMinimized ? "resize overflow-auto" : "", // Resizable only if floating and not minimized/maximized
-        !isPinned && !isMaximized && !isMinimized ? "cursor-grab" : "", // Draggable only if floating and not minimized/maximized
+        // Apply 'resize' class only if it's in a normal, floating, resizable state
+        (!isPinned && !isMaximized && !isMinimized) ? "resize overflow-auto" : "",
+        (!isPinned && !isMaximized && !isMinimized) ? "cursor-grab" : "", // Draggable only if floating and not minimized/maximized
         isPinned ? "cursor-default" : "",
         isMinimized ? "cursor-pointer" : "",
         "z-50",
@@ -123,7 +123,7 @@ export function Widget({
           {title}
         </CardTitle>
         <div className="flex gap-1">
-          {!isPinned && (
+          {!isPinned && ( // Only show minimize/maximize/restore if not pinned
             <>
               {isMinimized ? (
                 // If minimized, show a button to restore (which is handled by onMinimize)
@@ -136,7 +136,7 @@ export function Widget({
                   <Minimize className="h-4 w-4" />
                 </Button>
               ) : (
-                // If neither minimized nor maximized, show both minimize and maximize buttons
+                // If normal, show both minimize and maximize buttons
                 <>
                   <Button variant="ghost" size="icon" onClick={() => onMinimize(id)} title="Minimize">
                     <Minimize className="h-4 w-4" />
@@ -157,12 +157,12 @@ export function Widget({
         </div>
       </CardHeader>
 
-      {!isMinimized && (
+      {!isMinimized && ( // Only render ResizableBox content if not minimized
         <ResizableBox
           width={size.width}
           height={size.height}
           onResizeStop={(e, direction, ref, d) => {
-            if (!isMaximized && !isPinned) {
+            if (!isMaximized && !isPinned) { // Only allow resizing if not maximized or pinned
               onSizeChange({ width: size.width + d.width, height: size.height + d.height });
             }
           }}
@@ -172,7 +172,8 @@ export function Widget({
             "flex-grow flex flex-col",
             isMaximized || isPinned ? "w-full h-full" : ""
           )}
-          handle={!isMaximized && !isPinned ? undefined : {}}
+          // Always pass handle={null} to remove the visual lines (react-resizable's handles)
+          handle={null}
         >
           {renderCardContent()}
         </ResizableBox>
