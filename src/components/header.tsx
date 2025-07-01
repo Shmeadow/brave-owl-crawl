@@ -9,7 +9,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { MainNavigation } from "@/components/main-navigation"; // New import
+import { MainNavigation } from "@/components/main-navigation";
 
 export function Header() {
   const pathname = usePathname();
@@ -17,8 +17,8 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-      {/* Mobile Sheet Trigger and App Title */}
-      <div className="flex items-center gap-4">
+      {/* Left side: Mobile Sheet Trigger, App Title, and Desktop Navigation */}
+      <div className="flex items-center gap-4 sm:gap-6"> {/* Adjusted gap for desktop */}
         <Sheet>
           <SheetTrigger asChild>
             <Button size="icon" variant="outline" className="sm:hidden">
@@ -32,11 +32,7 @@ export function Header() {
                 <LayoutDashboard className="h-6 w-6" />
                 <span>Productivity App</span>
               </Link>
-              {/* Mobile Nav Links */}
-              <Link href="/" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary", isActive("/") && "text-primary")}>
-                <LayoutDashboard className="mr-2 h-4 w-4" />
-                Dashboard
-              </Link>
+              {/* Mobile Nav Links - excluding Dashboard */}
               <Link href="/time-tracker" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary", isActive("/time-tracker") && "text-primary")}>
                 <Clock className="h-4 w-4" />
                 Time Tracker
@@ -60,20 +56,17 @@ export function Header() {
             </nav>
           </SheetContent>
         </Sheet>
-        {/* App title for desktop, hidden on mobile when sheet is open */}
+        {/* App title for desktop */}
         <Link href="/" className="hidden sm:flex items-center gap-2 text-lg font-semibold">
           <LayoutDashboard className="h-6 w-6" />
           <span>Productivity App</span>
         </Link>
-      </div>
-
-      {/* Desktop Navigation (MainNavigation component) */}
-      <div className="hidden sm:flex flex-1 justify-center">
+        {/* Desktop Navigation (MainNavigation component) - now part of the left group */}
         <MainNavigation />
       </div>
 
       {/* Right side: ThemeToggle and UserNav */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 ml-auto"> {/* Added ml-auto to push to right */}
         <ThemeToggle />
         <UserNav />
       </div>

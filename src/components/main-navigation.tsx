@@ -6,7 +6,7 @@ import { LayoutDashboard, Clock, BookOpen, Timer, Goal, User } from "lucide-reac
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", icon: LayoutDashboard, label: "Dashboard" },
+  // Removed Dashboard link as the app title serves as home
   { href: "/time-tracker", icon: Clock, label: "Time Tracker" },
   { href: "/flash-cards", icon: BookOpen, label: "Flash Cards" },
   { href: "/pomodoro", icon: Timer, label: "Pomodoro" },
