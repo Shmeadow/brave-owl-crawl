@@ -150,7 +150,7 @@ export function FlashCardDeck({
           </div>
         </>
       ) : (
-        <Card className="w-full bg-card/40 backdrop-blur-xl border-white/20">
+        <Card className="w-full">
           <CardHeader>
             <CardTitle>No Flashcards Yet!</CardTitle>
           </CardHeader>
@@ -160,7 +160,7 @@ export function FlashCardDeck({
         </Card>
       )}
 
-      <Card className="w-full bg-card/40 backdrop-blur-xl border-white/20">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Add New Flashcard</CardTitle>
         </CardHeader>
@@ -169,7 +169,7 @@ export function FlashCardDeck({
         </CardContent>
       </Card>
 
-      <Card className="w-full bg-card/40 backdrop-blur-xl border-white/20">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Options</CardTitle>
         </CardHeader>

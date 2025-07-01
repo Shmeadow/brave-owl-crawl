@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
 import { useWidget } from "@/components/widget/widget-context"; // Import useWidget
-import { Volume2, Calendar, Timer, ListTodo, NotebookPen, BookOpen, Goal } from "lucide-react"; // Removed LayoutGrid, Image, Sparkles, Wind
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Wind, BookOpen, Goal } from "lucide-react";
 
 const SIDEBAR_WIDTH = 60; // px
 const HOT_ZONE_WIDTH = 20; // px (includes the 4px visible strip)
@@ -56,15 +56,15 @@ export function Sidebar() {
   }, [isSidebarOpen]); // Re-attach listener if sidebar open state changes
 
   const navItems = [
-    // Removed: { id: "spaces", label: "Spaces", icon: LayoutGrid },
+    { id: "spaces", label: "Spaces", icon: LayoutGrid },
     { id: "sounds", label: "Sounds", icon: Volume2 },
     { id: "calendar", label: "Calendar", icon: Calendar },
     { id: "timer", label: "Timer", icon: Timer },
     { id: "tasks", label: "Tasks", icon: ListTodo },
     { id: "notes", label: "Notes", icon: NotebookPen },
-    // Removed: { id: "media", label: "Media", icon: Image },
-    // Removed: { id: "fortune", label: "Fortune", icon: Sparkles },
-    // Removed: { id: "breathe", label: "Breathe", icon: Wind },
+    { id: "media", label: "Media", icon: Image },
+    { id: "fortune", label: "Fortune", icon: Sparkles },
+    { id: "breathe", label: "Breathe", icon: Wind },
     { id: "flash-cards", label: "Flash Cards", icon: BookOpen },
     { id: "goal-focus", label: "Goal Focus", icon: Goal },
   ];

@@ -224,7 +224,7 @@ export function CalendarWidget() {
       <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto py-4">
         <h1 className="text-3xl font-bold text-foreground">Your Calendar</h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
-          <Card className="p-4 flex flex-col items-center bg-card/40 backdrop-blur-xl border-white/20">
+          <Card className="p-4 flex flex-col items-center">
             <CardHeader className="w-full text-center pb-4">
               <CardTitle className="text-xl">Select a Date</CardTitle>
             </CardHeader>
@@ -240,7 +240,7 @@ export function CalendarWidget() {
             </CardContent>
           </Card>
 
-          <Card className="p-4 flex flex-col bg-card/40 backdrop-blur-xl border-white/20">
+          <Card className="p-4 flex flex-col">
             <CardHeader className="w-full text-center pb-4">
               <CardTitle className="text-xl">
                 Events for {date ? format(date, 'PPP') : 'Selected Date'}

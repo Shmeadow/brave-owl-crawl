@@ -11,7 +11,7 @@ export function SoundsWidget() {
       <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto py-4">
         <h1 className="text-3xl font-bold text-foreground">Ambient Sounds & Music</h1>
 
-        <Card className="w-full bg-card/40 backdrop-blur-xl border-white/20">
+        <Card className="w-full">
           <CardHeader>
             <CardTitle>Free Sounds</CardTitle>
           </CardHeader>
@@ -47,7 +47,7 @@ export function SoundsWidget() {
           </CardContent>
         </Card>
 
-        <Card className="w-full bg-card/40 backdrop-blur-xl border-white/20">
+        <Card className="w-full">
           <CardHeader>
             <CardTitle>Premium Sounds & Music</CardTitle>
           </CardHeader>
