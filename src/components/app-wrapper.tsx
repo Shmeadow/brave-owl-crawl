@@ -156,7 +156,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
       <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
         <ChatPanel
           isOpen={isChatOpen}
-          onToggleOpen={handleToggleOpenAndClearUnread}
+          onToggleOpen={() => setIsChatOpen(prev => !prev)} {/* Corrected: Pass state setter directly */}
           onNewUnreadMessage={handleNewUnreadMessage}
           onClearUnreadMessages={handleClearUnreadMessages}
           unreadCount={unreadChatCount}
