@@ -1,99 +1,114 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Pin, PinOff, GripVertical } from "lucide-react";
-import { useDraggable } from "@dnd-kit/core";
+import { SidebarItem } from "./sidebar-item";
+import { useSidebar } from "./sidebar-context";
+import { useWidget } from "@/components/widget/widget-context";
+import { useSidebarPreference } from "@/hooks/use-sidebar-preference"; // Import useSidebarPreference
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Wind, BookOpen, Goal } from "lucide-react";
 
-interface SidebarProps {
-  isDocked: boolean;
-  onToggleDock: () => void;
-  sidebarPosition: { x: number; y: number };
-  onSidebarPositionChange: (newPosition: { x: number; y: number }) => void;
-}
+const SIDEBAR_WIDTH = 60; // px
+const HOT_ZONE_WIDTH = 20; // px (includes the 4px visible strip)
+const UNDOCK_DELAY = 500; // ms
+const HEADER_HEIGHT_REM = 4; // 4rem = 64px
 
-export function Sidebar({
-  isDocked,
-  onToggleDock,
-  sidebarPosition,
-  onSidebarPositionChange,
-}: SidebarProps) {
+export function Sidebar() {
+  const { activePanel, setActivePanel, isSidebarOpen, setIsSidebarOpen } = useSidebar();
+  const { isAlwaysOpen } = useSidebarPreference(); // Get the preference
+  const { toggleWidget } = useWidget();
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: "sidebar-draggable",
-    data: { type: "sidebar", initialPosition: sidebarPosition },
-    disabled: isDocked, // Only draggable when undocked
-  });
-
-  const dragStyle = transform ? {
-    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-  } : {};
-
-  // Calculate the current position of the sidebar when it's docked
-  // This is used to set the initial undocked position
-  const getDockedPosition = () => {
-    if (sidebarRef.current) {
-      const rect = sidebarRef.current.getBoundingClientRect();
-      return { x: rect.left, y: rect.top };
+  const handleMouseEnter = () => {
+    if (isAlwaysOpen) return; // Do nothing if always open
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
-    return { x: 0, y: 64 }; // Default if ref not ready (top-16 = 64px)
+    setIsSidebarOpen(true);
   };
+
+  const handleMouseLeave = () => {
+    if (isAlwaysOpen) return; // Do nothing if always open
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      setIsSidebarOpen(false);
+    }, UNDOCK_DELAY);
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (isAlwaysOpen) return; // Do nothing if always open
+
+    if (e.clientX < HOT_ZONE_WIDTH && !isSidebarOpen) {
+      handleMouseEnter();
+    } else if (e.clientX >= SIDEBAR_WIDTH && isSidebarOpen && !sidebarRef.current?.contains(e.target as Node)) {
+      handleMouseLeave();
+    }
+  };
+
+  useEffect(() => {
+    if (isAlwaysOpen) {
+      setIsSidebarOpen(true); // Force open if preference is true
+      document.removeEventListener('mousemove', handleMouseMove); // Remove hover listener
+    } else {
+      document.addEventListener('mousemove', handleMouseMove); // Add hover listener
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [isAlwaysOpen, isSidebarOpen]); // Re-run effect if preference or hover state changes
+
+  const navItems = [
+    { id: "spaces", label: "Spaces", icon: LayoutGrid },
+    { id: "sounds", label: "Sounds", icon: Volume2 },
+    { id: "calendar", label: "Calendar", icon: Calendar },
+    { id: "timer", label: "Timer", icon: Timer },
+    { id: "tasks", label: "Tasks", icon: ListTodo },
+    { id: "notes", label: "Notes", icon: NotebookPen },
+    { id: "media", label: "Media", icon: Image },
+    { id: "fortune", label: "Fortune", icon: Sparkles },
+    { id: "breathe", label: "Breathe", icon: Wind },
+    { id: "flash-cards", label: "Flash Cards", icon: BookOpen },
+    { id: "goal-focus", label: "Goal Focus", icon: Goal },
+  ];
+
+  const handleSidebarItemClick = (id: string, label: string) => {
+    setActivePanel(id as any);
+    toggleWidget(id, label);
+  };
+
+  const actualSidebarOpen = isAlwaysOpen || isSidebarOpen; // Determine actual visual state
 
   return (
     <div
-      ref={setNodeRef} // Set node ref for draggable
+      ref={sidebarRef}
       className={cn(
-        "z-[999] flex flex-col items-center py-4 bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg",
-        "transition-all duration-300 ease-in-out",
-        isDocked
-          ? "fixed left-0 top-16 h-[calc(100vh-64px)]" // Docked state
-          : "absolute cursor-grab", // Undocked state
+        "fixed left-0 top-16 z-50 flex flex-col items-center py-4",
+        "bg-black/60 shadow-lg shadow-black/30 transition-transform duration-300 ease-in-out",
+        actualSidebarOpen ? "translate-x-0 w-[60px]" : "-translate-x-full w-[60px]",
+        `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]`,
+        "rounded-r-lg"
       )}
-      style={{
-        left: isDocked ? undefined : sidebarPosition.x,
-        top: isDocked ? undefined : sidebarPosition.y,
-        ...dragStyle,
-      }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
-      <div
-        className={cn(
-          "flex flex-col items-center gap-4",
-          !isDocked && "w-full px-2" // Add padding for undocked state
-        )}
-      >
-        {/* Drag handle for undocked state */}
-        {!isDocked && (
-          <div {...listeners} {...attributes} className="cursor-grab w-full flex justify-center py-2">
-            <GripVertical className="h-6 w-6 text-muted-foreground" />
-          </div>
-        )}
-
-        {/* Toggle Dock Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            if (isDocked) {
-              // When undocking, set initial position to current docked position
-              const currentPos = getDockedPosition();
-              onSidebarPositionChange(currentPos);
-            }
-            onToggleDock();
-          }}
-          title={isDocked ? "Undock Sidebar" : "Dock Sidebar"}
-        >
-          {isDocked ? <PinOff className="h-5 w-5" /> : <Pin className="h-5 w-5" />}
-        </Button>
-
-        {/* Existing sidebar content (placeholder for brevity) */}
-        {/* You would place your actual sidebar content here */}
-        <div className="h-full w-full flex flex-col items-center justify-center text-sm text-muted-foreground">
-          {/* Example content */}
-          <p>Sidebar Content</p>
-          <p>...</p>
-        </div>
+      <div className="flex flex-col gap-2 overflow-y-auto h-full">
+        {navItems.map((item) => (
+          <SidebarItem
+            key={item.id}
+            icon={item.icon}
+            label={item.label}
+            isActive={activePanel === item.id}
+            onClick={() => handleSidebarItemClick(item.id, item.label)}
+          />
+        ))}
       </div>
     </div>
   );
