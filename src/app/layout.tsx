@@ -31,19 +31,23 @@ export default async function RootLayout({
   let isCozyThemeGloballyEnabled = true; // Default to true
 
   if (supabaseUrl && supabaseAnonKey) {
-    const supabaseServer = createClient(supabaseUrl, supabaseAnonKey);
-    const { data, error } = await supabaseServer
-      .from('app_settings')
-      .select('is_cozy_theme_enabled')
-      .single();
+    try {
+      const supabaseServer = createClient(supabaseUrl, supabaseAnonKey);
+      const { data, error } = await supabaseServer
+        .from('app_settings')
+        .select('is_cozy_theme_enabled')
+        .single();
 
-    if (error) {
-      console.error("Error fetching server-side app settings:", error);
-    } else if (data) {
-      isCozyThemeGloballyEnabled = data.is_cozy_theme_enabled;
+      if (error) {
+        console.error("Error fetching server-side app settings:", error.message || error); // Log error message
+      } else if (data) {
+        isCozyThemeGloballyEnabled = data.is_cozy_theme_enabled;
+      }
+    } catch (e) {
+      console.error("Error initializing server-side Supabase client or fetching settings:", e);
     }
   } else {
-    console.warn('Supabase environment variables not set for server-side fetching.');
+    console.warn('Supabase environment variables not set for server-side fetching. NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is missing.');
   }
 
   return (
