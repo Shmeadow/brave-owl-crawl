@@ -6,6 +6,8 @@ import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
 import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { Toaster } from "@/components/ui/sonner";
+import { Button } from "@/components/ui/button"; // Import Button
+import { Dock } from "lucide-react"; // Import Dock icon
 
 const LOCAL_STORAGE_POMODORO_POS_KEY = 'pomodoro_widget_position';
 
@@ -14,7 +16,7 @@ interface AppWrapperProps {
 }
 
 export function AppWrapper({ children }: AppWrapperProps) {
-  const hasUserMovedRef = useRef(false); // New ref to track if the user has manually moved the widget
+  const hasUserMovedRef = useRef(false);
 
   const [pomodoroPosition, setPomodoroPosition] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -22,47 +24,36 @@ export function AppWrapper({ children }: AppWrapperProps) {
       if (savedPos) {
         try {
           const parsedPos = JSON.parse(savedPos);
-          // Basic validation: if right or bottom are extremely large/small, reset
           if (parsedPos.right < -1000 || parsedPos.bottom < -1000 || parsedPos.right > window.innerWidth + 1000 || parsedPos.bottom > window.innerHeight + 1000) {
             console.warn("Saved pomodoro position out of bounds, resetting.");
-            localStorage.removeItem(LOCAL_STORAGE_POMODORO_POS_KEY); // Clear invalid saved position
-            hasUserMovedRef.current = false; // Reset user moved flag
+            localStorage.removeItem(LOCAL_STORAGE_POMODORO_POS_KEY);
+            hasUserMovedRef.current = false;
           } else {
             hasUserMovedRef.current = true;
-            console.log('Pomodoro Widget loaded saved position:', parsedPos);
             return parsedPos;
           }
         } catch (e) {
           console.error("Failed to parse saved pomodoro state, resetting:", e);
-          localStorage.removeItem(LOCAL_STORAGE_POMODORO_POS_KEY); // Clear corrupted saved position
+          localStorage.removeItem(LOCAL_STORAGE_POMODORO_POS_KEY);
           hasUserMovedRef.current = false;
         }
       }
 
-      // Calculate default position if no saved position or parsing failed/invalid
-      const margin = 20; // Margin from the right and bottom edges
-      
+      const margin = 20;
       const defaultRight = margin;
       const defaultBottom = margin;
-      
-      console.log('Pomodoro Widget calculated initial default position:', { right: defaultRight, bottom: defaultBottom });
       return { right: defaultRight, bottom: defaultBottom };
     }
-    // Fallback for SSR or if window is undefined
-    console.log('Pomodoro Widget defaulting to {0,0} for SSR.');
     return { right: 0, bottom: 0 };
   });
 
-  // Recalculate default position on window resize if user hasn't moved it
   useEffect(() => {
     const handleResize = () => {
       if (hasUserMovedRef.current) {
-        // If user has already moved it, don't auto-reposition on resize
         return;
       }
 
       const margin = 20;
-
       const defaultRight = margin;
       const defaultBottom = margin;
 
@@ -83,15 +74,21 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const handleDragEnd = (event: DragEndEvent) => {
     const { delta } = event;
     setPomodoroPosition((prevPosition) => {
-      // Dragging right (positive delta.x) means 'right' CSS property should decrease
-      // Dragging down (positive delta.y) means 'bottom' CSS property should decrease
       const newRight = prevPosition.right - delta.x;
       const newBottom = prevPosition.bottom - delta.y;
       const newPos = { right: newRight, bottom: newBottom };
       localStorage.setItem(LOCAL_STORAGE_POMODORO_POS_KEY, JSON.stringify(newPos));
-      hasUserMovedRef.current = true; // Mark as moved by user
+      hasUserMovedRef.current = true;
       return newPos;
     });
+  };
+
+  const handleDockToBottom = () => {
+    const margin = 20;
+    const dockedPosition = { right: margin, bottom: margin };
+    setPomodoroPosition(dockedPosition);
+    localStorage.setItem(LOCAL_STORAGE_POMODORO_POS_KEY, JSON.stringify(dockedPosition));
+    hasUserMovedRef.current = true; // Mark as user-moved
   };
 
   return (
@@ -104,6 +101,16 @@ export function AppWrapper({ children }: AppWrapperProps) {
           onPositionChange={setPomodoroPosition}
         />
       </DndContext>
+      <Button
+        variant="outline"
+        size="icon"
+        className="fixed bottom-4 left-4 z-50 shadow-lg"
+        onClick={handleDockToBottom}
+        title="Dock Pomodoro to Bottom Right"
+      >
+        <Dock className="h-5 w-5" />
+        <span className="sr-only">Dock Pomodoro</span>
+      </Button>
       <Toaster />
     </SessionContextProvider>
   );
