@@ -8,18 +8,30 @@ import { Search, Menu, Volume2, VolumeX, Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMusicPlayer } from "@/hooks/use-music-player";
 import { useRoom } from "@/hooks/use-room";
-import { useSunriseSunset } from "@/hooks/use-sunrise-sunset"; // Import the new hook
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
+import { useSunriseSunset } from "@/hooks/use-sunrise-sunset";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface HeaderProps {
   onToggleSidebar: () => void;
+  onTogglePomodoroVisibility: () => void;
+  isPomodoroVisible: boolean;
+  onOpenSpotifyModal: () => void;
+  onOpenUpgradeModal: () => void;
+  dailyProgress: number;
 }
 
-export function Header({ onToggleSidebar }: HeaderProps) {
+export function Header({
+  onToggleSidebar,
+  onTogglePomodoroVisibility,
+  isPomodoroVisible,
+  onOpenSpotifyModal,
+  onOpenUpgradeModal,
+  dailyProgress,
+}: HeaderProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const { isPlaying, togglePlayPause, currentTrack, volume, setVolume, isMuted, toggleMute } = useMusicPlayer();
   const { roomName, setRoomName } = useRoom();
-  const { times, loading: sunTimesLoading, error: sunTimesError } = useSunriseSunset(); // Use the new hook
+  const { times, loading: sunTimesLoading, error: sunTimesError } = useSunriseSunset();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -39,8 +51,6 @@ export function Header({ onToggleSidebar }: HeaderProps) {
     month: "short",
     day: "numeric",
   });
-
-  const progress = currentTrack ? (currentTrack.currentTime / currentTrack.duration) * 100 : 0;
 
   return (
     <header className="flex items-center justify-between p-4 border-b border-border bg-background/80 backdrop-blur-md z-10 relative">
@@ -73,7 +83,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="w-full relative group">
-                <Progress value={progress} className="h-2 w-full bg-muted-foreground/20" />
+                <Progress value={dailyProgress} className="h-2 w-full bg-muted-foreground/20" />
                 <div className="absolute inset-0 cursor-pointer" /> {/* Invisible overlay for hover */}
               </div>
             </TooltipTrigger>
