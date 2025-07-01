@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { Header } from "@/components/header";
 import { cn } from "@/lib/utils";
+import { FloatingOverviewTab } from "@/components/floating-overview-tab"; // Import the new component
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -33,7 +34,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         className={cn(
           "hidden lg:block", // Only show on large screens
           "flex-shrink-0", // Prevent sidebar from shrinking
-          "border-r bg-sidebar text-sidebar-foreground", // Styling
+          "border-r bg-background text-sidebar-foreground", // Changed bg-sidebar to bg-background
           "transition-all duration-300 ease-in-out", // Animation
           isSidebarCollapsed ? "w-0 overflow-hidden" : "w-56", // Collapsed or expanded width (changed from w-64 to w-56)
           "h-full" // Ensure sidebar takes full height
@@ -49,6 +50,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           {children}
         </main>
       </div>
+      {/* Add the new floating overview tab here */}
+      <FloatingOverviewTab />
     </div>
   );
 }
