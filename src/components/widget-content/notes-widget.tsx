@@ -2,17 +2,17 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AddGoalForm } from "@/components/add-goal-form";
-import { GoalList } from "@/components/goal-list";
-import { useGoals } from "@/hooks/use-goals";
+import { AddNoteForm } from "@/components/add-note-form";
+import { NoteList } from "@/components/note-list";
+import { useNotes } from "@/hooks/use-notes";
 
-export function GoalFocusPanel() {
-  const { goals, loading, isLoggedInMode, handleAddGoal, handleToggleComplete, handleDeleteGoal } = useGoals();
+export function NotesWidget() {
+  const { notes, loading, isLoggedInMode, handleAddNote, handleDeleteNote, handleToggleStar } = useNotes();
 
   if (loading) {
     return (
       <div className="bg-card/80 backdrop-blur-md p-4 h-full w-full rounded-lg flex flex-col items-center justify-center">
-        <p className="text-foreground">Loading goals...</p>
+        <p className="text-foreground">Loading notes...</p>
       </div>
     );
   }
@@ -22,22 +22,22 @@ export function GoalFocusPanel() {
       <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto py-4">
         <Card className="w-full">
           <CardHeader>
-            <CardTitle>Add New Goal</CardTitle>
+            <CardTitle>Add New Note</CardTitle>
           </CardHeader>
           <CardContent>
-            <AddGoalForm onAddGoal={handleAddGoal} />
+            <AddNoteForm onAddNote={handleAddNote} />
           </CardContent>
         </Card>
 
-        <GoalList
-          goals={goals}
-          onToggleComplete={handleToggleComplete}
-          onDelete={handleDeleteGoal}
+        <NoteList
+          notes={notes}
+          onToggleStar={handleToggleStar}
+          onDelete={handleDeleteNote}
         />
 
         {!isLoggedInMode && (
           <p className="text-sm text-muted-foreground mt-4 text-center">
-            You are currently browsing as a guest. Your goals are saved locally in your browser. Log in to save them to your account!
+            You are currently browsing as a guest. Your notes are saved locally in your browser. Log in to save them to your account!
           </p>
         )}
       </div>

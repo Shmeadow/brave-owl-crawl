@@ -41,7 +41,7 @@ const eventFormSchema = z.object({
   description: z.string().optional(),
 });
 
-export function CalendarPanel() {
+export function CalendarWidget() {
   const { supabase, session, loading: authLoading } = useSupabase();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);

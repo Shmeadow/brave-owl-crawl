@@ -9,7 +9,7 @@ import { useFlashcardNavigation } from "@/hooks/use-flashcard-navigation";
 
 type FilterMode = 'all' | 'starred' | 'learned';
 
-export function FlashCardsPanel() {
+export function FlashCardsWidget() {
   const {
     cards,
     loading: flashcardsLoading,

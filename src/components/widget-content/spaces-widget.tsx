@@ -3,7 +3,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export function SpacesPanel() {
+export function SpacesWidget() {
   return (
     <div className="bg-card/80 backdrop-blur-md p-4 h-full w-full rounded-lg">
       <div className="space-y-8 max-w-5xl mx-auto py-4">

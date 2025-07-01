@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Play, Lock } from "lucide-react";
 
-export function SoundsPanel() {
+export function SoundsWidget() {
   return (
     <div className="bg-card/80 backdrop-blur-md p-4 h-full w-full rounded-lg">
       <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto py-4">
