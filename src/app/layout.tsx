@@ -30,6 +30,10 @@ export default async function RootLayout({
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   let isCozyThemeGloballyEnabled = true; // Default to true
 
+  // Log the environment variables to help diagnose
+  console.log('Server-side Supabase URL:', supabaseUrl ? 'Loaded' : 'Undefined');
+  console.log('Server-side Supabase Anon Key:', supabaseAnonKey ? 'Loaded' : 'Undefined');
+
   if (supabaseUrl && supabaseAnonKey) {
     try {
       const supabaseServer = createClient(supabaseUrl, supabaseAnonKey);
