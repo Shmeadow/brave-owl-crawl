@@ -29,11 +29,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Switch } from "@/components/ui/switch"; // Import Switch
 
 const profileFormSchema = z.object({
   first_name: z.string().min(1, { message: "First name is required." }).max(50, { message: "First name too long." }).optional().or(z.literal("")),
   last_name: z.string().min(1, { message: "Last name is required." }).max(50, { message: "Last name too long." }).optional().or(z.literal("")),
   profile_image_url: z.string().url({ message: "Invalid URL" }).optional().or(z.literal("")),
+  time_format_24h: z.boolean().optional(), // New field
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -45,6 +47,7 @@ interface ProfileFormProps {
     last_name: string | null;
     profile_image_url: string | null;
     role: string | null;
+    time_format_24h: boolean | null; // Include in initialProfile
   };
   onProfileUpdated: () => void;
 }
@@ -60,6 +63,7 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
       first_name: initialProfile.first_name || "",
       last_name: initialProfile.last_name || "",
       profile_image_url: initialProfile.profile_image_url || "",
+      time_format_24h: initialProfile.time_format_24h ?? true, // Default to true (24h) if null
     },
     mode: "onChange",
   });
@@ -70,6 +74,7 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
       first_name: initialProfile.first_name || "",
       last_name: initialProfile.last_name || "",
       profile_image_url: initialProfile.profile_image_url || "",
+      time_format_24h: initialProfile.time_format_24h ?? true,
     });
   }, [initialProfile, form]);
 
@@ -127,6 +132,7 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
         first_name: values.first_name || null,
         last_name: values.last_name || null,
         profile_image_url: values.profile_image_url || null,
+        time_format_24h: values.time_format_24h, // Save new field
       })
       .eq('id', session.user.id);
 
@@ -245,6 +251,29 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
                 <Input placeholder="https://example.com/avatar.jpg" {...field} />
               </FormControl>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="time_format_24h"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">
+                  Use 24-hour time format
+                </FormLabel>
+                <FormDescription>
+                  Toggle to switch between 24-hour (00:00) and 12-hour (AM/PM) time display.
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
             </FormItem>
           )}
         />

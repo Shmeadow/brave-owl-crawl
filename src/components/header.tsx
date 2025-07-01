@@ -18,10 +18,10 @@ interface HeaderProps {
   isPomodoroVisible: boolean;
   onOpenSpotifyModal: () => void;
   onOpenUpgradeModal: () => void;
-  // dailyProgress removed from here
+  dailyProgress: number; // Add dailyProgress prop
 }
 
-export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSpotifyModal, onOpenUpgradeModal }: HeaderProps) {
+export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }: HeaderProps) {
   const { setActivePanel } = useSidebar(); // Get setActivePanel from context
 
   return (
@@ -130,7 +130,7 @@ export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSp
             className="pl-8 w-[200px] lg:w-[300px] bg-card/50 border-border focus:border-primary"
           />
         </div>
-        <ClockDisplay dailyProgress={0} /> {/* dailyProgress will be passed from AppWrapper */}
+        <ClockDisplay dailyProgress={dailyProgress} /> {/* Pass dailyProgress here */}
         <Button variant="ghost" size="icon" onClick={onOpenSpotifyModal} title="Open Spotify Embed" className="hidden sm:flex">
           <Music className="h-5 w-5" />
           <span className="sr-only">Open Spotify Embed</span>

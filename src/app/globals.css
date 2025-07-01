@@ -73,6 +73,9 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
 
     --gold: 45 90% 55%; /* Added gold color */
+
+    --day-start: 210 80% 70%; /* Light blue for day */
+    --day-end: 220 60% 30%; /* Darker blue for night */
   }
   .dark {
 
@@ -125,6 +128,9 @@
     --chart-5: 340 75% 55%;
 
     --gold: 45 90% 55%; /* Gold remains consistent */
+
+    --day-start: 210 80% 70%; /* Light blue for day */
+    --day-end: 220 60% 30%; /* Darker blue for night */
   }
 
   /* New Cozy Theme */

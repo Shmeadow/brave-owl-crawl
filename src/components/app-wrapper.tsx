@@ -103,6 +103,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
         isPomodoroVisible={isPomodoroBarVisible}
         onOpenSpotifyModal={handleOpenSpotifyModal}
         onOpenUpgradeModal={handleOpenUpgradeModal}
+        dailyProgress={dailyProgress} // Pass dailyProgress here
       />
       <Sidebar /> {/* Render the new Sidebar */}
       <main
