@@ -16,6 +16,8 @@ import { LofiAudioPlayer } from "@/components/lofi-audio-player"; // Import the 
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
 const LOCAL_STORAGE_POMODORO_VISIBLE_KEY = 'pomodoro_widget_visible';
+const CHAT_PANEL_WIDTH_OPEN = 320; // px
+const CHAT_PANEL_WIDTH_CLOSED = 56; // px (w-14)
 const WIDGET_GAP = 16; // px
 
 interface AppWrapperProps {
@@ -32,6 +34,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
   const [isSpotifyModalOpen, setIsSpotifyModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false); // New state for upgrade modal
   const [isChatOpen, setIsChatOpen] = useState(false); // Chat starts closed as a bubble
+  const [unreadChatCount, setUnreadChatCount] = useState(0); // New state for unread chat messages
   const [mounted, setMounted] = useState(false);
   const [dailyProgress, setDailyProgress] = useState(0); // State for daily progress
 
@@ -93,8 +96,15 @@ function AppWrapperContent({ children }: AppWrapperProps) {
     setIsUpgradeModalOpen(true);
   };
 
-  // Determine right margin based on chat panel state
-  const rightMargin = isChatOpen ? 320 + WIDGET_GAP : 56 + WIDGET_GAP; // 320px for open chat, 56px for closed chat button (w-14) + gap
+  const handleNewUnreadMessage = () => {
+    setUnreadChatCount(prev => prev + 1);
+  };
+
+  const handleClearUnreadMessages = () => {
+    setUnreadChatCount(0);
+  };
+
+  const chatPanelCurrentWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
 
   return (
     <>
@@ -108,7 +118,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
       <Sidebar /> {/* Render the new Sidebar */}
       <main
         className={`flex flex-col flex-1 w-full h-full transition-all duration-300 ease-in-out`}
-        style={{ marginLeft: isSidebarOpen ? '60px' : '4px', marginRight: `${rightMargin}px` }}
+        style={{ marginLeft: isSidebarOpen ? '60px' : '4px', marginRight: `${chatPanelCurrentWidth}px` }}
       >
         {children}
       </main>
@@ -118,7 +128,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
           isMinimized={isPomodoroWidgetMinimized}
           setIsMinimized={setIsPomodoroWidgetMinimized}
           onClose={handleHidePomodoro}
-          chatPanelWidth={rightMargin} // Pass chat width for positioning
+          chatPanelWidth={chatPanelCurrentWidth} // Pass chat width for positioning
         />
       )}
       <SpotifyEmbedModal isOpen={isSpotifyModalOpen} onClose={() => setIsSpotifyModalOpen(false)} />
@@ -127,7 +137,13 @@ function AppWrapperContent({ children }: AppWrapperProps) {
       <LofiAudioPlayer /> {/* The actual audio element, now global */}
       {/* Fixed Chat Panel */}
       <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
-        <ChatPanel isOpen={isChatOpen} onToggleOpen={() => setIsChatOpen(!isChatOpen)} />
+        <ChatPanel
+          isOpen={isChatOpen}
+          onToggleOpen={() => setIsChatOpen(!isChatOpen)}
+          onNewUnreadMessage={handleNewUnreadMessage}
+          onClearUnreadMessages={handleClearUnreadMessages}
+          unreadCount={unreadChatCount}
+        />
       </div>
     </>
   );
