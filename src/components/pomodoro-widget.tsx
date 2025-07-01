@@ -50,6 +50,12 @@ export function PomodoroWidget({ initialPosition, onPositionChange }: PomodoroWi
     cursor: 'grab', // Indicate draggable
   };
 
+  // Log the final applied style to the console
+  useEffect(() => {
+    console.log('PomodoroWidget rendering with style:', style);
+  }, [style]);
+
+
   const handleTimeInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       inputRef.current?.blur();

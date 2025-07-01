@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
-import { PomodoroWidget } from "@/components/pomodoro-widget"; // Corrected import statement
+import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { Toaster } from "@/components/ui/sonner";
 
 const LOCAL_STORAGE_POMODORO_POS_KEY = 'pomodoro_widget_position';
@@ -36,7 +36,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
       const defaultX = window.innerWidth - widgetWidth - margin;
       const defaultY = window.innerHeight - widgetHeight - margin;
       
-      console.log(`Calculated default Pomodoro position: x=${defaultX}, y=${defaultY}`);
+      console.log('Pomodoro Widget calculated initial position:', { x: defaultX, y: defaultY });
       return { x: defaultX, y: defaultY };
     }
     // Fallback for SSR or if window is undefined
@@ -63,7 +63,6 @@ export function AppWrapper({ children }: AppWrapperProps) {
 
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', handleResize);
-      // No need to call handleResize() here, as it's already done in useState initializer
     }
 
     return () => {
@@ -71,7 +70,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
         window.removeEventListener('resize', handleResize);
       }
     };
-  }, []); // Empty dependency array, as it only depends on window events and ref
+  }, []);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { delta } = event;
