@@ -28,36 +28,37 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   return (
-    <div className="grid min-h-screen w-full lg:grid-cols-[280px_1fr]">
-      <ResizablePanelGroup direction="horizontal" className="flex-1 rounded-lg border">
-        <ResizablePanel
-          defaultSize={isSidebarCollapsed ? 0 : 280} // Initial size based on state
-          minSize={isSidebarCollapsed ? 0 : 15} // If collapsed, minSize is 0. If open, minSize is 15%
-          maxSize={isSidebarCollapsed ? 0 : 30} // If collapsed, maxSize is 0. If open, maxSize is 30%
-          collapsible={true}
-          collapsedSize={0}
-          onCollapse={() => {
-            setIsSidebarCollapsed(true);
-            if (typeof window !== 'undefined') localStorage.setItem('isSidebarCollapsed', 'true');
-          }}
-          onExpand={() => {
-            setIsSidebarCollapsed(false);
-            if (typeof window !== 'undefined') localStorage.setItem('isSidebarCollapsed', 'false');
-          }}
-          className={cn("hidden lg:block", isSidebarCollapsed && "min-w-0")}
-        >
-          <Sidebar />
-        </ResizablePanel>
-        {!isSidebarCollapsed && <ResizableHandle withHandle />}
-        <ResizablePanel>
-          <div className="flex flex-col">
-            <Header toggleSidebarCollapse={toggleSidebarCollapse} isSidebarCollapsed={isSidebarCollapsed} />
-            <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-              {children}
-            </main>
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    </div>
+    <ResizablePanelGroup
+      direction="horizontal"
+      className="min-h-screen w-full rounded-lg border" // Ensure the group takes full height and width
+    >
+      <ResizablePanel
+        defaultSize={isSidebarCollapsed ? 0 : 280} // Initial size based on state
+        minSize={isSidebarCollapsed ? 0 : 15} // If collapsed, minSize is 0. If open, minSize is 15%
+        maxSize={isSidebarCollapsed ? 0 : 30} // If collapsed, maxSize is 0. If open, maxSize is 30%
+        collapsible={true}
+        collapsedSize={0}
+        onCollapse={() => {
+          setIsSidebarCollapsed(true);
+          if (typeof window !== 'undefined') localStorage.setItem('isSidebarCollapsed', 'true');
+        }}
+        onExpand={() => {
+          setIsSidebarCollapsed(false);
+          if (typeof window !== 'undefined') localStorage.setItem('isSidebarCollapsed', 'false');
+        }}
+        className={cn("hidden lg:block", isSidebarCollapsed && "min-w-0")}
+      >
+        <Sidebar />
+      </ResizablePanel>
+      {!isSidebarCollapsed && <ResizableHandle withHandle />}
+      <ResizablePanel>
+        <div className="flex flex-col h-full"> {/* Ensure this div takes full height */}
+          <Header toggleSidebarCollapse={toggleSidebarCollapse} isSidebarCollapsed={isSidebarCollapsed} />
+          <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-auto"> {/* Add overflow-auto for internal scrolling */}
+            {children}
+          </main>
+        </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 }
