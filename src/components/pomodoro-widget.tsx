@@ -51,8 +51,8 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
         "bg-background/50 backdrop-blur-md shadow-lg border",
         "flex transition-all duration-300 ease-in-out",
         isMinimized
-          ? "flex-row items-center justify-center p-2 w-fit h-fit cursor-pointer" // Minimized: row, slightly more padding for bigger clock, fit content, add cursor-pointer
-          : "flex-col items-center p-3 gap-3 w-full max-w-sm h-auto" // Expanded: column, reduced padding and gap for smaller height
+          ? "flex-row items-center justify-center p-1 w-fit h-fit cursor-pointer" // Minimized: row, tighter padding, fit content, add cursor-pointer
+          : "flex-col items-center p-4 gap-4 w-full max-w-sm h-auto" // Expanded: column, original padding
       )}
       onClick={isMinimized ? () => setIsMinimized(false) : undefined} // Make whole card clickable to undock when minimized
     >
@@ -80,7 +80,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
       </CardHeader>
 
       {/* CardContent - visible when not minimized */}
-      <CardContent className={cn("flex flex-col items-center gap-3 w-full", isMinimized ? "hidden" : "flex")}>
+      <CardContent className={cn("flex flex-col items-center gap-6 w-full", isMinimized ? "hidden" : "flex")}>
         <div className="flex gap-2 justify-center w-full">
           <Button
             variant={mode === 'focus' ? 'default' : 'outline'}
@@ -115,11 +115,11 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
             onChange={(e) => setEditableTimeString(e.target.value)}
             onBlur={handleTimeInputBlur}
             onKeyDown={handleTimeInputKeyDown}
-            className="text-5xl font-bold font-mono text-center w-full max-w-[250px]" // Increased font size
+            className="text-3xl font-bold font-mono text-center w-full max-w-[250px]"
           />
         ) : (
           <div
-            className="text-5xl font-bold font-mono cursor-pointer hover:text-primary transition-colors" // Increased font size
+            className="text-3xl font-bold font-mono cursor-pointer hover:text-primary transition-colors"
             onClick={handleTimeDisplayClick}
           >
             {formatTime(timeLeft)}
@@ -147,10 +147,11 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
       {isMinimized && (
         <div className="flex items-center justify-center w-full h-full">
           <div
-            className="text-5xl font-bold font-mono" // Increased font size
+            className="text-3xl font-bold font-mono" // No cursor-pointer here, as the whole card is clickable
           >
             {formatTime(timeLeft)}
           </div>
+          {/* Removed the ChevronUp button as the whole card is now the undock trigger */}
         </div>
       )}
     </Card>
