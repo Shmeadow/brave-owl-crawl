@@ -86,7 +86,6 @@ export function Widget({
         
         // Cursor and resize behavior
         isResizable ? "resize" : "",
-        isDraggable ? "cursor-grab" : "",
         isMinimized && !isPinned ? "cursor-pointer" : "", // Minimized is clickable to restore
         "pointer-events-auto"
       )}
@@ -107,12 +106,14 @@ export function Widget({
           "flex flex-row items-center justify-between space-y-0",
           isVisuallyMinimized ? "p-2 h-12" : "pb-2" // Smaller padding/height for minimized/pinned header
         )}
-        {...(isDraggable && { ...listeners, ...attributes })}
       >
         {isVisuallyMinimized ? (
           // Content for minimized/pinned header
           <>
-            <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div 
+              className={cn("flex items-center gap-2 flex-1 min-w-0", isDraggable && "cursor-grab")}
+              {...(isDraggable && { ...listeners, ...attributes })}
+            >
               <Icon className="h-6 w-6 text-primary" />
               <CardTitle className="text-sm font-medium leading-none truncate">{title}</CardTitle>
             </div>
@@ -146,9 +147,14 @@ export function Widget({
         ) : (
           // Content for normal/maximized header
           <>
-            <CardTitle className="text-lg font-medium leading-none">
-              {title}
-            </CardTitle>
+            <div 
+              className={cn("flex-1 min-w-0", isDraggable && "cursor-grab")}
+              {...(isDraggable && { ...listeners, ...attributes })}
+            >
+              <CardTitle className="text-lg font-medium leading-none">
+                {title}
+              </CardTitle>
+            </div>
             <div className="flex gap-1">
               <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMinimize(id); }} title="Minimize">
                 <Minimize className="h-4 w-4" />
