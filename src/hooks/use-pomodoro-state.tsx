@@ -16,9 +16,6 @@ interface PomodoroState {
   };
   isEditingTime: boolean;
   editableTimeString: string;
-  focusTitle: string; // New state for focus title
-  isSettingsOpen: boolean; // New state for settings section visibility
-  minimizedPosition: { x: number; y: number } | null; // New state for minimized widget position
 }
 
 // Define an interface for the structure of the saved state in local storage
@@ -26,14 +23,11 @@ interface SavedPomodoroState {
   mode: PomodoroMode;
   timeLeft: number;
   isRunning: boolean;
-  customTimes?: {
+  customTimes?: { // customTimes might be optional if not always present in old saved states
     'focus'?: number;
     'short-break'?: number;
     'long-break'?: number;
   };
-  focusTitle?: string;
-  isSettingsOpen?: boolean;
-  minimizedPosition?: { x: number; y: number };
 }
 
 const DEFAULT_TIMES = {
@@ -77,9 +71,11 @@ export function usePomodoroState() {
         try {
           const parsedState: SavedPomodoroState = JSON.parse(savedState);
 
+          // Validate parsedState.mode to ensure it's one of the valid PomodoroMode values
           const validModes: PomodoroMode[] = ['focus', 'short-break', 'long-break'];
           const currentMode: PomodoroMode = validModes.includes(parsedState.mode) ? parsedState.mode : 'focus';
 
+          // Ensure customTimes are numbers and default if missing
           const customTimes = {
             focus: parsedState.customTimes?.focus || DEFAULT_TIMES.focus,
             'short-break': parsedState.customTimes?.['short-break'] || DEFAULT_TIMES['short-break'],
@@ -87,14 +83,12 @@ export function usePomodoroState() {
           };
           return {
             ...parsedState,
-            mode: currentMode,
+            mode: currentMode, // Use the validated mode
             customTimes,
+            // Ensure timeLeft is not negative and is within bounds of custom time for the current mode
             timeLeft: Math.max(0, Math.min(parsedState.timeLeft, customTimes[currentMode])),
-            isEditingTime: false,
-            editableTimeString: '',
-            focusTitle: parsedState.focusTitle || '',
-            isSettingsOpen: parsedState.isSettingsOpen || false,
-            minimizedPosition: parsedState.minimizedPosition || null,
+            isEditingTime: false, // Always start not editing
+            editableTimeString: '', // Always start empty
           };
         } catch (e) {
           console.error("Failed to parse saved pomodoro state:", e);
@@ -108,9 +102,6 @@ export function usePomodoroState() {
       customTimes: DEFAULT_TIMES,
       isEditingTime: false,
       editableTimeString: '',
-      focusTitle: '',
-      isSettingsOpen: false,
-      minimizedPosition: null,
     };
   });
 
@@ -135,7 +126,7 @@ export function usePomodoroState() {
       ...prevState,
       mode: newMode,
       timeLeft: prevState.customTimes[newMode],
-      isRunning: shouldStopRunning ? false : prevState.isRunning,
+      isRunning: shouldStopRunning ? false : prevState.isRunning, // Only stop if explicitly told
       isEditingTime: false,
       editableTimeString: '',
     }));
@@ -162,8 +153,8 @@ export function usePomodoroState() {
         return {
           ...prevState,
           mode: nextMode,
-          timeLeft: prevState.customTimes[nextMode],
-          isRunning: false,
+          timeLeft: prevState.customTimes[nextMode], // Set to default time for next mode
+          isRunning: false, // Crucial: Stop running, user must manually start next session
           isEditingTime: false,
           editableTimeString: '',
         };
@@ -189,7 +180,7 @@ export function usePomodoroState() {
   }, [getCurrentModeTime]);
 
   const handleReset = useCallback(() => {
-    resetTimer(state.mode, true);
+    resetTimer(state.mode, true); // Always stop running on explicit reset
     toast.warning("Timer reset.");
   }, [state.mode, resetTimer]);
 
@@ -229,7 +220,7 @@ export function usePomodoroState() {
         toast.error("Invalid time format. Please use HH:MM:SS.");
         return {
           ...prevState,
-          timeLeft: prevState.customTimes[prevState.mode],
+          timeLeft: prevState.customTimes[prevState.mode], // Revert to current mode's default if invalid
           isEditingTime: false,
         };
       }
@@ -240,12 +231,14 @@ export function usePomodoroState() {
     setState(prevState => ({ ...prevState, editableTimeString: value }));
   }, []);
 
+  // New function to update custom times from settings modal
   const setCustomTime = useCallback((mode: PomodoroMode, newTimeInSeconds: number) => {
     setState(prevState => {
       const updatedCustomTimes = {
         ...prevState.customTimes,
         [mode]: newTimeInSeconds,
       };
+      // If the current mode's time is being updated, also update timeLeft
       const newTimeLeft = prevState.mode === mode ? newTimeInSeconds : prevState.timeLeft;
       return {
         ...prevState,
@@ -255,18 +248,6 @@ export function usePomodoroState() {
     });
   }, []);
 
-  const setFocusTitle = useCallback((title: string) => {
-    setState(prevState => ({ ...prevState, focusTitle: title }));
-  }, []);
-
-  const toggleSettingsOpen = useCallback(() => {
-    setState(prevState => ({ ...prevState, isSettingsOpen: !prevState.isSettingsOpen }));
-  }, []);
-
-  const setMinimizedPosition = useCallback((x: number, y: number) => {
-    setState(prevState => ({ ...prevState, minimizedPosition: { x, y } }));
-  }, []);
-
   return {
     mode: state.mode,
     timeLeft: state.timeLeft,
@@ -274,18 +255,12 @@ export function usePomodoroState() {
     customTimes: state.customTimes,
     isEditingTime: state.isEditingTime,
     editableTimeString: state.editableTimeString,
-    focusTitle: state.focusTitle,
-    isSettingsOpen: state.isSettingsOpen,
-    minimizedPosition: state.minimizedPosition,
     setEditableTimeString,
     handleStartPause,
     handleReset,
     handleSwitchMode,
     handleTimeDisplayClick,
     handleTimeInputBlur,
-    setCustomTime,
-    setFocusTitle,
-    toggleSettingsOpen,
-    setMinimizedPosition,
+    setCustomTime, // Expose the new function
   };
 }

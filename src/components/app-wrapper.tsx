@@ -1,17 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { SessionContextProvider, useSupabase } from "@/integrations/supabase/auth"; // Import useSupabase
+import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
 import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { Toaster } from "@/components/ui/sonner";
 import { ContactWidget } from "@/components/contact-widget";
-import { useRouter, usePathname } from "next/navigation"; // Import useRouter
-import { Header } from "@/components/header";
-import { AdsBanner } from "@/components/ads-banner";
-import { LofiAudioPlayer } from "@/components/lofi-audio-player";
-import { SpotifyEmbedModal } from "@/components/spotify-embed-modal";
-import { EnrollmentModal } from "@/components/enrollment-modal"; // Import EnrollmentModal
+import { usePathname } from "next/navigation"; // Import usePathname
+import { Header } from "@/components/header"; // Import Header
+import { AdsBanner } from "@/components/ads-banner"; // Import AdsBanner
+import { LofiAudioPlayer } from "@/components/lofi-audio-player"; // Import LofiAudioPlayer
+import { SpotifyEmbedModal } from "@/components/spotify-embed-modal"; // Import SpotifyEmbedModal
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
 const LOCAL_STORAGE_POMODORO_VISIBLE_KEY = 'pomodoro_widget_visible';
@@ -22,16 +21,10 @@ interface AppWrapperProps {
 
 export function AppWrapper({ children }: AppWrapperProps) {
   const pathname = usePathname();
-  const router = useRouter(); // Initialize useRouter
   const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(false);
-  const [isPomodoroBarVisible, setIsPomodoroBarVisible] = useState(true);
-  const [isSpotifyModalOpen, setIsSpotifyModalOpen] = useState(false);
-  const [isEnrollmentModalOpen, setIsEnrollmentModalOpen] = useState(false); // New state for enrollment modal
+  const [isPomodoroBarVisible, setIsPomodoroBarVisible] = useState(true); // New state for overall visibility
+  const [isSpotifyModalOpen, setIsSpotifyModalOpen] = useState(false); // State for Spotify modal
   const [mounted, setMounted] = useState(false);
-
-  // Use useSupabase here to get login status
-  const { session, loading: authLoading } = useSupabase();
-  const isLoggedInMode = !!session;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -39,7 +32,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
       setIsPomodoroWidgetMinimized(savedMinimized === 'true');
 
       const savedVisible = localStorage.getItem(LOCAL_STORAGE_POMODORO_VISIBLE_KEY);
-      setIsPomodoroBarVisible(savedVisible !== 'false');
+      setIsPomodoroBarVisible(savedVisible !== 'false'); // Default to true if not set
     }
     setMounted(true);
   }, []);
@@ -56,29 +49,20 @@ export function AppWrapper({ children }: AppWrapperProps) {
     }
   }, [isPomodoroBarVisible, mounted]);
 
-  const shouldShowPomodoro = pathname !== '/account';
+  const shouldShowPomodoro = pathname !== '/account'; // Condition to hide on /account page
 
   const handleTogglePomodoroVisibility = () => {
     setIsPomodoroBarVisible(prev => !prev);
-    setIsPomodoroWidgetMinimized(false);
+    setIsPomodoroWidgetMinimized(false); // Unminimize when shown
   };
 
   const handleHidePomodoro = () => {
     setIsPomodoroBarVisible(false);
-    setIsPomodoroWidgetMinimized(false);
+    setIsPomodoroWidgetMinimized(false); // Ensure it's not minimized when hidden
   };
 
   const handleOpenSpotifyModal = () => {
     setIsSpotifyModalOpen(true);
-  };
-
-  const handleOpenEnrollmentModal = () => {
-    setIsEnrollmentModalOpen(true);
-  };
-
-  const handleLoginSignupFromEnrollment = () => {
-    setIsEnrollmentModalOpen(false);
-    router.push('/account'); // Redirect to account page for login/signup
   };
 
   return (
@@ -88,26 +72,20 @@ export function AppWrapper({ children }: AppWrapperProps) {
         isPomodoroVisible={isPomodoroBarVisible}
         onOpenSpotifyModal={handleOpenSpotifyModal}
       />
+      {/* Main content area is now managed by app/page.tsx and other pages directly */}
       {children}
       <GoalReminderBar />
       {mounted && shouldShowPomodoro && isPomodoroBarVisible && (
         <PomodoroWidget
           isMinimized={isPomodoroWidgetMinimized}
           setIsMinimized={setIsPomodoroWidgetMinimized}
-          onClose={handleHidePomodoro}
-          isLoggedInMode={isLoggedInMode}
-          onOpenEnrollmentModal={handleOpenEnrollmentModal}
+          onClose={handleHidePomodoro} // Pass the new close handler
         />
       )}
       <ContactWidget />
       <AdsBanner />
       <LofiAudioPlayer />
       <SpotifyEmbedModal isOpen={isSpotifyModalOpen} onClose={() => setIsSpotifyModalOpen(false)} />
-      <EnrollmentModal
-        isOpen={isEnrollmentModalOpen}
-        onClose={() => setIsEnrollmentModalOpen(false)}
-        onLoginSignup={handleLoginSignupFromEnrollment}
-      />
       <Toaster />
     </SessionContextProvider>
   );
