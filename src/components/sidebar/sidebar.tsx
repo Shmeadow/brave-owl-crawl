@@ -16,7 +16,7 @@ export function Sidebar() {
   const { activePanel, setActivePanel, isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const { toggleWidget } = useWidget(); // Get toggleWidget from WidgetContext
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(timeoutRef);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null); // Corrected initialization
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) {
