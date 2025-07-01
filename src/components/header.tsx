@@ -45,7 +45,10 @@ export function Header() {
                 <Timer className="h-4 w-4" />
                 Pomodoro
               </Link>
-              {/* Removed Goal Focus link */}
+              <Link href="/goal-focus" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary", isActive("/goal-focus") && "text-primary")}>
+                <Goal className="h-4 w-4" />
+                Goal Focus
+              </Link>
               <Link href="/account" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary", isActive("/account") && "text-primary")}>
                 <User className="h-4 w-4" />
                 Account

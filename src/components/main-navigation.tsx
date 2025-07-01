@@ -9,7 +9,7 @@ const navItems = [
   { href: "/time-tracker", icon: Clock, label: "Time Tracker" },
   { href: "/flash-cards", icon: BookOpen, label: "Flash Cards" },
   { href: "/pomodoro", icon: Timer, label: "Pomodoro" },
-  // Removed Goal Focus link
+  { href: "/goal-focus", icon: Goal, label: "Goal Focus" }, // Re-added Goal Focus link
   { href: "/account", icon: User, label: "Account" },
 ];
 
