@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
-import { PomodoroWidget } from "@/components/pomodoro-widget";
+import { PomodoroWidget } => {
 import { Toaster } from "@/components/ui/sonner";
 
 const LOCAL_STORAGE_POMODORO_POS_KEY = 'pomodoro_widget_position';
@@ -27,12 +27,23 @@ export function AppWrapper({ children }: AppWrapperProps) {
           console.error("Failed to parse saved pomodoro widget position:", e);
         }
       }
+
+      // Calculate default position if no saved position or parsing failed
+      const widgetWidth = 350; // Approximate width of the widget
+      const widgetHeight = 300; // Approximate height of the widget
+      const margin = 20; // Margin from the right and bottom edges
+
+      const defaultX = window.innerWidth - widgetWidth - margin;
+      const defaultY = window.innerHeight - widgetHeight - margin;
+      
+      console.log(`Calculated default Pomodoro position: x=${defaultX}, y=${defaultY}`);
+      return { x: defaultX, y: defaultY };
     }
-    // Default initial value, will be overwritten by useEffect if not moved
+    // Fallback for SSR or if window is undefined
     return { x: 0, y: 0 };
   });
 
-  // Recalculate default position on window resize and initial mount
+  // Recalculate default position on window resize if user hasn't moved it
   useEffect(() => {
     const handleResize = () => {
       if (hasUserMovedRef.current) {
@@ -40,7 +51,6 @@ export function AppWrapper({ children }: AppWrapperProps) {
         return;
       }
 
-      // Assuming widget width ~350px, height ~300px, 20px margin from edges
       const widgetWidth = 350;
       const widgetHeight = 300;
       const margin = 20;
@@ -53,7 +63,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
 
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', handleResize);
-      handleResize(); // Set initial position on mount
+      // No need to call handleResize() here, as it's already done in useState initializer
     }
 
     return () => {
