@@ -4,14 +4,12 @@ import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Sparkles, Users, Video, Image, Star, Settings, Menu, Music, Clock, LayoutGrid, Calendar, ListTodo, NotebookPen, Wind, BookOpen, Goal, Diamond, Volume2, VolumeX } from "lucide-react"; // Import Diamond, Volume2, VolumeX
+import { Search, Sparkles, Users, Video, Image, Star, Settings, Menu } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserNav } from "@/components/user-nav";
 import { ClockDisplay } from "@/components/clock-display";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { useSidebar } from "@/components/sidebar/sidebar-context"; // Import useSidebar
-import { useLofiAudio } from "@/hooks/use-lofi-audio"; // Import useLofiAudio hook
 // Progress component removed from here
 
 interface HeaderProps {
@@ -23,9 +21,6 @@ interface HeaderProps {
 }
 
 export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }: HeaderProps) {
-  const { setActivePanel } = useSidebar(); // Get setActivePanel from context
-  const { isPlaying, togglePlayPause } = useLofiAudio(); // Use the lofi audio hook
-
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between px-4 sm:px-6 bg-background/80 backdrop-blur-md border-b border-border">
       {/* Left Section: Logo/Badge */}
@@ -43,73 +38,21 @@ export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSp
                 <Sparkles className="h-6 w-6 text-primary" />
                 <span>Focus 2</span>
               </Link>
-              <div className="grid gap-2">
-                {/* Mobile navigation for main panels */}
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('spaces')}>
-                  <LayoutGrid className="h-4 w-4" /> Spaces
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('sounds')}>
-                  <Music className="h-4 w-4" /> Sounds
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('calendar')}>
-                  <Calendar className="h-4 w-4" /> Calendar
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('timer')}>
-                  <Clock className="h-4 w-4" /> Timer
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('tasks')}>
-                  <ListTodo className="h-4 w-4" /> Tasks
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('notes')}>
-                  <NotebookPen className="h-4 w-4" /> Notes
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('media')}>
-                  <Image className="h-4 w-4" /> Media
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('fortune')}>
-                  <Sparkles className="h-4 w-4" /> Fortune
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('breathe')}>
-                  <Wind className="h-4 w-4" /> Breathe
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('flash-cards')}>
-                  <BookOpen className="h-4 w-4" /> Flash Cards
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('goal-focus')}>
-                  <Goal className="h-4 w-4" /> Goal Focus
-                </Button>
-                {/* Existing mobile menu items */}
-                <Button variant="ghost" className="justify-start gap-3">
-                  <Users className="h-4 w-4" /> Invite
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3">
-                  <Video className="h-4 w-4" /> Videos
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3">
-                  <Image className="h-4 w-4" /> Images
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3">
-                  <Star className="h-4 w-4" /> Favorites
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3">
-                  <Settings className="h-4 w-4" /> Upgrade Desktop App
-                </Button>
-              </div>
-              <div className="mt-4 border-t pt-4">
-                <ThemeToggle />
-                <Button variant="ghost" className="justify-start gap-3 mt-2" onClick={onOpenSpotifyModal}>
-                  <Music className="h-4 w-4" /> Spotify Embed
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3 mt-2" onClick={onTogglePomodoroVisibility}>
-                  <Clock className="h-4 w-4" /> {isPomodoroVisible ? "Hide Timer" : "Show Timer"}
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3 mt-2" onClick={onOpenUpgradeModal}>
-                  <Diamond className="h-4 w-4" /> Upgrade
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3 mt-2" onClick={togglePlayPause}>
-                  {isPlaying ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />} Lofi Audio
-                </Button>
-              </div>
+              <Button variant="ghost" className="justify-start gap-3">
+                <Users className="h-4 w-4" /> Invite
+              </Button>
+              <Button variant="ghost" className="justify-start gap-3">
+                <Video className="h-4 w-4" /> Videos
+              </Button>
+              <Button variant="ghost" className="justify-start gap-3">
+                <Image className="h-4 w-4" /> Images
+              </Button>
+              <Button variant="ghost" className="justify-start gap-3">
+                <Star className="h-4 w-4" /> Favorites
+              </Button>
+              <Button variant="ghost" className="justify-start gap-3">
+                <Settings className="h-4 w-4" /> Upgrade Desktop App
+              </Button>
             </nav>
           </SheetContent>
         </Sheet>
@@ -136,28 +79,6 @@ export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSp
           />
         </div>
         <ClockDisplay dailyProgress={dailyProgress} /> {/* Pass dailyProgress here */}
-        <Button variant="ghost" size="icon" onClick={onOpenSpotifyModal} title="Open Spotify Embed" className="hidden sm:flex">
-          <Music className="h-5 w-5" />
-          <span className="sr-only">Open Spotify Embed</span>
-        </Button>
-        <Button variant="ghost" size="icon" onClick={onTogglePomodoroVisibility} title={isPomodoroVisible ? "Hide Pomodoro Timer" : "Show Pomodoro Timer"} className="hidden sm:flex">
-          <Clock className="h-5 w-5" />
-          <span className="sr-only">{isPomodoroVisible ? "Hide Pomodoro Timer" : "Show Pomodoro Timer"}</span>
-        </Button>
-        <Button variant="ghost" size="icon" onClick={onOpenUpgradeModal} title="Upgrade to Ad-Free" className="hidden sm:flex">
-          <Diamond className="h-5 w-5 animate-spin" /> {/* Diamond icon with rotation */}
-          <span className="sr-only">Upgrade to Ad-Free</span>
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={togglePlayPause}
-          title={isPlaying ? "Pause Lofi Audio" : "Play Lofi Audio"}
-          className="hidden sm:flex"
-        >
-          {isPlaying ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
-          <span className="sr-only">{isPlaying ? "Pause Lofi Audio" : "Play Lofi Audio"}</span>
-        </Button>
         <ThemeToggle />
         <UserNav />
       </div>
