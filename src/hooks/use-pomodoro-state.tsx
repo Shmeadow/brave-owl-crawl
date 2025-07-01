@@ -18,6 +18,18 @@ interface PomodoroState {
   editableTimeString: string;
 }
 
+// Define an interface for the structure of the saved state in local storage
+interface SavedPomodoroState {
+  mode: PomodoroMode;
+  timeLeft: number;
+  isRunning: boolean;
+  customTimes?: { // customTimes might be optional if not always present in old saved states
+    'focus'?: number;
+    'short-break'?: number;
+    'long-break'?: number;
+  };
+}
+
 const DEFAULT_TIMES = {
   'focus': 25 * 60, // 25 minutes
   'short-break': 5 * 60, // 5 minutes
@@ -55,7 +67,12 @@ export function usePomodoroState() {
       const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (savedState) {
         try {
-          const parsedState = JSON.parse(savedState);
+          const parsedState: SavedPomodoroState = JSON.parse(savedState);
+
+          // Validate parsedState.mode to ensure it's one of the valid PomodoroMode values
+          const validModes: PomodoroMode[] = ['focus', 'short-break', 'long-break'];
+          const currentMode: PomodoroMode = validModes.includes(parsedState.mode) ? parsedState.mode : 'focus';
+
           // Ensure customTimes are numbers and default if missing
           const customTimes = {
             focus: parsedState.customTimes?.focus || DEFAULT_TIMES.focus,
@@ -64,9 +81,10 @@ export function usePomodoroState() {
           };
           return {
             ...parsedState,
+            mode: currentMode, // Use the validated mode
             customTimes,
             // Ensure timeLeft is not negative and is within bounds of custom time for the current mode
-            timeLeft: Math.max(0, Math.min(parsedState.timeLeft, customTimes[parsedState.mode])),
+            timeLeft: Math.max(0, Math.min(parsedState.timeLeft, customTimes[currentMode])),
             isEditingTime: false, // Always start not editing
             editableTimeString: '', // Always start empty
           };
