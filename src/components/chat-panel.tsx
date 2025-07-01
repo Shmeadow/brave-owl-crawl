@@ -41,10 +41,10 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
       .order('created_at', { ascending: true })
       .limit(50); // Limit to last 50 messages
 
-    if (error) {
+    if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found, which is fine for an empty chat
       console.error("Error fetching messages:", error);
       toast.error("Failed to load chat messages.");
-    } else {
+    } else if (data) {
       const formattedMessages = data.map(msg => ({
         id: msg.id,
         user_id: msg.user_id,
