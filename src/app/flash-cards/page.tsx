@@ -11,17 +11,19 @@ import { useRouter } from "next/navigation";
 
 export interface CardData {
   id: string;
-  user_id: string;
+  user_id?: string; // Make user_id optional for local storage cards
   front: string;
   back: string;
   starred: boolean;
-  status: 'new' | 'learning' | 'mastered'; // 'new', 'learning', 'mastered'
-  seen_count: number; // How many times this card has been seen/interacted with
-  last_reviewed_at: string | null; // ISO string date
-  interval_days: number; // For spaced repetition
+  status: 'new' | 'learning' | 'mastered';
+  seen_count: number;
+  last_reviewed_at: string | null;
+  interval_days: number;
 }
 
 type FilterMode = 'all' | 'starred' | 'learned';
+
+const LOCAL_STORAGE_KEY = 'guest_flashcards';
 
 export default function FlashCardsPage() {
   const { supabase, session, loading: authLoading } = useSupabase();
@@ -31,73 +33,152 @@ export default function FlashCardsPage() {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
+  const [isLoggedInMode, setIsLoggedInMode] = useState(false); // New state to track data source
 
   // Helper to update card interaction (seen_count, last_reviewed_at)
   const updateCardInteraction = useCallback(async (cardId: string) => {
-    if (!session || !supabase) return;
-
     const cardToUpdate = cards.find(card => card.id === cardId);
     if (!cardToUpdate) return;
 
     const newSeenCount = cardToUpdate.seen_count + 1;
     const now = new Date().toISOString();
 
-    const { data, error } = await supabase
-      .from('flashcards')
-      .update({
-        seen_count: newSeenCount,
-        last_reviewed_at: now,
-      })
-      .eq('id', cardId)
-      .eq('user_id', session.user.id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error updating card interaction:", error);
-      // We'll avoid a toast here to prevent spamming for every interaction
-    } else if (data) {
-      setCards(prevCards => prevCards.map(card => card.id === cardId ? data as CardData : card));
-    }
-  }, [cards, session, supabase]);
-
-  useEffect(() => {
-    if (authLoading) return; // Wait for auth to load
-
-    if (!session || !supabase) {
-      // If no session or supabase client, load an empty set of cards
-      setCards([]);
-      setLoading(false);
-      toast.info("You are browsing flashcards as a guest. Log in to save your progress and cards.");
-      return;
-    }
-
-    const fetchCards = async () => {
-      setLoading(true);
+    if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase
         .from('flashcards')
-        .select('*')
+        .update({
+          seen_count: newSeenCount,
+          last_reviewed_at: now,
+        })
+        .eq('id', cardId)
         .eq('user_id', session.user.id)
-        .order('created_at', { ascending: true });
+        .select()
+        .single();
 
       if (error) {
-        toast.error("Error fetching flashcards: " + error.message);
-        console.error("Error fetching flashcards:", error);
-      } else {
-        setCards(data as CardData[]);
-        // After fetching, ensure currentCardIndex is valid for the fetched cards
-        if (data.length > 0) {
-          setCurrentCardIndex(0); // Start at the first card
-        } else {
-          setCurrentCardIndex(0); // No cards, index remains 0
+        console.error("Error updating card interaction (Supabase):", error);
+      } else if (data) {
+        setCards(prevCards => prevCards.map(card => card.id === cardId ? data as CardData : card));
+      }
+    } else {
+      // Local storage update
+      setCards(prevCards => {
+        const updated = prevCards.map(card =>
+          card.id === cardId
+            ? { ...card, seen_count: newSeenCount, last_reviewed_at: now }
+            : card
+        );
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+      });
+    }
+  }, [cards, isLoggedInMode, session, supabase]);
+
+  // Effect to handle initial load and auth state changes
+  useEffect(() => {
+    if (authLoading) return;
+
+    const loadCards = async () => {
+      setLoading(true);
+      if (session && supabase) {
+        // User is logged in
+        setIsLoggedInMode(true);
+        console.log("User logged in. Checking for local cards to migrate...");
+
+        // 1. Load local cards (if any)
+        const localCardsString = localStorage.getItem(LOCAL_STORAGE_KEY);
+        let localCards: CardData[] = [];
+        try {
+          localCards = localCardsString ? JSON.parse(localCardsString) : [];
+        } catch (e) {
+          console.error("Error parsing local storage cards:", e);
+          localCards = [];
         }
-        setIsFlipped(false); // Ensure card is unflipped on load
+
+        // 2. Fetch user's existing cards from Supabase
+        const { data: supabaseCards, error: fetchError } = await supabase
+          .from('flashcards')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: true });
+
+        if (fetchError) {
+          toast.error("Error fetching flashcards from Supabase: " + fetchError.message);
+          console.error("Error fetching flashcards (Supabase):", fetchError);
+          setCards([]);
+        } else {
+          let mergedCards = [...(supabaseCards as CardData[])];
+
+          // 3. Migrate local cards to Supabase if they don't already exist
+          if (localCards.length > 0) {
+            console.log(`Found ${localCards.length} local cards. Attempting migration...`);
+            for (const localCard of localCards) {
+              // Check if a similar card (by front/back) already exists in Supabase
+              const existsInSupabase = mergedCards.some(
+                sc => sc.front === localCard.front && sc.back === localCard.back
+              );
+
+              if (!existsInSupabase) {
+                const { data: newSupabaseCard, error: insertError } = await supabase
+                  .from('flashcards')
+                  .insert({
+                    user_id: session.user.id,
+                    front: localCard.front,
+                    back: localCard.back,
+                    starred: localCard.starred,
+                    status: localCard.status,
+                    seen_count: localCard.seen_count,
+                    last_reviewed_at: localCard.last_reviewed_at,
+                    interval_days: localCard.interval_days,
+                  })
+                  .select()
+                  .single();
+
+                if (insertError) {
+                  console.error("Error migrating local card to Supabase:", insertError);
+                  toast.error("Error migrating some local cards.");
+                } else if (newSupabaseCard) {
+                  mergedCards.push(newSupabaseCard as CardData);
+                  console.log("Migrated local card:", newSupabaseCard.front);
+                }
+              }
+            }
+            // Clear local storage after migration attempt
+            localStorage.removeItem(LOCAL_STORAGE_KEY);
+            toast.success("Local flashcards migrated to your account!");
+          }
+          setCards(mergedCards);
+        }
+      } else {
+        // User is a guest (not logged in)
+        setIsLoggedInMode(false);
+        const storedCardsString = localStorage.getItem(LOCAL_STORAGE_KEY);
+        let loadedCards: CardData[] = [];
+        try {
+          loadedCards = storedCardsString ? JSON.parse(storedCardsString) : [];
+        } catch (e) {
+          console.error("Error parsing local storage cards:", e);
+          loadedCards = [];
+        }
+        setCards(loadedCards);
+        if (loadedCards.length === 0) {
+          toast.info("You are browsing flashcards as a guest. Your cards will be saved locally.");
+        }
       }
       setLoading(false);
+      setCurrentCardIndex(0); // Reset index on load/auth change
+      setIsFlipped(false);
     };
 
-    fetchCards();
+    loadCards();
   }, [session, supabase, authLoading]); // Depend on session and supabase
+
+  // Effect to save cards to local storage when in guest mode
+  useEffect(() => {
+    if (!isLoggedInMode && !loading) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cards));
+    }
+  }, [cards, isLoggedInMode, loading]);
 
   // Adjust currentCardIndex if it goes out of bounds after filtering
   const filteredCards = cards.filter(card => {
@@ -105,26 +186,25 @@ export default function FlashCardsPage() {
       return card.starred;
     }
     if (filterMode === 'learned') {
-      return card.status === 'mastered'; // 'learned' maps to 'mastered' status
+      return card.status === 'mastered';
     }
     // For 'all' mode, also consider next_review_at for spaced repetition
     const now = new Date();
-    const nextReview = card.last_reviewed_at ? new Date(card.last_reviewed_at) : new Date(0); // Treat null as ready for review
+    const nextReview = card.last_reviewed_at ? new Date(card.last_reviewed_at) : new Date(0);
     nextReview.setDate(nextReview.getDate() + card.interval_days);
     return now >= nextReview;
   });
 
   useEffect(() => {
-    // If the current index is out of bounds for the filtered cards, reset to 0
     if (filteredCards.length > 0) {
       if (currentCardIndex >= filteredCards.length) {
         setCurrentCardIndex(0);
       }
     } else {
-      setCurrentCardIndex(0); // If no cards, ensure index is 0
+      setCurrentCardIndex(0);
     }
-    setIsFlipped(false); // Always unflip when filter or card set changes
-  }, [filterMode, filteredCards.length]); // currentCardIndex is NOT a dependency here.
+    setIsFlipped(false);
+  }, [filterMode, filteredCards.length]);
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
@@ -139,7 +219,7 @@ export default function FlashCardsPage() {
       if (filteredCards.length === 0) return;
       const nextIndex = (currentCardIndex + 1) % filteredCards.length;
       setCurrentCardIndex(nextIndex);
-      updateCardInteraction(filteredCards[nextIndex].id); // Update for the *new* current card
+      updateCardInteraction(filteredCards[nextIndex].id);
       toast.info("Next card!");
     }, 100);
   };
@@ -150,21 +230,45 @@ export default function FlashCardsPage() {
       if (filteredCards.length === 0) return;
       const prevIndex = currentCardIndex === 0 ? filteredCards.length - 1 : currentCardIndex - 1;
       setCurrentCardIndex(prevIndex);
-      updateCardInteraction(filteredCards[prevIndex].id); // Update for the *new* current card
+      updateCardInteraction(filteredCards[prevIndex].id);
       toast.info("Previous card!");
     }, 100);
   };
 
   const handleAddCard = async (newCardData: { front: string; back: string }) => {
-    if (!session || !supabase) {
-      toast.error("Please log in to add flashcards.");
-      return;
-    }
-    console.log("Attempting to add card:", newCardData);
-    const { data, error } = await supabase
-      .from('flashcards')
-      .insert({
-        user_id: session.user.id,
+    if (isLoggedInMode && session && supabase) {
+      const { data, error } = await supabase
+        .from('flashcards')
+        .insert({
+          user_id: session.user.id,
+          front: newCardData.front,
+          back: newCardData.back,
+          starred: false,
+          status: 'new',
+          seen_count: 0,
+          last_reviewed_at: null,
+          interval_days: 0,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        toast.error("Error adding flashcard (Supabase): " + error.message);
+        console.error("Error adding flashcard (Supabase):", error);
+      } else if (data) {
+        setCards((prevCards) => {
+          const updatedCards = [...prevCards, data as CardData];
+          setFilterMode('all');
+          setCurrentCardIndex(updatedCards.length - 1);
+          setIsFlipped(false);
+          return updatedCards;
+        });
+        toast.success("Flashcard added successfully to your account!");
+      }
+    } else {
+      // Guest mode: save to local storage
+      const newCard: CardData = {
+        id: crypto.randomUUID(), // Generate unique ID for local cards
         front: newCardData.front,
         back: newCardData.back,
         starred: false,
@@ -172,46 +276,47 @@ export default function FlashCardsPage() {
         seen_count: 0,
         last_reviewed_at: null,
         interval_days: 0,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      toast.error("Error adding flashcard: " + error.message);
-      console.error("Error adding flashcard:", error);
-    } else if (data) {
-      console.log("Card added successfully:", data);
+      };
       setCards((prevCards) => {
-        const updatedCards = [...prevCards, data as CardData];
+        const updatedCards = [...prevCards, newCard];
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedCards));
         setFilterMode('all');
         setCurrentCardIndex(updatedCards.length - 1);
         setIsFlipped(false);
         return updatedCards;
       });
-      toast.success("Flashcard added successfully!");
+      toast.success("Flashcard added successfully (saved locally)!");
     }
   };
 
   const handleDeleteCard = async (cardId: string) => {
-    if (!session || !supabase) {
-      toast.error("Please log in to delete flashcards.");
-      return;
-    }
-    const { error } = await supabase
-      .from('flashcards')
-      .delete()
-      .eq('id', cardId)
-      .eq('user_id', session.user.id);
+    if (isLoggedInMode && session && supabase) {
+      const { error } = await supabase
+        .from('flashcards')
+        .delete()
+        .eq('id', cardId)
+        .eq('user_id', session.user.id);
 
-    if (error) {
-      toast.error("Error deleting flashcard: " + error.message);
-      console.error("Error deleting flashcard:", error);
+      if (error) {
+        toast.error("Error deleting flashcard (Supabase): " + error.message);
+        console.error("Error deleting flashcard (Supabase):", error);
+      } else {
+        const updatedCards = cards.filter(card => card.id !== cardId);
+        setCards(updatedCards);
+        setCurrentCardIndex(0);
+        setIsFlipped(false);
+        toast.success("Flashcard deleted from your account.");
+      }
     } else {
-      const updatedCards = cards.filter(card => card.id !== cardId);
-      setCards(updatedCards);
-      setCurrentCardIndex(0); // Reset index for simplicity after deletion
+      // Guest mode: delete from local storage
+      setCards(prevCards => {
+        const updated = prevCards.filter(card => card.id !== cardId);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+      });
+      setCurrentCardIndex(0);
       setIsFlipped(false);
-      toast.success("Flashcard deleted.");
+      toast.success("Flashcard deleted (locally).");
     }
   };
 
@@ -220,101 +325,131 @@ export default function FlashCardsPage() {
       toast.info("Need at least two cards to shuffle.");
       return;
     }
-    // Create a shuffled copy of the current filtered cards
     const shuffledFilteredCards = [...filteredCards].sort(() => Math.random() - 0.5);
-
-    // Find the corresponding cards in the original 'cards' state and reorder them
-    // This is a simplified shuffle that only reorders the currently filtered set.
-    // For a full reorder of all cards, a more complex state update or DB update would be needed.
-    const newCardsOrder = cards.map(card => {
-      const foundInShuffled = shuffledFilteredCards.find(shuffledCard => shuffledCard.id === card.id);
-      return foundInShuffled || card; // Keep original if not in filtered set
+    // This shuffle only reorders the currently filtered set in the UI.
+    // It does not persist to DB or local storage in this specific shuffle action.
+    // If persistence is needed, a 'sort_order' column would be required.
+    setCards(prevCards => {
+      const newCards = [...prevCards];
+      // Replace the filtered cards with their shuffled order, keeping others in place
+      shuffledFilteredCards.forEach((shuffledCard, idx) => {
+        const originalIndex = newCards.findIndex(card => card.id === shuffledCard.id);
+        if (originalIndex !== -1) {
+          newCards[originalIndex] = shuffledCard; // This is a simplified approach
+        }
+      });
+      return newCards;
     });
-
-    setCards(newCardsOrder); // Update local state for immediate visual feedback
-    setCurrentCardIndex(0); // Reset to the first card of the new shuffled order
+    setCurrentCardIndex(0);
     setIsFlipped(false);
     toast.success("Flashcards shuffled!");
   };
 
   const handleToggleStar = async (cardId: string) => {
-    if (!session || !supabase) {
-      toast.error("Please log in to star flashcards.");
-      return;
-    }
     const cardToUpdate = cards.find(card => card.id === cardId);
     if (!cardToUpdate) return;
 
     const newStarredStatus = !cardToUpdate.starred;
-    const { data, error } = await supabase
-      .from('flashcards')
-      .update({ starred: newStarredStatus })
-      .eq('id', cardId)
-      .eq('user_id', session.user.id)
-      .select()
-      .single();
 
-    if (error) {
-      toast.error("Error updating star status: " + error.message);
-      console.error("Error updating star status:", error);
-    } else if (data) {
-      setCards(prevCards => prevCards.map(card => card.id === cardId ? data as CardData : card));
-      toast.info(newStarredStatus ? "Card starred for later!" : "Card unstarred.");
+    if (isLoggedInMode && session && supabase) {
+      const { data, error } = await supabase
+        .from('flashcards')
+        .update({ starred: newStarredStatus })
+        .eq('id', cardId)
+        .eq('user_id', session.user.id)
+        .select()
+        .single();
+
+      if (error) {
+        toast.error("Error updating star status (Supabase): " + error.message);
+        console.error("Error updating star status (Supabase):", error);
+      } else if (data) {
+        setCards(prevCards => prevCards.map(card => card.id === cardId ? data as CardData : card));
+        toast.info(newStarredStatus ? "Card starred for later!" : "Card unstarred.");
+      }
+    } else {
+      // Guest mode: update local storage
+      setCards(prevCards => {
+        const updated = prevCards.map(card =>
+          card.id === cardId ? { ...card, starred: newStarredStatus } : card
+        );
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+      });
+      toast.info(newStarredStatus ? "Card starred for later (locally)!" : "Card unstarred (locally).");
     }
   };
 
   const handleMarkAsLearned = async (cardId: string) => {
-    if (!session || !supabase) {
-      toast.error("Please log in to mark flashcards as learned.");
-      return;
-    }
     const cardToUpdate = cards.find(card => card.id === cardId);
     if (!cardToUpdate) return;
 
     const newStatus = cardToUpdate.status === 'mastered' ? 'new' : 'mastered';
-    const newInterval = newStatus === 'mastered' ? 7 : 0; // Example: 7 days for mastered, 0 for new
+    const newInterval = newStatus === 'mastered' ? 7 : 0;
     const now = new Date().toISOString();
 
-    const { data, error } = await supabase
-      .from('flashcards')
-      .update({
-        status: newStatus,
-        last_reviewed_at: now,
-        interval_days: newInterval,
-      })
-      .eq('id', cardId)
-      .eq('user_id', session.user.id)
-      .select()
-      .single();
+    if (isLoggedInMode && session && supabase) {
+      const { data, error } = await supabase
+        .from('flashcards')
+        .update({
+          status: newStatus,
+          last_reviewed_at: now,
+          interval_days: newInterval,
+        })
+        .eq('id', cardId)
+        .eq('user_id', session.user.id)
+        .select()
+        .single();
 
-    if (error) {
-      toast.error("Error updating card status: " + error.message);
-      console.error("Error updating card status:", error);
-    } else if (data) {
-      setCards(prevCards => prevCards.map(card => card.id === cardId ? data as CardData : card));
-      toast.info(newStatus === 'mastered' ? "Card marked as learned!" : "Card marked as new.");
+      if (error) {
+        toast.error("Error updating card status (Supabase): " + error.message);
+        console.error("Error updating card status (Supabase):", error);
+      } else if (data) {
+        setCards(prevCards => prevCards.map(card => card.id === cardId ? data as CardData : card));
+        toast.info(newStatus === 'mastered' ? "Card marked as learned!" : "Card marked as new.");
+      }
+    } else {
+      // Guest mode: update local storage
+      setCards(prevCards => {
+        const updated = prevCards.map(card =>
+          card.id === cardId
+            ? { ...card, status: newStatus, last_reviewed_at: now, interval_days: newInterval }
+            : card
+        );
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+      });
+      toast.info(newStatus === 'mastered' ? "Card marked as learned (locally)!" : "Card marked as new (locally).");
     }
   };
 
   const handleUpdateCard = async (cardId: string, updatedData: { front: string; back: string }) => {
-    if (!session || !supabase) {
-      toast.error("Please log in to update flashcards.");
-      return;
-    }
-    const { data, error } = await supabase
-      .from('flashcards')
-      .update(updatedData)
-      .eq('id', cardId)
-      .eq('user_id', session.user.id)
-      .select()
-      .single();
+    if (isLoggedInMode && session && supabase) {
+      const { data, error } = await supabase
+        .from('flashcards')
+        .update(updatedData)
+        .eq('id', cardId)
+        .eq('user_id', session.user.id)
+        .select()
+        .single();
 
-    if (error) {
-      toast.error("Error updating flashcard: " + error.message);
-      console.error("Error updating flashcard:", error);
-    } else if (data) {
-      setCards(prevCards => prevCards.map(card => card.id === cardId ? data as CardData : card));
-      toast.success("Flashcard updated successfully!");
+      if (error) {
+        toast.error("Error updating flashcard (Supabase): " + error.message);
+        console.error("Error updating flashcard (Supabase):", error);
+      } else if (data) {
+        setCards(prevCards => prevCards.map(card => card.id === cardId ? data as CardData : card));
+        toast.success("Flashcard updated successfully!");
+      }
+    } else {
+      // Guest mode: update local storage
+      setCards(prevCards => {
+        const updated = prevCards.map(card =>
+          card.id === cardId ? { ...card, ...updatedData } : card
+        );
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+      });
+      toast.success("Flashcard updated successfully (locally)!");
     }
   };
 
@@ -327,31 +462,42 @@ export default function FlashCardsPage() {
     // Reordering client-side for display, but not persisting order in DB for now.
     // To persist, you'd need a 'sort_order' column and update it for all cards.
     setCards(newOrder); // Update local state for immediate visual feedback
+    if (!isLoggedInMode) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newOrder));
+    }
     toast.success("Flashcards reordered locally!");
   };
 
   const handleResetProgress = async () => {
-    if (!session || !supabase) {
-      toast.error("Please log in to reset progress.");
-      return;
-    }
-    const { error } = await supabase
-      .from('flashcards')
-      .update({ seen_count: 0, status: 'new', last_reviewed_at: null, interval_days: 0 })
-      .eq('user_id', session.user.id);
+    if (isLoggedInMode && session && supabase) {
+      const { error } = await supabase
+        .from('flashcards')
+        .update({ seen_count: 0, status: 'new', last_reviewed_at: null, interval_days: 0 })
+        .eq('user_id', session.user.id);
 
-    if (error) {
-      toast.error("Error resetting progress: " + error.message);
-      console.error("Error resetting progress:", error);
+      if (error) {
+        toast.error("Error resetting progress (Supabase): " + error.message);
+        console.error("Error resetting progress (Supabase):", error);
+      } else {
+        setCards(prevCards => prevCards.map(card => ({ ...card, seen_count: 0, status: 'new', last_reviewed_at: null, interval_days: 0 })));
+        setCurrentCardIndex(0);
+        setIsFlipped(false);
+        toast.success("All card progress reset!");
+      }
     } else {
-      setCards(prevCards => prevCards.map(card => ({ ...card, seen_count: 0, status: 'new', last_reviewed_at: null, interval_days: 0 })));
+      // Guest mode: reset local storage progress
+      setCards(prevCards => {
+        const updated = prevCards.map(card => ({ ...card, seen_count: 0, status: 'new', last_reviewed_at: null, interval_days: 0 }));
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+      });
       setCurrentCardIndex(0);
       setIsFlipped(false);
-      toast.success("All card progress reset!");
+      toast.success("All card progress reset (locally)!");
     }
   };
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center h-full py-8">
