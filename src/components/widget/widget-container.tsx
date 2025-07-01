@@ -5,7 +5,7 @@ import { Widget } from "./widget";
 import { SpacesPanel } from "@/components/panels/spaces-panel";
 import { SoundsPanel } from "@/components/panels/sounds-panel";
 import { CalendarPanel } from "@/components/panels/calendar-panel";
-import { TimerPanel } => "@/components/panels/timer-panel";
+import { TimerPanel } from "@/components/panels/timer-panel";
 import { NotesPanel } from "@/components/panels/notes-panel";
 import { MediaPanel } from "@/components/panels/media-panel";
 import { FortunePanel } from "@/components/panels/fortune-panel";
