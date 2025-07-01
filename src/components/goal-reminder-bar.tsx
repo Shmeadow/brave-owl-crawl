@@ -19,20 +19,20 @@ export function GoalReminderBar() {
   }
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4">
-      <Card className="bg-card text-card-foreground shadow-lg border-primary/20">
-        <CardContent className="flex items-center justify-between p-3 gap-3">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
+    <div className="fixed top-16 left-4 z-50 w-full max-w-xs"> {/* Adjusted positioning and max-width */}
+      <Card className="bg-transparent shadow-none border-none"> {/* Made card transparent, no shadow/border */}
+        <CardContent className="flex items-center justify-between p-2 gap-2"> {/* Reduced padding */}
+          <div className="flex items-center gap-2 flex-1 min-w-0"> {/* Reduced gap */}
             <Checkbox
               id={`reminder-goal-${activeGoal.id}`}
               checked={activeGoal.completed}
               onCheckedChange={() => handleToggleComplete(activeGoal.id, activeGoal.completed)}
-              className="h-5 w-5"
+              className="h-4 w-4" // Smaller checkbox
             />
             <label
               htmlFor={`reminder-goal-${activeGoal.id}`}
               className={cn(
-                "text-base font-medium leading-none truncate",
+                "text-sm font-medium leading-none truncate", // Smaller text
                 activeGoal.completed && "line-through text-muted-foreground"
               )}
             >
@@ -42,10 +42,10 @@ export function GoalReminderBar() {
           <Button
             variant="ghost"
             size="icon"
-            className="text-muted-foreground hover:text-destructive h-6 w-6"
+            className="text-muted-foreground hover:text-destructive h-5 w-5" // Smaller button
             onClick={() => handleDeleteGoal(activeGoal.id)}
           >
-            <X className="h-4 w-4" />
+            <X className="h-3 w-3" /> {/* Smaller icon */}
             <span className="sr-only">Delete Goal</span>
           </Button>
         </CardContent>
