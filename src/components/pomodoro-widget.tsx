@@ -50,7 +50,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
         "fixed bottom-4 left-1/2 -translate-x-1/2 z-50", // Fixed position at bottom-center
         "w-full max-w-sm bg-background/50 backdrop-blur-md shadow-lg border",
         "flex flex-col items-center p-4 gap-4 transition-all duration-300 ease-in-out",
-        isMinimized ? "h-24" : "h-auto"
+        isMinimized ? "h-20" : "h-auto" // Changed from h-24 to h-20 for smaller docked size
       )}
     >
       <CardHeader className="flex flex-row items-center justify-between pb-2 w-full">
@@ -106,11 +106,11 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
             onChange={(e) => setEditableTimeString(e.target.value)}
             onBlur={handleTimeInputBlur}
             onKeyDown={handleTimeInputKeyDown}
-            className="text-4xl font-bold font-mono text-center w-full max-w-[250px]"
+            className="text-3xl font-bold font-mono text-center w-full max-w-[250px]" // Changed from text-4xl to text-3xl
           />
         ) : (
           <div
-            className="text-4xl font-bold font-mono cursor-pointer hover:text-primary transition-colors"
+            className="text-3xl font-bold font-mono cursor-pointer hover:text-primary transition-colors" // Changed from text-4xl to text-3xl
             onClick={handleTimeDisplayClick}
           >
             {formatTime(timeLeft)}
