@@ -72,7 +72,7 @@
 
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    --gold: 45 90% 55%; /* A warm golden color */
+    --gold: 45 90% 55%; /* Added gold color */
   }
   .dark {
 
@@ -129,33 +129,33 @@
 
   /* New Cozy Theme */
   [data-theme="cozy"] {
-    --background: 30 30% 98%; /* Very light cream */
-    --foreground: 210 10% 25%; /* Slightly softer dark grey-blue */
-    --card: 30 30% 100%; /* Pure white for cards, for contrast */
+    --background: 63 39% 86%; /* Pistachio #EBECCC */
+    --foreground: 210 10% 25%; /* Kept existing soft dark grey-blue for contrast */
+    --card: 45 100% 94%; /* Ivory #FFF9E2 */
     --card-foreground: 210 10% 25%;
-    --popover: 30 30% 100%;
+    --popover: 45 100% 94%; /* Ivory #FFF9E2 */
     --popover-foreground: 210 10% 25%;
-    --primary: 25 50% 60%; /* Softer, slightly desaturated orange-brown */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 30 10% 90%; /* Very light, muted brown */
+    --primary: 24 59% 67%; /* Clay #DCA27B */
+    --primary-foreground: 0 0% 100%; /* White */
+    --secondary: 28 93% 93%; /* Peach #FEECDB */
     --secondary-foreground: 210 10% 25%;
-    --muted: 30 10% 90%;
-    --muted-foreground: 210 5% 55%; /* Lighter muted text */
-    --accent: 30 10% 85%; /* Slightly darker very light brown */
+    --muted: 73 26% 76%; /* Eucalyptus #CDD4B1 */
+    --muted-foreground: 210 5% 55%; /* Kept existing lighter muted text */
+    --accent: 73 26% 70%; /* Slightly darker Eucalyptus for accent */
     --accent-foreground: 210 10% 25%;
-    --destructive: 0 70% 55%; /* Slightly softer red */
+    --destructive: 0 70% 55%; /* Kept existing slightly softer red */
     --destructive-foreground: 0 0% 100%;
-    --border: 30 10% 80%; /* Lighter, softer brown border */
-    --input: 30 10% 80%;
-    --ring: 25 50% 60%;
-    --sidebar-background: 30 25% 95%; /* Slightly darker cream for sidebar */
+    --border: 73 26% 70%; /* Eucalyptus variant for border */
+    --input: 73 26% 70%; /* Eucalyptus variant for input */
+    --ring: 24 59% 67%; /* Clay */
+    --sidebar-background: 63 39% 80%; /* Slightly darker Pistachio for sidebar */
     --sidebar-foreground: 210 10% 25%;
-    --sidebar-primary: 25 50% 60%;
+    --sidebar-primary: 24 59% 67%; /* Clay */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 30 10% 85%;
+    --sidebar-accent: 73 26% 70%; /* Slightly darker Eucalyptus */
     --sidebar-accent-foreground: 210 10% 25%;
-    --sidebar-border: 30 10% 75%;
-    --sidebar-ring: 25 50% 60%;
+    --sidebar-border: 73 26% 65%; /* Even darker Eucalyptus for sidebar border */
+    --sidebar-ring: 24 59% 67%; /* Clay */
   }
 }
 
