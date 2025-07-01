@@ -2,24 +2,31 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Clock, BookOpen, Timer, Goal, User } from "lucide-react";
+import { LayoutDashboard, Clock, BookOpen, Timer, Goal, User, Settings } from "lucide-react"; // Import Settings icon
 import { cn } from "@/lib/utils";
+import { useSupabase } from "@/integrations/supabase/auth"; // Import useSupabase
 
 const navItems = [
   { href: "/time-tracker", icon: Clock, label: "Time Tracker" },
   { href: "/flash-cards", icon: BookOpen, label: "Flash Cards" },
   { href: "/pomodoro", icon: Timer, label: "Pomodoro" },
-  { href: "/goal-focus", icon: Goal, label: "Goal Focus" }, // Re-added Goal Focus link
+  { href: "/goal-focus", icon: Goal, label: "Goal Focus" },
   { href: "/account", icon: User, label: "Account" },
 ];
 
 export function MainNavigation() {
   const pathname = usePathname();
   const isActive = (path: string) => pathname === path;
+  const { session, loading } = useSupabase();
+  const isAdmin = session?.user?.user_metadata?.role === 'admin';
+
+  const filteredNavItems = isAdmin
+    ? [...navItems, { href: "/admin-settings", icon: Settings, label: "Admin Settings" }]
+    : navItems;
 
   return (
     <nav className="hidden sm:flex items-center justify-center gap-6 text-sm font-medium lg:gap-8">
-      {navItems.map((item) => (
+      {filteredNavItems.map((item) => (
         <Link
           key={item.href}
           href={item.href}

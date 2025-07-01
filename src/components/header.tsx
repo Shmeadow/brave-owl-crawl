@@ -3,17 +3,20 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, LayoutDashboard, Clock, BookOpen, Timer, Goal, User } from "lucide-react";
+import { Menu, LayoutDashboard, Clock, BookOpen, Timer, Goal, User, Settings } from "lucide-react"; // Import Settings icon
 import { UserNav } from "@/components/user-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { MainNavigation } from "@/components/main-navigation";
+import { useSupabase } from "@/integrations/supabase/auth"; // Import useSupabase
 
 export function Header() {
   const pathname = usePathname();
   const isActive = (path: string) => pathname === path;
+  const { session, loading } = useSupabase();
+  const isAdmin = session?.user?.user_metadata?.role === 'admin';
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -53,6 +56,12 @@ export function Header() {
                 <User className="h-4 w-4" />
                 Account
               </Link>
+              {isAdmin && ( // Conditionally render Admin Settings link
+                <Link href="/admin-settings" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary", isActive("/admin-settings") && "text-primary")}>
+                  <Settings className="h-4 w-4" />
+                  Admin Settings
+                </Link>
+              )}
             </nav>
           </SheetContent>
         </Sheet>
