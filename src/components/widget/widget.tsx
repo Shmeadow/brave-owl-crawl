@@ -47,12 +47,10 @@ export function Widget({
   const initialWidgetSize = useRef({ width: 0, height: 0 });
   const resizeDirection = useRef("");
 
-  // Removed the useEffect that called onBringToFront unconditionally.
-  // onBringToFront is now only called on user interaction (drag/resize start).
-
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (isDocked || isMinimized) return; // Prevent dragging/resizing when docked or minimized
 
+    e.preventDefault(); // Prevent default browser drag behavior
     onBringToFront(); // Bring to front when dragging starts
     isDraggingRef.current = true;
     initialMousePos.current = { x: e.clientX, y: e.clientY };
@@ -162,7 +160,7 @@ export function Widget({
     <Card
       ref={cardRef}
       className={cn(
-        "absolute bg-card text-card-foreground shadow-lg rounded-lg flex flex-col overflow-hidden transition-all duration-200 ease-in-out",
+        "absolute bg-card text-card-foreground shadow-lg rounded-lg flex flex-col overflow-hidden transition-all duration-200 ease-in-out group", // Added group for hover effects
         isMinimized ? "w-64 h-10" : "",
         isDocked ? "relative !top-auto !left-auto !transform-none !w-full !h-auto" : ""
       )}
@@ -211,14 +209,14 @@ export function Widget({
       {!isDocked && !isMinimized && (
         <>
           {/* Resize handles */}
-          <div className="absolute w-2 h-2 bg-transparent cursor-nwse-resize top-0 left-0 -mt-1 -ml-1" onMouseDown={(e) => handleResizeMouseDown(e, "top-left")} />
-          <div className="absolute w-2 h-2 bg-transparent cursor-nesw-resize top-0 right-0 -mt-1 -mr-1" onMouseDown={(e) => handleResizeMouseDown(e, "top-right")} />
-          <div className="absolute w-2 h-2 bg-transparent cursor-nesw-resize bottom-0 left-0 -mb-1 -ml-1" onMouseDown={(e) => handleResizeMouseDown(e, "bottom-left")} />
-          <div className="absolute w-2 h-2 bg-transparent cursor-nwse-resize bottom-0 right-0 -mb-1 -mr-1" onMouseDown={(e) => handleResizeMouseDown(e, "bottom-right")} />
-          <div className="absolute w-full h-2 bg-transparent cursor-ns-resize top-0 left-0" onMouseDown={(e) => handleResizeMouseDown(e, "top")} />
-          <div className="absolute w-full h-2 bg-transparent cursor-ns-resize bottom-0 left-0" onMouseDown={(e) => handleResizeMouseDown(e, "bottom")} />
-          <div className="absolute w-2 h-full bg-transparent cursor-ew-resize left-0 top-0" onMouseDown={(e) => handleResizeMouseDown(e, "left")} />
-          <div className="absolute w-2 h-full bg-transparent cursor-ew-resize right-0 top-0" onMouseDown={(e) => handleResizeMouseDown(e, "right")} />
+          <div className="absolute w-3 h-3 bg-muted/50 border border-border rounded-sm opacity-0 group-hover:opacity-100 transition-opacity cursor-nwse-resize top-0 left-0 -mt-1.5 -ml-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "top-left")} />
+          <div className="absolute w-3 h-3 bg-muted/50 border border-border rounded-sm opacity-0 group-hover:opacity-100 transition-opacity cursor-nesw-resize top-0 right-0 -mt-1.5 -mr-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "top-right")} />
+          <div className="absolute w-3 h-3 bg-muted/50 border border-border rounded-sm opacity-0 group-hover:opacity-100 transition-opacity cursor-nesw-resize bottom-0 left-0 -mb-1.5 -ml-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "bottom-left")} />
+          <div className="absolute w-3 h-3 bg-muted/50 border border-border rounded-sm opacity-0 group-hover:opacity-100 transition-opacity cursor-nwse-resize bottom-0 right-0 -mb-1.5 -mr-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "bottom-right")} />
+          <div className="absolute w-full h-3 bg-muted/50 border-t border-b border-border opacity-0 group-hover:opacity-100 transition-opacity cursor-ns-resize top-0 left-0 -mt-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "top")} />
+          <div className="absolute w-full h-3 bg-muted/50 border-t border-b border-border opacity-0 group-hover:opacity-100 transition-opacity cursor-ns-resize bottom-0 left-0 -mb-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "bottom")} />
+          <div className="absolute w-3 h-full bg-muted/50 border-l border-r border-border opacity-0 group-hover:opacity-100 transition-opacity cursor-ew-resize left-0 top-0 -ml-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "left")} />
+          <div className="absolute w-3 h-full bg-muted/50 border-l border-r border-border opacity-0 group-hover:opacity-100 transition-opacity cursor-ew-resize right-0 top-0 -mr-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "right")} />
         </>
       )}
     </Card>
