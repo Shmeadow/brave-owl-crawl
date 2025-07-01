@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Minimize, Maximize, Pin, PinOff, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDraggable } from "@dnd-kit/core";
-import { ResizableBox } from "@/components/ui/resizable-box";
+import { ResizableBox } from "@/components/resizable-box"; // Updated import path
 import { WidgetId } from "@/hooks/use-widget-state";
 
 interface WidgetProps {
