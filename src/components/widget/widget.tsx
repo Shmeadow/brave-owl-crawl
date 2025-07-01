@@ -64,17 +64,8 @@ export function Widget({
   const isResizable = !isMaximized && !isVisuallyMinimized;
   const isDraggable = !isMaximized && !isPinned; // Draggable if not maximized or pinned (includes minimized)
 
-  const renderCardContent = () => {
-    // Content for minimized or pinned state
-    if (isMinimized || isPinned) {
-      return (
-        <div className="flex items-center justify-start gap-2 px-3 py-2 h-full w-full">
-          <Icon className="h-6 w-6 text-primary" />
-          <span className="text-sm font-medium truncate">{title}</span>
-        </div>
-      );
-    }
-    // Content for normal or maximized state
+  // Helper function to render the widget's main content area
+  const renderWidgetContent = () => {
     return (
       <CardContent className="flex-grow p-0 overflow-hidden">
         <Content />
@@ -94,8 +85,8 @@ export function Widget({
         isMinimized && !isPinned ? "w-56 h-12" : "", // Floating minimized fixed size
         
         // Cursor and resize behavior
-        isResizable ? "resize" : "", // Removed overflow-auto here
-        isDraggable ? "cursor-grab" : "", // Apply grab cursor if draggable
+        isResizable ? "resize" : "",
+        isDraggable ? "cursor-grab" : "",
         isMinimized && !isPinned ? "cursor-pointer" : "", // Minimized is clickable to restore
         "z-50",
         "pointer-events-auto"
@@ -160,16 +151,16 @@ export function Widget({
               {title}
             </CardTitle>
             <div className="flex gap-1">
-              <Button variant="ghost" size="icon" onClick={() => onMinimize(id)} title="Minimize">
+              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMinimize(id); }} title="Minimize">
                 <Minimize className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => onMaximize(id)} title="Maximize">
+              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
                 <Maximize className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => onPin(id)} title="Pin">
+              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title="Pin">
                 <Pin className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => onClose(id)} title="Close">
+              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onClose(id); }} title="Close">
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -195,7 +186,7 @@ export function Widget({
           )}
           handle={null}
         >
-          {renderCardContent()}
+          {renderWidgetContent()}
         </ResizableBox>
       )}
     </Card>
