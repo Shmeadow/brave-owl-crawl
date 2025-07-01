@@ -160,6 +160,7 @@ export default function FlashCardsPage() {
       toast.error("Please log in to add flashcards.");
       return;
     }
+    console.log("Attempting to add card:", newCardData);
     const { data, error } = await supabase
       .from('flashcards')
       .insert({
@@ -179,13 +180,12 @@ export default function FlashCardsPage() {
       toast.error("Error adding flashcard: " + error.message);
       console.error("Error adding flashcard:", error);
     } else if (data) {
+      console.log("Card added successfully:", data);
       setCards((prevCards) => {
         const updatedCards = [...prevCards, data as CardData];
-        // When a new card is added, always switch to 'all' mode
-        // and set the current card index to the newly added card.
         setFilterMode('all');
-        setCurrentCardIndex(updatedCards.length - 1); // Select the newly added card
-        setIsFlipped(false); // Ensure new card starts unflipped
+        setCurrentCardIndex(updatedCards.length - 1);
+        setIsFlipped(false);
         return updatedCards;
       });
       toast.success("Flashcard added successfully!");
@@ -220,19 +220,21 @@ export default function FlashCardsPage() {
       toast.info("Need at least two cards to shuffle.");
       return;
     }
-    // For now, shuffling only affects the display order, not the database order.
-    // A true shuffle would involve re-fetching based on a random order or updating a 'sort_order' column.
-    // Since we're filtering by next_review_at, a simple client-side shuffle might not be ideal for learning.
-    // For now, let's just reset seen counts and status for the *displayed* cards.
-    setCards(prevCards => prevCards.map(card => {
-      if (filteredCards.some(fc => fc.id === card.id)) {
-        return { ...card, seen_count: 0, status: 'new', last_reviewed_at: null, interval_days: 0 };
-      }
-      return card;
-    }));
-    setCurrentCardIndex(0);
+    // Create a shuffled copy of the current filtered cards
+    const shuffledFilteredCards = [...filteredCards].sort(() => Math.random() - 0.5);
+
+    // Find the corresponding cards in the original 'cards' state and reorder them
+    // This is a simplified shuffle that only reorders the currently filtered set.
+    // For a full reorder of all cards, a more complex state update or DB update would be needed.
+    const newCardsOrder = cards.map(card => {
+      const foundInShuffled = shuffledFilteredCards.find(shuffledCard => shuffledCard.id === card.id);
+      return foundInShuffled || card; // Keep original if not in filtered set
+    });
+
+    setCards(newCardsOrder); // Update local state for immediate visual feedback
+    setCurrentCardIndex(0); // Reset to the first card of the new shuffled order
     setIsFlipped(false);
-    toast.success("Flashcards shuffled and progress reset for displayed cards!");
+    toast.success("Flashcards shuffled!");
   };
 
   const handleToggleStar = async (cardId: string) => {
@@ -349,7 +351,7 @@ export default function FlashCardsPage() {
     }
   };
 
-  if (authLoading || loading) { // Only show loading if auth is still loading or cards are loading
+  if (authLoading || loading) {
     return (
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center h-full py-8">
@@ -361,13 +363,13 @@ export default function FlashCardsPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col flex-1 py-8"> {/* Changed h-full to flex-1 */}
+      <div className="flex flex-col flex-1 py-8">
         <h1 className="text-3xl font-bold mb-8 text-center">Flash Cards</h1>
         <ResizablePanelGroup direction="horizontal" className="flex-1 rounded-lg border">
           <ResizablePanel defaultSize={70} minSize={40}>
             <div className="flex flex-col items-center justify-center h-full p-4">
               <FlashCardDeck
-                cards={filteredCards} // Pass filtered cards
+                cards={filteredCards}
                 currentCardIndex={currentCardIndex}
                 isFlipped={isFlipped}
                 onFlip={handleFlip}
@@ -379,9 +381,9 @@ export default function FlashCardsPage() {
                 onToggleStar={handleToggleStar}
                 onMarkAsLearned={handleMarkAsLearned}
                 onUpdateCard={handleUpdateCard}
-                filterMode={filterMode} // Pass filter mode
-                setFilterMode={setFilterMode} // Pass setter for filter mode
-                onResetProgress={handleResetProgress} // Pass reset progress handler
+                filterMode={filterMode}
+                setFilterMode={setFilterMode}
+                onResetProgress={handleResetProgress}
               />
             </div>
           </ResizablePanel>
@@ -389,7 +391,7 @@ export default function FlashCardsPage() {
           <ResizablePanel defaultSize={30} minSize={20}>
             <div className="h-full p-4">
               <FlashCardListSidebar
-                cards={filteredCards} // Pass filtered cards
+                cards={filteredCards}
                 currentCardIndex={currentCardIndex}
                 onSelectCard={handleSelectCard}
                 onDeleteCard={handleDeleteCard}

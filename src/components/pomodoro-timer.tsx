@@ -3,10 +3,10 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Play, Pause, RotateCcw, Coffee, Brain, Home } from "lucide-react"; // Added Home for long break
+import { Play, Pause, RotateCcw, Coffee, Brain, Home } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input"; // Import Input for editable time
+import { Input } from "@/components/ui/input";
 
 type PomodoroMode = 'focus' | 'short-break' | 'long-break';
 
@@ -40,20 +40,18 @@ const parseTimeToSeconds = (timeString: string): number => {
 
 export function PomodoroTimer() {
   const [mode, setMode] = useState<PomodoroMode>('focus');
-  const [customTimes, setCustomTimes] = useState(DEFAULT_TIMES); // Store custom times for each mode
+  const [customTimes, setCustomTimes] = useState(DEFAULT_TIMES);
   const [timeLeft, setTimeLeft] = useState(customTimes.focus);
   const [isRunning, setIsRunning] = useState(false);
   const [isEditingTime, setIsEditingTime] = useState(false);
-  const [editableTimeString, setEditableTimeString] = useState(''); // For live input
+  const [editableTimeString, setEditableTimeString] = useState('');
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Helper to get current time for the active mode
   const getCurrentModeTime = useCallback(() => {
     return customTimes[mode];
   }, [mode, customTimes]);
 
-  // Initialize timeLeft when component mounts or mode changes
   useEffect(() => {
     setTimeLeft(getCurrentModeTime());
   }, [mode, getCurrentModeTime]);
@@ -66,7 +64,7 @@ export function PomodoroTimer() {
       setIsRunning(false);
     }
     setMode(newMode);
-    setTimeLeft(customTimes[newMode]); // Reset to the custom time for the new mode
+    setTimeLeft(customTimes[newMode]);
   }, [customTimes]);
 
   useEffect(() => {
@@ -99,8 +97,7 @@ export function PomodoroTimer() {
 
   const handleStartPause = () => {
     if (timeLeft === 0) {
-      // If timer finished, reset to current mode's *saved* time before starting
-      setTimeLeft(getCurrentModeTime()); // Reset to the current mode's stored time
+      setTimeLeft(getCurrentModeTime());
       setIsRunning(true);
       toast.info("Timer started!");
     } else {
@@ -117,32 +114,31 @@ export function PomodoroTimer() {
   const handleSwitchMode = (newMode: PomodoroMode) => {
     if (mode !== newMode) {
       setMode(newMode);
-      // timeLeft will be updated by the useEffect that depends on `mode`
       toast.info(`Switched to ${newMode === 'focus' ? 'Focus' : newMode === 'short-break' ? 'Short Break' : 'Long Break'} mode.`);
     }
   };
 
   const handleTimeDisplayClick = () => {
     setIsEditingTime(true);
-    setEditableTimeString(formatTime(timeLeft)); // Initialize with current formatted time
+    setEditableTimeString(formatTime(timeLeft));
   };
 
   const handleTimeInputBlur = () => {
     const newTime = parseTimeToSeconds(editableTimeString);
     if (!isNaN(newTime) && newTime >= 0) {
-      setCustomTimes(prev => ({ ...prev, [mode]: newTime })); // Save the new time for the current mode
-      setTimeLeft(newTime); // Update the displayed time immediately
+      setCustomTimes(prev => ({ ...prev, [mode]: newTime }));
+      setTimeLeft(newTime);
       toast.success("Timer time updated!");
     } else {
       toast.error("Invalid time format. Please use HH:MM:SS.");
-      setTimeLeft(getCurrentModeTime()); // Revert to last valid time
+      setTimeLeft(getCurrentModeTime());
     }
     setIsEditingTime(false);
   };
 
   const handleTimeInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      inputRef.current?.blur(); // Trigger blur to save
+      inputRef.current?.blur();
     }
   };
 
@@ -154,9 +150,9 @@ export function PomodoroTimer() {
 
   return (
     <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-2xl font-bold">Pomodoro Timer</CardTitle>
-        <div className="flex gap-2">
+      <CardHeader className="flex flex-col items-center space-y-4 pb-2">
+        <CardTitle className="text-2xl font-bold text-center">Pomodoro Timer</CardTitle>
+        <div className="flex gap-2 justify-center w-full">
           <Button
             variant={mode === 'focus' ? 'default' : 'outline'}
             size="sm"
