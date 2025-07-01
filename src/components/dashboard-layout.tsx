@@ -35,7 +35,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           "flex-shrink-0", // Prevent sidebar from shrinking
           "border-r bg-sidebar text-sidebar-foreground", // Styling
           "transition-all duration-300 ease-in-out", // Animation
-          isSidebarCollapsed ? "w-0 overflow-hidden" : "w-64", // Collapsed or expanded width
+          isSidebarCollapsed ? "w-0 overflow-hidden" : "w-56", // Collapsed or expanded width (changed from w-64 to w-56)
           "h-full" // Ensure sidebar takes full height
         )}
       >
@@ -45,7 +45,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col">
         <Header toggleSidebarCollapse={toggleSidebarCollapse} isSidebarCollapsed={isSidebarCollapsed} />
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-auto">
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-auto bg-background"> {/* Added bg-background */}
           {children}
         </main>
       </div>
