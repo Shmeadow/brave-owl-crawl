@@ -1,38 +1,24 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react"; // Removed useState, useEffect as isVisible state is no longer needed for user dismissal
 import { useGoals } from "@/hooks/use-goals";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { X, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react"; // Removed X icon
 import { cn } from "@/lib/utils";
 
-const REMINDER_VISIBILITY_KEY = 'goal_reminder_visible';
+// REMOVED: REMINDER_VISIBILITY_KEY and associated local storage logic
 
 export function GoalReminderBar() {
   const { goals, loading, handleToggleComplete, handleDeleteGoal } = useGoals();
-  // Initialize isVisible from local storage, default to true if not found
-  const [isVisible, setIsVisible] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const storedVisibility = localStorage.getItem(REMINDER_VISIBILITY_KEY);
-      return storedVisibility === null ? true : JSON.parse(storedVisibility);
-    }
-    return true; // Default to true on server-side render
-  });
-
-  // Update local storage whenever isVisible changes
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(REMINDER_VISIBILITY_KEY, JSON.stringify(isVisible));
-    }
-  }, [isVisible]);
 
   // Find the first incomplete goal
   const activeGoal = goals.find(goal => !goal.completed);
 
-  // Only render if not loading, is visible, and an active goal exists
-  if (loading || !activeGoal || !isVisible) {
+  // Only render if not loading and an active goal exists
+  // The bar will now always be visible if there's an incomplete goal.
+  if (loading || !activeGoal) {
     return null;
   }
 
@@ -67,15 +53,7 @@ export function GoalReminderBar() {
               <Trash2 className="h-3 w-3" />
               <span className="sr-only">Delete Goal</span>
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground hover:text-foreground h-5 w-5"
-              onClick={() => setIsVisible(false)}
-            >
-              <X className="h-3 w-3" />
-              <span className="sr-only">Close Reminder</span>
-            </Button>
+            {/* REMOVED: The X button for closing the reminder bar */}
           </div>
         </CardContent>
       </Card>
