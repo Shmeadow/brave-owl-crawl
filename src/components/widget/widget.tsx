@@ -95,21 +95,20 @@ export function Widget({
         "transition-all duration-300 ease-in-out",
         // Sizing based on state
         isMaximized ? "inset-0 w-full h-full" : "",
-        isMinimized ? "w-56 h-12" : `w-[${size.width}px] h-[${size.height}px]`,
         isPinned ? "w-[192px] h-[48px]" : "", // Pinned fixed size
+        isMinimized && !isPinned ? "w-56 h-12" : "", // Floating minimized fixed size
         
         // Cursor and resize behavior
         isResizable ? "resize overflow-auto" : "", // Only apply resize if resizable
         isDraggable ? "cursor-grab" : "", // Apply grab cursor if draggable
-        isMinimized ? "cursor-pointer" : "", // Minimized is clickable to restore
+        isMinimized && !isPinned ? "cursor-pointer" : "", // Minimized is clickable to restore
         "z-50",
         "pointer-events-auto"
       )}
       style={{
-        left: isMaximized || isPinned ? undefined : position.x,
-        top: isMaximized || isPinned ? undefined : position.y,
-        width: isMaximized || isPinned ? undefined : size.width,
-        height: isMaximized || isPinned ? undefined : size.height,
+        left: isMaximized ? undefined : position.x,
+        top: isMaximized ? undefined : position.y,
+        // Width and height are handled by ResizableBox for normal state, or fixed classes for minimized/pinned/maximized
         zIndex: zIndex,
         ...dragStyle
       }}
