@@ -37,15 +37,11 @@ export function PomodoroWidget({ initialPosition, onPositionChange }: PomodoroWi
     id: 'pomodoro-widget',
   });
 
+  // Use top and left for positioning, combining initial position with drag delta
   const style = {
-    position: 'fixed',
-    // Apply the initial position and the current drag delta using transform
-    transform: CSS.Transform.toString({
-      x: initialPosition.x + (transform ? transform.x : 0),
-      y: initialPosition.y + (transform ? transform.y : 0),
-      scaleX: 1,
-      scaleY: 1,
-    }),
+    position: 'fixed' as 'fixed', // Explicitly cast to 'fixed'
+    top: `${initialPosition.y + (transform ? transform.y : 0)}px`,
+    left: `${initialPosition.x + (transform ? transform.x : 0)}px`,
     zIndex: 50,
     cursor: 'grab', // Indicate draggable
   };
