@@ -2,69 +2,24 @@
 
 import React from "react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { useSidebar } from "@/components/sidebar/sidebar-context"; // Import useSidebar
-import { SpacesPanel } from "@/components/panels/spaces-panel";
-import { SoundsPanel } from "@/components/panels/sounds-panel";
-import { CalendarPanel } from "@/components/panels/calendar-panel";
-import { TimerPanel } from "@/components/panels/timer-panel";
-import { NotesPanel } from "@/components/panels/notes-panel";
-import { MediaPanel } from "@/components/panels/media-panel";
-import { FortunePanel } from "@/components/panels/fortune-panel";
-import { BreathePanel } from "@/components/panels/breathe-panel";
-import { FlashCardsPanel } from "@/components/panels/flash-cards-panel";
-import { GoalFocusPanel } from "@/components/panels/goal-focus-panel";
-import { AnimatePresence, motion } from "framer-motion"; // For panel transitions
+// Removed useSidebar and panel imports as they are now handled by widgets
+// Removed AnimatePresence and motion as widgets manage their own animations
 
 export default function HomePage() {
-  const { activePanel } = useSidebar(); // Get activePanel from context
-
-  // Function to render the active panel content
-  const renderActivePanel = () => {
-    switch (activePanel) {
-      case "spaces":
-        return <SpacesPanel />;
-      case "sounds":
-        return <SoundsPanel />;
-      case "calendar":
-        return <CalendarPanel />;
-      case "timer":
-        return <TimerPanel />;
-      case "tasks": // Now points to GoalFocusPanel
-        return <GoalFocusPanel />;
-      case "notes":
-        return <NotesPanel />;
-      case "media":
-        return <MediaPanel />;
-      case "fortune":
-        return <FortunePanel />;
-      case "breathe":
-        return <BreathePanel />;
-      case "flash-cards":
-        return <FlashCardsPanel />;
-      case "goal-focus":
-        return <GoalFocusPanel />;
-      default:
-        return null;
-    }
-  };
+  // The activePanel logic and direct panel rendering are now handled by the Widget system.
+  // This page now serves as the main content area for the application,
+  // where widgets will float on top.
 
   return (
-    <div className="flex flex-col min-h-screen w-full pt-16"> {/* Removed pr-80, margin handled by AppWrapper */}
-      <div className="flex-1 p-4 overflow-y-auto">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activePanel}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="h-full" // Ensure motion.div takes full height
-          >
-            {renderActivePanel()}
-          </motion.div>
-        </AnimatePresence>
-        <MadeWithDyad />
+    <div className="flex flex-col min-h-screen w-full pt-16">
+      <div className="flex-1 p-4 overflow-y-auto flex items-center justify-center">
+        {/* This is the main content area. Widgets will float above this. */}
+        <div className="text-center text-foreground text-xl font-semibold">
+          Welcome to your Productivity Hub!
+          <p className="text-muted-foreground text-sm mt-2">Use the sidebar to open your tools.</p>
+        </div>
       </div>
+      <MadeWithDyad />
     </div>
   );
 }

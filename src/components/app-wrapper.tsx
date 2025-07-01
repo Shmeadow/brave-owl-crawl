@@ -13,6 +13,8 @@ import { SidebarProvider, useSidebar } from "@/components/sidebar/sidebar-contex
 import { Sidebar } from "@/components/sidebar/sidebar"; // Import the new Sidebar
 import { ChatPanel } from "@/components/chat-panel"; // Import ChatPanel
 import { LofiAudioPlayer } from "@/components/lofi-audio-player"; // Import the component
+import { WidgetProvider } from "@/components/widget/widget-context"; // Import WidgetProvider
+import { WidgetContainer } from "@/components/widget/widget-container"; // Import WidgetContainer
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
 const LOCAL_STORAGE_POMODORO_VISIBLE_KEY = 'pomodoro_widget_visible';
@@ -145,6 +147,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
           unreadCount={unreadChatCount}
         />
       </div>
+      <WidgetContainer /> {/* Render all panels as widgets here */}
     </>
   );
 }
@@ -153,7 +156,9 @@ export function AppWrapper({ children }: AppWrapperProps) {
   return (
     <SessionContextProvider>
       <SidebarProvider> {/* Wrap with SidebarProvider */}
-        <AppWrapperContent>{children}</AppWrapperContent>
+        <WidgetProvider> {/* Wrap with WidgetProvider */}
+          <AppWrapperContent>{children}</AppWrapperContent>
+        </WidgetProvider>
       </SidebarProvider>
     </SessionContextProvider>
   );

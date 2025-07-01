@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
+import { useWidget } from "@/components/widget/widget-context"; // Import useWidget
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Wind, BookOpen, Goal } from "lucide-react";
 
 const SIDEBAR_WIDTH = 60; // px
@@ -12,6 +13,7 @@ const UNDOCK_DELAY = 500; // ms
 
 export function Sidebar() {
   const { activePanel, setActivePanel, isSidebarOpen, setIsSidebarOpen } = useSidebar();
+  const { toggleWidget } = useWidget(); // Get toggleWidget from WidgetContext
   const sidebarRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -66,6 +68,11 @@ export function Sidebar() {
     { id: "goal-focus", label: "Goal Focus", icon: Goal },
   ];
 
+  const handleSidebarItemClick = (id: string) => {
+    setActivePanel(id as any); // Keep activePanel for highlighting
+    toggleWidget(id); // Toggle the corresponding widget
+  };
+
   return (
     <div
       ref={sidebarRef}
@@ -84,7 +91,7 @@ export function Sidebar() {
             icon={item.icon}
             label={item.label}
             isActive={activePanel === item.id}
-            onClick={() => setActivePanel(item.id as ActivePanel)}
+            onClick={() => handleSidebarItemClick(item.id)}
           />
         ))}
       </div>
