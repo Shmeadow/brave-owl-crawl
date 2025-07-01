@@ -36,28 +36,34 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
   const fetchMessages = async () => {
     if (!supabase) {
       console.warn("Supabase client not available for fetching messages.");
+      toast.error("Chat unavailable: Supabase client not initialized.");
       return;
     }
-    // Fetch messages without joining profiles initially for better reliability
-    const { data, error } = await supabase
-      .from('chat_messages')
-      .select('id, user_id, content, created_at') // Removed profiles join
-      .order('created_at', { ascending: true })
-      .limit(50); // Limit to last 50 messages
+    try {
+      // Fetch messages without joining profiles initially for better reliability
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('id, user_id, content, created_at') // Removed profiles join
+        .order('created_at', { ascending: true })
+        .limit(50); // Limit to last 50 messages
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found, which is fine for an empty chat
-      console.error("Error fetching messages:", error);
-      toast.error("Failed to load chat messages: " + error.message); // Added error.message for more detail
-    } else if (data) {
-      const formattedMessages = data.map(msg => ({
-        id: msg.id,
-        user_id: msg.user_id,
-        content: msg.content,
-        created_at: msg.created_at,
-        // Use truncated user_id as author if profile is not available or names are null
-        author: profile?.id === msg.user_id ? (profile.first_name || profile.last_name || 'You') : msg.user_id.substring(0, 8),
-      }));
-      setMessages(formattedMessages);
+      if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found, which is fine for an empty chat
+        console.error("Error fetching messages:", error);
+        toast.error("Failed to load chat messages: " + error.message); // Added error.message for more detail
+      } else if (data) {
+        const formattedMessages = data.map(msg => ({
+          id: msg.id,
+          user_id: msg.user_id,
+          content: msg.content,
+          created_at: msg.created_at,
+          // Use truncated user_id as author if profile is not available or names are null
+          author: profile?.id === msg.user_id ? (profile.first_name || profile.last_name || 'You') : msg.user_id.substring(0, 8),
+        }));
+        setMessages(formattedMessages);
+      }
+    } catch (networkError: any) {
+      console.error("Network error fetching chat messages:", networkError);
+      toast.error("Failed to connect to chat server. Please check your internet connection or Supabase URL.");
     }
   };
 
@@ -120,6 +126,10 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
       } else {
         setInputMessage("");
       }
+    } else if (!session?.user) {
+      toast.error("You must be logged in to send messages.");
+    } else if (!supabase) {
+      toast.error("Chat is not available. Supabase client not initialized.");
     }
   };
 
