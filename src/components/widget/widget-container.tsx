@@ -9,13 +9,29 @@ import { TimerPanel } from "@/components/panels/timer-panel";
 import { NotesPanel } from "@/components/panels/notes-panel";
 import { MediaPanel } from "@/components/panels/media-panel";
 import { FortunePanel } from "@/components/panels/fortune-panel";
-import { BreathePanel } from "@/components/panels/breathe-panel";
+import { BreathePanel } => "@/components/panels/breathe-panel";
 import { FlashCardsPanel } from "@/components/panels/flash-cards-panel";
 import { GoalFocusPanel } from "@/components/panels/goal-focus-panel";
+import { DndContext, DragEndEvent, closestCenter } from "@dnd-kit/core";
+import { useWidget } from "./widget-context";
 
 export function WidgetContainer() {
+  const { widgetStates, updateWidgetPosition } = useWidget();
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, delta } = event;
+    const widgetId = active.id.toString().replace('draggable-', ''); // Extract original ID
+
+    const currentWidgetState = widgetStates[widgetId];
+    if (currentWidgetState) {
+      const newX = currentWidgetState.x + delta.x;
+      const newY = currentWidgetState.y + delta.y;
+      updateWidgetPosition(widgetId, newX, newY);
+    }
+  };
+
   return (
-    <>
+    <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
       <Widget id="spaces" title="Spaces" initialPosition={{ x: 100, y: 100 }} initialWidth={600} initialHeight={700}>
         <SpacesPanel />
       </Widget>
@@ -49,6 +65,6 @@ export function WidgetContainer() {
       <Widget id="goal-focus" title="Goal Focus" initialPosition={{ x: 100, y: 350 }} initialWidth={500} initialHeight={600}>
         <GoalFocusPanel />
       </Widget>
-    </>
+    </DndContext>
   );
 }

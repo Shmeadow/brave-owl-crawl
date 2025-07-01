@@ -10,6 +10,10 @@ export interface WidgetState {
   y: number;
   width: number;
   height: number;
+  previousX: number; // Store previous X for restore
+  previousY: number; // Store previous Y for restore
+  previousWidth: number; // Store previous width for restore
+  previousHeight: number; // Store previous height for restore
 }
 
 interface WidgetContextType {
@@ -33,6 +37,10 @@ const DEFAULT_WIDGET_STATE = {
   y: 50,
   width: 400,
   height: 500,
+  previousX: 50,
+  previousY: 50,
+  previousWidth: 400,
+  previousHeight: 500,
 };
 
 export function WidgetProvider({ children }: { children: React.ReactNode }) {
@@ -99,14 +107,42 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const minimizeWidget = useCallback((id: string) => {
-    updateWidgetState(id, { isMinimized: true });
+    setWidgetStates(prevStates => {
+      const currentState = prevStates[id] || DEFAULT_WIDGET_STATE;
+      return {
+        ...prevStates,
+        [id]: {
+          ...currentState,
+          isMinimized: true,
+          // Save current position and size before minimizing
+          previousX: currentState.x,
+          previousY: currentState.y,
+          previousWidth: currentState.width,
+          previousHeight: currentState.height,
+        }
+      };
+    });
     toast.info(`${id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} minimized.`);
-  }, [updateWidgetState]);
+  }, []);
 
   const restoreWidget = useCallback((id: string) => {
-    updateWidgetState(id, { isMinimized: false });
+    setWidgetStates(prevStates => {
+      const currentState = prevStates[id] || DEFAULT_WIDGET_STATE;
+      return {
+        ...prevStates,
+        [id]: {
+          ...currentState,
+          isMinimized: false,
+          // Restore position and size
+          x: currentState.previousX,
+          y: currentState.previousY,
+          width: currentState.previousWidth,
+          height: currentState.previousHeight,
+        }
+      };
+    });
     toast.info(`${id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} restored.`);
-  }, [updateWidgetState]);
+  }, []);
 
   const closeWidget = useCallback((id: string) => {
     updateWidgetState(id, { isOpen: false, isMinimized: false });

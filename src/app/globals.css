@@ -209,3 +209,69 @@
     backface-visibility: hidden;
   }
 }
+
+/* react-resizable styles */
+.react-resizable {
+  position: relative;
+}
+.react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background-repeat: no-repeat;
+  background-origin: content-box;
+  box-sizing: border-box;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2IDYwIj48cGF0aCBkPSJNMjIgNDEuNzQyVjIuMjU4YzAtMS4yNDItMS4wMTYtMi4yNTgtMi4yNTgtMi4yNThIMi4yNThDMTAxNiAwIDAgMS4wMTYgMCAyLjI1OHYxOS40ODRjMCAxLjI0MiAxLjAxNiAyLjI1OCAyLjI1OCAyLjI1OGgxNy40ODRjMS4yNDIgMCAyLjI1OC0xLjAxNiAyLjI1OC0yLjI1OHoiIGZpbGw9IiMwMDAiLz48L3N2Zz4='); /* Example: a simple diagonal line */
+  background-size: 10px 10px;
+  background-position: bottom right;
+  padding: 0 3px 3px 0;
+  opacity: 0.5;
+  transition: opacity 0.2s ease-in-out;
+}
+.react-resizable-handle:hover {
+  opacity: 1;
+}
+.react-resizable-handle-sw {
+  bottom: 0;
+  left: 0;
+  cursor: sw-resize;
+}
+.react-resizable-handle-se {
+  bottom: 0;
+  right: 0;
+  cursor: se-resize;
+}
+.react-resizable-handle-nw {
+  top: 0;
+  left: 0;
+  cursor: nw-resize;
+}
+.react-resizable-handle-ne {
+  top: 0;
+  right: 0;
+  cursor: ne-resize;
+}
+.react-resizable-handle-w,
+.react-resizable-handle-e {
+  top: 50%;
+  margin-top: -10px;
+  cursor: ew-resize;
+}
+.react-resizable-handle-w {
+  left: 0;
+}
+.react-resizable-handle-e {
+  right: 0;
+}
+.react-resizable-handle-n,
+.react-resizable-handle-s {
+  left: 50%;
+  margin-left: -10px;
+  cursor: ns-resize;
+}
+.react-resizable-handle-n {
+  top: 0;
+}
+.react-resizable-handle-s {
+  bottom: 0;
+}

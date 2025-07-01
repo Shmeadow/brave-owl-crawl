@@ -9,6 +9,7 @@ import { useWidget } from "./widget-context";
 import { AnimatePresence, motion } from "framer-motion";
 import { useDraggable } from "@dnd-kit/core";
 import { ResizableBox } from 'react-resizable'; // Import ResizableBox
+import { CSS } from "@dnd-kit/utilities"; // Import CSS utility
 
 interface WidgetProps {
   id: string;
@@ -28,30 +29,12 @@ export function Widget({
   initialHeight,
 }: WidgetProps) {
   const { widgetStates, minimizeWidget, restoreWidget, closeWidget, updateWidgetPosition, updateWidgetSize } = useWidget();
-  const state = widgetStates[id] || { isOpen: false, isMinimized: false, x: initialPosition?.x || 50, y: initialPosition?.y || 50, width: initialWidth || 400, height: initialHeight || 500 };
-
-  const widgetRef = useRef<HTMLDivElement>(null);
+  const state = widgetStates[id] || { isOpen: false, isMinimized: false, x: initialPosition?.x || 50, y: initialPosition?.y || 50, width: initialWidth || 400, height: initialHeight || 500, previousX: initialPosition?.x || 50, previousY: initialPosition?.y || 50, previousWidth: initialWidth || 400, previousHeight: initialHeight || 500 };
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: `draggable-${id}`,
+    id: `draggable-${id}`, // Unique ID for draggable
+    disabled: state.isMinimized, // Disable dragging when minimized
   });
-
-  // Update widget position in context when drag ends
-  useEffect(() => {
-    if (transform && widgetRef.current) {
-      const newX = state.x + transform.x;
-      const newY = state.y + transform.y;
-      updateWidgetPosition(id, newX, newY);
-    }
-  }, [transform]); // Only update when transform changes
-
-  // Reset transform after position is updated in context
-  useEffect(() => {
-    if (transform && transform.x === 0 && transform.y === 0) {
-      // This means the drag has ended and the transform has been reset by dnd-kit
-      // No action needed here, as position is updated on transform change
-    }
-  }, [transform]);
 
   const handleResize = (event: any, { size }: { size: { width: number; height: number } }) => {
     updateWidgetSize(id, size.width, size.height);
@@ -61,14 +44,12 @@ export function Widget({
     return null; // Don't render if not open
   }
 
-  // Calculate actual position based on stored state and current drag transform
-  const currentX = state.x + (transform?.x || 0);
-  const currentY = state.y + (transform?.y || 0);
+  const MINIMIZED_WIDTH = 200;
+  const MINIMIZED_HEIGHT = 50;
 
   return (
     <AnimatePresence>
       <motion.div
-        ref={setNodeRef} // Set ref for draggable
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
@@ -80,17 +61,18 @@ export function Widget({
           "transition-all duration-300 ease-in-out"
         )}
         style={{
-          left: `${currentX}px`,
-          top: `${currentY}px`,
-          width: state.width,
-          height: state.height,
+          left: `${state.x}px`, // Base position
+          top: `${state.y}px`, // Base position
+          transform: CSS.Transform.toString(transform), // Apply drag offset
+          width: state.isMinimized ? MINIMIZED_WIDTH : state.width,
+          height: state.isMinimized ? MINIMIZED_HEIGHT : state.height,
         }}
       >
         <ResizableBox
-          width={state.width}
-          height={state.height}
+          width={state.isMinimized ? MINIMIZED_WIDTH : state.width}
+          height={state.isMinimized ? MINIMIZED_HEIGHT : state.height}
           minConstraints={[200, 150]} // Minimum width/height
-          maxConstraints={[window.innerWidth - currentX, window.innerHeight - currentY]} // Maximize to viewport
+          maxConstraints={[window.innerWidth - state.x, window.innerHeight - state.y]} // Maximize to viewport
           onResize={handleResize}
           handle={(handleAxis, ref) => (
             <span
@@ -100,15 +82,20 @@ export function Widget({
                 position: 'absolute',
                 background: 'transparent',
                 zIndex: 1,
+                // Only show handles when not minimized
+                display: state.isMinimized ? 'none' : 'block',
               }}
             />
           )}
+          // Disable resizing when minimized
+          resizeHandles={state.isMinimized ? [] : ['sw', 'se', 'nw', 'ne', 'w', 'e', 'n', 's']}
           className={cn(
             "flex flex-col h-full w-full",
             state.isMinimized ? "h-auto w-auto" : ""
           )}
         >
           <CardHeader
+            ref={setNodeRef} // Set ref for draggable handle
             className={cn(
               "flex flex-row items-center justify-between p-3 border-b border-border",
               state.isMinimized ? "cursor-pointer" : "cursor-grab"
@@ -141,6 +128,11 @@ export function Widget({
           {!state.isMinimized && (
             <CardContent className="flex-1 p-4 overflow-y-auto">
               {children}
+            </CardContent>
+          )}
+          {state.isMinimized && (
+            <CardContent className="flex-1 p-2 flex items-center justify-center">
+              <span className="text-sm text-foreground truncate">{title}</span>
             </CardContent>
           )}
         </ResizableBox>
