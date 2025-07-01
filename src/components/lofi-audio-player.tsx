@@ -1,23 +1,19 @@
 "use client";
 
 import React from "react";
-import { VolumeX, Volume2 } from "lucide-react";
-import { useLofiAudio } from "@/hooks/use-lofi-audio"; // Import the new hook
+// Removed VolumeX, Volume2 imports as they are no longer used here
+// Removed useLofiAudio import as it's not needed for just the audio element
 
 interface LofiAudioPlayerProps {
   className?: string; // Allow external styling
 }
 
 export function LofiAudioPlayer({ className }: LofiAudioPlayerProps) {
-  const { audioRef, isPlaying, togglePlayPause } = useLofiAudio();
+  // Removed useLofiAudio hook call as controls are now external
 
   return (
     <div className={className}>
-      <audio ref={audioRef} loop>
-        <source src="/lofi-chill.mp3" type="audio/mpeg" />
-        Your browser does not support the audio element.
-      </audio>
-      {/* The button is now rendered externally, e.g., in ChatPanel */}
+      <audio id="lofi-audio-player" src="/lofi-chill.mp3" loop></audio>
     </div>
   );
 }

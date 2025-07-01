@@ -4,13 +4,14 @@ import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Sparkles, Users, Video, Image, Star, Settings, Menu, Music, Clock, LayoutGrid, Calendar, ListTodo, NotebookPen, Wind, BookOpen, Goal, Diamond } from "lucide-react"; // Import Diamond
+import { Search, Sparkles, Users, Video, Image, Star, Settings, Menu, Music, Clock, LayoutGrid, Calendar, ListTodo, NotebookPen, Wind, BookOpen, Goal, Diamond, Volume2, VolumeX } from "lucide-react"; // Import Diamond, Volume2, VolumeX
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserNav } from "@/components/user-nav";
 import { ClockDisplay } from "@/components/clock-display";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/components/sidebar/sidebar-context"; // Import useSidebar
+import { useLofiAudio } from "@/hooks/use-lofi-audio"; // Import useLofiAudio hook
 // Progress component removed from here
 
 interface HeaderProps {
@@ -23,6 +24,7 @@ interface HeaderProps {
 
 export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }: HeaderProps) {
   const { setActivePanel } = useSidebar(); // Get setActivePanel from context
+  const { isPlaying, togglePlayPause } = useLofiAudio(); // Use the lofi audio hook
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between px-4 sm:px-6 bg-background/80 backdrop-blur-md border-b border-border">
@@ -104,6 +106,9 @@ export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSp
                 <Button variant="ghost" className="justify-start gap-3 mt-2" onClick={onOpenUpgradeModal}>
                   <Diamond className="h-4 w-4" /> Upgrade
                 </Button>
+                <Button variant="ghost" className="justify-start gap-3 mt-2" onClick={togglePlayPause}>
+                  {isPlaying ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />} Lofi Audio
+                </Button>
               </div>
             </nav>
           </SheetContent>
@@ -142,6 +147,16 @@ export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSp
         <Button variant="ghost" size="icon" onClick={onOpenUpgradeModal} title="Upgrade to Ad-Free" className="hidden sm:flex">
           <Diamond className="h-5 w-5 animate-spin" /> {/* Diamond icon with rotation */}
           <span className="sr-only">Upgrade to Ad-Free</span>
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={togglePlayPause}
+          title={isPlaying ? "Pause Lofi Audio" : "Play Lofi Audio"}
+          className="hidden sm:flex"
+        >
+          {isPlaying ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+          <span className="sr-only">{isPlaying ? "Pause Lofi Audio" : "Play Lofi Audio"}</span>
         </Button>
         <ThemeToggle />
         <UserNav />

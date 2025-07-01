@@ -4,11 +4,10 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, ChevronLeft, ChevronRight, Volume2, VolumeX, MessageSquare } from "lucide-react";
+import { Send, MessageSquare, X } from "lucide-react"; // Removed ChevronLeft, ChevronRight, Volume2, VolumeX
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { useLofiAudio } from "@/hooks/use-lofi-audio"; // Import useLofiAudio hook
-import { LofiAudioPlayer } from "@/components/lofi-audio-player"; // Import the component
+// Removed useLofiAudio and LofiAudioPlayer imports as they are moving
 
 interface Message {
   id: string;
@@ -26,7 +25,6 @@ export function ChatPanel({ isOpen, onToggleOpen }: ChatPanelProps) {
   const [messages, setMessages] = useState<Message[]>([]); // State for chat messages
   const [inputMessage, setInputMessage] = useState("");
   const [showSupportContact, setShowSupportContact] = useState(false); // New state for support contact
-  const { audioRef, isPlaying, togglePlayPause } = useLofiAudio(); // Use the lofi audio hook
 
   const handleSendMessage = () => {
     if (inputMessage.trim()) {
@@ -53,36 +51,42 @@ export function ChatPanel({ isOpen, onToggleOpen }: ChatPanelProps) {
     setShowSupportContact(false);
   };
 
+  if (!isOpen) {
+    return (
+      <Button
+        variant="default"
+        size="icon"
+        className="h-14 w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all duration-300 ease-in-out"
+        onClick={onToggleOpen}
+        title="Open Chat"
+      >
+        <MessageSquare className="h-7 w-7" />
+        <span className="sr-only">Open Chat</span>
+      </Button>
+    );
+  }
+
   return (
     <Card className={cn(
-      "h-full flex flex-col bg-card/80 backdrop-blur-md border-border",
-      "transition-all duration-300 ease-in-out",
-      isOpen ? "w-80" : "w-12" // Adjust width based on isOpen
+      "h-[400px] w-80 flex flex-col bg-card/80 backdrop-blur-md border-border",
+      "transition-all duration-300 ease-in-out"
     )}>
-      <CardHeader className={cn(
-        "p-4 border-b border-border flex flex-row items-center justify-between",
-        !isOpen && "justify-center" // Center icon when closed
-      )}>
-        {isOpen && (
-          <CardTitle className="text-lg">
-            {showSupportContact ? "Contact Support" : "Chat"}
-          </CardTitle>
-        )}
+      <CardHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
+        <CardTitle className="text-lg">
+          {showSupportContact ? "Contact Support" : "Chat"}
+        </CardTitle>
         <Button
           variant="ghost"
           size="icon"
           className="h-8 w-8"
           onClick={onToggleOpen}
-          title={isOpen ? "Minimize Chat" : "Expand Chat"}
+          title="Close Chat"
         >
-          {isOpen ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
-          <span className="sr-only">{isOpen ? "Minimize Chat" : "Expand Chat"}</span>
+          <X className="h-5 w-5" />
+          <span className="sr-only">Close Chat</span>
         </Button>
       </CardHeader>
-      <CardContent className={cn(
-        "flex-1 p-4 overflow-hidden flex flex-col",
-        !isOpen && "hidden" // Hide content when closed
-      )}>
+      <CardContent className="flex-1 p-4 overflow-hidden flex flex-col">
         {showSupportContact ? (
           <div className="flex flex-col items-center justify-center h-full text-sm text-muted-foreground space-y-4 text-center">
             <MessageSquare className="h-12 w-12 text-primary" />
@@ -133,10 +137,7 @@ export function ChatPanel({ isOpen, onToggleOpen }: ChatPanelProps) {
           </ScrollArea>
         )}
       </CardContent>
-      <CardFooter className={cn(
-        "p-4 border-t border-border flex flex-col gap-2",
-        !isOpen && "hidden" // Hide footer when closed
-      )}>
+      <CardFooter className="p-4 border-t border-border flex flex-col gap-2">
         {!showSupportContact && (
           <div className="flex w-full items-center space-x-2">
             <Input
@@ -156,19 +157,6 @@ export function ChatPanel({ isOpen, onToggleOpen }: ChatPanelProps) {
             </Button>
           </div>
         )}
-        {/* Lofi Audio Player Controls */}
-        <div className="w-full flex justify-center">
-          <Button
-            size="icon"
-            className="rounded-full h-10 w-10 shadow-lg"
-            onClick={togglePlayPause}
-            title={isPlaying ? "Pause Lofi Audio" : "Play Lofi Audio"}
-          >
-            {isPlaying ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
-            <span className="sr-only">{isPlaying ? "Pause Lofi Audio" : "Play Lofi Audio"}</span>
-          </Button>
-        </div>
-        <LofiAudioPlayer /> {/* The actual audio element */}
         {!showSupportContact && (
           <Button variant="link" className="text-xs text-muted-foreground" onClick={handleContactSupport}>
             Contact Support

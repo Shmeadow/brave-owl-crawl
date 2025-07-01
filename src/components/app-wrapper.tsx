@@ -12,11 +12,10 @@ import { SpotifyEmbedModal } from "@/components/spotify-embed-modal";
 import { SidebarProvider, useSidebar } from "@/components/sidebar/sidebar-context"; // Import SidebarProvider and useSidebar
 import { Sidebar } from "@/components/sidebar/sidebar"; // Import the new Sidebar
 import { ChatPanel } from "@/components/chat-panel"; // Import ChatPanel
+import { LofiAudioPlayer } from "@/components/lofi-audio-player"; // Import the component
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
 const LOCAL_STORAGE_POMODORO_VISIBLE_KEY = 'pomodoro_widget_visible';
-const CHAT_PANEL_WIDTH_OPEN = 320; // px
-const CHAT_PANEL_WIDTH_CLOSED = 48; // px (w-12)
 const WIDGET_GAP = 16; // px
 
 interface AppWrapperProps {
@@ -94,7 +93,8 @@ function AppWrapperContent({ children }: AppWrapperProps) {
     setIsUpgradeModalOpen(true);
   };
 
-  const chatPanelCurrentWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
+  // Determine right margin based on chat panel state
+  const rightMargin = isChatOpen ? 320 + WIDGET_GAP : 56 + WIDGET_GAP; // 320px for open chat, 56px for closed chat button (w-14) + gap
 
   return (
     <>
@@ -108,7 +108,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
       <Sidebar /> {/* Render the new Sidebar */}
       <main
         className={`flex flex-col flex-1 w-full h-full transition-all duration-300 ease-in-out`}
-        style={{ marginLeft: isSidebarOpen ? '60px' : '4px', marginRight: `${chatPanelCurrentWidth}px` }}
+        style={{ marginLeft: isSidebarOpen ? '60px' : '4px', marginRight: `${rightMargin}px` }}
       >
         {children}
       </main>
@@ -118,14 +118,15 @@ function AppWrapperContent({ children }: AppWrapperProps) {
           isMinimized={isPomodoroWidgetMinimized}
           setIsMinimized={setIsPomodoroWidgetMinimized}
           onClose={handleHidePomodoro}
-          chatPanelWidth={chatPanelCurrentWidth} // Pass chat width for positioning
+          chatPanelWidth={rightMargin} // Pass chat width for positioning
         />
       )}
       <SpotifyEmbedModal isOpen={isSpotifyModalOpen} onClose={() => setIsSpotifyModalOpen(false)} />
       <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModal(false)} /> {/* Render UpgradeModal */}
       <Toaster />
+      <LofiAudioPlayer /> {/* The actual audio element, now global */}
       {/* Fixed Chat Panel */}
-      <div className="fixed right-0 top-16 bottom-0 transition-all duration-300 ease-in-out" style={{ width: `${chatPanelCurrentWidth}px` }}>
+      <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
         <ChatPanel isOpen={isChatOpen} onToggleOpen={() => setIsChatOpen(!isChatOpen)} />
       </div>
     </>
