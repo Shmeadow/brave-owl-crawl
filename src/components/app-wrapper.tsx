@@ -95,7 +95,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
   // Calculate main content area dimensions dynamically
   useEffect(() => {
     const updateMainContentArea = () => {
-      const sidebarWidth = isSidebarOpen ? 60 : 4;
+      const sidebarWidth = isSidebarOpen ? 60 : 0; // Changed from 4 to 0 for full hide
       const chatPanelWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
       
       setMainContentArea({
@@ -143,8 +143,8 @@ function AppWrapperContent({ children }: AppWrapperProps) {
       />
       <Sidebar />
       <main
-        className={`flex flex-col flex-1 w-full min-h-[calc(100vh-${HEADER_HEIGHT}px)] overflow-auto transition-all duration-300 ease-in-out`} // Added min-h
-        style={{ marginLeft: isSidebarOpen ? '60px' : '4px', marginRight: `${chatPanelCurrentWidth}px` }}
+        className={`flex flex-col flex-1 w-full h-[calc(100vh-${HEADER_HEIGHT}px)] overflow-auto transition-all duration-300 ease-in-out`} // Changed min-h to h
+        style={{ marginLeft: isSidebarOpen ? '60px' : '0px', marginRight: `${chatPanelCurrentWidth}px` }} // Changed margin-left to 0px when closed
       >
         {children}
       </main>

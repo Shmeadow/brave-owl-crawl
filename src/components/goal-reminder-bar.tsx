@@ -37,7 +37,7 @@ export function GoalReminderBar() {
 
   return (
     <div className="fixed top-16 left-4 z-50 w-full max-w-xs">
-      <Card className="bg-transparent shadow-none border-none">
+      <Card className="bg-card/40 backdrop-blur-xl border-white/20 shadow-lg"> {/* Applied glass effect here */}
         <CardContent className="flex items-center justify-between p-2 gap-2">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <Checkbox
