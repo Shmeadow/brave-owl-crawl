@@ -9,14 +9,14 @@ export function TimerWidget() {
 
   if (loading) {
     return (
-      <div className="bg-card/80 backdrop-blur-md p-4 h-full w-full rounded-lg flex flex-col items-center justify-center">
+      <div className="h-full w-full flex flex-col items-center justify-center">
         <p className="text-foreground">Loading time tracker...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-card/80 backdrop-blur-md p-4 h-full w-full rounded-lg flex flex-col items-center justify-center">
+    <div className="h-full w-full flex flex-col items-center justify-center">
       <div className="flex flex-col items-center justify-center h-full py-8 max-w-md mx-auto">
         <TimeTracker />
         {!session && (

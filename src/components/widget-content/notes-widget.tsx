@@ -11,14 +11,14 @@ export function NotesWidget() {
 
   if (loading) {
     return (
-      <div className="bg-card/80 backdrop-blur-md p-4 h-full w-full rounded-lg flex flex-col items-center justify-center">
+      <div className="h-full w-full flex flex-col items-center justify-center">
         <p className="text-foreground">Loading notes...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-card/80 backdrop-blur-md p-4 h-full w-full rounded-lg">
+    <div className="h-full w-full">
       <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto py-4">
         <Card className="w-full">
           <CardHeader>

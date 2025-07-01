@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function SpacesWidget() {
   return (
-    <div className="bg-card/80 backdrop-blur-md p-4 h-full w-full rounded-lg">
+    <div className="h-full w-full">
       <div className="space-y-8 max-w-5xl mx-auto py-4">
         <section>
           <h2 className="text-2xl font-bold mb-4 text-foreground">Featured Spaces</h2>

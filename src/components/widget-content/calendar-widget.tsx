@@ -220,7 +220,7 @@ export function CalendarWidget() {
   };
 
   return (
-    <div className="bg-card/80 backdrop-blur-md p-4 h-full w-full rounded-lg">
+    <div className="h-full w-full">
       <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto py-4">
         <h1 className="text-3xl font-bold text-foreground">Your Calendar</h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">

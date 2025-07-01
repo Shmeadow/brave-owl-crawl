@@ -7,7 +7,7 @@ import { Play, Lock } from "lucide-react";
 
 export function SoundsWidget() {
   return (
-    <div className="bg-card/80 backdrop-blur-md p-4 h-full w-full rounded-lg">
+    <div className="h-full w-full">
       <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto py-4">
         <h1 className="text-3xl font-bold text-foreground">Ambient Sounds & Music</h1>
 

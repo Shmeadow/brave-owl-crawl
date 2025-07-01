@@ -58,14 +58,14 @@ export function FlashCardsWidget() {
 
   if (flashcardsLoading) {
     return (
-      <div className="bg-card/80 backdrop-blur-md p-4 h-full w-full rounded-lg flex flex-col items-center justify-center">
+      <div className="h-full w-full flex flex-col items-center justify-center">
         <p className="text-foreground">Loading flashcards...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-card/80 backdrop-blur-md p-4 h-full w-full rounded-lg flex flex-col flex-1 py-4">
+    <div className="h-full w-full flex flex-col flex-1 py-4">
       <h1 className="text-3xl font-bold mb-8 text-center text-foreground">Flash Cards</h1>
       <ResizablePanelGroup direction="horizontal" className="flex-1 rounded-lg border border-border">
         <ResizablePanel defaultSize={70} minSize={40}>
