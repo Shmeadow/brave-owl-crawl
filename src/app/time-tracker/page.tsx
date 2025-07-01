@@ -12,24 +12,20 @@ export default function TimeTrackerPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div className="flex flex-col items-center justify-center h-full py-8">
-          <p>Loading time tracker...</p>
-        </div>
-      </DashboardLayout>
+      <div className="flex flex-col items-center justify-center h-full py-8">
+        <p className="text-foreground">Loading time tracker...</p>
+      </div>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="flex flex-col items-center justify-center h-full py-8">
-        <TimeTracker />
-        {!session && (
-          <p className="text-sm text-muted-foreground mt-4">
-            You are currently browsing as a guest. Your time tracking data will not be saved unless you log in.
-          </p>
-        )}
-      </div>
-    </DashboardLayout>
+    <div className="flex flex-col items-center justify-center h-full py-8">
+      <TimeTracker />
+      {!session && (
+        <p className="text-sm text-muted-foreground mt-4">
+          You are currently browsing as a guest. Your time tracking data will not be saved unless you log in.
+        </p>
+      )}
+    </div>
   );
 }

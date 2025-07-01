@@ -24,21 +24,17 @@ export default function AdminSettingsPage() {
 
   if (authLoading || settingsLoading || !isAdmin) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-full py-8">
-          <p>Loading admin settings...</p>
-        </div>
-      </DashboardLayout>
+      <div className="flex items-center justify-center h-full py-8">
+        <p className="text-foreground">Loading admin settings...</p>
+      </div>
     );
   }
 
   if (!settings) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-full py-8">
-          <p>Error: Could not load application settings.</p>
-        </div>
-      </DashboardLayout>
+      <div className="flex items-center justify-center h-full py-8">
+        <p className="text-foreground">Error: Could not load application settings.</p>
+      </div>
     );
   }
 
@@ -47,30 +43,28 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <DashboardLayout>
-      <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto h-full">
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>Admin Settings</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="cozy-theme-toggle" className="text-base">
-                Enable Cozy Theme (with background image)
-              </Label>
-              <Switch
-                id="cozy-theme-toggle"
-                checked={settings.is_cozy_theme_enabled}
-                onCheckedChange={handleToggleCozyTheme}
-              />
-            </div>
-            <p className="text-sm text-muted-foreground">
-              When enabled, the "Cozy" theme will be available in the theme selector.
-              When disabled, the "Cozy" theme will be hidden.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    </DashboardLayout>
+    <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto h-full">
+      <Card className="w-full bg-card/80 backdrop-blur-md">
+        <CardHeader>
+          <CardTitle className="text-foreground">Admin Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-foreground">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="cozy-theme-toggle" className="text-base">
+              Enable Cozy Theme (with background image)
+            </Label>
+            <Switch
+              id="cozy-theme-toggle"
+              checked={settings.is_cozy_theme_enabled}
+              onCheckedChange={handleToggleCozyTheme}
+            />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            When enabled, the "Cozy" theme will be available in the theme selector.
+            When disabled, the "Cozy" theme will be hidden.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -62,57 +62,53 @@ export default function FlashCardsPage() {
 
   if (flashcardsLoading) {
     return (
-      <DashboardLayout>
-        <div className="flex flex-col items-center justify-center h-full py-8">
-          <p>Loading flashcards...</p>
-        </div>
-      </DashboardLayout>
+      <div className="flex flex-col items-center justify-center h-full py-8">
+        <p className="text-foreground">Loading flashcards...</p>
+      </div>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="flex flex-col flex-1 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-center">Flash Cards</h1>
-        <ResizablePanelGroup direction="horizontal" className="flex-1 rounded-lg border">
-          <ResizablePanel defaultSize={70} minSize={40}>
-            <div className="flex flex-col items-center justify-center h-full p-4">
-              <FlashCardDeck
-                cards={filteredCards}
-                currentCardIndex={currentCardIndex}
-                isFlipped={isFlipped}
-                onFlip={handleFlip}
-                onNext={handleNext}
-                onPrevious={handlePrevious}
-                onAddCard={handleAddCard}
-                onDeleteCard={handleDeleteCard}
-                onShuffleCards={handleShuffleCards}
-                onToggleStar={handleToggleStar}
-                onMarkAsLearned={handleMarkAsLearned}
-                onUpdateCard={handleUpdateCard}
-                filterMode={filterMode}
-                setFilterMode={setFilterMode}
-                onResetProgress={resetAllProgressAndNavigation} // Use the combined reset handler
-              />
-            </div>
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel defaultSize={30} minSize={20}>
-            <div className="h-full p-4">
-              <FlashCardListSidebar
-                cards={filteredCards}
-                currentCardIndex={currentCardIndex}
-                onSelectCard={handleSelectCard}
-                onDeleteCard={handleDeleteCard}
-                onUpdateCard={handleUpdateCard}
-                onToggleStar={handleToggleStar}
-                onMarkAsLearned={handleMarkAsLearned}
-                onReorderCards={handleReorderCards}
-              />
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
-    </DashboardLayout>
+    <div className="flex flex-col flex-1 py-8">
+      <h1 className="text-3xl font-bold mb-8 text-center text-foreground">Flash Cards</h1>
+      <ResizablePanelGroup direction="horizontal" className="flex-1 rounded-lg border border-border bg-card/80 backdrop-blur-md">
+        <ResizablePanel defaultSize={70} minSize={40}>
+          <div className="flex flex-col items-center justify-center h-full p-4">
+            <FlashCardDeck
+              cards={filteredCards}
+              currentCardIndex={currentCardIndex}
+              isFlipped={isFlipped}
+              onFlip={handleFlip}
+              onNext={handleNext}
+              onPrevious={handlePrevious}
+              onAddCard={handleAddCard}
+              onDeleteCard={handleDeleteCard}
+              onShuffleCards={handleShuffleCards}
+              onToggleStar={handleToggleStar}
+              onMarkAsLearned={handleMarkAsLearned}
+              onUpdateCard={handleUpdateCard}
+              filterMode={filterMode}
+              setFilterMode={setFilterMode}
+              onResetProgress={resetAllProgressAndNavigation} // Use the combined reset handler
+            />
+          </div>
+        </ResizablePanel>
+        <ResizableHandle withHandle className="bg-border/50 hover:bg-primary/50 transition-colors" />
+        <ResizablePanel defaultSize={30} minSize={20}>
+          <div className="h-full p-4">
+            <FlashCardListSidebar
+              cards={filteredCards}
+              currentCardIndex={currentCardIndex}
+              onSelectCard={handleSelectCard}
+              onDeleteCard={handleDeleteCard}
+              onUpdateCard={handleUpdateCard}
+              onToggleStar={handleToggleStar}
+              onMarkAsLearned={handleMarkAsLearned}
+              onReorderCards={handleReorderCards}
+            />
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </div>
   );
 }

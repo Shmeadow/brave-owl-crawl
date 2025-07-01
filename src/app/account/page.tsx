@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardLayout } from '@/components/dashboard-layout';
+import { ProfileForm } from '@/components/profile-form'; // Import ProfileForm
 
 export default function AccountPage() {
   const { supabase, session, profile, loading, refreshProfile } = useSupabase();
@@ -14,77 +15,69 @@ export default function AccountPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-full">
-          <p>Loading account details...</p>
-        </div>
-      </DashboardLayout>
+      <div className="flex items-center justify-center h-full">
+        <p className="text-foreground">Loading account details...</p>
+      </div>
     );
   }
 
   if (session && profile) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-full bg-background py-8">
-          <Card className="w-full max-w-md p-6">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold">Your Profile</CardTitle>
-              <p className="text-muted-foreground">Manage your account information.</p>
-            </CardHeader>
-            <CardContent>
-              <ProfileForm initialProfile={profile} onProfileUpdated={refreshProfile} />
-            </CardContent>
-          </Card>
-        </div>
-      </DashboardLayout>
+      <div className="flex items-center justify-center h-full bg-background py-8">
+        <Card className="w-full max-w-md p-6 bg-card/80 backdrop-blur-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-foreground">Your Profile</CardTitle>
+            <p className="text-muted-foreground">Manage your account information.</p>
+          </CardHeader>
+          <CardContent>
+            <ProfileForm initialProfile={profile} onProfileUpdated={refreshProfile} />
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   // Only render Auth component if supabase client is available and not logged in
   if (!supabase) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-full bg-background">
-          <Card className="w-full max-w-md p-6">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold">Authentication Error</CardTitle>
-              <p className="text-muted-foreground">Supabase client is not initialized. Please check environment variables.</p>
-            </CardHeader>
-          </Card>
-        </div>
-      </DashboardLayout>
+      <div className="flex items-center justify-center h-full bg-background">
+        <Card className="w-full max-w-md p-6 bg-card/80 backdrop-blur-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-foreground">Authentication Error</CardTitle>
+            <p className="text-muted-foreground">Supabase client is not initialized. Please check environment variables.</p>
+          </CardHeader>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="flex items-center justify-center h-full bg-background py-8">
-        <Card className="w-full max-w-md p-6">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Account</CardTitle>
-            <p className="text-muted-foreground">Sign up or log in to save your progress</p>
-          </CardHeader>
-          <CardContent>
-            <Auth
-              supabaseClient={supabase}
-              providers={['google', 'linkedin', 'facebook']}
-              appearance={{
-                theme: ThemeSupa,
-                variables: {
-                  default: {
-                    colors: {
-                      brand: 'hsl(var(--primary))',
-                      brandAccent: 'hsl(var(--primary-foreground))',
-                    },
+    <div className="flex items-center justify-center h-full bg-background py-8">
+      <Card className="w-full max-w-md p-6 bg-card/80 backdrop-blur-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-foreground">Account</CardTitle>
+          <p className="text-muted-foreground">Sign up or log in to save your progress</p>
+        </CardHeader>
+        <CardContent>
+          <Auth
+            supabaseClient={supabase}
+            providers={['google', 'linkedin', 'facebook']}
+            appearance={{
+              theme: ThemeSupa,
+              variables: {
+                default: {
+                  colors: {
+                    brand: 'hsl(var(--primary))',
+                    brandAccent: 'hsl(var(--primary-foreground))',
                   },
                 },
-              }}
-              theme="light"
-              redirectTo="/"
-            />
-          </CardContent>
-        </Card>
-      </div>
-    </DashboardLayout>
+              },
+            }}
+            theme="light"
+            redirectTo="/"
+          />
+        </CardContent>
+      </Card>
+    </div>
   );
 }

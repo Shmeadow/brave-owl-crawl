@@ -163,6 +163,30 @@
     --sidebar-border: 220 15% 35%;
     --sidebar-ring: 40 80% 60%;
   }
+
+  /* Animated Gradient Background */
+  body {
+    --bg-color-stop-1: #2a274b; /* Deep Purple */
+    --bg-color-stop-2: #40335a; /* Muted Indigo */
+    --bg-color-stop-3: #342b43; /* Darker Plum */
+    --bg-color-stop-4: #1c1b29; /* Very Dark Blue-Gray */
+
+    background: linear-gradient(-45deg, var(--bg-color-stop-1), var(--bg-color-stop-2), var(--bg-color-stop-3), var(--bg-color-stop-4));
+    background-size: 400% 400%;
+    animation: gradientBG 20s ease infinite;
+  }
+
+  @keyframes gradientBG {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
 }
 
 @layer base {
@@ -170,7 +194,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    /* Removed bg-background text-foreground here as it's handled by the gradient */
   }
 }
 
