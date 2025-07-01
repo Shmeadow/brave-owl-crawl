@@ -24,7 +24,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { CardData } from "@/app/flash-cards/page"; // Import CardData from the page file
+import { CardData } from "@/hooks/use-flashcards"; // Corrected import path for CardData
 
 interface FlashCardListSidebarProps {
   cards: CardData[];

@@ -9,7 +9,7 @@ import { EditFlashCardForm } from "@/components/edit-flash-card-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { CardData } from "@/app/flash-cards/page"; // Import CardData from the page file
+import { CardData } from "@/hooks/use-flashcards"; // Corrected import path for CardData
 
 interface FlashCardDeckProps {
   cards: CardData[];
