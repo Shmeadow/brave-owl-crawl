@@ -7,10 +7,15 @@ import { GoalReminderBar } from "@/components/goal-reminder-bar";
 import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { Toaster } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
-import { Dock, AlignHorizontalDistributeCenter } from "lucide-react"; // Import new icon
+import { Dock, AlignHorizontalDistributeCenter, Minimize2 } from "lucide-react"; // Import new icon
 
 const LOCAL_STORAGE_POMODORO_POS_KEY = 'pomodoro_widget_position';
-const POMODORO_WIDGET_WIDTH_PX = 192; // max-w-xs is 12rem = 192px
+const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
+
+// Define approximate dimensions for docking calculations
+const POMODORO_WIDGET_WIDTH_FULL_PX = 256; // max-w-sm is 16rem = 256px
+const POMODORO_WIDGET_HEIGHT_FULL_PX = 300; // Approximate full height
+const POMODORO_WIDGET_HEIGHT_MINIMIZED_PX = 96; // h-24 is 6rem = 96px
 
 interface AppWrapperProps {
   children: React.ReactNode;
@@ -25,8 +30,8 @@ export function AppWrapper({ children }: AppWrapperProps) {
       if (savedPos) {
         try {
           const parsedPos = JSON.parse(savedPos);
-          // Basic validation for saved position
-          if (parsedPos.right < -1000 || parsedPos.bottom < -1000 || parsedPos.right > window.innerWidth + 1000 || parsedPos.bottom > window.innerHeight + 1000) {
+          // Basic validation for saved position (using top/left now)
+          if (parsedPos.left < -1000 || parsedPos.top < -1000 || parsedPos.left > window.innerWidth + 1000 || parsedPos.top > window.innerHeight + 1000) {
             console.warn("Saved pomodoro position out of bounds, resetting.");
             localStorage.removeItem(LOCAL_STORAGE_POMODORO_POS_KEY);
             hasUserMovedRef.current = false;
@@ -41,25 +46,43 @@ export function AppWrapper({ children }: AppWrapperProps) {
         }
       }
 
+      // Default position: bottom-right
       const margin = 20;
-      const defaultRight = margin;
-      const defaultBottom = margin;
-      return { right: defaultRight, bottom: defaultBottom };
+      const defaultLeft = window.innerWidth - POMODORO_WIDGET_WIDTH_FULL_PX - margin;
+      const defaultTop = window.innerHeight - POMODORO_WIDGET_HEIGHT_FULL_PX - margin;
+      return { top: defaultTop, left: defaultLeft };
     }
-    return { right: 0, bottom: 0 };
+    return { top: 0, left: 0 };
   });
+
+  const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedMinimized = localStorage.getItem(LOCAL_STORAGE_POMODORO_MINIMIZED_KEY);
+      return savedMinimized === 'true';
+    }
+    return false;
+  });
+
+  // Effect to save minimized state to local storage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LOCAL_STORAGE_POMODORO_MINIMIZED_KEY, String(isPomodoroWidgetMinimized));
+    }
+  }, [isPomodoroWidgetMinimized]);
 
   useEffect(() => {
     const handleResize = () => {
+      // Only reset position if user hasn't manually moved it
       if (hasUserMovedRef.current) {
         return;
       }
 
       const margin = 20;
-      const defaultRight = margin;
-      const defaultBottom = margin;
+      const currentWidgetHeight = isPomodoroWidgetMinimized ? POMODORO_WIDGET_HEIGHT_MINIMIZED_PX : POMODORO_WIDGET_HEIGHT_FULL_PX;
+      const defaultLeft = window.innerWidth - POMODORO_WIDGET_WIDTH_FULL_PX - margin;
+      const defaultTop = window.innerHeight - currentWidgetHeight - margin;
 
-      setPomodoroPosition({ right: defaultRight, bottom: defaultBottom });
+      setPomodoroPosition({ top: defaultTop, left: defaultLeft });
     };
 
     if (typeof window !== 'undefined') {
@@ -68,17 +91,17 @@ export function AppWrapper({ children }: AppWrapperProps) {
 
     return () => {
       if (typeof window !== 'undefined') {
-        window.removeEventListener('change', handleResize); // Changed to 'change' for media queries
+        window.removeEventListener('resize', handleResize); // Corrected event listener
       }
     };
-  }, []);
+  }, [isPomodoroWidgetMinimized]); // Re-run if minimized state changes to adjust default position
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { delta } = event;
     setPomodoroPosition((prevPosition) => {
-      const newRight = prevPosition.right - delta.x;
-      const newBottom = prevPosition.bottom - delta.y;
-      const newPos = { right: newRight, bottom: newBottom };
+      const newLeft = prevPosition.left + delta.x;
+      const newTop = prevPosition.top + delta.y;
+      const newPos = { left: newLeft, top: newTop };
       localStorage.setItem(LOCAL_STORAGE_POMODORO_POS_KEY, JSON.stringify(newPos));
       hasUserMovedRef.current = true;
       return newPos;
@@ -86,8 +109,13 @@ export function AppWrapper({ children }: AppWrapperProps) {
   };
 
   const handleDockToBottomRight = () => {
+    if (typeof window === 'undefined') return;
     const margin = 20;
-    const dockedPosition = { right: margin, bottom: margin };
+    const currentWidgetHeight = isPomodoroWidgetMinimized ? POMODORO_WIDGET_HEIGHT_MINIMIZED_PX : POMODORO_WIDGET_HEIGHT_FULL_PX;
+    const dockedPosition = {
+      left: window.innerWidth - POMODORO_WIDGET_WIDTH_FULL_PX - margin,
+      top: window.innerHeight - currentWidgetHeight - margin
+    };
     setPomodoroPosition(dockedPosition);
     localStorage.setItem(LOCAL_STORAGE_POMODORO_POS_KEY, JSON.stringify(dockedPosition));
     hasUserMovedRef.current = true;
@@ -97,11 +125,17 @@ export function AppWrapper({ children }: AppWrapperProps) {
     if (typeof window === 'undefined') return;
     const margin = 20;
     const windowWidth = window.innerWidth;
-    const centeredRight = (windowWidth / 2) - (POMODORO_WIDGET_WIDTH_PX / 2);
-    const dockedPosition = { right: centeredRight, bottom: margin };
+    const currentWidgetHeight = isPomodoroWidgetMinimized ? POMODORO_WIDGET_HEIGHT_MINIMIZED_PX : POMODORO_WIDGET_HEIGHT_FULL_PX;
+    const centeredLeft = (windowWidth / 2) - (POMODORO_WIDGET_WIDTH_FULL_PX / 2);
+    const dockedPosition = { left: centeredLeft, top: window.innerHeight - currentWidgetHeight - margin };
     setPomodoroPosition(dockedPosition);
     localStorage.setItem(LOCAL_STORAGE_POMODORO_POS_KEY, JSON.stringify(dockedPosition));
     hasUserMovedRef.current = true;
+  };
+
+  const handleCompactDock = () => {
+    setIsPomodoroWidgetMinimized(true);
+    handleDockToBottomRight(); // Dock to bottom right in compact mode
   };
 
   return (
@@ -111,7 +145,9 @@ export function AppWrapper({ children }: AppWrapperProps) {
       <DndContext onDragEnd={handleDragEnd}>
         <PomodoroWidget
           initialPosition={pomodoroPosition}
-          onPositionChange={setPomodoroPosition}
+          onPositionChange={setPomodoroPosition} // This prop is not directly used by PomodoroWidget for its own position, but kept for consistency if needed later.
+          isMinimized={isPomodoroWidgetMinimized}
+          setIsMinimized={setIsPomodoroWidgetMinimized}
         />
       </DndContext>
       <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex gap-2"> {/* Container for dock buttons */}
@@ -134,6 +170,16 @@ export function AppWrapper({ children }: AppWrapperProps) {
         >
           <AlignHorizontalDistributeCenter className="h-5 w-5" />
           <span className="sr-only">Dock Pomodoro to Bottom Center</span>
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="shadow-lg"
+          onClick={handleCompactDock}
+          title="Compact Mode (Docked Bottom Right)"
+        >
+          <Minimize2 className="h-5 w-5" />
+          <span className="sr-only">Compact Mode</span>
         </Button>
       </div>
       <Toaster />

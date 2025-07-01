@@ -11,11 +11,13 @@ import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 
 interface PomodoroWidgetProps {
-  initialPosition: { right: number; bottom: number };
-  onPositionChange: (newPosition: { right: number; bottom: number }) => void;
+  initialPosition: { top: number; left: number }; // Changed to top/left
+  onPositionChange: (newPosition: { top: number; left: number }) => void; // Changed to top/left
+  isMinimized: boolean; // Controlled by parent
+  setIsMinimized: (minimized: boolean) => void; // Controlled by parent
 }
 
-export function PomodoroWidget({ initialPosition, onPositionChange }: PomodoroWidgetProps) {
+export function PomodoroWidget({ initialPosition, onPositionChange, isMinimized, setIsMinimized }: PomodoroWidgetProps) {
   const {
     mode,
     timeLeft,
@@ -32,7 +34,6 @@ export function PomodoroWidget({ initialPosition, onPositionChange }: PomodoroWi
   } = usePomodoroState();
 
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isMinimized, setIsMinimized] = useState(false);
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: 'pomodoro-widget',
@@ -41,8 +42,8 @@ export function PomodoroWidget({ initialPosition, onPositionChange }: PomodoroWi
   // Apply initial position and dnd-kit's transform for smooth dragging
   const style = {
     position: 'fixed' as 'fixed',
-    bottom: `${initialPosition.bottom}px`,
-    right: `${initialPosition.right}px`,
+    top: `${initialPosition.top}px`, // Use top
+    left: `${initialPosition.left}px`, // Use left
     zIndex: 50,
     cursor: 'grab',
     transform: CSS.Transform.toString(transform),
@@ -66,7 +67,7 @@ export function PomodoroWidget({ initialPosition, onPositionChange }: PomodoroWi
       ref={setNodeRef}
       style={style}
       className={cn(
-        "w-full max-w-xs bg-background/50 backdrop-blur-md shadow-lg border",
+        "w-full max-w-sm bg-background/50 backdrop-blur-md shadow-lg border", // Changed max-w-xs to max-w-sm
         "flex flex-col items-center p-4 gap-4 transition-all duration-300 ease-in-out",
         isMinimized ? "h-24" : "h-auto"
       )}
@@ -91,7 +92,7 @@ export function PomodoroWidget({ initialPosition, onPositionChange }: PomodoroWi
         </Button>
       </CardHeader>
       <CardContent className={cn("flex flex-col items-center gap-6 w-full", isMinimized ? "hidden" : "flex")}>
-        <div className="flex gap-2 justify-center w-full"> {/* Removed flex-wrap to keep buttons in one line */}
+        <div className="flex gap-2 justify-center w-full">
           <Button
             variant={mode === 'focus' ? 'default' : 'outline'}
             size="sm"
