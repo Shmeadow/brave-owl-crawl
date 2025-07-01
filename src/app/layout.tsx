@@ -8,7 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { WidgetProvider } from "@/components/widget/widget-context";
 import { useState } from "react";
-import { DndWrapper } from "@/components/dnd-wrapper";
+import { DndWrapper } from "@/components/dnd-wrapper"; // Import the new DndWrapper
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,30 +27,26 @@ export default function RootLayout({
   const [sidebarPosition, setSidebarPosition] = useState({ x: 0, y: 64 }); // Initial docked position (top-16)
 
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <TooltipProvider>
-            <SessionContextProvider>
-              <WidgetProvider>
-                <DndWrapper
-                  isSidebarDocked={isSidebarDocked}
-                  onToggleDock={() => setIsSidebarDocked(prev => !prev)}
-                  sidebarPosition={sidebarPosition}
-                  onSidebarPositionChange={setSidebarPosition}
-                >
-                  {children}
-                </DndWrapper>
-              </WidgetProvider>
-            </SessionContextProvider>
-          </TooltipProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <TooltipProvider>
+        <SessionContextProvider>
+          <WidgetProvider>
+            <DndWrapper
+              isSidebarDocked={isSidebarDocked}
+              onToggleDock={() => setIsSidebarDocked(prev => !prev)}
+              sidebarPosition={sidebarPosition}
+              onSidebarPositionChange={setSidebarPosition}
+            >
+              {children}
+            </DndWrapper>
+          </WidgetProvider>
+        </SessionContextProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   );
 }
