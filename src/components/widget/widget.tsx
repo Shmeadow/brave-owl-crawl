@@ -160,7 +160,7 @@ export function Widget({
     <Card
       ref={cardRef}
       className={cn(
-        "absolute bg-card text-card-foreground shadow-lg rounded-lg flex flex-col overflow-hidden transition-all duration-200 ease-in-out group", // Added group for hover effects
+        "absolute bg-card text-card-foreground shadow-lg rounded-lg flex flex-col overflow-hidden transition-all duration-200 ease-in-out group pointer-events-auto", // Added pointer-events-auto
         isMinimized ? "w-64 h-10" : "",
         isDocked ? "relative !top-auto !left-auto !transform-none !w-full !h-auto" : ""
       )}
