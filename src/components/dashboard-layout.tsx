@@ -33,7 +33,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         className={cn(
           "hidden lg:block", // Only show on large screens
           "flex-shrink-0", // Prevent sidebar from shrinking
-          "border-r bg-sidebar text-foreground", // Changed text-sidebar-foreground to text-foreground
+          "border-r bg-sidebar text-sidebar-foreground", // Styling
           "transition-all duration-300 ease-in-out", // Animation
           isSidebarCollapsed ? "w-0 overflow-hidden" : "w-64", // Collapsed or expanded width
           "h-full" // Ensure sidebar takes full height
