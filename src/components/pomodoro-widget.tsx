@@ -49,13 +49,19 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
       className={cn(
         "fixed bottom-4 left-1/2 -translate-x-1/2 z-50", // Fixed position at bottom-center
         "w-full max-w-sm bg-background/50 backdrop-blur-md shadow-lg border",
-        "flex flex-col items-center p-4 gap-4 transition-all duration-300 ease-in-out",
-        isMinimized ? "h-20" : "h-auto" // Changed from h-24 to h-20 for smaller docked size
+        "flex flex-col items-center transition-all duration-300 ease-in-out",
+        isMinimized ? "p-1 gap-0 h-fit" : "p-4 gap-4 h-auto" // Reduced padding and gap for minimized state
       )}
     >
-      <CardHeader className="flex flex-row items-center justify-between pb-2 w-full">
-        <CardTitle className="text-xl font-bold flex-1 text-left">
-          {isMinimized ? "Pomodoro" : "Pomodoro Timer"}
+      <CardHeader className={cn(
+        "flex flex-row items-center justify-between w-full",
+        isMinimized ? "h-8 py-0 pb-0" : "pb-2" // Fixed height for header when minimized, removed padding
+      )}>
+        <CardTitle className={cn(
+          "text-xl font-bold flex-1 text-left",
+          isMinimized ? "sr-only" : "" // Hide text visually but keep element for layout
+        )}>
+          Pomodoro Timer
         </CardTitle>
         <Button
           variant="ghost"
@@ -106,11 +112,11 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
             onChange={(e) => setEditableTimeString(e.target.value)}
             onBlur={handleTimeInputBlur}
             onKeyDown={handleTimeInputKeyDown}
-            className="text-3xl font-bold font-mono text-center w-full max-w-[250px]" // Changed from text-4xl to text-3xl
+            className="text-3xl font-bold font-mono text-center w-full max-w-[250px]"
           />
         ) : (
           <div
-            className="text-3xl font-bold font-mono cursor-pointer hover:text-primary transition-colors" // Changed from text-4xl to text-3xl
+            className="text-3xl font-bold font-mono cursor-pointer hover:text-primary transition-colors"
             onClick={handleTimeDisplayClick}
           >
             {formatTime(timeLeft)}
