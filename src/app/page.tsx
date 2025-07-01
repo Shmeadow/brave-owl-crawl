@@ -2,10 +2,10 @@
 
 import React, { useState } from "react";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { MainTabs } from "@/components/main-tabs";
+import { DashboardTabsSidebar } from "@/components/dashboard-tabs-sidebar"; // Renamed import
 import { ChatPanel } from "@/components/chat-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MadeWithDyad } from "@/components/made-with-dyad"; // Keep MadeWithDyad
+import { MadeWithDyad } from "@/components/made-with-dyad";
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState("spaces"); // Default active tab
@@ -135,19 +135,27 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col min-h-screen w-full pt-16"> {/* Padding top for fixed header */}
-      <MainTabs activeTab={activeTab} onTabChange={setActiveTab} />
-      <div className="flex flex-1 overflow-hidden"> {/* Ensure content area takes remaining height */}
-        <ResizablePanelGroup direction="horizontal" className="flex-1">
-          <ResizablePanel defaultSize={65} minSize={40} className="p-4 overflow-y-auto">
-            {renderTabContent()}
-            <MadeWithDyad /> {/* Keep MadeWithDyad at the bottom of the main content area */}
-          </ResizablePanel>
-          <ResizableHandle withHandle className="bg-border/50 hover:bg-primary/50 transition-colors" />
-          <ResizablePanel defaultSize={35} minSize={25} className="p-4">
-            <ChatPanel />
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
+      <ResizablePanelGroup direction="horizontal" className="flex-1">
+        {/* Left Sidebar for Dashboard Tabs */}
+        <ResizablePanel defaultSize={15} minSize={10} maxSize={25} className="hidden sm:block">
+          <DashboardTabsSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        </ResizablePanel>
+        <ResizableHandle withHandle className="bg-border/50 hover:bg-primary/50 transition-colors hidden sm:flex" />
+
+        {/* Main Content Area (contains renderTabContent and ChatPanel) */}
+        <ResizablePanel defaultSize={85} minSize={50}>
+          <ResizablePanelGroup direction="horizontal" className="flex-1">
+            <ResizablePanel defaultSize={65} minSize={40} className="p-4 overflow-y-auto">
+              {renderTabContent()}
+              <MadeWithDyad />
+            </ResizablePanel>
+            <ResizableHandle withHandle className="bg-border/50 hover:bg-primary/50 transition-colors" />
+            <ResizablePanel defaultSize={35} minSize={25} className="p-4">
+              <ChatPanel />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 }

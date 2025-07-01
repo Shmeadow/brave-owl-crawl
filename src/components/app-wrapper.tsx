@@ -6,11 +6,11 @@ import { GoalReminderBar } from "@/components/goal-reminder-bar";
 import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { Toaster } from "@/components/ui/sonner";
 import { ContactWidget } from "@/components/contact-widget";
-import { usePathname } from "next/navigation"; // Import usePathname
-import { Header } from "@/components/header"; // Import Header
-import { AdsBanner } from "@/components/ads-banner"; // Import AdsBanner
-import { LofiAudioPlayer } from "@/components/lofi-audio-player"; // Import LofiAudioPlayer
-import { SpotifyEmbedModal } from "@/components/spotify-embed-modal"; // Import SpotifyEmbedModal
+import { usePathname } from "next/navigation";
+import { Header } from "@/components/header";
+import { AdsBanner } from "@/components/ads-banner";
+import { LofiAudioPlayer } from "@/components/lofi-audio-player";
+import { SpotifyEmbedModal } from "@/components/spotify-embed-modal";
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
 const LOCAL_STORAGE_POMODORO_VISIBLE_KEY = 'pomodoro_widget_visible';
@@ -21,20 +21,24 @@ interface AppWrapperProps {
 
 export function AppWrapper({ children }: AppWrapperProps) {
   const pathname = usePathname();
-  const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(false);
-  const [isPomodoroBarVisible, setIsPomodoroBarVisible] = useState(true); // New state for overall visibility
-  const [isSpotifyModalOpen, setIsSpotifyModalOpen] = useState(false); // State for Spotify modal
+  // Default to true (minimized) if not explicitly saved as false
+  const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(true);
+  // Default to true (visible) if not explicitly saved as false
+  const [isPomodoroBarVisible, setIsPomodoroBarVisible] = useState(true);
+  const [isSpotifyModalOpen, setIsSpotifyModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (typeof window !== 'undefined') {
       const savedMinimized = localStorage.getItem(LOCAL_STORAGE_POMODORO_MINIMIZED_KEY);
-      setIsPomodoroWidgetMinimized(savedMinimized === 'true');
+      // If savedMinimized is 'false', set to false. Otherwise, default to true.
+      setIsPomodoroWidgetMinimized(savedMinimized === 'false' ? false : true);
 
       const savedVisible = localStorage.getItem(LOCAL_STORAGE_POMODORO_VISIBLE_KEY);
-      setIsPomodoroBarVisible(savedVisible !== 'false'); // Default to true if not set
+      // If savedVisible is 'false', set to false. Otherwise, default to true.
+      setIsPomodoroBarVisible(savedVisible === 'false' ? false : true);
     }
-    setMounted(true);
   }, []);
 
   useEffect(() => {
@@ -49,7 +53,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
     }
   }, [isPomodoroBarVisible, mounted]);
 
-  const shouldShowPomodoro = pathname !== '/account'; // Condition to hide on /account page
+  const shouldShowPomodoro = pathname !== '/account';
 
   const handleTogglePomodoroVisibility = () => {
     setIsPomodoroBarVisible(prev => !prev);
@@ -72,14 +76,13 @@ export function AppWrapper({ children }: AppWrapperProps) {
         isPomodoroVisible={isPomodoroBarVisible}
         onOpenSpotifyModal={handleOpenSpotifyModal}
       />
-      {/* Main content area is now managed by app/page.tsx and other pages directly */}
       {children}
       <GoalReminderBar />
       {mounted && shouldShowPomodoro && isPomodoroBarVisible && (
         <PomodoroWidget
           isMinimized={isPomodoroWidgetMinimized}
           setIsMinimized={setIsPomodoroWidgetMinimized}
-          onClose={handleHidePomodoro} // Pass the new close handler
+          onClose={handleHidePomodoro}
         />
       )}
       <ContactWidget />
