@@ -59,8 +59,8 @@ export function usePomodoroState() {
           // Ensure customTimes are numbers and default if missing
           const customTimes = {
             focus: parsedState.customTimes?.focus || DEFAULT_TIMES.focus,
-            short_break: parsedState.customTimes?.short_break || DEFAULT_TIMES.short_break,
-            long_break: parsedState.customTimes?.long_break || DEFAULT_TIMES.long_break,
+            'short-break': parsedState.customTimes?.['short-break'] || DEFAULT_TIMES['short-break'],
+            'long-break': parsedState.customTimes?.['long-break'] || DEFAULT_TIMES['long-break'],
           };
           return {
             ...parsedState,
