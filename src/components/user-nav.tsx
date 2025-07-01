@@ -10,13 +10,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useSupabase, UserProfile } from "@/integrations/supabase/auth"; // Import UserProfile
+import { useSupabase, UserProfile } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-// No need for useEffect or useState for profile here, use directly from context
+import { Switch } from "@/components/ui/switch"; // Import Switch
+import { Label } from "@/components/ui/label"; // Import Label
+import { useSidebarPreference } from "@/hooks/use-sidebar-preference"; // Import useSidebarPreference
 
 export function UserNav() {
-  const { supabase, session, profile, loading: authLoading } = useSupabase(); // Get profile directly
+  const { supabase, session, profile, loading: authLoading } = useSupabase();
+  const { isAlwaysOpen, toggleAlwaysOpen } = useSidebarPreference(); // Use the new hook
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -32,7 +35,6 @@ export function UserNav() {
     }
   };
 
-  // Use profile directly from context
   const displayName = profile?.first_name || profile?.last_name || session?.user?.email || "Guest User";
   const displayEmail = session?.user?.email;
   const displayImage = profile?.profile_image_url || session?.user?.user_metadata?.avatar_url;
@@ -69,6 +71,20 @@ export function UserNav() {
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => router.push('/account')}>
           Account
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="p-0">
+          <div className="flex items-center justify-between px-2 py-1.5 w-full">
+            <Label htmlFor="sidebar-toggle" className="cursor-pointer text-sm font-normal">
+              Always Open Sidebar
+            </Label>
+            <Switch
+              id="sidebar-toggle"
+              checked={isAlwaysOpen}
+              onCheckedChange={toggleAlwaysOpen}
+              className="ml-2"
+            />
+          </div>
         </DropdownMenuItem>
         {session && (
           <DropdownMenuItem onClick={handleSignOut}>

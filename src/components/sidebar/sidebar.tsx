@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
-import { useWidget } from "@/components/widget/widget-context"; // Import useWidget
+import { useWidget } from "@/components/widget/widget-context";
+import { useSidebarPreference } from "@/hooks/use-sidebar-preference"; // Import useSidebarPreference
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Wind, BookOpen, Goal } from "lucide-react";
 
 const SIDEBAR_WIDTH = 60; // px
@@ -14,11 +15,13 @@ const HEADER_HEIGHT_REM = 4; // 4rem = 64px
 
 export function Sidebar() {
   const { activePanel, setActivePanel, isSidebarOpen, setIsSidebarOpen } = useSidebar();
-  const { toggleWidget } = useWidget(); // Get toggleWidget from WidgetContext
+  const { isAlwaysOpen } = useSidebarPreference(); // Get the preference
+  const { toggleWidget } = useWidget();
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null); // Corrected initialization
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleMouseEnter = () => {
+    if (isAlwaysOpen) return; // Do nothing if always open
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
@@ -27,6 +30,7 @@ export function Sidebar() {
   };
 
   const handleMouseLeave = () => {
+    if (isAlwaysOpen) return; // Do nothing if always open
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
@@ -35,25 +39,31 @@ export function Sidebar() {
     }, UNDOCK_DELAY);
   };
 
-  // Handle mouse movement near the left edge
   const handleMouseMove = (e: MouseEvent) => {
+    if (isAlwaysOpen) return; // Do nothing if always open
+
     if (e.clientX < HOT_ZONE_WIDTH && !isSidebarOpen) {
       handleMouseEnter();
     } else if (e.clientX >= SIDEBAR_WIDTH && isSidebarOpen && !sidebarRef.current?.contains(e.target as Node)) {
-      // If mouse moves outside the sidebar area while it's open
       handleMouseLeave();
     }
   };
 
   useEffect(() => {
-    document.addEventListener('mousemove', handleMouseMove);
+    if (isAlwaysOpen) {
+      setIsSidebarOpen(true); // Force open if preference is true
+      document.removeEventListener('mousemove', handleMouseMove); // Remove hover listener
+    } else {
+      document.addEventListener('mousemove', handleMouseMove); // Add hover listener
+    }
+
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [isSidebarOpen]); // Re-attach listener if sidebar open state changes
+  }, [isAlwaysOpen, isSidebarOpen]); // Re-run effect if preference or hover state changes
 
   const navItems = [
     { id: "spaces", label: "Spaces", icon: LayoutGrid },
@@ -70,9 +80,11 @@ export function Sidebar() {
   ];
 
   const handleSidebarItemClick = (id: string, label: string) => {
-    setActivePanel(id as any); // Keep activePanel for highlighting
-    toggleWidget(id, label); // Toggle the corresponding widget
+    setActivePanel(id as any);
+    toggleWidget(id, label);
   };
+
+  const actualSidebarOpen = isAlwaysOpen || isSidebarOpen; // Determine actual visual state
 
   return (
     <div
@@ -80,9 +92,9 @@ export function Sidebar() {
       className={cn(
         "fixed left-0 top-16 z-50 flex flex-col items-center py-4",
         "bg-black/60 shadow-lg shadow-black/30 transition-transform duration-300 ease-in-out",
-        isSidebarOpen ? "translate-x-0 w-[60px]" : "-translate-x-full w-[60px]", // Changed to -translate-x-full for complete hide
-        `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]`, // Adjusted height
-        "rounded-r-lg" // Added rounded right corners
+        actualSidebarOpen ? "translate-x-0 w-[60px]" : "-translate-x-full w-[60px]",
+        `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]`,
+        "rounded-r-lg"
       )}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
