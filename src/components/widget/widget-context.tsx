@@ -88,6 +88,7 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const toggleWidget = useCallback((id: string) => {
+    console.log(`Attempting to toggle widget: ${id}`);
     setWidgetStates(prevStates => {
       const currentState = prevStates[id] || DEFAULT_WIDGET_STATE;
       const newIsOpen = !currentState.isOpen;
@@ -98,53 +99,61 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
       } else {
         toast.info(`${id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} closed.`);
       }
-
+      const newState = { ...currentState, isOpen: newIsOpen, isMinimized: newIsMinimized };
+      console.log(`New state for ${id} after toggle:`, newState);
       return {
         ...prevStates,
-        [id]: { ...currentState, isOpen: newIsOpen, isMinimized: newIsMinimized }
+        [id]: newState
       };
     });
   }, []);
 
   const minimizeWidget = useCallback((id: string) => {
+    console.log(`Attempting to minimize widget: ${id}`);
     setWidgetStates(prevStates => {
       const currentState = prevStates[id] || DEFAULT_WIDGET_STATE;
+      const newState = {
+        ...currentState,
+        isMinimized: true,
+        // Save current position and size before minimizing
+        previousX: currentState.x,
+        previousY: currentState.y,
+        previousWidth: currentState.width,
+        previousHeight: currentState.height,
+      };
+      console.log(`New state for ${id} after minimize:`, newState);
       return {
         ...prevStates,
-        [id]: {
-          ...currentState,
-          isMinimized: true,
-          // Save current position and size before minimizing
-          previousX: currentState.x,
-          previousY: currentState.y,
-          previousWidth: currentState.width,
-          previousHeight: currentState.height,
-        }
+        [id]: newState
       };
     });
     toast.info(`${id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} minimized.`);
   }, []);
 
   const restoreWidget = useCallback((id: string) => {
+    console.log(`Attempting to restore widget: ${id}`);
     setWidgetStates(prevStates => {
       const currentState = prevStates[id] || DEFAULT_WIDGET_STATE;
+      const newState = {
+        ...currentState,
+        isMinimized: false,
+        // Restore position and size
+        x: currentState.previousX,
+        y: currentState.previousY,
+        width: currentState.previousWidth,
+        height: currentState.previousHeight,
+      };
+      console.log(`New state for ${id} after restore:`, newState);
       return {
         ...prevStates,
-        [id]: {
-          ...currentState,
-          isMinimized: false,
-          // Restore position and size
-          x: currentState.previousX,
-          y: currentState.previousY,
-          width: currentState.previousWidth,
-          height: currentState.previousHeight,
-        }
+        [id]: newState
       };
     });
     toast.info(`${id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} restored.`);
   }, []);
 
   const closeWidget = useCallback((id: string) => {
+    console.log(`Attempting to close widget: ${id}`);
     updateWidgetState(id, { isOpen: false, isMinimized: false });
     toast.info(`${id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} closed.`);
   }, [updateWidgetState]);
