@@ -7,7 +7,6 @@ import { Progress } from "@/components/ui/progress";
 import { Search, Menu, Volume2, VolumeX, Play, Pause, Gem, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMusicPlayer } from "@/hooks/use-music-player";
-// import { useRoom } from "@/hooks/use-room"; // Removed useRoom
 import { useSunriseSunset } from "@/hooks/use-sunrise-sunset";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -33,10 +32,9 @@ export function Header({
 }: HeaderProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const { isPlaying, togglePlayPause, currentTrack, volume, setVolume, isMuted, toggleMute } = useMusicPlayer();
-  // const { roomName, setRoomName } = useRoom(); // Removed useRoom state and setter
   const { times, loading: sunTimesLoading, error: sunTimesError } = useSunriseSunset();
   const { setIsSidebarOpen } = useSidebar();
-  const { profile, user } = useSupabase(); // Get profile and user for name
+  const { profile, user } = useSupabase();
   const router = useRouter();
 
   useEffect(() => {
@@ -64,7 +62,8 @@ export function Header({
     day: "numeric",
   });
 
-  const displayRoomName = profile?.first_name || user?.email || "Your Room"; // Use first name, fallback to email, then default
+  const displayUserName = profile?.first_name || user?.email?.split('@')[0] || "Guest"; // Use first name, or part of email, or 'Guest'
+  const roomName = `${displayUserName}'s Room`;
 
   return (
     <header className="flex items-center justify-between p-3 border-b border-border bg-background/80 backdrop-blur-md z-10 relative h-16">
@@ -79,8 +78,8 @@ export function Header({
           <span className="sr-only">Go to Home Room</span>
         </Button>
         <div className="flex items-center gap-1">
-          <span className="text-sm font-semibold text-primary">Room:</span>
-          <span className="text-sm text-foreground font-medium">{displayRoomName}</span> {/* Display user's name */}
+          <span className="text-sm font-semibold text-primary"></span> {/* Removed "Room:" prefix */}
+          <span className="text-sm text-foreground font-medium">{roomName}</span> {/* Display dynamic room name */}
         </div>
         <div className="relative w-32">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -111,13 +110,13 @@ export function Header({
                 <span>Loading sunrise/sunset...</span>
               ) : sunTimesError ? (
                 <span className="text-red-500">{sunTimesError}</span>
-              ) : times ? (
+              ) : times && times.sunrise && times.sunset ? (
                 <div className="text-center">
-                  <p>Sunrise: {times.sunrise?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                  <p>Sunset: {times.sunset?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                  <p>Sunrise: {times.sunrise.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                  <p>Sunset: {times.sunset.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                 </div>
               ) : (
-                <span>Could not get sunrise/sunset data.</span>
+                <span>Could not get sunrise/sunset data. Please enable location services.</span>
               )}
             </TooltipContent>
           </Tooltip>
