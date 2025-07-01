@@ -10,7 +10,7 @@ import { usePathname } from "next/navigation";
 import { Header } from "@/components/header";
 import { SpotifyEmbedModal } from "@/components/spotify-embed-modal";
 import { SidebarProvider, useSidebar } from "@/components/sidebar/sidebar-context"; // Import SidebarProvider and useSidebar
-import { Sidebar } => "@/components/sidebar/sidebar"; // Import the new Sidebar
+import { Sidebar } from "@/components/sidebar/sidebar"; // Import the new Sidebar
 import { ChatPanel } from "@/components/chat-panel"; // Import ChatPanel
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
@@ -103,7 +103,6 @@ function AppWrapperContent({ children }: AppWrapperProps) {
         isPomodoroVisible={isPomodoroBarVisible}
         onOpenSpotifyModal={handleOpenSpotifyModal}
         onOpenUpgradeModal={handleOpenUpgradeModal}
-        // dailyProgress removed from here
       />
       <Sidebar /> {/* Render the new Sidebar */}
       <main
