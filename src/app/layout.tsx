@@ -4,14 +4,11 @@ import type { Metadata } from "next/types";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { SessionContextProvider } from "@/integrations/supabase/auth"; // Corrected import path
-import { WidgetProvider, useWidget } from "@/components/widget/widget-context";
-import { WidgetContainer } from "@/components/widget/widget-container";
-import { DndContext, DragEndEvent } from "@dnd-kit/core";
+import { SessionContextProvider } from "@/integrations/supabase/auth";
+import { WidgetProvider } from "@/components/widget/widget-context";
 import { useState } from "react";
-import { Sidebar } from "@/components/sidebar/sidebar";
+import { DndWrapper } from "@/components/dnd-wrapper"; // Import the new DndWrapper
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,27 +26,6 @@ export default function RootLayout({
   const [isSidebarDocked, setIsSidebarDocked] = useState(true);
   const [sidebarPosition, setSidebarPosition] = useState({ x: 0, y: 64 }); // Initial docked position (top-16)
 
-  // Get the updateWidgetPositionFromDrag function from the WidgetContext
-  // This hook must be called inside the component where WidgetProvider is available
-  const { updateWidgetPositionFromDrag } = useWidget();
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, delta } = event;
-
-    if (active.data.current?.type === "widget") {
-      // Call the context function to update widget position
-      updateWidgetPositionFromDrag(active.data.current.id, delta);
-    } else if (active.data.current?.type === "sidebar") {
-      const initialPosition = active.data.current?.initialPosition;
-      if (initialPosition) {
-        setSidebarPosition({
-          x: initialPosition.x + delta.x,
-          y: initialPosition.y + delta.y,
-        });
-      }
-    }
-  };
-
   return (
     <ThemeProvider
       attribute="class"
@@ -60,18 +36,14 @@ export default function RootLayout({
       <TooltipProvider>
         <SessionContextProvider>
           <WidgetProvider>
-            {/* DndContext needs to wrap all draggable elements */}
-            <DndContext onDragEnd={handleDragEnd}>
+            <DndWrapper
+              isSidebarDocked={isSidebarDocked}
+              onToggleDock={() => setIsSidebarDocked(prev => !prev)}
+              sidebarPosition={sidebarPosition}
+              onSidebarPositionChange={setSidebarPosition}
+            >
               {children}
-              <Sidebar
-                isDocked={isSidebarDocked}
-                onToggleDock={() => setIsSidebarDocked(prev => !prev)}
-                sidebarPosition={sidebarPosition}
-                onSidebarPositionChange={setSidebarPosition}
-              />
-              <WidgetContainer />
-            </DndContext>
-            <Toaster />
+            </DndWrapper>
           </WidgetProvider>
         </SessionContextProvider>
       </TooltipProvider>
