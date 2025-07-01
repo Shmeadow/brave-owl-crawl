@@ -88,7 +88,6 @@ export function Widget({
         isResizable ? "resize" : "",
         isDraggable ? "cursor-grab" : "",
         isMinimized && !isPinned ? "cursor-pointer" : "", // Minimized is clickable to restore
-        "z-50",
         "pointer-events-auto"
       )}
       style={{
@@ -96,7 +95,7 @@ export function Widget({
         top: isMaximized ? undefined : position.y, // Apply position.y if not maximized
         width: (!isMaximized && !isPinned && !isMinimized) ? size.width : undefined, // Only apply if normal floating
         height: (!isMaximized && !isPinned && !isMinimized) ? size.height : undefined, // Only apply if normal floating
-        zIndex: zIndex,
+        zIndex: zIndex, // Use the zIndex from props
         ...currentTransformStyle // Apply transform for dragging
       }}
       onClick={isMinimized && !isPinned ? () => onMinimize(id) : undefined} // Only expand floating minimized on click
