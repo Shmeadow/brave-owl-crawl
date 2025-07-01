@@ -27,14 +27,17 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnreadMessages, unreadCount }: ChatPanelProps) {
-  const { supabase, session, profile } = useSupabase();
+  const { supabase, session, profile, loading: authLoading } = useSupabase();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [showSupportContact, setShowSupportContact] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const fetchMessages = async () => {
-    if (!supabase) return;
+    if (!supabase) {
+      console.warn("Supabase client not available for fetching messages.");
+      return;
+    }
     // Fetch messages without joining profiles initially for better reliability
     const { data, error } = await supabase
       .from('chat_messages')
@@ -44,7 +47,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
 
     if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found, which is fine for an empty chat
       console.error("Error fetching messages:", error);
-      toast.error("Failed to load chat messages.");
+      toast.error("Failed to load chat messages: " + error.message); // Added error.message for more detail
     } else if (data) {
       const formattedMessages = data.map(msg => ({
         id: msg.id,
@@ -59,9 +62,12 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
   };
 
   useEffect(() => {
+    if (authLoading) return; // Wait for auth to load before fetching messages or setting up subscription
+
     fetchMessages();
 
-    if (!supabase) return;
+    // Setup subscription only if supabase is available
+    if (!supabase) return; 
 
     const subscription = supabase
       .channel('chat_room')
@@ -89,7 +95,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, [supabase, isOpen, session?.user?.id, onNewUnreadMessage, profile]); // Added profile to dependencies
+  }, [supabase, isOpen, session?.user?.id, onNewUnreadMessage, profile, authLoading]); // Added authLoading to dependencies
 
   useEffect(() => {
     // Scroll to bottom when messages change or chat opens
