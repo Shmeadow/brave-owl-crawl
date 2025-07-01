@@ -59,7 +59,7 @@ export function Widget({
 
   useEffect(() => {
     // Only update position if actually dragged and not in a fixed state
-    if (transform && cardRef.current && !isPinned && !isMaximized) { // Removed isMinimized from this check
+    if (transform && cardRef.current && !isPinned && !isMaximized) {
       onPositionChange({ x: position.x + transform.x, y: position.y + transform.y });
     }
   }, [transform, id, onPositionChange, position, isPinned, isMaximized]);
@@ -106,61 +106,84 @@ export function Widget({
         "pointer-events-auto"
       )}
       style={{
-        left: isMaximized ? undefined : position.x,
-        top: isMaximized ? undefined : position.y,
-        // Width and height are handled by ResizableBox for normal state, or fixed classes for minimized/pinned/maximized
+        left: isMaximized || isPinned ? undefined : position.x,
+        top: isMaximized || isPinned ? undefined : position.y,
+        width: (!isMaximized && !isPinned && !isMinimized) ? size.width : undefined, // Only apply if normal floating
+        height: (!isMaximized && !isPinned && !isMinimized) ? size.height : undefined, // Only apply if normal floating
         zIndex: zIndex,
         ...dragStyle
       }}
-      onClick={isMinimized ? () => onMinimize(id) : undefined} // Only expand floating minimized on click
+      onClick={isMinimized && !isPinned ? () => onMinimize(id) : undefined} // Only expand floating minimized on click
       onMouseDown={onBringToFront}
     >
+      {/* Always render CardHeader, but its content changes */}
       <CardHeader
         className={cn(
-          "flex flex-row items-center justify-between space-y-0 pb-2",
-          isVisuallyMinimized ? "hidden" : "flex" // Hide header only for floating minimized and pinned
+          "flex flex-row items-center justify-between space-y-0",
+          isVisuallyMinimized ? "p-2 h-12" : "pb-2" // Smaller padding/height for minimized/pinned header
         )}
-        {...(isDraggable && { ...listeners, ...attributes })} // Apply drag listeners if draggable
+        {...(isDraggable && { ...listeners, ...attributes })}
       >
-        <CardTitle className="text-lg font-medium leading-none">
-          {title}
-        </CardTitle>
-        <div className="flex gap-1">
-          {!isPinned && ( // Only show minimize/maximize/restore if not pinned
-            <>
-              {isMinimized ? (
-                <Button variant="ghost" size="icon" onClick={() => onMinimize(id)} title="Restore">
-                  <Maximize className="h-4 w-4" />
-                </Button>
-              ) : isMaximized ? (
-                <Button variant="ghost" size="icon" onClick={() => onMaximize(id)} title="Restore">
-                  <Minimize className="h-4 w-4" />
-                </Button>
-              ) : (
+        {isVisuallyMinimized ? (
+          // Content for minimized/pinned header
+          <>
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <Icon className="h-6 w-6 text-primary" />
+              <CardTitle className="text-sm font-medium leading-none truncate">{title}</CardTitle>
+            </div>
+            <div className="flex gap-1">
+              {isPinned ? (
+                // Pinned controls
                 <>
-                  <Button variant="ghost" size="icon" onClick={() => onMinimize(id)} title="Minimize">
-                    <Minimize className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => onMaximize(id)} title="Maximize">
+                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
                     <Maximize className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title="Unpin">
+                    <PinOff className="h-4 w-4" />
+                  </Button>
+                </>
+              ) : (
+                // Floating minimized controls
+                <>
+                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
+                    <Maximize className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title="Pin">
+                    <Pin className="h-4 w-4" />
                   </Button>
                 </>
               )}
-            </>
-          )}
-          <Button variant="ghost" size="icon" onClick={() => onPin(id)} title={isPinned ? "Unpin" : "Pin"}>
-            {isPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-          </Button>
-          <Button variant="ghost" size="icon" onClick={() => onClose(id)} title="Close">
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onClose(id); }} title="Close">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </>
+        ) : (
+          // Content for normal/maximized header
+          <>
+            <CardTitle className="text-lg font-medium leading-none">
+              {title}
+            </CardTitle>
+            <div className="flex gap-1">
+              <Button variant="ghost" size="icon" onClick={() => onMinimize(id)} title="Minimize">
+                <Minimize className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => onMaximize(id)} title="Maximize">
+                <Maximize className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => onPin(id)} title="Pin">
+                <Pin className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => onClose(id)} title="Close">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </>
+        )}
       </CardHeader>
 
-      {/* Render content based on state */}
-      {isVisuallyMinimized ? (
-        renderCardContent()
-      ) : (
+      {/* Render content only if not visually minimized */}
+      {!isVisuallyMinimized && (
         <ResizableBox
           width={size.width}
           height={size.height}
@@ -173,9 +196,9 @@ export function Widget({
           maxConstraints={[window.innerWidth, window.innerHeight]}
           className={cn(
             "flex-grow flex flex-col",
-            isMaximized || isPinned ? "w-full h-full" : ""
+            isMaximized ? "w-full h-full" : "" // ResizableBox takes full size if maximized
           )}
-          handle={null} // Always hide react-resizable's own handles
+          handle={null}
         >
           {renderCardContent()}
         </ResizableBox>
