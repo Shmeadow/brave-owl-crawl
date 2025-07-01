@@ -17,14 +17,14 @@ export default function AccountPage() {
     if (!loading && session) {
       // If user logs in successfully, redirect to dashboard
       toast.success("Logged in successfully!");
-      router.push('/');
+      router.push('/'); // Changed redirect to root
     }
   }, [session, loading, router]);
 
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center h-full"> {/* Changed min-h-screen to h-full */}
+        <div className="flex items-center justify-center h-full">
           <p>Loading account details...</p>
         </div>
       </DashboardLayout>
@@ -34,7 +34,7 @@ export default function AccountPage() {
   if (session) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center h-full bg-background"> {/* Changed min-h-screen to h-full */}
+        <div className="flex items-center justify-center h-full bg-background">
           <Card className="w-full max-w-md p-6">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-bold">Account</CardTitle>
@@ -54,7 +54,7 @@ export default function AccountPage() {
   if (!supabase) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center h-full bg-background"> {/* Changed min-h-screen to h-full */}
+        <div className="flex items-center justify-center h-full bg-background">
           <Card className="w-full max-w-md p-6">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-bold">Authentication Error</CardTitle>
@@ -68,7 +68,7 @@ export default function AccountPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex items-center justify-center h-full bg-background"> {/* Changed min-h-screen to h-full */}
+      <div className="flex items-center justify-center h-full bg-background">
         <Card className="w-full max-w-md p-6">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Account</CardTitle>
@@ -90,7 +90,7 @@ export default function AccountPage() {
                 },
               }}
               theme="light"
-              redirectTo="/account" // Redirect back to account page after auth event
+              redirectTo="/" // Changed redirect to root
             />
           </CardContent>
         </Card>
