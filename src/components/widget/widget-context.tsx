@@ -28,7 +28,7 @@ interface WidgetContextType {
   minimizeWidget: (id: string) => void;
   closeWidget: (id: string) => void;
   toggleDocked: (id: string) => void;
-  toggleWidget: (id: string, title: string) => void; // Added toggleWidget
+  toggleWidget: (id: string, title: string) => void;
 }
 
 const WidgetContext = createContext<WidgetContextType | undefined>(undefined);
@@ -91,7 +91,35 @@ export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProvide
 
   const minimizeWidget = useCallback((id: string) => {
     setActiveWidgets(prev =>
-      prev.map(widget => (widget.id === id ? { ...widget, isMinimized: !widget.isMinimized } : widget))
+      prev.map(widget => {
+        if (widget.id === id) {
+          if (widget.isDocked) {
+            // If docked, un-dock and minimize
+            return { ...widget, isDocked: false, isMinimized: true };
+          } else {
+            // If floating (normal or already minimized), toggle minimized state
+            return { ...widget, isMinimized: !widget.isMinimized };
+          }
+        }
+        return widget;
+      })
+    );
+  }, []);
+
+  const toggleDocked = useCallback((id: string) => {
+    setActiveWidgets(prev =>
+      prev.map(widget => {
+        if (widget.id === id) {
+          if (widget.isDocked) {
+            // If docked, un-dock and return to normal floating size
+            return { ...widget, isDocked: false, isMinimized: false };
+          } else {
+            // If floating (normal or minimized), dock it and ensure it's not minimized
+            return { ...widget, isDocked: true, isMinimized: false };
+          }
+        }
+        return widget;
+      })
     );
   }, []);
 
@@ -99,13 +127,6 @@ export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProvide
     removeWidget(id);
   }, [removeWidget]);
 
-  const toggleDocked = useCallback((id: string) => {
-    setActiveWidgets(prev =>
-      prev.map(widget => (widget.id === id ? { ...widget, isDocked: !widget.isDocked, isMinimized: false } : widget))
-    );
-  }, []);
-
-  // New toggleWidget function
   const toggleWidget = useCallback((id: string, title: string) => {
     if (activeWidgets.some(widget => widget.id === id)) {
       removeWidget(id);
@@ -125,7 +146,7 @@ export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProvide
       minimizeWidget,
       closeWidget,
       toggleDocked,
-      toggleWidget, // Expose the new function
+      toggleWidget,
     }),
     [
       activeWidgets,

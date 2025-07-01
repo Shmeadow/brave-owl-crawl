@@ -48,7 +48,7 @@ export function Widget({
   const resizeDirection = useRef("");
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (isDocked || isMinimized) return; // Prevent dragging/resizing when docked or minimized
+    if (isDocked) return; // Prevent dragging when docked
 
     e.preventDefault(); // Prevent default browser drag behavior
     onBringToFront(); // Bring to front when dragging starts
@@ -75,10 +75,10 @@ export function Widget({
 
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
-  }, [position, onPositionChange, onBringToFront, isDocked, isMinimized]);
+  }, [position, onPositionChange, onBringToFront, isDocked]);
 
   const handleResizeMouseDown = useCallback((e: React.MouseEvent, direction: string) => {
-    if (isDocked || isMinimized) return; // Prevent dragging/resizing when docked or minimized
+    if (isDocked || isMinimized) return; // Prevent resizing when docked or minimized
 
     e.stopPropagation(); // Prevent dragging when resizing
     onBringToFront(); // Bring to front when resizing starts
@@ -160,8 +160,8 @@ export function Widget({
     <Card
       ref={cardRef}
       className={cn(
-        "absolute bg-card text-card-foreground shadow-lg rounded-lg flex flex-col overflow-hidden transition-all duration-200 ease-in-out group pointer-events-auto", // Added pointer-events-auto
-        isMinimized ? "w-64 h-10" : "",
+        "absolute bg-card text-card-foreground shadow-lg flex flex-col overflow-hidden transition-all duration-200 ease-in-out group pointer-events-auto",
+        isMinimized ? "w-48 h-10 rounded-lg" : "rounded-lg", // Apply rounded-lg when minimized, and adjust width
         isDocked ? "relative !top-auto !left-auto !transform-none !w-full !h-auto" : ""
       )}
       style={!isDocked && !isMinimized ? {
@@ -177,7 +177,8 @@ export function Widget({
         onDoubleClick={handleDoubleClick}
         className={cn(
           "flex flex-row items-center justify-between p-2 border-b cursor-grab",
-          isDocked && "cursor-default"
+          isDocked && "cursor-default",
+          isMinimized && "cursor-grab" // Minimized widgets are still draggable
         )}
       >
         <CardTitle className="text-sm font-semibold flex-grow truncate">
@@ -206,6 +207,7 @@ export function Widget({
           {children}
         </CardContent>
       )}
+      {/* Resize handles are only shown when not minimized and not docked */}
       {!isDocked && !isMinimized && (
         <>
           {/* Resize handles */}
