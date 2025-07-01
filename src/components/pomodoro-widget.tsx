@@ -9,8 +9,8 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
 interface PomodoroWidgetProps {
-  isMinimized: boolean; // Controlled by parent
-  setIsMinimized: (minimized: boolean) => void; // Controlled by parent
+  isMinimized: boolean;
+  setIsMinimized: (minimized: boolean) => void;
 }
 
 export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetProps) {
@@ -37,7 +37,6 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
     }
   };
 
-  // Focus input when editing starts
   useEffect(() => {
     if (isEditingTime && inputRef.current) {
       inputRef.current.focus();
@@ -47,19 +46,18 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
   return (
     <Card
       className={cn(
-        "fixed bottom-4 left-1/2 -translate-x-1/2 z-50", // Fixed position at bottom-center
+        "fixed bottom-4 left-1/2 -translate-x-1/2 z-50",
         "bg-background/50 backdrop-blur-md shadow-lg border",
         "flex transition-all duration-300 ease-in-out",
         isMinimized
-          ? "flex-row items-center justify-center p-1 w-fit h-fit cursor-pointer" // Minimized: row, tighter padding, fit content, add cursor-pointer
-          : "flex-col items-center p-4 gap-4 w-full max-w-sm h-auto" // Expanded: column, original padding
+          ? "flex-row items-center justify-center p-1 w-fit h-fit cursor-pointer"
+          : "flex-col items-center p-4 gap-4 w-full max-w-sm h-auto"
       )}
-      onClick={isMinimized ? () => setIsMinimized(false) : undefined} // Make whole card clickable to undock when minimized
+      onClick={isMinimized ? () => setIsMinimized(false) : undefined}
     >
-      {/* CardHeader - only visible when not minimized */}
       <CardHeader className={cn(
         "flex flex-row items-center justify-between w-full",
-        isMinimized ? "hidden" : "pb-2" // Hide header completely when minimized
+        isMinimized ? "hidden" : "pb-2"
       )}>
         <CardTitle className="text-xl font-bold flex-1 text-left">
           Pomodoro Timer
@@ -67,19 +65,18 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10" {/* Increased size */}
+          className="h-10 w-10"
           onClick={(e) => {
-            e.stopPropagation(); // Prevent card's onClick from firing
-            setIsMinimized(true); // Always minimize when this button is clicked
+            e.stopPropagation();
+            setIsMinimized(true);
           }}
           title="Minimize Pomodoro Timer"
         >
-          <ChevronDown className="h-6 w-6" /> {/* Increased icon size */}
+          <ChevronDown className="h-6 w-6" />
           <span className="sr-only">Minimize Pomodoro</span>
         </Button>
       </CardHeader>
 
-      {/* CardContent - visible when not minimized */}
       <CardContent className={cn("flex flex-col items-center gap-6 w-full", isMinimized ? "hidden" : "flex")}>
         <div className="flex gap-2 justify-center w-full">
           <Button
@@ -115,11 +112,11 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
             onChange={(e) => setEditableTimeString(e.target.value)}
             onBlur={handleTimeInputBlur}
             onKeyDown={handleTimeInputKeyDown}
-            className="text-5xl font-bold font-mono text-center w-full max-w-[250px]" {/* Increased text size */}
+            className="text-5xl font-bold font-mono text-center w-full max-w-[250px]"
           />
         ) : (
           <div
-            className="text-5xl font-bold font-mono cursor-pointer hover:text-primary transition-colors" {/* Increased text size */}
+            className="text-5xl font-bold font-mono cursor-pointer hover:text-primary transition-colors"
             onClick={handleTimeDisplayClick}
           >
             {formatTime(timeLeft)}
@@ -143,11 +140,10 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
         </div>
       </CardContent>
 
-      {/* Minimized content - always display time, no editing, no expand button */}
       {isMinimized && (
         <div className="flex items-center justify-center w-full h-full">
           <div
-            className="text-5xl font-bold font-mono" // Increased text size
+            className="text-5xl font-bold font-mono"
           >
             {formatTime(timeLeft)}
           </div>
