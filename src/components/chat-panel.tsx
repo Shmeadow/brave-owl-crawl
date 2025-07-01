@@ -57,7 +57,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
           content: msg.content,
           created_at: msg.created_at,
           // Use truncated user_id as author if profile is not available or names are null
-          author: profile?.id === msg.user_id ? (profile.first_name || profile.last_name || 'You') : msg.user_id.substring(0, 8),
+          author: profile?.id === msg.user_id ? (profile.first_name || profile.last_name || 'You') : msg.user_id?.substring(0, 8) || 'Guest', // Handle guest author
         }));
         setMessages(formattedMessages);
       }
@@ -82,7 +82,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
         
         // To get the author's name for the new message, we'd ideally fetch the profile.
         // For simplicity and to avoid re-introducing the original error, we'll use a placeholder.
-        const authorName = profile?.id === newMsg.user_id ? (profile.first_name || profile.last_name || 'You') : newMsg.user_id.substring(0, 8);
+        const authorName = profile?.id === newMsg.user_id ? (profile.first_name || profile.last_name || 'You') : newMsg.user_id?.substring(0, 8) || 'Guest';
 
         const formattedNewMsg = {
           id: newMsg.id,
@@ -114,20 +114,24 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
   }, [messages, isOpen]);
 
   const handleSendMessage = async () => {
-    if (inputMessage.trim() && session?.user && supabase) {
+    if (inputMessage.trim() && supabase) { // Removed session?.user check
+      const userId = session?.user?.id || null; // Use null for guests
       const { error } = await supabase.from('chat_messages').insert({
-        user_id: session.user.id,
+        user_id: userId, // This will be null for guests
         content: inputMessage.trim(),
       });
 
       if (error) {
         console.error("Error sending message:", error);
-        toast.error("Failed to send message.");
+        // Inform the user about the RLS limitation for guests
+        if (error.code === '42501') { // PostgreSQL error code for insufficient privilege (RLS)
+          toast.error("Failed to send message. Guests cannot send messages due to security settings. Please log in.");
+        } else {
+          toast.error("Failed to send message: " + error.message);
+        }
       } else {
         setInputMessage("");
       }
-    } else if (!session?.user) {
-      toast.error("You must be logged in to send messages.");
     } else if (!supabase) {
       toast.error("Chat is not available. Supabase client not initialized.");
     }
