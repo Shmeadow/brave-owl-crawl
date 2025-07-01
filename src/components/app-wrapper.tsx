@@ -8,7 +8,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { UpgradeModal } from "@/components/upgrade-modal"; // Import UpgradeModal
 import { usePathname } from "next/navigation";
 import { Header } from "@/components/header";
-import { AdsBanner } from "@/components/ads-banner"; // Keep for now, will be removed
 import { SpotifyEmbedModal } from "@/components/spotify-embed-modal";
 import { SidebarProvider, useSidebar } from "@/components/sidebar/sidebar-context"; // Import SidebarProvider and useSidebar
 import { Sidebar } from "@/components/sidebar/sidebar"; // Import the new Sidebar
@@ -105,8 +104,6 @@ function AppWrapperContent({ children }: AppWrapperProps) {
           chatPanelWidth={chatPanelCurrentWidth} // Pass chat width for positioning
         />
       )}
-      {/* ContactWidget is now integrated into ChatPanel */}
-      <AdsBanner /> {/* This will be removed next */}
       <SpotifyEmbedModal isOpen={isSpotifyModalOpen} onClose={() => setIsSpotifyModalOpen(false)} />
       <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} /> {/* Render UpgradeModal */}
       <Toaster />
