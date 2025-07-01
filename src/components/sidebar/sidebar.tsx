@@ -59,7 +59,7 @@ export function Sidebar() {
     { id: "sounds", label: "Sounds", icon: Volume2 },
     { id: "calendar", label: "Calendar", icon: Calendar },
     { id: "timer", label: "Timer", icon: Timer },
-    { id: "tasks", label: "Tasks", icon: ListTodo }, // This will now point to GoalFocusPanel
+    { id: "tasks", label: "Tasks", icon: ListTodo },
     { id: "notes", label: "Notes", icon: NotebookPen },
     { id: "media", label: "Media", icon: Image },
     { id: "fortune", label: "Fortune", icon: Sparkles },
@@ -68,9 +68,9 @@ export function Sidebar() {
     { id: "goal-focus", label: "Goal Focus", icon: Goal },
   ];
 
-  const handleSidebarItemClick = (id: string) => {
+  const handleSidebarItemClick = (id: string, label: string) => {
     setActivePanel(id as any); // Keep activePanel for highlighting
-    toggleWidget(id); // Toggle the corresponding widget
+    toggleWidget(id, label); // Toggle the corresponding widget
   };
 
   return (
@@ -91,7 +91,7 @@ export function Sidebar() {
             icon={item.icon}
             label={item.label}
             isActive={activePanel === item.id}
-            onClick={() => handleSidebarItemClick(item.id)}
+            onClick={() => handleSidebarItemClick(item.id, item.label)}
           />
         ))}
       </div>

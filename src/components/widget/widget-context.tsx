@@ -28,6 +28,7 @@ interface WidgetContextType {
   minimizeWidget: (id: string) => void;
   closeWidget: (id: string) => void;
   toggleDocked: (id: string) => void;
+  toggleWidget: (id: string, title: string) => void; // Added toggleWidget
 }
 
 const WidgetContext = createContext<WidgetContextType | undefined>(undefined);
@@ -104,6 +105,15 @@ export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProvide
     );
   }, []);
 
+  // New toggleWidget function
+  const toggleWidget = useCallback((id: string, title: string) => {
+    if (activeWidgets.some(widget => widget.id === id)) {
+      removeWidget(id);
+    } else {
+      addWidget(id, title);
+    }
+  }, [activeWidgets, addWidget, removeWidget]);
+
   const contextValue = useMemo(
     () => ({
       activeWidgets,
@@ -115,6 +125,7 @@ export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProvide
       minimizeWidget,
       closeWidget,
       toggleDocked,
+      toggleWidget, // Expose the new function
     }),
     [
       activeWidgets,
@@ -126,6 +137,7 @@ export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProvide
       minimizeWidget,
       closeWidget,
       toggleDocked,
+      toggleWidget,
     ]
   );
 
