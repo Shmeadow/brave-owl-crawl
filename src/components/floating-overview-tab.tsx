@@ -33,7 +33,7 @@ export function FloatingOverviewTab() {
             Quick Overview
           </TooltipContent>
         </Tooltip>
-        <SheetContent side="right" className="w-64 p-4 flex flex-col">
+        <SheetContent side="right" className="w-64 p-4 flex flex-col border-none">
           <h2 className="mb-4 text-lg font-semibold tracking-tight">Quick Overview</h2>
           <div className="space-y-1">
             <Link href="/">
