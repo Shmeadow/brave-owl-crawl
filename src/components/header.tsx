@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Sparkles, Users, Video, Image, Star, Settings, Menu } from "lucide-react";
+import { Search, Sparkles, Users, Video, Image, Star, Settings, Menu, Music } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserNav } from "@/components/user-nav";
 import { ClockDisplay } from "@/components/clock-display";
