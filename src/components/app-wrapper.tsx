@@ -13,29 +13,36 @@ interface AppWrapperProps {
 }
 
 export function AppWrapper({ children }: AppWrapperProps) {
-  const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(() => {
+  // Initialize to false for server-side rendering to prevent hydration mismatch
+  const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(false);
+  const [mounted, setMounted] = useState(false); // New state to track if component has mounted on client
+
+  useEffect(() => {
+    // This effect runs only on the client after initial render
     if (typeof window !== 'undefined') {
       const savedMinimized = localStorage.getItem(LOCAL_STORAGE_POMODORO_MINIMIZED_KEY);
-      return savedMinimized === 'true';
+      setIsPomodoroWidgetMinimized(savedMinimized === 'true');
     }
-    return false;
-  });
+    setMounted(true); // Mark as mounted after client-side state is initialized
+  }, []);
 
-  // Effect to save minimized state to local storage
+  // Effect to save minimized state to local storage (only runs on client after mounted)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (mounted && typeof window !== 'undefined') {
       localStorage.setItem(LOCAL_STORAGE_POMODORO_MINIMIZED_KEY, String(isPomodoroWidgetMinimized));
     }
-  }, [isPomodoroWidgetMinimized]);
+  }, [isPomodoroWidgetMinimized, mounted]);
 
   return (
     <SessionContextProvider>
       {children}
       <GoalReminderBar />
-      <PomodoroWidget
-        isMinimized={isPomodoroWidgetMinimized}
-        setIsMinimized={setIsPomodoroWidgetMinimized}
-      />
+      {mounted && ( // Conditionally render PomodoroWidget only after client mount
+        <PomodoroWidget
+          isMinimized={isPomodoroWidgetMinimized}
+          setIsMinimized={setIsPomodoroWidgetMinimized}
+        />
+      )}
       <Toaster />
     </SessionContextProvider>
   );
