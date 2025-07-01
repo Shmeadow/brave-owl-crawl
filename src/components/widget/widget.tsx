@@ -47,14 +47,13 @@ export function Widget({
   const initialWidgetSize = useRef({ width: 0, height: 0 });
   const resizeDirection = useRef("");
 
-  useEffect(() => {
-    onBringToFront(); // Bring to front when mounted or id changes
-  }, [id, onBringToFront]);
+  // Removed the useEffect that called onBringToFront unconditionally.
+  // onBringToFront is now only called on user interaction (drag/resize start).
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (isDocked || isMinimized) return; // Prevent dragging/resizing when docked or minimized
 
-    onBringToFront();
+    onBringToFront(); // Bring to front when dragging starts
     isDraggingRef.current = true;
     initialMousePos.current = { x: e.clientX, y: e.clientY };
     initialWidgetPos.current = { x: position.x, y: position.y };
@@ -84,7 +83,7 @@ export function Widget({
     if (isDocked || isMinimized) return; // Prevent dragging/resizing when docked or minimized
 
     e.stopPropagation(); // Prevent dragging when resizing
-    onBringToFront();
+    onBringToFront(); // Bring to front when resizing starts
     isResizingRef.current = true;
     resizeDirection.current = direction;
     initialMousePos.current = { x: e.clientX, y: e.clientY };
