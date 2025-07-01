@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Sparkles, Users, Video, Image, Star, Settings, Menu, Music } from "lucide-react";
+import { Search, Sparkles, Users, Video, Image, Star, Settings, Menu, Music, Clock } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserNav } from "@/components/user-nav";
 import { ClockDisplay } from "@/components/clock-display";
@@ -58,7 +58,7 @@ export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSp
                   <Music className="h-4 w-4" /> Spotify Embed
                 </Button>
                 <Button variant="ghost" className="justify-start gap-3 mt-2" onClick={onTogglePomodoroVisibility}>
-                  <ClockDisplay className="h-4 w-4" /> {isPomodoroVisible ? "Hide Timer" : "Show Timer"}
+                  <Clock className="h-4 w-4" /> {isPomodoroVisible ? "Hide Timer" : "Show Timer"}
                 </Button>
               </div>
             </nav>
