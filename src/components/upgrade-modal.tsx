@@ -39,7 +39,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] z-[1001]">
         <DialogHeader>
           <DialogTitle>{hasUpgraded ? "Ad-Free Experience" : "Upgrade for Ad-Free"}</DialogTitle>
           <DialogDescription>

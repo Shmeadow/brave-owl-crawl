@@ -79,7 +79,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, onClose, chatPanel
                 <span className="sr-only">Pomodoro Settings</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[425px] z-[1001]">
               <DialogHeader>
                 <DialogTitle>Pomodoro Settings</DialogTitle>
               </DialogHeader>

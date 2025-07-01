@@ -41,34 +41,35 @@ interface WidgetProviderProps {
   initialWidgetConfigs: { [key: string]: WidgetConfig };
 }
 
-const DOCKED_WIDGET_WIDTH = 300;
+const SIDEBAR_WIDTH = 60;
+const LEFT_DOCK_X_POSITION = SIDEBAR_WIDTH + 4; // 64px from left (sidebar width + 4px margin)
+const DOCKED_WIDGET_WIDTH = 192; // w-48
+const DOCKED_WIDGET_HEIGHT = 48; // h-12 (to fit text better)
 const HEADER_HEIGHT = 64; // h-16
 const RIGHT_MARGIN = 4; // Small margin from the right edge
 const MINIMIZED_WIDGET_WIDTH = 192; // w-48
-const MINIMIZED_WIDGET_HEIGHT = 40; // h-10
+const MINIMIZED_WIDGET_HEIGHT = 48; // h-12 (to fit text better)
 
 export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProviderProps) {
   const [activeWidgets, setActiveWidgets] = useState<WidgetState[]>([]);
   const [maxZIndex, setMaxZIndex] = useState(1000);
 
   const recalculateDockedWidgets = useCallback((currentWidgets: WidgetState[]) => {
-    const docked = currentWidgets.filter(w => w.isDocked);
-    const availableHeight = window.innerHeight - HEADER_HEIGHT;
-    const singleWidgetHeight = docked.length > 0 ? availableHeight / docked.length : 0;
-
+    const docked = currentWidgets.filter(w => w.isDocked).sort((a, b) => a.id.localeCompare(b.id)); // Sort to maintain consistent order
     return currentWidgets.map(widget => {
       if (widget.isDocked) {
         const index = docked.findIndex(d => d.id === widget.id);
         return {
           ...widget,
           position: {
-            x: window.innerWidth - DOCKED_WIDGET_WIDTH - RIGHT_MARGIN,
-            y: HEADER_HEIGHT + index * singleWidgetHeight,
+            x: LEFT_DOCK_X_POSITION,
+            y: HEADER_HEIGHT + index * DOCKED_WIDGET_HEIGHT,
           },
           size: {
             width: DOCKED_WIDGET_WIDTH,
-            height: singleWidgetHeight,
+            height: DOCKED_WIDGET_HEIGHT,
           },
+          isMinimized: true, // Always minimized when docked
         };
       }
       return widget;
@@ -143,16 +144,16 @@ export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProvide
       const updatedWidgets = prev.map(widget => {
         if (widget.id === id) {
           if (widget.isDocked) {
-            // If docked, un-dock and then minimize
+            // If docked, un-dock and maximize
             const config = initialWidgetConfigs[id];
             return {
               ...widget,
               isDocked: false,
-              isMinimized: true,
-              position: widget.previousPosition || config.initialPosition, // Restore original position
-              size: { width: MINIMIZED_WIDGET_WIDTH, height: MINIMIZED_WIDGET_HEIGHT }, // Fixed minimized size
-              previousPosition: undefined, // Clear previous docked state
-              previousSize: undefined, // Clear previous docked state
+              isMinimized: false, // Maximize when un-docking
+              position: widget.previousPosition || config.initialPosition,
+              size: widget.previousSize || { width: config.initialWidth, height: config.initialHeight },
+              previousPosition: undefined,
+              previousSize: undefined,
             };
           } else {
             // If floating (normal or already minimized), toggle minimized state
@@ -198,13 +199,14 @@ export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProvide
               previousSize: undefined,
             };
           } else {
-            // Dock: save current state
+            // Dock: save current state, then set docked state
             return {
               ...widget,
               isDocked: true,
-              isMinimized: false, // Ensure it's not minimized when docking
+              isMinimized: true, // Always minimized when docked
               previousPosition: widget.position,
               previousSize: widget.size,
+              // Position and size will be set by recalculateDockedWidgets
             };
           }
         }

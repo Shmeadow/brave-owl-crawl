@@ -78,7 +78,7 @@ export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] z-[1001]">
         <DialogHeader>
           <DialogTitle>Embed Spotify Player</DialogTitle>
           <DialogDescription>

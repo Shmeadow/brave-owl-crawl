@@ -24,7 +24,7 @@ export function SidebarItem({ icon: Icon, label, isActive, onClick }: SidebarIte
             className={cn(
               "relative h-12 w-12 rounded-full transition-all duration-200",
               "bg-transparent text-white/70 hover:bg-white/10 hover:text-white",
-              isActive && "bg-white/20 text-white ring-2 ring-white/50 box-border" // Added box-border
+              isActive && "bg-white/20 text-white ring-inset ring-2 ring-white/50 box-border" // Changed ring to ring-inset
             )}
             onClick={onClick}
           >
