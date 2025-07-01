@@ -30,7 +30,6 @@ export function Header({
   onOpenUpgradeModal,
   dailyProgress,
 }: HeaderProps) {
-  // Initialize currentTime to null to prevent hydration mismatch
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const { isPlaying, togglePlayPause, currentTrack, volume, setVolume, isMuted, toggleMute } = useMusicPlayer();
   const { times, loading: sunTimesLoading, error: sunTimesError } = useSunriseSunset();
@@ -43,12 +42,11 @@ export function Header({
       setCurrentTime(new Date());
     };
 
-    // Set initial time on client mount
     updateClock();
     const intervalId = setInterval(updateClock, 1000);
 
     return () => clearInterval(intervalId);
-  }, []); // Empty dependency array ensures this runs once on mount
+  }, []);
 
   const formattedTime = currentTime
     ? currentTime.toLocaleTimeString([], {
@@ -57,7 +55,7 @@ export function Header({
         second: "2-digit",
         hour12: !(profile?.time_format_24h ?? true),
       })
-    : "--:--:--"; // Placeholder for server render or until client time is set
+    : "--:--:--";
 
   const formattedDate = currentTime
     ? currentTime.toLocaleDateString([], {
@@ -65,32 +63,33 @@ export function Header({
         month: "short",
         day: "numeric",
       })
-    : "--- --"; // Placeholder
+    : "--- --";
 
   const displayUserName = profile?.first_name || user?.email?.split('@')[0] || "Guest";
   const roomName = `${displayUserName}'s Room`;
 
   return (
-    <header className="flex items-center justify-between p-3 border-b border-border bg-background/80 backdrop-blur-md z-10 relative h-16">
+    <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-background/50 backdrop-blur-lg z-10 relative h-14">
       {/* Left Section: Menu, Home, Room Name, Search */}
-      <div className="flex items-center space-x-2">
-        <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(prev => !prev)} className="lg:hidden h-8 w-8">
-          <Menu className="h-5 w-5" />
+      <div className="flex items-center space-x-1.5">
+        {/* Removed the sidebar toggle button for large screens */}
+        <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(prev => !prev)} className="lg:hidden h-7 w-7">
+          <Menu className="h-4 w-4" />
           <span className="sr-only">Toggle Sidebar</span>
         </Button>
-        <Button variant="ghost" size="icon" onClick={() => router.push('/')} className="h-8 w-8">
-          <Home className="h-5 w-5" />
+        <Button variant="ghost" size="icon" onClick={() => router.push('/')} className="h-7 w-7">
+          <Home className="h-4 w-4" />
           <span className="sr-only">Go to Home Room</span>
         </Button>
         <div className="flex items-center gap-1">
           <span className="text-sm text-foreground font-medium">{roomName}</span>
         </div>
         <div className="relative w-32">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <Input
             type="text"
             placeholder="Search..."
-            className="pl-7 pr-2 py-1 h-8 text-sm rounded-md bg-input/50 border-border focus:border-primary"
+            className="pl-7 pr-2 py-1 h-7 text-sm rounded-md bg-input/50 border-border focus:border-primary"
           />
         </div>
       </div>
@@ -98,7 +97,7 @@ export function Header({
       {/* Center Section: Clock and Progress Bar */}
       <div className="flex flex-col items-center gap-1 flex-grow max-w-xs mx-auto">
         <div className="text-center">
-          <p className="text-3xl font-bold text-foreground leading-none">{formattedTime}</p>
+          <p className="text-2xl font-bold text-foreground leading-none">{formattedTime}</p>
           <p className="text-xs text-muted-foreground">{formattedDate}</p>
         </div>
         <TooltipProvider>
@@ -128,21 +127,21 @@ export function Header({
       </div>
 
       {/* Right Section: Music Controls, Upgrade, Theme Toggle, User Nav */}
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-1.5">
         {currentTrack && (
           <>
             <Button
               variant="ghost"
               size="icon"
               onClick={togglePlayPause}
-              className="h-8 w-8"
+              className="h-7 w-7"
             >
-              {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+              {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               <span className="sr-only">{isPlaying ? "Pause" : "Play"}</span>
             </Button>
             <div className="flex items-center space-x-1">
-              <Button variant="ghost" size="icon" onClick={toggleMute} className="h-8 w-8">
-                {isMuted || volume === 0 ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+              <Button variant="ghost" size="icon" onClick={toggleMute} className="h-7 w-7">
+                {isMuted || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 <span className="sr-only">{isMuted ? "Unmute" : "Mute"}</span>
               </Button>
               <Input
@@ -156,8 +155,8 @@ export function Header({
             </div>
           </>
         )}
-        <Button variant="ghost" size="icon" onClick={onOpenUpgradeModal} className="h-8 w-8">
-          <Gem className="h-5 w-5" />
+        <Button variant="ghost" size="icon" onClick={onOpenUpgradeModal} className="h-7 w-7">
+          <Gem className="h-4 w-4" />
           <span className="sr-only">Upgrade Account</span>
         </Button>
         <ThemeToggle />
