@@ -70,12 +70,8 @@ export function Header({
 
   return (
     <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-background/50 backdrop-blur-lg z-10 relative h-14">
-      {/* Left Section: Menu, Home, Room Name, Search */}
+      {/* Left Section: Home, Room Name, Search */}
       <div className="flex items-center space-x-1.5">
-        <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(prev => !prev)} className="lg:hidden h-7 w-7">
-          <Menu className="h-4 w-4" />
-          <span className="sr-only">Toggle Sidebar</span>
-        </Button>
         <Button variant="ghost" size="icon" onClick={() => router.push('/')} className="h-7 w-7">
           <Home className="h-4 w-4" />
           <span className="sr-only">Go to Home Room</span>
