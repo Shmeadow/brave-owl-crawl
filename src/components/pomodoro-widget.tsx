@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PomodoroSettingsModal } from "@/components/pomodoro-settings-modal"; // Import the new settings modal
+import { Progress } from "@/components/ui/progress"; // Import Progress component
 
 interface PomodoroWidgetProps {
   isMinimized: boolean;
@@ -35,6 +36,21 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, onClose, chatPanel
   } = usePomodoroState();
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const [dailyProgress, setDailyProgress] = useState(0);
+
+  useEffect(() => {
+    const updateDailyProgress = () => {
+      const now = new Date();
+      const secondsIntoDay = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+      const totalSecondsInDay = 24 * 3600;
+      setDailyProgress((secondsIntoDay / totalSecondsInDay) * 100);
+    };
+
+    updateDailyProgress(); // Initial call
+    const intervalId = setInterval(updateDailyProgress, 1000); // Update every second
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   const handleTimeInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -49,20 +65,18 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, onClose, chatPanel
   }, [isEditingTime]);
 
   const widgetWidth = 224; // Fixed width for the widget
-  const rightPosition = chatPanelWidth + 16; // Chat panel width + gap
 
   return (
     <Card
       className={cn(
-        "fixed bottom-4 z-50",
+        "fixed bottom-4 left-1/2 -translate-x-1/2 z-50", // Centered horizontally
         "bg-background/50 backdrop-blur-md shadow-lg border rounded-lg",
         "flex transition-all duration-300 ease-in-out",
         `w-[${widgetWidth}px]`, // Fixed width
         isMinimized
-          ? "flex-row items-center justify-between px-2 py-1 h-16 cursor-pointer" // Smaller height for minimized
+          ? "flex-col items-center px-2 py-1 h-auto cursor-pointer" // Adjusted for new minimized layout
           : "flex-col items-center p-3 gap-3 h-auto" // Auto height for expanded
       )}
-      style={{ right: `${rightPosition}px` }} // Dynamic right position
       onClick={isMinimized ? () => setIsMinimized(false) : undefined}
     >
       <CardHeader className={cn(
@@ -180,49 +194,43 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, onClose, chatPanel
             <RotateCcw className="mr-2 h-5 w-5" /> Reset
           </Button>
         </div>
+        <div className="w-full px-2">
+          <p className="text-xs text-muted-foreground text-center mb-1">Daily Progress</p>
+          <Progress value={dailyProgress} className="h-2" />
+        </div>
       </CardContent>
 
       {isMinimized && (
-        <div className="flex items-center justify-between w-full h-full px-4"> {/* Added px-4 for spacing */}
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col items-center justify-center w-full h-full py-2">
+          <div className="flex items-center justify-between w-full px-2">
+            <span className="text-sm font-semibold capitalize">{mode.replace('-', ' ')}</span>
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={(e) => { e.stopPropagation(); setIsMinimized(false); }}
-              title="Expand Pomodoro Timer"
+              onClick={(e) => { e.stopPropagation(); onClose(); }}
+              title="Close Pomodoro Timer"
             >
-              <ChevronDown className="h-5 w-5 rotate-180" /> {/* Rotate icon for expand */}
-              <span className="sr-only">Expand Pomodoro</span>
+              <X className="h-5 w-5" />
+              <span className="sr-only">Close Pomodoro</span>
             </Button>
-            <span className="text-lg font-bold">Pomodoro Timer</span>
           </div>
           <div
-            className="text-4xl font-bold font-mono cursor-pointer hover:text-primary transition-colors"
-            onClick={() => setIsMinimized(false)} // Click to expand
+            className="text-4xl font-bold font-mono cursor-pointer hover:text-primary transition-colors my-1"
+            onClick={() => setIsMinimized(false)}
           >
             {formatTime(timeLeft)}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex gap-2">
             <Button onClick={handleStartPause} size="icon">
               {isRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
             </Button>
             <Button onClick={handleReset} size="icon" variant="secondary">
               <RotateCcw className="h-5 w-5" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={(e) => {
-                e.stopPropagation();
-                onClose();
-              }}
-              title="Close Pomodoro Timer"
-            >
-              <X className="h-5 w-5" />
-              <span className="sr-only">Close Pomodoro</span>
-            </Button>
+          </div>
+          <div className="w-full px-2 mt-2">
+            <Progress value={dailyProgress} className="h-2" />
           </div>
         </div>
       )}

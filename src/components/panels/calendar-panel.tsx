@@ -220,107 +220,109 @@ export function CalendarPanel() {
   };
 
   return (
-    <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto h-full">
-      <h1 className="text-3xl font-bold text-foreground">Your Calendar</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
-        <Card className="bg-card/80 backdrop-blur-md p-4 flex flex-col items-center">
-          <CardHeader className="w-full text-center pb-4">
-            <CardTitle className="text-xl">Select a Date</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              className="rounded-md border"
-              modifiers={modifiers}
-              modifiersStyles={modifiersStyles}
-            />
-          </CardContent>
-        </Card>
+    <div className="bg-card/80 backdrop-blur-md p-4 h-full w-full rounded-lg">
+      <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto py-4">
+        <h1 className="text-3xl font-bold text-foreground">Your Calendar</h1>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
+          <Card className="p-4 flex flex-col items-center">
+            <CardHeader className="w-full text-center pb-4">
+              <CardTitle className="text-xl">Select a Date</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                className="rounded-md border"
+                modifiers={modifiers}
+                modifiersStyles={modifiersStyles}
+              />
+            </CardContent>
+          </Card>
 
-        <Card className="bg-card/80 backdrop-blur-md p-4 flex flex-col">
-          <CardHeader className="w-full text-center pb-4">
-            <CardTitle className="text-xl">
-              Events for {date ? format(date, 'PPP') : 'Selected Date'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 flex flex-col gap-4">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleAddEvent)} className="space-y-3">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Event Title</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Team Meeting" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description (Optional)</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Details about the event..." {...field} rows={2} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full" disabled={!date}>
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add Event
-                </Button>
-              </form>
-            </Form>
+          <Card className="p-4 flex flex-col">
+            <CardHeader className="w-full text-center pb-4">
+              <CardTitle className="text-xl">
+                Events for {date ? format(date, 'PPP') : 'Selected Date'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col gap-4">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleAddEvent)} className="space-y-3">
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Event Title</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Team Meeting" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description (Optional)</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Details about the event..." {...field} rows={2} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full" disabled={!date}>
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add Event
+                  </Button>
+                </form>
+              </Form>
 
-            <div className="mt-4 flex-1 flex flex-col">
-              <h3 className="text-lg font-semibold mb-2">Upcoming Events:</h3>
-              {loadingEvents ? (
-                <p className="text-muted-foreground text-sm text-center">Loading events...</p>
-              ) : selectedDayEvents.length === 0 ? (
-                <p className="text-muted-foreground text-sm text-center">No events for this date.</p>
-              ) : (
-                <ScrollArea className="flex-1 max-h-[300px] lg:max-h-[unset]">
-                  <div className="space-y-2 pr-2">
-                    {selectedDayEvents.map((event) => (
-                      <div key={event.id} className="flex items-center justify-between p-2 border rounded-md bg-muted/50">
-                        <div>
-                          <p className="font-medium text-sm">{event.title}</p>
-                          {event.description && <p className="text-xs text-muted-foreground">{event.description}</p>}
+              <div className="mt-4 flex-1 flex flex-col">
+                <h3 className="text-lg font-semibold mb-2">Upcoming Events:</h3>
+                {loadingEvents ? (
+                  <p className="text-muted-foreground text-sm text-center">Loading events...</p>
+                ) : selectedDayEvents.length === 0 ? (
+                  <p className="text-muted-foreground text-sm text-center">No events for this date.</p>
+                ) : (
+                  <ScrollArea className="flex-1 max-h-[300px] lg:max-h-[unset]">
+                    <div className="space-y-2 pr-2">
+                      {selectedDayEvents.map((event) => (
+                        <div key={event.id} className="flex items-center justify-between p-2 border rounded-md bg-muted/50">
+                          <div>
+                            <p className="font-medium text-sm">{event.title}</p>
+                            {event.description && <p className="text-xs text-muted-foreground">{event.description}</p>}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-500 hover:bg-red-100 hover:text-red-600 h-7 w-7"
+                            onClick={() => handleDeleteEvent(event.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Delete Event</span>
+                          </Button>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500 hover:bg-red-100 hover:text-red-600 h-7 w-7"
-                          onClick={() => handleDeleteEvent(event.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Delete Event</span>
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      <p className="text-sm text-muted-foreground mt-4 text-center">
-        Note: Integration with external calendar applications like Google Calendar or Outlook is a complex feature that requires OAuth authentication and API interactions, and is beyond the scope of this current development iteration.
-      </p>
-      {!isLoggedInMode && (
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
         <p className="text-sm text-muted-foreground mt-4 text-center">
-          You are currently browsing calendar events as a guest. Your events are saved locally in your browser. Log in to save them to your account!
+          Note: Integration with external calendar applications like Google Calendar or Outlook is a complex feature that requires OAuth authentication and API interactions, and is beyond the scope of this current development iteration.
         </p>
-      )}
+        {!isLoggedInMode && (
+          <p className="text-sm text-muted-foreground mt-4 text-center">
+            You are currently browsing calendar events as a guest. Your events are saved locally in your browser. Log in to save them to your account!
+          </p>
+        )}
+      </div>
     </div>
   );
 }

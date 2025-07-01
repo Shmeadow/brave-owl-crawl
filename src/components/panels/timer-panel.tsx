@@ -1,15 +1,30 @@
 "use client";
 
+import { TimeTracker } from "@/components/time-tracker";
+import { useSupabase } from "@/integrations/supabase/auth";
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
 
 export function TimerPanel() {
+  const { session, loading } = useSupabase();
+
+  if (loading) {
+    return (
+      <div className="bg-card/80 backdrop-blur-md p-4 h-full w-full rounded-lg flex flex-col items-center justify-center">
+        <p className="text-foreground">Loading time tracker...</p>
+      </div>
+    );
+  }
+
   return (
-    <Card className="h-full flex items-center justify-center bg-card/80 backdrop-blur-md p-4">
-      <CardContent className="text-foreground text-center">
-        <h2 className="text-2xl font-bold mb-2">Timer Panel</h2>
-        <p className="text-muted-foreground">This panel will display the Pomodoro timer and related controls.</p>
-      </CardContent>
-    </Card>
+    <div className="bg-card/80 backdrop-blur-md p-4 h-full w-full rounded-lg flex flex-col items-center justify-center">
+      <div className="flex flex-col items-center justify-center h-full py-8 max-w-md mx-auto">
+        <TimeTracker />
+        {!session && (
+          <p className="text-sm text-muted-foreground mt-4 text-center">
+            You are currently browsing as a guest. Your time tracking data will not be saved unless you log in.
+          </p>
+        )}
+      </div>
+    </div>
   );
 }

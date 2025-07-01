@@ -7,7 +7,6 @@ import { SpacesPanel } from "@/components/panels/spaces-panel";
 import { SoundsPanel } from "@/components/panels/sounds-panel";
 import { CalendarPanel } from "@/components/panels/calendar-panel";
 import { TimerPanel } from "@/components/panels/timer-panel";
-import { TasksPanel } from "@/components/panels/tasks-panel"; // Keep import for now, will be removed
 import { NotesPanel } from "@/components/panels/notes-panel";
 import { MediaPanel } from "@/components/panels/media-panel";
 import { FortunePanel } from "@/components/panels/fortune-panel";
@@ -50,7 +49,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen w-full pt-16 pr-80"> {/* Added pr-80 for fixed chat */}
+    <div className="flex flex-col min-h-screen w-full pt-16"> {/* Removed pr-80, margin handled by AppWrapper */}
       <div className="flex-1 p-4 overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div

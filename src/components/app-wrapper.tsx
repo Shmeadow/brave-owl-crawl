@@ -5,10 +5,10 @@ import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
 import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { Toaster } from "@/components/ui/sonner";
-import { ContactWidget } from "@/components/contact-widget";
+import { UpgradeModal } from "@/components/upgrade-modal"; // Import UpgradeModal
 import { usePathname } from "next/navigation";
 import { Header } from "@/components/header";
-import { AdsBanner } from "@/components/ads-banner";
+import { AdsBanner } from "@/components/ads-banner"; // Keep for now, will be removed
 import { SpotifyEmbedModal } from "@/components/spotify-embed-modal";
 import { SidebarProvider, useSidebar } from "@/components/sidebar/sidebar-context"; // Import SidebarProvider and useSidebar
 import { Sidebar } from "@/components/sidebar/sidebar"; // Import the new Sidebar
@@ -32,6 +32,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
   const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(true);
   const [isPomodoroBarVisible, setIsPomodoroBarVisible] = useState(true);
   const [isSpotifyModalOpen, setIsSpotifyModalOpen] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false); // New state for upgrade modal
   const [isChatOpen, setIsChatOpen] = useState(true); // New state for chat panel
   const [mounted, setMounted] = useState(false);
 
@@ -74,6 +75,10 @@ function AppWrapperContent({ children }: AppWrapperProps) {
     setIsSpotifyModalOpen(true);
   };
 
+  const handleOpenUpgradeModal = () => {
+    setIsUpgradeModalOpen(true);
+  };
+
   const chatPanelCurrentWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
 
   return (
@@ -82,6 +87,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
         onTogglePomodoroVisibility={handleTogglePomodoroVisibility}
         isPomodoroVisible={isPomodoroBarVisible}
         onOpenSpotifyModal={handleOpenSpotifyModal}
+        onOpenUpgradeModal={handleOpenUpgradeModal} // Pass to Header
       />
       <Sidebar /> {/* Render the new Sidebar */}
       <main
@@ -99,10 +105,10 @@ function AppWrapperContent({ children }: AppWrapperProps) {
           chatPanelWidth={chatPanelCurrentWidth} // Pass chat width for positioning
         />
       )}
-      <ContactWidget />
-      <AdsBanner />
-      {/* LofiAudioPlayer is now inside ChatPanel */}
+      {/* ContactWidget is now integrated into ChatPanel */}
+      <AdsBanner /> {/* This will be removed next */}
       <SpotifyEmbedModal isOpen={isSpotifyModalOpen} onClose={() => setIsSpotifyModalOpen(false)} />
+      <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} /> {/* Render UpgradeModal */}
       <Toaster />
       {/* Fixed Chat Panel */}
       <div className="fixed right-0 top-16 bottom-0 transition-all duration-300 ease-in-out" style={{ width: `${chatPanelCurrentWidth}px` }}>

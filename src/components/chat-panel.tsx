@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, ChevronLeft, ChevronRight, Volume2, VolumeX } from "lucide-react";
+import { Send, ChevronLeft, ChevronRight, Volume2, VolumeX, MessageSquare } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useLofiAudio } from "@/hooks/use-lofi-audio"; // Import useLofiAudio hook
@@ -23,8 +23,35 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({ isOpen, onToggleOpen }: ChatPanelProps) {
-  const messages: Message[] = []; // Empty the messages array for a clean start
+  const [messages, setMessages] = useState<Message[]>([]); // State for chat messages
+  const [inputMessage, setInputMessage] = useState("");
+  const [showSupportContact, setShowSupportContact] = useState(false); // New state for support contact
   const { audioRef, isPlaying, togglePlayPause } = useLofiAudio(); // Use the lofi audio hook
+
+  const handleSendMessage = () => {
+    if (inputMessage.trim()) {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { id: Date.now().toString(), author: "You", text: inputMessage, isUser: true },
+      ]);
+      setInputMessage("");
+      // Simulate a response for general chat
+      setTimeout(() => {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { id: Date.now().toString() + "-bot", author: "Bot", text: "Thanks for your message! How can I help you further?", isUser: false },
+        ]);
+      }, 1000);
+    }
+  };
+
+  const handleContactSupport = () => {
+    setShowSupportContact(true);
+  };
+
+  const handleBackToChat = () => {
+    setShowSupportContact(false);
+  };
 
   return (
     <Card className={cn(
@@ -36,7 +63,11 @@ export function ChatPanel({ isOpen, onToggleOpen }: ChatPanelProps) {
         "p-4 border-b border-border flex flex-row items-center justify-between",
         !isOpen && "justify-center" // Center icon when closed
       )}>
-        {isOpen && <CardTitle className="text-lg">Chat</CardTitle>}
+        {isOpen && (
+          <CardTitle className="text-lg">
+            {showSupportContact ? "Contact Support" : "Chat"}
+          </CardTitle>
+        )}
         <Button
           variant="ghost"
           size="icon"
@@ -52,49 +83,79 @@ export function ChatPanel({ isOpen, onToggleOpen }: ChatPanelProps) {
         "flex-1 p-4 overflow-hidden flex flex-col",
         !isOpen && "hidden" // Hide content when closed
       )}>
-        <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-4">
-            {messages.length === 0 ? (
-              <p className="text-center text-muted-foreground text-sm">No messages yet. Start the conversation!</p>
-            ) : (
-              messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={cn(
-                    "flex",
-                    message.isUser ? "justify-end" : "justify-start"
-                  )}
-                >
+        {showSupportContact ? (
+          <div className="flex flex-col items-center justify-center h-full text-sm text-muted-foreground space-y-4 text-center">
+            <MessageSquare className="h-12 w-12 text-primary" />
+            <p>Have a bug to report or a feature request?</p>
+            <p>
+              Reach out to the owner at:{" "}
+              <a
+                href="mailto:support@example.com"
+                className="text-primary hover:underline"
+              >
+                support@example.com
+              </a>
+            </p>
+            <p>We appreciate your feedback!</p>
+            <Button onClick={handleBackToChat} className="w-full">Back to Chat</Button>
+          </div>
+        ) : (
+          <ScrollArea className="flex-1 pr-4">
+            <div className="space-y-4">
+              {messages.length === 0 ? (
+                <p className="text-center text-muted-foreground text-sm">No messages yet. Start the conversation!</p>
+              ) : (
+                messages.map((message) => (
                   <div
+                    key={message.id}
                     className={cn(
-                      "max-w-[70%] p-3 rounded-lg",
-                      message.isUser
-                        ? "bg-primary text-primary-foreground rounded-br-none"
-                        : "bg-muted text-muted-foreground rounded-bl-none"
+                      "flex",
+                      message.isUser ? "justify-end" : "justify-start"
                     )}
                   >
-                    {!message.isUser && (
-                      <p className="text-xs font-semibold mb-1">{message.author}</p>
-                    )}
-                    <p className="text-sm">{message.text}</p>
+                    <div
+                      className={cn(
+                        "max-w-[70%] p-3 rounded-lg",
+                        message.isUser
+                          ? "bg-primary text-primary-foreground rounded-br-none"
+                          : "bg-muted text-muted-foreground rounded-bl-none"
+                      )}
+                    >
+                      {!message.isUser && (
+                        <p className="text-xs font-semibold mb-1">{message.author}</p>
+                      )}
+                      <p className="text-sm">{message.text}</p>
+                    </div>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
-        </ScrollArea>
+                ))
+              )}
+            </div>
+          </ScrollArea>
+        )}
       </CardContent>
       <CardFooter className={cn(
         "p-4 border-t border-border flex flex-col gap-2",
         !isOpen && "hidden" // Hide footer when closed
       )}>
-        <div className="flex w-full items-center space-x-2">
-          <Input placeholder="Type your message..." className="flex-1 bg-input/50 border-border focus:border-primary" />
-          <Button type="submit" size="icon">
-            <Send className="h-4 w-4" />
-            <span className="sr-only">Send Message</span>
-          </Button>
-        </div>
+        {!showSupportContact && (
+          <div className="flex w-full items-center space-x-2">
+            <Input
+              placeholder="Type your message..."
+              className="flex-1 bg-input/50 border-border focus:border-primary"
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleSendMessage();
+                }
+              }}
+            />
+            <Button type="submit" size="icon" onClick={handleSendMessage}>
+              <Send className="h-4 w-4" />
+              <span className="sr-only">Send Message</span>
+            </Button>
+          </div>
+        )}
         {/* Lofi Audio Player Controls */}
         <div className="w-full flex justify-center">
           <Button
@@ -107,7 +168,12 @@ export function ChatPanel({ isOpen, onToggleOpen }: ChatPanelProps) {
             <span className="sr-only">{isPlaying ? "Pause Lofi Audio" : "Play Lofi Audio"}</span>
           </Button>
         </div>
-        <LofiAudioPlayer /> {/* The actual audio element, now without fixed positioning */}
+        <LofiAudioPlayer /> {/* The actual audio element */}
+        {!showSupportContact && (
+          <Button variant="link" className="text-xs text-muted-foreground" onClick={handleContactSupport}>
+            Contact Support
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Sparkles, Users, Video, Image, Star, Settings, Menu, Music, Clock, LayoutGrid, Calendar, ListTodo, NotebookPen, Wind, BookOpen, Goal } from "lucide-react";
+import { Search, Sparkles, Users, Video, Image, Star, Settings, Menu, Music, Clock, LayoutGrid, Calendar, ListTodo, NotebookPen, Wind, BookOpen, Goal, BadgeDollarSign } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserNav } from "@/components/user-nav";
 import { ClockDisplay } from "@/components/clock-display";
@@ -16,9 +16,10 @@ interface HeaderProps {
   onTogglePomodoroVisibility: () => void;
   isPomodoroVisible: boolean;
   onOpenSpotifyModal: () => void;
+  onOpenUpgradeModal: () => void; // New prop for upgrade modal
 }
 
-export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSpotifyModal }: HeaderProps) {
+export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSpotifyModal, onOpenUpgradeModal }: HeaderProps) {
   const { setActivePanel } = useSidebar(); // Get setActivePanel from context
 
   return (
@@ -98,6 +99,9 @@ export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSp
                 <Button variant="ghost" className="justify-start gap-3 mt-2" onClick={onTogglePomodoroVisibility}>
                   <Clock className="h-4 w-4" /> {isPomodoroVisible ? "Hide Timer" : "Show Timer"}
                 </Button>
+                <Button variant="ghost" className="justify-start gap-3 mt-2" onClick={onOpenUpgradeModal}>
+                  <BadgeDollarSign className="h-4 w-4" /> Upgrade
+                </Button>
               </div>
             </nav>
           </SheetContent>
@@ -148,6 +152,10 @@ export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSp
         <Button variant="ghost" size="icon" onClick={onTogglePomodoroVisibility} title={isPomodoroVisible ? "Hide Pomodoro Timer" : "Show Pomodoro Timer"} className="hidden sm:flex">
           <Clock className="h-5 w-5" />
           <span className="sr-only">{isPomodoroVisible ? "Hide Pomodoro Timer" : "Show Pomodoro Timer"}</span>
+        </Button>
+        <Button variant="ghost" size="icon" onClick={onOpenUpgradeModal} title="Upgrade to Ad-Free" className="hidden sm:flex">
+          <BadgeDollarSign className="h-5 w-5" />
+          <span className="sr-only">Upgrade to Ad-Free</span>
         </Button>
         <ThemeToggle />
         <UserNav />
