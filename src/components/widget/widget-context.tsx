@@ -41,12 +41,13 @@ interface WidgetProviderProps {
   initialWidgetConfigs: { [key: string]: WidgetConfig };
 }
 
-const SIDEBAR_WIDTH = 60;
-const LEFT_DOCK_X_POSITION = SIDEBAR_WIDTH + 4; // 64px from left (sidebar width + 4px margin)
+// Constants for docked widget positioning
+const POMODORO_WIDGET_WIDTH = 224; // From pomodoro-widget.tsx
 const DOCKED_WIDGET_WIDTH = 192; // w-48
 const DOCKED_WIDGET_HEIGHT = 48; // h-12 (to fit text better)
-const HEADER_HEIGHT = 64; // h-16
-const RIGHT_MARGIN = 4; // Small margin from the right edge
+const DOCKED_WIDGET_HORIZONTAL_GAP = 4; // Gap between horizontally stacked widgets
+const BOTTOM_DOCK_OFFSET = 16; // Corresponds to 'bottom-4' in Tailwind
+
 const MINIMIZED_WIDGET_WIDTH = 192; // w-48
 const MINIMIZED_WIDGET_HEIGHT = 48; // h-12 (to fit text better)
 
@@ -56,14 +57,21 @@ export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProvide
 
   const recalculateDockedWidgets = useCallback((currentWidgets: WidgetState[]) => {
     const docked = currentWidgets.filter(w => w.isDocked).sort((a, b) => a.id.localeCompare(b.id)); // Sort to maintain consistent order
+
+    const windowWidth = window.innerWidth;
+    // Calculate the right edge of the centered pomodoro widget
+    const pomodoroRightEdgeX = (windowWidth / 2) + (POMODORO_WIDGET_WIDTH / 2);
+    // Starting X for the first docked widget to the right of pomodoro
+    const startDockX = pomodoroRightEdgeX + DOCKED_WIDGET_HORIZONTAL_GAP;
+
     return currentWidgets.map(widget => {
       if (widget.isDocked) {
         const index = docked.findIndex(d => d.id === widget.id);
         return {
           ...widget,
           position: {
-            x: LEFT_DOCK_X_POSITION,
-            y: HEADER_HEIGHT + index * DOCKED_WIDGET_HEIGHT,
+            x: startDockX + index * (DOCKED_WIDGET_WIDTH + DOCKED_WIDGET_HORIZONTAL_GAP),
+            y: window.innerHeight - BOTTOM_DOCK_OFFSET - DOCKED_WIDGET_HEIGHT, // Position from bottom
           },
           size: {
             width: DOCKED_WIDGET_WIDTH,

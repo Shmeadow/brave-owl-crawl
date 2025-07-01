@@ -162,23 +162,17 @@ export function Widget({
       className={cn(
         "shadow-lg flex flex-col overflow-hidden transition-all duration-200 ease-in-out group pointer-events-auto",
         // Base styling for floating/minimized
-        !isDocked && (isMinimized ? "rounded-lg" : "rounded-lg"), // Always rounded when floating
+        isMinimized ? "rounded-lg" : "rounded-lg", // Always rounded
         // Docked specific styling
-        isDocked && "fixed top-16 left-[64px] w-[192px] rounded-none", // Use fixed positioning for docked on left
+        isDocked ? "fixed bottom-4" : "absolute", // Use fixed for docked, absolute for floating
         // Background and text colors
-        "bg-card text-card-foreground",
-        // Z-index for floating widgets
-        !isDocked && "absolute"
+        "bg-card text-card-foreground"
       )}
-      style={!isDocked ? { // Apply style only if not docked
+      style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
-        width: isMinimized ? '192px' : `${size.width}px`, // 192px for w-48
-        height: isMinimized ? '48px' : `${size.height}px`, // 48px for h-12
-        zIndex: zIndex,
-      } : {
-        // Docked widgets get their position and size from context, but we need to ensure height is set
-        height: `${size.height}px`,
+        width: `${size.width}px`, // Size is already set by context for docked/minimized
+        height: `${size.height}px`, // Size is already set by context for docked/minimized
         zIndex: zIndex,
       }}
     >
@@ -201,9 +195,9 @@ export function Widget({
             <span className="sr-only">{isMinimized ? "Maximize" : "Minimize"}</span>
           </Button>
           {/* Pin/Undock Button */}
-          <Button variant="ghost" size="icon" onClick={() => toggleDocked(id)} title={isDocked ? "Undock" : "Dock to Left"}>
+          <Button variant="ghost" size="icon" onClick={() => toggleDocked(id)} title={isDocked ? "Undock" : "Dock to Bottom Right"}>
             {isDocked ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-            <span className="sr-only">{isDocked ? "Undock" : "Dock to Left"}</span>
+            <span className="sr-only">{isDocked ? "Undock" : "Dock to Bottom Right"}</span>
           </Button>
           {/* Close Button */}
           <Button variant="ghost" size="icon" onClick={() => onClose(id)} title="Close">
