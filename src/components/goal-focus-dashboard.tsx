@@ -12,14 +12,14 @@ export function GoalFocusDashboard() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-full py-8">
-        <p>Loading goals...</p>
+        <p className="text-foreground">Loading goals...</p>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto h-full">
-      <Card className="w-full">
+      <Card className="w-full bg-card/40 backdrop-blur-xl border-white/20">
         <CardHeader>
           <CardTitle>Add New Goal</CardTitle>
         </CardHeader>

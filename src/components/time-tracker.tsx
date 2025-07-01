@@ -53,7 +53,7 @@ export function TimeTracker() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto bg-card/40 backdrop-blur-xl border-white/20">
       <CardHeader>
         <CardTitle>Time Tracker</CardTitle>
       </CardHeader>

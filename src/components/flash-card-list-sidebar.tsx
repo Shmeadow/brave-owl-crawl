@@ -56,7 +56,7 @@ function SortableFlashCardItem({
   onDeleteCard,
   onUpdateCard,
   onToggleStar,
-  onMarkAsLearned,
+  onMarkAsLearled,
 }: SortableFlashCardItemProps) {
   const {
     attributes,
@@ -97,8 +97,8 @@ function SortableFlashCardItem({
       style={style}
       className={cn(
         "flex items-center justify-between p-2 border rounded-md cursor-pointer transition-colors",
-        "hover:bg-accent hover:text-accent-foreground",
-        index === currentCardIndex && "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground",
+        "hover:bg-accent/20 hover:text-accent-foreground backdrop-blur-md", // Adjusted hover for glass
+        index === currentCardIndex && "bg-primary/60 text-primary-foreground hover:bg-primary/50 hover:text-primary-foreground backdrop-blur-md", // Adjusted active for glass
         isDragging && "ring-2 ring-primary"
       )}
       onClick={() => onSelectCard(index)}
@@ -216,7 +216,7 @@ export function FlashCardListSidebar({
   }
 
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="h-full flex flex-col bg-card/40 backdrop-blur-xl border-white/20">
       <CardHeader>
         <CardTitle className="text-lg">Your Flashcards</CardTitle>
       </CardHeader>

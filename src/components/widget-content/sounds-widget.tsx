@@ -11,33 +11,33 @@ export function SoundsWidget() {
       <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto py-4">
         <h1 className="text-3xl font-bold text-foreground">Ambient Sounds & Music</h1>
 
-        <Card className="w-full">
+        <Card className="w-full bg-card/40 backdrop-blur-xl border-white/20">
           <CardHeader>
             <CardTitle>Free Sounds</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
+            <div className="flex items-center justify-between p-3 border rounded-md bg-muted/20 backdrop-blur-md">
               <span className="font-medium">Rainy Day</span>
               <Button variant="ghost" size="icon">
                 <Play className="h-5 w-5" />
                 <span className="sr-only">Play Rainy Day</span>
               </Button>
             </div>
-            <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
+            <div className="flex items-center justify-between p-3 border rounded-md bg-muted/20 backdrop-blur-md">
               <span className="font-medium">Forest Birds</span>
               <Button variant="ghost" size="icon">
                 <Play className="h-5 w-5" />
                 <span className="sr-only">Play Forest Birds</span>
               </Button>
             </div>
-            <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
+            <div className="flex items-center justify-between p-3 border rounded-md bg-muted/20 backdrop-blur-md">
               <span className="font-medium">Ocean Waves</span>
               <Button variant="ghost" size="icon">
                 <Play className="h-5 w-5" />
                 <span className="sr-only">Play Ocean Waves</span>
               </Button>
             </div>
-            <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
+            <div className="flex items-center justify-between p-3 border rounded-md bg-muted/20 backdrop-blur-md">
               <span className="font-medium">Gentle Wind</span>
               <Button variant="ghost" size="icon">
                 <Play className="h-5 w-5" />
@@ -47,33 +47,33 @@ export function SoundsWidget() {
           </CardContent>
         </Card>
 
-        <Card className="w-full">
+        <Card className="w-full bg-card/40 backdrop-blur-xl border-white/20">
           <CardHeader>
             <CardTitle>Premium Sounds & Music</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50 opacity-70">
+            <div className="flex items-center justify-between p-3 border rounded-md bg-muted/20 backdrop-blur-md opacity-70">
               <span className="font-medium">Cozy Fireplace</span>
               <Button variant="ghost" size="icon" disabled>
                 <Lock className="h-5 w-5" />
                 <span className="sr-only">Premium Content</span>
               </Button>
             </div>
-            <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50 opacity-70">
+            <div className="flex items-center justify-between p-3 border rounded-md bg-muted/20 backdrop-blur-md opacity-70">
               <span className="font-medium">Jazz Cafe</span>
               <Button variant="ghost" size="icon" disabled>
                 <Lock className="h-5 w-5" />
                 <span className="sr-only">Premium Content</span>
               </Button>
             </div>
-            <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50 opacity-70">
+            <div className="flex items-center justify-between p-3 border rounded-md bg-muted/20 backdrop-blur-md opacity-70">
               <span className="font-medium">Deep Space Drone</span>
               <Button variant="ghost" size="icon" disabled>
                 <Lock className="h-5 w-5" />
                 <span className="sr-only">Premium Content</span>
               </Button>
             </div>
-            <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50 opacity-70">
+            <div className="flex items-center justify-between p-3 border rounded-md bg-muted/20 backdrop-blur-md opacity-70">
               <span className="font-medium">Zen Garden Stream</span>
               <Button variant="ghost" size="icon" disabled>
                 <Lock className="h-5 w-5" />

@@ -15,7 +15,7 @@ interface GoalItemProps {
 
 export function GoalItem({ goal, onToggleComplete, onDelete }: GoalItemProps) {
   return (
-    <div className="flex items-center justify-between p-3 border rounded-md bg-card text-card-foreground shadow-sm">
+    <div className="flex items-center justify-between p-3 border rounded-md bg-card/20 backdrop-blur-md text-card-foreground shadow-sm">
       <div className="flex items-center gap-3">
         <Checkbox
           id={`goal-${goal.id}`}

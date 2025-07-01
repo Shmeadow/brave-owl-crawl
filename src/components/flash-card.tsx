@@ -72,7 +72,7 @@ export function FlashCard({ front, back, isFlipped, onClick }: FlashCardProps) {
         <div
           className={cn(
             "absolute inset-0 w-full h-full backface-hidden rounded-lg flex items-center justify-center p-4 text-center",
-            "bg-card text-card-foreground shadow-md",
+            "bg-card/40 backdrop-blur-xl border-white/20 text-card-foreground shadow-md",
           )}
         >
           <CardContent className="flex items-center justify-center h-full text-xl font-semibold">
@@ -84,7 +84,7 @@ export function FlashCard({ front, back, isFlipped, onClick }: FlashCardProps) {
         <div
           className={cn(
             "absolute inset-0 w-full h-full backface-hidden rounded-lg flex items-center justify-center p-4 text-center",
-            "bg-primary text-primary-foreground shadow-md",
+            "bg-primary/60 backdrop-blur-xl border-white/20 text-primary-foreground shadow-md",
           )}
           style={{ transform: "rotateY(180deg)" }}
         >
