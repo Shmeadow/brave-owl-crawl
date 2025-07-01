@@ -4,6 +4,7 @@ import React from "react";
 import { Widget } from "./widget";
 import { useWidget } from "./widget-context";
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Wind, BookOpen, Goal } from "lucide-react";
+import { DndContext, DragEndEvent } from "@dnd-kit/core"; // Import DndContext and DragEndEvent
 
 // Import all widget content components
 import { SpacesWidget } from "@/components/widget-content/spaces-widget";
@@ -45,41 +46,55 @@ export function WidgetContainer() {
     closeWidget,
   } = useWidget();
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, delta } = event;
+    const widgetId = active.data.current?.id;
+    const initialPosition = active.data.current?.initialPosition;
+
+    if (widgetId && initialPosition) {
+      const newPosition = {
+        x: initialPosition.x + delta.x,
+        y: initialPosition.y + delta.y,
+      };
+      updateWidgetPosition(widgetId, newPosition);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-[900] pointer-events-none">
-      {activeWidgets.map(widget => {
-        const WidgetIcon = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.icon; // Corrected variable name
-        const WidgetContent = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.content;
+    <DndContext onDragEnd={handleDragEnd}> {/* Wrap with DndContext */}
+      <div className="fixed inset-0 z-[900] pointer-events-none">
+        {activeWidgets.map(widget => {
+          const WidgetIcon = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.icon;
+          const WidgetContent = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.content;
 
-        if (!WidgetIcon || !WidgetContent) {
-          console.warn(`No component found for widget ID: ${widget.id}`);
-          return null;
-        }
+          if (!WidgetIcon || !WidgetContent) {
+            console.warn(`No component found for widget ID: ${widget.id}`);
+            return null;
+          }
 
-        return (
-          <Widget
-            key={widget.id}
-            id={widget.id}
-            title={widget.title}
-            icon={WidgetIcon}
-            content={WidgetContent}
-            position={widget.position}
-            size={widget.size}
-            zIndex={widget.zIndex}
-            isMinimized={widget.isMinimized}
-            isMaximized={widget.isMaximized}
-            isPinned={widget.isPinned}
-            isOpen={true}
-            onPositionChange={(newPos) => updateWidgetPosition(widget.id, newPos)}
-            onSizeChange={(newSize) => updateWidgetSize(widget.id, newSize)}
-            onBringToFront={() => bringWidgetToFront(widget.id)}
-            onMinimize={minimizeWidget}
-            onMaximize={maximizeWidget}
-            onPin={togglePinned}
-            onClose={closeWidget}
-          />
-        );
-      })}
-    </div>
+          return (
+            <Widget
+              key={widget.id}
+              id={widget.id}
+              title={widget.title}
+              icon={WidgetIcon}
+              content={WidgetContent}
+              position={widget.position}
+              size={widget.size}
+              zIndex={widget.zIndex}
+              isMinimized={widget.isMinimized}
+              isMaximized={widget.isMaximized}
+              isPinned={widget.isPinned}
+              onSizeChange={(newSize) => updateWidgetSize(widget.id, newSize)}
+              onBringToFront={() => bringWidgetToFront(widget.id)}
+              onMinimize={minimizeWidget}
+              onMaximize={maximizeWidget}
+              onPin={togglePinned}
+              onClose={closeWidget}
+            />
+          );
+        })}
+      </div>
+    </DndContext>
   );
 }
