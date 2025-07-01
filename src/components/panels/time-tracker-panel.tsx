@@ -1,13 +1,10 @@
 "use client";
 
-import { DashboardLayout } from "@/components/dashboard-layout";
 import { TimeTracker } from "@/components/time-tracker";
 import { useSupabase } from "@/integrations/supabase/auth";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import React from "react";
 
-export default function TimeTrackerPage() {
-  // Removed mandatory redirect. User can now access this page without logging in.
+export function TimeTrackerPanel() {
   const { session, loading } = useSupabase();
 
   if (loading) {

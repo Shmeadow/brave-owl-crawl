@@ -10,6 +10,7 @@ import { UserNav } from "@/components/user-nav";
 import { ClockDisplay } from "@/components/clock-display";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { useSidebar } from "@/components/sidebar/sidebar-context"; // Import useSidebar
 
 interface HeaderProps {
   onTogglePomodoroVisibility: () => void;
@@ -18,6 +19,8 @@ interface HeaderProps {
 }
 
 export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSpotifyModal }: HeaderProps) {
+  const { setActivePanel } = useSidebar(); // Get setActivePanel from context
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between px-4 sm:px-6 bg-background/80 backdrop-blur-md border-b border-border">
       {/* Left Section: Logo/Badge */}
@@ -36,6 +39,41 @@ export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSp
                 <span>Focus 2</span>
               </Link>
               <div className="grid gap-2">
+                {/* Mobile navigation for main panels */}
+                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('spaces')}>
+                  <LayoutGrid className="h-4 w-4" /> Spaces
+                </Button>
+                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('sounds')}>
+                  <Music className="h-4 w-4" /> Sounds
+                </Button>
+                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('calendar')}>
+                  <Calendar className="h-4 w-4" /> Calendar
+                </Button>
+                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('timer')}>
+                  <Clock className="h-4 w-4" /> Timer
+                </Button>
+                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('tasks')}>
+                  <ListTodo className="h-4 w-4" /> Tasks
+                </Button>
+                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('notes')}>
+                  <NotebookPen className="h-4 w-4" /> Notes
+                </Button>
+                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('media')}>
+                  <Image className="h-4 w-4" /> Media
+                </Button>
+                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('fortune')}>
+                  <Sparkles className="h-4 w-4" /> Fortune
+                </Button>
+                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('breathe')}>
+                  <Wind className="h-4 w-4" /> Breathe
+                </Button>
+                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('flash-cards')}>
+                  <BookOpen className="h-4 w-4" /> Flash Cards
+                </Button>
+                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('goal-focus')}>
+                  <Goal className="h-4 w-4" /> Goal Focus
+                </Button>
+                {/* Existing mobile menu items */}
                 <Button variant="ghost" className="justify-start gap-3">
                   <Users className="h-4 w-4" /> Invite
                 </Button>

@@ -11,6 +11,8 @@ import { Header } from "@/components/header";
 import { AdsBanner } from "@/components/ads-banner";
 import { LofiAudioPlayer } from "@/components/lofi-audio-player";
 import { SpotifyEmbedModal } from "@/components/spotify-embed-modal";
+import { SidebarProvider, useSidebar } from "@/components/sidebar/sidebar-context"; // Import SidebarProvider and useSidebar
+import { Sidebar } from "@/components/sidebar/sidebar"; // Import the new Sidebar
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
 const LOCAL_STORAGE_POMODORO_VISIBLE_KEY = 'pomodoro_widget_visible';
@@ -19,11 +21,12 @@ interface AppWrapperProps {
   children: React.ReactNode;
 }
 
-export function AppWrapper({ children }: AppWrapperProps) {
+// Inner component to use useSidebar hook
+function AppWrapperContent({ children }: AppWrapperProps) {
   const pathname = usePathname();
-  // Default to true (minimized) if not explicitly saved as false
+  const { isSidebarOpen } = useSidebar(); // Get sidebar open state from context
+
   const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(true);
-  // Default to true (visible) if not explicitly saved as false
   const [isPomodoroBarVisible, setIsPomodoroBarVisible] = useState(true);
   const [isSpotifyModalOpen, setIsSpotifyModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -32,11 +35,9 @@ export function AppWrapper({ children }: AppWrapperProps) {
     setMounted(true);
     if (typeof window !== 'undefined') {
       const savedMinimized = localStorage.getItem(LOCAL_STORAGE_POMODORO_MINIMIZED_KEY);
-      // If savedMinimized is 'false', set to false. Otherwise, default to true.
       setIsPomodoroWidgetMinimized(savedMinimized === 'false' ? false : true);
 
       const savedVisible = localStorage.getItem(LOCAL_STORAGE_POMODORO_VISIBLE_KEY);
-      // If savedVisible is 'false', set to false. Otherwise, default to true.
       setIsPomodoroBarVisible(savedVisible === 'false' ? false : true);
     }
   }, []);
@@ -70,13 +71,19 @@ export function AppWrapper({ children }: AppWrapperProps) {
   };
 
   return (
-    <SessionContextProvider>
+    <>
       <Header
         onTogglePomodoroVisibility={handleTogglePomodoroVisibility}
         isPomodoroVisible={isPomodoroBarVisible}
         onOpenSpotifyModal={handleOpenSpotifyModal}
       />
-      {children}
+      <Sidebar /> {/* Render the new Sidebar */}
+      <main
+        className={`flex flex-col flex-1 w-full h-full transition-all duration-300 ease-in-out`}
+        style={{ marginLeft: isSidebarOpen ? '60px' : '4px' }} // Adjust margin based on sidebar open state
+      >
+        {children}
+      </main>
       <GoalReminderBar />
       {mounted && shouldShowPomodoro && isPomodoroBarVisible && (
         <PomodoroWidget
@@ -90,6 +97,16 @@ export function AppWrapper({ children }: AppWrapperProps) {
       <LofiAudioPlayer />
       <SpotifyEmbedModal isOpen={isSpotifyModalOpen} onClose={() => setIsSpotifyModalOpen(false)} />
       <Toaster />
+    </>
+  );
+}
+
+export function AppWrapper({ children }: AppWrapperProps) {
+  return (
+    <SessionContextProvider>
+      <SidebarProvider> {/* Wrap with SidebarProvider */}
+        <AppWrapperContent>{children}</AppWrapperContent>
+      </SidebarProvider>
     </SessionContextProvider>
   );
 }

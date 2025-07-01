@@ -1,16 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { DashboardLayout } from "@/components/dashboard-layout";
 import { FlashCardDeck } from "@/components/flash-card-deck";
 import { FlashCardListSidebar } from "@/components/flash-card-list-sidebar";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { useFlashcards, CardData } from "@/hooks/use-flashcards"; // Import CardData and useFlashcards
-import { useFlashcardNavigation } from "@/hooks/use-flashcard-navigation"; // Import useFlashcardNavigation
+import { useFlashcards, CardData } from "@/hooks/use-flashcards";
+import { useFlashcardNavigation } from "@/hooks/use-flashcard-navigation";
 
 type FilterMode = 'all' | 'starred' | 'learned';
 
-export default function FlashCardsPage() {
+export function FlashCardsPanel() {
   const {
     cards,
     loading: flashcardsLoading,
@@ -27,7 +26,6 @@ export default function FlashCardsPage() {
 
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
 
-  // Filter cards based on the selected mode
   const filteredCards = cards.filter(card => {
     if (filterMode === 'starred') {
       return card.starred;
@@ -35,7 +33,6 @@ export default function FlashCardsPage() {
     if (filterMode === 'learned') {
       return card.status === 'mastered';
     }
-    // For 'all' mode, also consider next_review_at for spaced repetition
     const now = new Date();
     const nextReview = card.last_reviewed_at ? new Date(card.last_reviewed_at) : new Date(0);
     nextReview.setDate(nextReview.getDate() + card.interval_days);
@@ -49,11 +46,10 @@ export default function FlashCardsPage() {
     handleNext,
     handlePrevious,
     handleSelectCard,
-    setCurrentCardIndex, // Expose if needed for external resets
-    setIsFlipped, // Expose if needed for external resets
+    setCurrentCardIndex,
+    setIsFlipped,
   } = useFlashcardNavigation({ filteredCards, updateCardInteraction });
 
-  // Reset navigation state when progress is reset
   const resetAllProgressAndNavigation = async () => {
     await handleResetProgress();
     setCurrentCardIndex(0);
@@ -89,7 +85,7 @@ export default function FlashCardsPage() {
               onUpdateCard={handleUpdateCard}
               filterMode={filterMode}
               setFilterMode={setFilterMode}
-              onResetProgress={resetAllProgressAndNavigation} // Use the combined reset handler
+              onResetProgress={resetAllProgressAndNavigation}
             />
           </div>
         </ResizablePanel>
