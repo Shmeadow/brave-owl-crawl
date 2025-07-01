@@ -129,33 +129,33 @@
 
   /* New Cozy Theme */
   [data-theme="cozy"] {
-    --background: 0 100% 50%; /* Bright Red for testing */
-    --foreground: 0 0% 100%; /* White text */
-    --card: 45 100% 94%;
-    --card-foreground: 210 10% 25%;
-    --popover: 45 100% 94%;
-    --popover-foreground: 210 10% 25%;
-    --primary: 24 59% 67%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 29 93% 91%;
-    --secondary-foreground: 210 10% 25%;
-    --muted: 73 26% 71%;
-    --muted-foreground: 210 5% 55%;
-    --accent: 73 26% 65%;
-    --accent-foreground: 210 10% 25%;
-    --destructive: 0 70% 55%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 73 26% 71%;
-    --input: 73 26% 71%;
-    --ring: 24 59% 67%;
-    --sidebar-background: 63 39% 80%;
-    --sidebar-foreground: 210 10% 25%;
-    --sidebar-primary: 24 59% 67%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 73 26% 65%;
-    --sidebar-accent-foreground: 210 10% 25%;
-    --sidebar-border: 73 26% 60%;
-    --sidebar-ring: 24 59% 67%;
+    --background: 240 50% 10%; /* Deep indigo/night sky */
+    --foreground: 0 0% 90%; /* Light text */
+    --card: 220 20% 20%; /* Muted blue-gray for house walls, slightly darker for card base */
+    --card-foreground: 0 0% 90%;
+    --popover: 220 20% 20%;
+    --popover-foreground: 0 0% 90%;
+    --primary: 40 80% 60%; /* Warm orange/gold from lights */
+    --primary-foreground: 240 50% 10%; /* Dark text on primary */
+    --secondary: 160 30% 25%; /* Deep teal/green from foliage */
+    --secondary-foreground: 0 0% 90%;
+    --muted: 220 15% 30%; /* Slightly lighter blue-gray */
+    --muted-foreground: 0 0% 70%; /* Muted light gray */
+    --accent: 280 60% 40%; /* Muted purple/pink from clouds/reflections */
+    --accent-foreground: 0 0% 90%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 15% 35%;
+    --input: 220 15% 35%;
+    --ring: 40 80% 60%;
+    --sidebar-background: 220 25% 15%; /* Slightly darker than card for sidebar */
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 40 80% 60%;
+    --sidebar-primary-foreground: 240 50% 10%;
+    --sidebar-accent: 280 60% 40%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 220 15% 35%;
+    --sidebar-ring: 40 80% 60%;
   }
 }
 

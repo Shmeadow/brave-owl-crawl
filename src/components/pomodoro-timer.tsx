@@ -57,7 +57,7 @@ export function PomodoroTimer({
   }, [isEditingTime]);
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto bg-background/50 backdrop-blur-md">
       <CardHeader className="flex flex-col items-center space-y-4 pb-2">
         <CardTitle className="text-2xl font-bold text-center">Pomodoro Timer</CardTitle>
         <div className="flex gap-2 justify-center w-full">

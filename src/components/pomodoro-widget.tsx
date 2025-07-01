@@ -69,7 +69,7 @@ export function PomodoroWidget() {
           isPoppedUp ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
         )}
       >
-        <Card className="p-2 flex items-center gap-3 shadow-lg border">
+        <Card className="p-2 flex items-center gap-3 shadow-lg border bg-background/50 backdrop-blur-md">
           <Button
             variant="ghost"
             size="icon"
