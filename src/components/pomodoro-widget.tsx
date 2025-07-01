@@ -48,21 +48,22 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
     <Card
       className={cn(
         "fixed bottom-4 left-1/2 -translate-x-1/2 z-50", // Fixed position at bottom-center
-        "w-full max-w-sm bg-background/50 backdrop-blur-md shadow-lg border",
-        "flex flex-col items-center transition-all duration-300 ease-in-out",
-        isMinimized ? "p-1 gap-0 h-fit" : "p-4 gap-4 h-auto" // Reduced padding and gap for minimized state
+        "bg-background/50 backdrop-blur-md shadow-lg border",
+        "flex transition-all duration-300 ease-in-out",
+        isMinimized
+          ? "flex-row items-center justify-center p-2 w-fit h-fit gap-2" // Minimized: row, tighter padding, fit content, gap for clock and button
+          : "flex-col items-center p-4 gap-4 w-full max-w-sm h-auto" // Expanded: column, original padding
       )}
     >
+      {/* CardHeader - only visible when not minimized */}
       <CardHeader className={cn(
         "flex flex-row items-center justify-between w-full",
-        isMinimized ? "h-8 py-0 pb-0" : "pb-2" // Fixed height for header when minimized, removed padding
+        isMinimized ? "hidden" : "pb-2" // Hide header completely when minimized
       )}>
-        <CardTitle className={cn(
-          "text-xl font-bold flex-1 text-left",
-          isMinimized ? "sr-only" : "" // Hide text visually but keep element for layout
-        )}>
+        <CardTitle className="text-xl font-bold flex-1 text-left">
           Pomodoro Timer
         </CardTitle>
+        {/* The minimize button is now part of the minimized content, so remove it from here */}
         <Button
           variant="ghost"
           size="icon"
@@ -71,12 +72,14 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
             e.stopPropagation();
             setIsMinimized(!isMinimized);
           }}
-          title={isMinimized ? "Expand Pomodoro Timer" : "Minimize Pomodoro Timer"}
+          title="Minimize Pomodoro Timer"
         >
-          {isMinimized ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-          <span className="sr-only">{isMinimized ? "Expand" : "Minimize"} Pomodoro</span>
+          <ChevronDown className="h-5 w-5" />
+          <span className="sr-only">Minimize Pomodoro</span>
         </Button>
       </CardHeader>
+
+      {/* CardContent - visible when not minimized */}
       <CardContent className={cn("flex flex-col items-center gap-6 w-full", isMinimized ? "hidden" : "flex")}>
         <div className="flex gap-2 justify-center w-full">
           <Button
@@ -139,15 +142,30 @@ export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetPr
           </Button>
         </div>
       </CardContent>
+
+      {/* Minimized content - new structure */}
       {isMinimized && (
-        <CardContent className="flex items-center justify-center w-full h-full pt-0">
+        <div className="flex items-center justify-center gap-2 w-full h-full">
           <div
             className="text-3xl font-bold font-mono cursor-pointer hover:text-primary transition-colors"
             onClick={handleTimeDisplayClick}
           >
             {formatTime(timeLeft)}
           </div>
-        </CardContent>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMinimized(!isMinimized);
+            }}
+            title="Expand Pomodoro Timer"
+          >
+            <ChevronUp className="h-5 w-5" />
+            <span className="sr-only">Expand Pomodoro</span>
+          </Button>
+        </div>
       )}
     </Card>
   );
