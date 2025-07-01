@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-type ActivePanel = 'spaces' | 'sounds' | 'calendar' | 'timer' | 'tasks' | 'notes' | 'media' | 'fortune' | 'breathe' | 'flash-cards' | 'goal-focus';
+type ActivePanel = 'sounds' | 'calendar' | 'timer' | 'tasks' | 'notes' | 'flash-cards' | 'goal-focus'; // Removed 'spaces', 'media', 'fortune', 'breathe'
 
 interface SidebarContextType {
   activePanel: ActivePanel;
@@ -14,15 +14,19 @@ interface SidebarContextType {
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [activePanel, setActivePanel] = useState<ActivePanel>('spaces');
+  const [activePanel, setActivePanel] = useState<ActivePanel>('sounds'); // Default to 'sounds'
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Controls the hover state of the sidebar
 
   // Load active panel from local storage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedPanel = localStorage.getItem('active_sidebar_panel');
-      if (savedPanel && ['spaces', 'sounds', 'calendar', 'timer', 'tasks', 'notes', 'media', 'fortune', 'breathe', 'flash-cards', 'goal-focus'].includes(savedPanel)) {
+      // Updated valid panels list
+      const validPanels: ActivePanel[] = ['sounds', 'calendar', 'timer', 'tasks', 'notes', 'flash-cards', 'goal-focus'];
+      if (savedPanel && validPanels.includes(savedPanel as ActivePanel)) {
         setActivePanel(savedPanel as ActivePanel);
+      } else {
+        setActivePanel('sounds'); // Default to a valid panel if saved one is invalid
       }
     }
   }, []);

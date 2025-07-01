@@ -25,15 +25,15 @@ const HEADER_HEIGHT = 64; // px (h-14 + py-2*2 = 56 + 8 = 64)
 
 // Define initial configurations for all widgets here to pass to WidgetProvider
 const WIDGET_CONFIGS = {
-  "spaces": { initialPosition: { x: 150, y: 100 }, initialWidth: 600, initialHeight: 700 },
+  // Removed "spaces": { initialPosition: { x: 150, y: 100 }, initialWidth: 600, initialHeight: 700 },
   "sounds": { initialPosition: { x: 800, y: 150 }, initialWidth: 500, initialHeight: 600 },
   "calendar": { initialPosition: { x: 200, y: 200 }, initialWidth: 800, initialHeight: 700 },
   "timer": { initialPosition: { x: 900, y: 250 }, initialWidth: 400, initialHeight: 400 },
   "tasks": { initialPosition: { x: 250, y: 300 }, initialWidth: 500, initialHeight: 600 },
   "notes": { initialPosition: { x: 700, y: 350 }, initialWidth: 500, initialHeight: 600 },
-  "media": { initialPosition: { x: 300, y: 400 }, initialWidth: 600, initialHeight: 500 },
-  "fortune": { initialPosition: { x: 850, y: 450 }, initialWidth: 400, initialHeight: 300 },
-  "breathe": { initialPosition: { x: 350, y: 500 }, initialWidth: 400, initialHeight: 300 },
+  // Removed "media": { initialPosition: { x: 300, y: 400 }, initialWidth: 600, initialHeight: 500 },
+  // Removed "fortune": { initialPosition: { x: 850, y: 450 }, initialWidth: 400, initialHeight: 300 },
+  // Removed "breathe": { initialPosition: { x: 350, y: 500 }, initialWidth: 400, initialHeight: 300 },
   "flash-cards": { initialPosition: { x: 500, y: 100 }, initialWidth: 900, initialHeight: 700 },
   "goal-focus": { initialPosition: { x: 400, y: 550 }, initialWidth: 500, initialHeight: 600 },
 };

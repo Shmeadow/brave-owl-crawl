@@ -216,7 +216,7 @@ export function FlashCardListSidebar({
   }
 
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="h-full flex flex-col bg-card/40 backdrop-blur-xl border-white/20">
       <CardHeader>
         <CardTitle className="text-lg">Your Flashcards</CardTitle>
       </CardHeader>

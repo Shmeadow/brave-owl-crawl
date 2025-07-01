@@ -20,7 +20,7 @@ export function NotesWidget() {
   return (
     <div className="bg-card/80 backdrop-blur-md p-4 h-full w-full rounded-lg">
       <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto py-4">
-        <Card className="w-full">
+        <Card className="w-full bg-card/40 backdrop-blur-xl border-white/20">
           <CardHeader>
             <CardTitle>Add New Note</CardTitle>
           </CardHeader>
