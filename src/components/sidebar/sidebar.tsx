@@ -78,15 +78,16 @@ export function Sidebar() {
     <div
       ref={sidebarRef}
       className={cn(
-        "fixed left-0 top-16 z-50 flex flex-col items-center py-4", // Changed top-0 to top-16
+        "fixed left-0 top-16 z-50 flex flex-col items-center py-4",
         "bg-black/60 shadow-lg shadow-black/30 transition-transform duration-300 ease-in-out",
         isSidebarOpen ? "translate-x-0 w-[60px]" : "translate-x-[calc(-100%+4px)] w-[60px]", // 4px hot zone
-        `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]` // Adjusted height
+        `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]`, // Adjusted height
+        "rounded-r-lg" // Added rounded right corners
       )}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="flex flex-col gap-2 overflow-y-auto h-full"> {/* Added overflow-y-auto and h-full */}
+      <div className="flex flex-col gap-2 overflow-y-auto h-full">
         {navItems.map((item) => (
           <SidebarItem
             key={item.id}
