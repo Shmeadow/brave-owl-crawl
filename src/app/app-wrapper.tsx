@@ -13,7 +13,7 @@ import { SidebarProvider, useSidebar } from "@/components/sidebar/sidebar-contex
 import { Sidebar } from "@/components/sidebar/sidebar";
 import { ChatPanel } from "@/components/chat-panel";
 import { LofiAudioPlayer } from "@/components/lofi-audio-player";
-import { WidgetProvider } => from "@/components/widget/widget-context";
+import { WidgetProvider } from "@/components/widget/widget-context";
 import { WidgetContainer } from "@/components/widget/widget-container";
 // Removed ClockDisplay import
 
@@ -21,7 +21,7 @@ const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
 const LOCAL_STORAGE_POMODORO_VISIBLE_KEY = 'pomodoro_widget_visible';
 const CHAT_PANEL_WIDTH_OPEN = 320; // px
 const CHAT_PANEL_WIDTH_CLOSED = 56; // px (w-14)
-const WIDGET_GAP = 16; // px
+const HEADER_HEIGHT = 64; // px (h-14 + py-2*2 = 56 + 8 = 64)
 
 // Define initial configurations for all widgets here to pass to WidgetProvider
 const WIDGET_CONFIGS = {
@@ -55,6 +55,14 @@ function AppWrapperContent({ children }: AppWrapperProps) {
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [dailyProgress, setDailyProgress] = useState(0);
+
+  // State to hold the dimensions of the main content area
+  const [mainContentArea, setMainContentArea] = useState({
+    left: 0,
+    top: 0,
+    width: 0,
+    height: 0,
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -94,6 +102,26 @@ function AppWrapperContent({ children }: AppWrapperProps) {
     return () => clearInterval(intervalId);
   }, []);
 
+  // Calculate main content area dimensions dynamically
+  useEffect(() => {
+    const updateMainContentArea = () => {
+      const sidebarWidth = isSidebarOpen ? 60 : 4;
+      const chatPanelWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
+      
+      setMainContentArea({
+        left: sidebarWidth,
+        top: HEADER_HEIGHT,
+        width: window.innerWidth - sidebarWidth - chatPanelWidth,
+        height: window.innerHeight - HEADER_HEIGHT,
+      });
+    };
+
+    // Update on mount, resize, and when sidebar/chat state changes
+    updateMainContentArea();
+    window.addEventListener('resize', updateMainContentArea);
+    return () => window.removeEventListener('resize', updateMainContentArea);
+  }, [isSidebarOpen, isChatOpen]); // Dependencies for recalculation
+
   const shouldShowPomodoro = pathname !== '/account';
 
   const handleTogglePomodoroVisibility = () => {
@@ -125,7 +153,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
   const chatPanelCurrentWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
 
   return (
-    <>
+    <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
       <Header
         onTogglePomodoroVisibility={handleTogglePomodoroVisibility}
         isPomodoroVisible={isPomodoroBarVisible}
@@ -164,7 +192,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
         />
       </div>
       <WidgetContainer />
-    </>
+    </WidgetProvider>
   );
 }
 
@@ -172,9 +200,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
   return (
     <SessionContextProvider>
       <SidebarProvider>
-        <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS}>
-          <AppWrapperContent>{children}</AppWrapperContent>
-        </WidgetProvider>
+        <AppWrapperContent>{children}</AppWrapperContent>
       </SidebarProvider>
     </SessionContextProvider>
   );
