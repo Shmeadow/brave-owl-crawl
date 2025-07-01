@@ -18,7 +18,7 @@ import { WidgetContainer } from "@/components/widget/widget-container";
 // Removed ClockDisplay import
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
-const LOCAL_STORAGE_POMODORO_VISIBLE_KEY = 'pomodoro_widget_visible';
+const LOCAL_STORAGE_POMODORO_VISIBLE_KEY = 'pomodoro_widget_visible'; // This key is no longer directly used for visibility, but for initial state
 const CHAT_PANEL_WIDTH_OPEN = 320; // px
 const CHAT_PANEL_WIDTH_CLOSED = 56; // px (w-14)
 const HEADER_HEIGHT = 64; // px (h-14 + py-2*2 = 56 + 8 = 64)
@@ -48,7 +48,6 @@ function AppWrapperContent({ children }: AppWrapperProps) {
   const { isSidebarOpen } = useSidebar();
 
   const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(true);
-  const [isPomodoroBarVisible, setIsPomodoroBarVisible] = useState(true);
   const [isSpotifyModalOpen, setIsSpotifyModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -69,9 +68,6 @@ function AppWrapperContent({ children }: AppWrapperProps) {
     if (typeof window !== 'undefined') {
       const savedMinimized = localStorage.getItem(LOCAL_STORAGE_POMODORO_MINIMIZED_KEY);
       setIsPomodoroWidgetMinimized(savedMinimized === 'false' ? false : true);
-
-      const savedVisible = localStorage.getItem(LOCAL_STORAGE_POMODORO_VISIBLE_KEY);
-      setIsPomodoroBarVisible(savedVisible === 'false' ? false : true);
     }
   }, []);
 
@@ -80,12 +76,6 @@ function AppWrapperContent({ children }: AppWrapperProps) {
       localStorage.setItem(LOCAL_STORAGE_POMODORO_MINIMIZED_KEY, String(isPomodoroWidgetMinimized));
     }
   }, [isPomodoroWidgetMinimized, mounted]);
-
-  useEffect(() => {
-    if (mounted && typeof window !== 'undefined') {
-      localStorage.setItem(LOCAL_STORAGE_POMODORO_VISIBLE_KEY, String(isPomodoroBarVisible));
-    }
-  }, [isPomodoroBarVisible, mounted]);
 
   // Calculate daily progress
   useEffect(() => {
@@ -122,17 +112,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
     return () => window.removeEventListener('resize', updateMainContentArea);
   }, [isSidebarOpen, isChatOpen]); // Dependencies for recalculation
 
-  const shouldShowPomodoro = pathname !== '/account';
-
-  const handleTogglePomodoroVisibility = () => {
-    setIsPomodoroBarVisible(prev => !prev);
-    setIsPomodoroWidgetMinimized(false); // Unminimize when shown
-  };
-
-  const handleHidePomodoro = () => {
-    setIsPomodoroBarVisible(false);
-    setIsPomodoroWidgetMinimized(false); // Ensure it's not minimized when hidden
-  };
+  const shouldShowPomodoro = pathname !== '/account' && pathname !== '/admin-settings'; // Hide on account/admin pages
 
   const handleOpenSpotifyModal = () => {
     setIsSpotifyModalOpen(true);
@@ -155,25 +135,25 @@ function AppWrapperContent({ children }: AppWrapperProps) {
   return (
     <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
       <Header
-        onTogglePomodoroVisibility={handleTogglePomodoroVisibility}
-        isPomodoroVisible={isPomodoroBarVisible}
+        onTogglePomodoroVisibility={() => setIsPomodoroWidgetMinimized(prev => !prev)} // Toggle minimize
+        isPomodoroVisible={!isPomodoroWidgetMinimized} // Pass minimized state as visibility
         onOpenSpotifyModal={handleOpenSpotifyModal}
         onOpenUpgradeModal={handleOpenUpgradeModal}
         dailyProgress={dailyProgress}
       />
       <Sidebar />
       <main
-        className={`flex flex-col flex-1 w-full h-full transition-all duration-300 ease-in-out`}
+        className={`flex flex-col flex-1 w-full h-[calc(100vh-${HEADER_HEIGHT}px)] overflow-auto transition-all duration-300 ease-in-out`}
         style={{ marginLeft: isSidebarOpen ? '60px' : '4px', marginRight: `${chatPanelCurrentWidth}px` }}
       >
         {children}
       </main>
       <GoalReminderBar />
-      {mounted && shouldShowPomodoro && isPomodoroBarVisible && (
+      {mounted && shouldShowPomodoro && (
         <PomodoroWidget
           isMinimized={isPomodoroWidgetMinimized}
           setIsMinimized={setIsPomodoroWidgetMinimized}
-          onClose={handleHidePomodoro}
+          onClose={() => { /* Pomodoro widget no longer has a close button, only minimize */ }}
           chatPanelWidth={chatPanelCurrentWidth}
         />
       )}

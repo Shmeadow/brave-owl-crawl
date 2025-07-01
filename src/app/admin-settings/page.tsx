@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { DashboardLayout } from "@/components/dashboard-layout";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

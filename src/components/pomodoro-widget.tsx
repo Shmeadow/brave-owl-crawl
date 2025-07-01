@@ -14,11 +14,11 @@ import { PomodoroSettingsModal } from "@/components/pomodoro-settings-modal"; //
 interface PomodoroWidgetProps {
   isMinimized: boolean;
   setIsMinimized: (minimized: boolean) => void;
-  onClose: () => void; // New prop to handle closing the bar
+  // onClose: () => void; // Removed this prop
   chatPanelWidth: number; // New prop to get chat panel width
 }
 
-export function PomodoroWidget({ isMinimized, setIsMinimized, onClose, chatPanelWidth }: PomodoroWidgetProps) {
+export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth }: PomodoroWidgetProps) {
   const {
     mode,
     timeLeft,

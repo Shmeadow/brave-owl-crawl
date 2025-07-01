@@ -2,12 +2,11 @@
 
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
-import { useSupabase, UserProfile } from '@/integrations/supabase/auth'; // Import UserProfile
+import { useSupabase, UserProfile } from '@/integrations/supabase/auth';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DashboardLayout } from '@/components/dashboard-layout';
-import { ProfileForm } from '@/components/profile-form'; // Import ProfileForm
+import { ProfileForm } from '@/components/profile-form';
 
 export default function AccountPage() {
   const { supabase, session, profile, loading, refreshProfile } = useSupabase();
