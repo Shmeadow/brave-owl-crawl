@@ -129,11 +129,17 @@
 
   /* New Cozy Theme */
   [data-theme="cozy"] {
-    --background: 240 50% 10%; /* Deep indigo/night sky */
+    background-image: url('/background.jpg'); /* Set background image */
+    background-size: cover; /* Cover the entire area */
+    background-position: center center; /* Center the image */
+    background-repeat: no-repeat; /* Prevent tiling */
+    background-attachment: fixed; /* Keep background fixed on scroll */
+
+    --background: 240 50% 10% / 0.8; /* Deep indigo/night sky with transparency */
     --foreground: 0 0% 90%; /* Light text */
-    --card: 220 20% 20%; /* Muted blue-gray for house walls, slightly darker for card base */
+    --card: 220 20% 20% / 0.85; /* Muted blue-gray for house walls, slightly darker for card base with transparency */
     --card-foreground: 0 0% 90%;
-    --popover: 220 20% 20%;
+    --popover: 220 20% 20% / 0.9; /* Slightly less transparent for popovers */
     --popover-foreground: 0 0% 90%;
     --primary: 40 80% 60%; /* Warm orange/gold from lights */
     --primary-foreground: 240 50% 10%; /* Dark text on primary */
@@ -148,7 +154,7 @@
     --border: 220 15% 35%;
     --input: 220 15% 35%;
     --ring: 40 80% 60%;
-    --sidebar-background: 220 25% 15%; /* Slightly darker than card for sidebar */
+    --sidebar-background: 220 25% 15% / 0.85; /* Slightly darker than card for sidebar with transparency */
     --sidebar-foreground: 0 0% 90%;
     --sidebar-primary: 40 80% 60%;
     --sidebar-primary-foreground: 240 50% 10%;
