@@ -22,6 +22,21 @@ const CHAT_PANEL_WIDTH_OPEN = 320; // px
 const CHAT_PANEL_WIDTH_CLOSED = 56; // px (w-14)
 const WIDGET_GAP = 16; // px
 
+// Define initial configurations for all widgets here to pass to WidgetProvider
+const WIDGET_CONFIGS = {
+  "spaces": { initialPosition: { x: 100, y: 100 }, initialWidth: 600, initialHeight: 700 },
+  "sounds": { initialPosition: { x: 750, y: 100 }, initialWidth: 500, initialHeight: 600 },
+  "calendar": { initialPosition: { x: 100, y: 150 }, initialWidth: 800, initialHeight: 700 },
+  "timer": { initialPosition: { x: 950, y: 150 }, initialWidth: 400, initialHeight: 400 },
+  "tasks": { initialPosition: { x: 100, y: 200 }, initialWidth: 500, initialHeight: 600 },
+  "notes": { initialPosition: { x: 650, y: 200 }, initialWidth: 500, initialHeight: 600 },
+  "media": { initialPosition: { x: 100, y: 250 }, initialWidth: 600, initialHeight: 500 },
+  "fortune": { initialPosition: { x: 750, y: 250 }, initialWidth: 400, initialHeight: 300 },
+  "breathe": { initialPosition: { x: 100, y: 300 }, initialWidth: 400, initialHeight: 300 },
+  "flash-cards": { initialPosition: { x: 550, y: 300 }, initialWidth: 900, initialHeight: 700 },
+  "goal-focus": { initialPosition: { x: 100, y: 350 }, initialWidth: 500, initialHeight: 600 },
+};
+
 interface AppWrapperProps {
   children: React.ReactNode;
 }
@@ -141,7 +156,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
       <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
         <ChatPanel
           isOpen={isChatOpen}
-          onToggleOpen={() => setIsChatOpen(!isChatOpen)}
+          onToggleOpen={handleToggleOpenAndClearUnread}
           onNewUnreadMessage={handleNewUnreadMessage}
           onClearUnreadMessages={handleClearUnreadMessages}
           unreadCount={unreadChatCount}
@@ -156,7 +171,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
   return (
     <SessionContextProvider>
       <SidebarProvider> {/* Wrap with SidebarProvider */}
-        <WidgetProvider> {/* Wrap with WidgetProvider */}
+        <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS}> {/* Pass WIDGET_CONFIGS here */}
           <AppWrapperContent>{children}</AppWrapperContent>
         </WidgetProvider>
       </SidebarProvider>

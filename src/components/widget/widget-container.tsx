@@ -15,6 +15,21 @@ import { GoalFocusPanel } from "@/components/panels/goal-focus-panel";
 import { DndContext, DragEndEvent, closestCenter } from "@dnd-kit/core";
 import { useWidget } from "./widget-context";
 
+// Define initial configurations for all widgets
+const WIDGET_CONFIGS = {
+  "spaces": { initialPosition: { x: 100, y: 100 }, initialWidth: 600, initialHeight: 700 },
+  "sounds": { initialPosition: { x: 750, y: 100 }, initialWidth: 500, initialHeight: 600 },
+  "calendar": { initialPosition: { x: 100, y: 150 }, initialWidth: 800, initialHeight: 700 },
+  "timer": { initialPosition: { x: 950, y: 150 }, initialWidth: 400, initialHeight: 400 },
+  "tasks": { initialPosition: { x: 100, y: 200 }, initialWidth: 500, initialHeight: 600 },
+  "notes": { initialPosition: { x: 650, y: 200 }, initialWidth: 500, initialHeight: 600 },
+  "media": { initialPosition: { x: 100, y: 250 }, initialWidth: 600, initialHeight: 500 },
+  "fortune": { initialPosition: { x: 750, y: 250 }, initialWidth: 400, initialHeight: 300 },
+  "breathe": { initialPosition: { x: 100, y: 300 }, initialWidth: 400, initialHeight: 300 },
+  "flash-cards": { initialPosition: { x: 550, y: 300 }, initialWidth: 900, initialHeight: 700 },
+  "goal-focus": { initialPosition: { x: 100, y: 350 }, initialWidth: 500, initialHeight: 600 },
+};
+
 export function WidgetContainer() {
   const { widgetStates, updateWidgetPosition } = useWidget();
 
@@ -32,39 +47,28 @@ export function WidgetContainer() {
 
   return (
     <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
-      <Widget id="spaces" title="Spaces" initialPosition={{ x: 100, y: 100 }} initialWidth={600} initialHeight={700}>
-        <SpacesPanel />
-      </Widget>
-      <Widget id="sounds" title="Ambient Sounds & Music" initialPosition={{ x: 750, y: 100 }} initialWidth={500} initialHeight={600}>
-        <SoundsPanel />
-      </Widget>
-      <Widget id="calendar" title="Your Calendar" initialPosition={{ x: 100, y: 150 }} initialWidth={800} initialHeight={700}>
-        <CalendarPanel />
-      </Widget>
-      <Widget id="timer" title="Time Tracker" initialPosition={{ x: 950, y: 150 }} initialWidth={400} initialHeight={400}>
-        <TimerPanel />
-      </Widget>
-      <Widget id="tasks" title="Your Goals" initialPosition={{ x: 100, y: 200 }} initialWidth={500} initialHeight={600}>
-        <GoalFocusPanel /> {/* Tasks now points to GoalFocusPanel */}
-      </Widget>
-      <Widget id="notes" title="Your Notes" initialPosition={{ x: 650, y: 200 }} initialWidth={500} initialHeight={600}>
-        <NotesPanel />
-      </Widget>
-      <Widget id="media" title="Media Gallery" initialPosition={{ x: 100, y: 250 }} initialWidth={600} initialHeight={500}>
-        <MediaPanel />
-      </Widget>
-      <Widget id="fortune" title="Fortune Teller" initialPosition={{ x: 750, y: 250 }} initialWidth={400} initialHeight={300}>
-        <FortunePanel />
-      </Widget>
-      <Widget id="breathe" title="Breathe" initialPosition={{ x: 100, y: 300 }} initialWidth={400} initialHeight={300}>
-        <BreathePanel />
-      </Widget>
-      <Widget id="flash-cards" title="Flash Cards" initialPosition={{ x: 550, y: 300 }} initialWidth={900} initialHeight={700}>
-        <FlashCardsPanel />
-      </Widget>
-      <Widget id="goal-focus" title="Goal Focus" initialPosition={{ x: 100, y: 350 }} initialWidth={500} initialHeight={600}>
-        <GoalFocusPanel />
-      </Widget>
+      {Object.entries(WIDGET_CONFIGS).map(([id, config]) => (
+        <Widget
+          key={id}
+          id={id}
+          title={id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+          initialPosition={config.initialPosition}
+          initialWidth={config.initialWidth}
+          initialHeight={config.initialHeight}
+        >
+          {id === "spaces" && <SpacesPanel />}
+          {id === "sounds" && <SoundsPanel />}
+          {id === "calendar" && <CalendarPanel />}
+          {id === "timer" && <TimerPanel />}
+          {id === "tasks" && <GoalFocusPanel />} {/* Tasks now points to GoalFocusPanel */}
+          {id === "notes" && <NotesPanel />}
+          {id === "media" && <MediaPanel />}
+          {id === "fortune" && <FortunePanel />}
+          {id === "breathe" && <BreathePanel />}
+          {id === "flash-cards" && <FlashCardsPanel />}
+          {id === "goal-focus" && <GoalFocusPanel />}
+        </Widget>
+      ))}
     </DndContext>
   );
 }

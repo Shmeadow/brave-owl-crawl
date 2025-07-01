@@ -32,48 +32,86 @@ const WidgetContext = createContext<WidgetContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_KEY = 'widget_states';
 
-const DEFAULT_WIDGET_STATE = {
+// Base default state for properties not related to position/size
+const BASE_DEFAULT_WIDGET_STATE = {
   isOpen: false,
   isMinimized: false,
-  isDocked: false, // Default to not docked
-  x: 50,
-  y: 50,
-  width: 400,
-  height: 500,
-  previousX: 50,
-  previousY: 50,
-  previousWidth: 400,
-  previousHeight: 500,
+  isDocked: false,
 };
 
-export function WidgetProvider({ children }: { children: React.ReactNode }) {
-  const [widgetStates, setWidgetStates] = useState<Record<string, WidgetState>>({});
-  const [isMounted, setIsMounted] = useState(false);
+interface InitialWidgetConfig {
+  initialPosition: { x: number; y: number };
+  initialWidth: number;
+  initialHeight: number;
+}
 
-  // Load states from local storage on mount
-  useEffect(() => {
-    setIsMounted(true);
-    if (typeof window !== 'undefined') {
-      const savedStates = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (savedStates) {
-        try {
-          const parsedStates = JSON.parse(savedStates);
-          // Merge with default state to ensure new properties are initialized
-          const mergedStates = Object.keys(parsedStates).reduce((acc, key) => {
-            acc[key] = { ...DEFAULT_WIDGET_STATE, ...parsedStates[key] };
-            return acc;
-          }, {} as Record<string, WidgetState>);
-          setWidgetStates(mergedStates);
-        } catch (e) {
-          console.error("Failed to parse saved widget states:", e);
-          // Fallback to default if parsing fails
-          setWidgetStates({});
-        }
+interface WidgetProviderProps {
+  children: React.ReactNode;
+  initialWidgetConfigs: Record<string, InitialWidgetConfig>;
+}
+
+export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProviderProps) {
+  const [widgetStates, setWidgetStates] = useState<Record<string, WidgetState>>(() => {
+    if (typeof window === 'undefined') {
+      // Server-side rendering, return initial states based on configs
+      const initialStates: Record<string, WidgetState> = {};
+      for (const id in initialWidgetConfigs) {
+        const config = initialWidgetConfigs[id];
+        initialStates[id] = {
+          ...BASE_DEFAULT_WIDGET_STATE,
+          x: config.initialPosition.x,
+          y: config.initialPosition.y,
+          width: config.initialWidth,
+          height: config.initialHeight,
+          previousX: config.initialPosition.x,
+          previousY: config.initialPosition.y,
+          previousWidth: config.initialWidth,
+          previousHeight: config.initialHeight,
+        };
+      }
+      return initialStates;
+    }
+
+    const savedStates = localStorage.getItem(LOCAL_STORAGE_KEY);
+    let parsedStates: Record<string, WidgetState> = {};
+    if (savedStates) {
+      try {
+        parsedStates = JSON.parse(savedStates);
+      } catch (e) {
+        console.error("Failed to parse saved widget states:", e);
       }
     }
+
+    const mergedStates: Record<string, WidgetState> = {};
+    // Initialize with all known widgets from initialWidgetConfigs, then overlay saved state
+    for (const id in initialWidgetConfigs) {
+      const config = initialWidgetConfigs[id];
+      mergedStates[id] = {
+        ...BASE_DEFAULT_WIDGET_STATE,
+        // Use initial config as default for position/size
+        x: config.initialPosition.x,
+        y: config.initialPosition.y,
+        width: config.initialWidth,
+        height: config.initialHeight,
+        previousX: config.initialPosition.x,
+        previousY: config.initialPosition.y,
+        previousWidth: config.initialWidth,
+        previousHeight: config.initialHeight,
+        // Overlay saved state, if it exists
+        ...parsedStates[id],
+      };
+    }
+    return mergedStates;
+  });
+
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Set mounted state after initial render
+  useEffect(() => {
+    setIsMounted(true);
   }, []);
 
-  // Save states to local storage whenever they change
+  // Save states to local storage whenever they change (only on client-side after mount)
   useEffect(() => {
     if (isMounted && typeof window !== 'undefined') {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(widgetStates));
@@ -82,7 +120,11 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
 
   const updateWidgetState = useCallback((id: string, updates: Partial<WidgetState>) => {
     setWidgetStates(prevStates => {
-      const currentState = prevStates[id] || DEFAULT_WIDGET_STATE;
+      const currentState = prevStates[id];
+      if (!currentState) {
+        console.warn(`Attempted to update non-existent widget: ${id}`);
+        return prevStates;
+      }
       return {
         ...prevStates,
         [id]: { ...currentState, ...updates }
@@ -91,32 +133,65 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const toggleWidget = useCallback((id: string) => {
-    console.log(`Attempting to toggle widget: ${id}`);
     setWidgetStates(prevStates => {
-      const currentState = prevStates[id] || DEFAULT_WIDGET_STATE;
+      const currentState = prevStates[id];
+      if (!currentState) {
+        console.warn(`Attempted to toggle non-existent widget: ${id}`);
+        return prevStates;
+      }
+
       const newIsOpen = !currentState.isOpen;
-      // When opening, ensure it's not minimized or docked
-      const newIsMinimized = newIsOpen ? false : currentState.isMinimized;
-      const newIsDocked = newIsOpen ? false : currentState.isDocked;
+
+      let newX = currentState.x;
+      let newY = currentState.y;
+      let newWidth = currentState.width;
+      let newHeight = currentState.height;
 
       if (newIsOpen) {
+        // When opening, restore from previous saved position/size
+        // If previousX/Y/Width/Height are different from the initial config, use them.
+        // Otherwise, use the initial config.
+        const initialConfig = initialWidgetConfigs[id];
+        if (
+          currentState.previousX !== initialConfig.initialPosition.x ||
+          currentState.previousY !== initialConfig.initialPosition.y ||
+          currentState.previousWidth !== initialConfig.initialWidth ||
+          currentState.previousHeight !== initialConfig.initialHeight
+        ) {
+          newX = currentState.previousX;
+          newY = currentState.previousY;
+          newWidth = currentState.previousWidth;
+          newHeight = currentState.previousHeight;
+        } else {
+          // Fallback to initial config if no distinct previous state was saved
+          newX = initialConfig.initialPosition.x;
+          newY = initialConfig.initialPosition.y;
+          newWidth = initialConfig.initialWidth;
+          newHeight = initialConfig.initialHeight;
+        }
         toast.info(`${id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} opened!`);
       } else {
         toast.info(`${id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} closed.`);
       }
-      const newState = { ...currentState, isOpen: newIsOpen, isMinimized: newIsMinimized, isDocked: newIsDocked };
-      console.log(`New state for ${id} after toggle:`, newState);
-      return {
-        ...prevStates,
-        [id]: newState
+
+      const newState = {
+        ...currentState,
+        isOpen: newIsOpen,
+        isMinimized: false, // Always un-minimize when toggling open/close
+        isDocked: false, // Always un-dock when toggling open/close
+        x: newX,
+        y: newY,
+        width: newWidth,
+        height: newHeight,
       };
+      return { ...prevStates, [id]: newState };
     });
-  }, []);
+  }, [initialWidgetConfigs]);
 
   const minimizeWidget = useCallback((id: string) => {
-    console.log(`Attempting to minimize widget: ${id}`);
     setWidgetStates(prevStates => {
-      const currentState = prevStates[id] || DEFAULT_WIDGET_STATE;
+      const currentState = prevStates[id];
+      if (!currentState) return prevStates;
       const newState = {
         ...currentState,
         isMinimized: true,
@@ -127,7 +202,6 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
         previousWidth: currentState.width,
         previousHeight: currentState.height,
       };
-      console.log(`New state for ${id} after minimize:`, newState);
       return {
         ...prevStates,
         [id]: newState
@@ -137,9 +211,9 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const restoreWidget = useCallback((id: string) => {
-    console.log(`Attempting to restore widget: ${id}`);
     setWidgetStates(prevStates => {
-      const currentState = prevStates[id] || DEFAULT_WIDGET_STATE;
+      const currentState = prevStates[id];
+      if (!currentState) return prevStates;
       const newState = {
         ...currentState,
         isMinimized: false,
@@ -150,7 +224,6 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
         width: currentState.previousWidth,
         height: currentState.previousHeight,
       };
-      console.log(`New state for ${id} after restore:`, newState);
       return {
         ...prevStates,
         [id]: newState
@@ -160,7 +233,6 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const closeWidget = useCallback((id: string) => {
-    console.log(`Attempting to close widget: ${id}`);
     updateWidgetState(id, { isOpen: false, isMinimized: false, isDocked: false });
     toast.info(`${id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} closed.`);
   }, [updateWidgetState]);
@@ -174,9 +246,9 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
   }, [updateWidgetState]);
 
   const toggleDocked = useCallback((id: string) => {
-    console.log(`Attempting to toggle docked state for widget: ${id}`);
     setWidgetStates(prevStates => {
-      const currentState = prevStates[id] || DEFAULT_WIDGET_STATE;
+      const currentState = prevStates[id];
+      if (!currentState) return prevStates;
       const newIsDocked = !currentState.isDocked;
       const newState = {
         ...currentState,
@@ -188,7 +260,6 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
         previousWidth: newIsDocked ? currentState.width : currentState.previousWidth,
         previousHeight: newIsDocked ? currentState.height : currentState.previousHeight,
       };
-      console.log(`New state for ${id} after toggleDocked:`, newState);
       return {
         ...prevStates,
         [id]: newState
