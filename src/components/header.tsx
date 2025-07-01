@@ -1,165 +1,129 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Sparkles, Users, Video, Image, Star, Settings, Menu, Music, Clock, LayoutGrid, Calendar, ListTodo, NotebookPen, Wind, BookOpen, Goal, Diamond, Volume2, VolumeX } from "lucide-react"; // Import Diamond, Volume2, VolumeX
-import { ThemeToggle } from "@/components/theme-toggle";
-import { UserNav } from "@/components/user-nav";
-import { ClockDisplay } from "@/components/clock-display";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Progress } from "@/components/ui/progress";
+import { Search, Menu, Volume2, VolumeX, Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSidebar } from "@/components/sidebar/sidebar-context"; // Import useSidebar
-import { useLofiAudio } from "@/hooks/use-lofi-audio"; // Import useLofiAudio hook
-// Progress component removed from here
+import { useMusicPlayer } from "@/hooks/use-music-player";
+import { useRoom } from "@/hooks/use-room";
+import { useSunriseSunset } from "@/hooks/use-sunrise-sunset"; // Import the new hook
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
 
 interface HeaderProps {
-  onTogglePomodoroVisibility: () => void;
-  isPomodoroVisible: boolean;
-  onOpenSpotifyModal: () => void;
-  onOpenUpgradeModal: () => void;
-  dailyProgress: number; // Add dailyProgress prop
+  onToggleSidebar: () => void;
 }
 
-export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }: HeaderProps) {
-  const { setActivePanel } = useSidebar(); // Get setActivePanel from context
-  const { isPlaying, togglePlayPause } = useLofiAudio(); // Use the lofi audio hook
+export function Header({ onToggleSidebar }: HeaderProps) {
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const { isPlaying, togglePlayPause, currentTrack, volume, setVolume, isMuted, toggleMute } = useMusicPlayer();
+  const { roomName, setRoomName } = useRoom();
+  const { times, loading: sunTimesLoading, error: sunTimesError } = useSunriseSunset(); // Use the new hook
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formattedTime = currentTime.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  const formattedDate = currentTime.toLocaleDateString([], {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+
+  const progress = currentTrack ? (currentTrack.currentTime / currentTrack.duration) * 100 : 0;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between px-4 sm:px-6 bg-background/80 backdrop-blur-md border-b border-border">
-      {/* Left Section: Logo/Badge */}
-      <div className="flex items-center gap-2">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button size="icon" variant="ghost" className="sm:hidden">
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle Mobile Menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="sm:max-w-xs bg-background/90 backdrop-blur-md">
-            <nav className="grid gap-6 text-lg font-medium pt-4">
-              <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
-                <Sparkles className="h-6 w-6 text-primary" />
-                <span>Focus 2</span>
-              </Link>
-              <div className="grid gap-2">
-                {/* Mobile navigation for main panels */}
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('spaces')}>
-                  <LayoutGrid className="h-4 w-4" /> Spaces
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('sounds')}>
-                  <Music className="h-4 w-4" /> Sounds
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('calendar')}>
-                  <Calendar className="h-4 w-4" /> Calendar
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('timer')}>
-                  <Clock className="h-4 w-4" /> Timer
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('tasks')}>
-                  <ListTodo className="h-4 w-4" /> Tasks
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('notes')}>
-                  <NotebookPen className="h-4 w-4" /> Notes
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('media')}>
-                  <Image className="h-4 w-4" /> Media
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('fortune')}>
-                  <Sparkles className="h-4 w-4" /> Fortune
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('breathe')}>
-                  <Wind className="h-4 w-4" /> Breathe
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('flash-cards')}>
-                  <BookOpen className="h-4 w-4" /> Flash Cards
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3" onClick={() => setActivePanel('goal-focus')}>
-                  <Goal className="h-4 w-4" /> Goal Focus
-                </Button>
-                {/* Existing mobile menu items */}
-                <Button variant="ghost" className="justify-start gap-3">
-                  <Users className="h-4 w-4" /> Invite
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3">
-                  <Video className="h-4 w-4" /> Videos
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3">
-                  <Image className="h-4 w-4" /> Images
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3">
-                  <Star className="h-4 w-4" /> Favorites
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3">
-                  <Settings className="h-4 w-4" /> Upgrade Desktop App
-                </Button>
-              </div>
-              <div className="mt-4 border-t pt-4">
-                <ThemeToggle />
-                <Button variant="ghost" className="justify-start gap-3 mt-2" onClick={onOpenSpotifyModal}>
-                  <Music className="h-4 w-4" /> Spotify Embed
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3 mt-2" onClick={onTogglePomodoroVisibility}>
-                  <Clock className="h-4 w-4" /> {isPomodoroVisible ? "Hide Timer" : "Show Timer"}
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3 mt-2" onClick={onOpenUpgradeModal}>
-                  <Diamond className="h-4 w-4" /> Upgrade
-                </Button>
-                <Button variant="ghost" className="justify-start gap-3 mt-2" onClick={togglePlayPause}>
-                  {isPlaying ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />} Lofi Audio
-                </Button>
-              </div>
-            </nav>
-          </SheetContent>
-        </Sheet>
-        <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-foreground">
-          <Sparkles className="h-6 w-6 text-primary" />
-          <span className="hidden sm:inline">Focus 2</span>
-        </Link>
-      </div>
-
-      {/* Center Section: Title and Secondary Controls */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-1 px-4">
-        <h1 className="text-xl font-bold text-foreground whitespace-nowrap hidden md:block">Shmeadow's Room</h1>
-        {/* Daily Progress bar moved to ClockDisplay */}
-      </div>
-
-      {/* Right Section: Search and User Controls */}
-      <div className="flex items-center gap-4">
-        <div className="relative hidden md:block">
+    <header className="flex items-center justify-between p-4 border-b border-border bg-background/80 backdrop-blur-md z-10 relative">
+      {/* Left Section: Menu, Room Name, Search */}
+      <div className="flex items-center space-x-4">
+        <Button variant="ghost" size="icon" onClick={onToggleSidebar} className="lg:hidden">
+          <Menu className="h-6 w-6" />
+          <span className="sr-only">Toggle Sidebar</span>
+        </Button>
+        <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
+          <span className="text-primary">Room:</span> {roomName}
+        </h1>
+        <div className="relative w-64">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            type="search"
-            placeholder="Search space..."
-            className="pl-8 w-[200px] lg:w-[300px] bg-card/50 border-border focus:border-primary"
+            type="text"
+            placeholder="Search..."
+            className="pl-8 pr-2 py-1 rounded-md bg-input/50 border-border focus:border-primary"
           />
         </div>
-        <ClockDisplay dailyProgress={dailyProgress} /> {/* Pass dailyProgress here */}
-        <Button variant="ghost" size="icon" onClick={onOpenSpotifyModal} title="Open Spotify Embed" className="hidden sm:flex">
-          <Music className="h-5 w-5" />
-          <span className="sr-only">Open Spotify Embed</span>
-        </Button>
-        <Button variant="ghost" size="icon" onClick={onTogglePomodoroVisibility} title={isPomodoroVisible ? "Hide Pomodoro Timer" : "Show Pomodoro Timer"} className="hidden sm:flex">
-          <Clock className="h-5 w-5" />
-          <span className="sr-only">{isPomodoroVisible ? "Hide Pomodoro Timer" : "Show Pomodoro Timer"}</span>
-        </Button>
-        <Button variant="ghost" size="icon" onClick={onOpenUpgradeModal} title="Upgrade to Ad-Free" className="hidden sm:flex">
-          <Diamond className="h-5 w-5 animate-spin" /> {/* Diamond icon with rotation */}
-          <span className="sr-only">Upgrade to Ad-Free</span>
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={togglePlayPause}
-          title={isPlaying ? "Pause Lofi Audio" : "Play Lofi Audio"}
-          className="hidden sm:flex"
-        >
-          {isPlaying ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
-          <span className="sr-only">{isPlaying ? "Pause Lofi Audio" : "Play Lofi Audio"}</span>
-        </Button>
-        <ThemeToggle />
-        <UserNav />
+      </div>
+
+      {/* Center Section: Clock and Progress Bar */}
+      <div className="flex flex-col items-center gap-2 flex-grow max-w-md mx-auto">
+        <div className="text-center">
+          <p className="text-4xl font-bold text-foreground leading-none">{formattedTime}</p>
+          <p className="text-sm text-muted-foreground">{formattedDate}</p>
+        </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="w-full relative group">
+                <Progress value={progress} className="h-2 w-full bg-muted-foreground/20" />
+                <div className="absolute inset-0 cursor-pointer" /> {/* Invisible overlay for hover */}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="bg-popover text-popover-foreground p-2 rounded-md shadow-lg">
+              {sunTimesLoading ? (
+                <span>Loading sunrise/sunset...</span>
+              ) : sunTimesError ? (
+                <span className="text-red-500">{sunTimesError}</span>
+              ) : times ? (
+                <div className="text-center">
+                  <p>Sunrise: {times.sunrise?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                  <p>Sunset: {times.sunset?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                </div>
+              ) : (
+                <span>Could not get sunrise/sunset data.</span>
+              )}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+
+      {/* Right Section: Music Controls */}
+      <div className="flex items-center space-x-4">
+        {currentTrack && (
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={togglePlayPause}
+              className="h-10 w-10"
+            >
+              {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
+              <span className="sr-only">{isPlaying ? "Pause" : "Play"}</span>
+            </Button>
+            <div className="flex items-center space-x-2">
+              <Button variant="ghost" size="icon" onClick={toggleMute} className="h-10 w-10">
+                {isMuted || volume === 0 ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}
+                <span className="sr-only">{isMuted ? "Unmute" : "Mute"}</span>
+              </Button>
+              <Input
+                type="range"
+                min="0"
+                max="100"
+                value={volume}
+                onChange={(e) => setVolume(Number(e.target.value))}
+                className="w-24 h-2 accent-primary"
+              />
+            </div>
+          </>
+        )}
       </div>
     </header>
   );
