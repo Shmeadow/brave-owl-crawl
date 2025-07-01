@@ -343,19 +343,19 @@ export function useFlashcards() {
     if (isLoggedInMode && session && supabase) {
       const { error } = await supabase
         .from('flashcards')
-        .update({ seen_count: 0, status: 'new', last_reviewed_at: null, interval_days: 0 })
+        .update({ seen_count: 0, status: 'new' as CardData['status'], last_reviewed_at: null, interval_days: 0 })
         .eq('user_id', session.user.id);
 
       if (error) {
         toast.error("Error resetting progress (Supabase): " + error.message);
         console.error("Error resetting progress (Supabase):", error);
       } else {
-        setCards(prevCards => prevCards.map(card => ({ ...card, seen_count: 0, status: 'new', last_reviewed_at: null, interval_days: 0 })));
+        setCards(prevCards => prevCards.map(card => ({ ...card, seen_count: 0, status: 'new' as CardData['status'], last_reviewed_at: null, interval_days: 0 })));
         toast.success("All card progress reset!");
       }
     } else {
       setCards(prevCards => {
-        const updated = prevCards.map(card => ({ ...card, seen_count: 0, status: 'new', last_reviewed_at: null, interval_days: 0 }));
+        const updated = prevCards.map(card => ({ ...card, seen_count: 0, status: 'new' as CardData['status'], last_reviewed_at: null, interval_days: 0 }));
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
         return updated;
       });
