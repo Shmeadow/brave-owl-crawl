@@ -20,26 +20,42 @@ export function AppWrapper({ children }: AppWrapperProps) {
     if (typeof window !== 'undefined') {
       const savedPos = localStorage.getItem(LOCAL_STORAGE_POMODORO_POS_KEY);
       if (savedPos) {
-        hasUserMovedRef.current = true; // If there's a saved position, assume user moved it
         try {
-          return JSON.parse(savedPos);
+          const parsedPos = JSON.parse(savedPos);
+          // Basic validation: if x or y are extremely large/small, reset
+          if (parsedPos.x < -1000 || parsedPos.y < -1000 || parsedPos.x > window.innerWidth + 1000 || parsedPos.y > window.innerHeight + 1000) {
+            console.warn("Saved pomodoro position out of bounds, resetting.");
+            localStorage.removeItem(LOCAL_STORAGE_POMODORO_POS_KEY); // Clear invalid saved position
+            hasUserMovedRef.current = false; // Reset user moved flag
+          } else {
+            hasUserMovedRef.current = true;
+            console.log('Pomodoro Widget loaded saved position:', parsedPos);
+            return parsedPos;
+          }
         } catch (e) {
-          console.error("Failed to parse saved pomodoro widget position:", e);
+          console.error("Failed to parse saved pomodoro state, resetting:", e);
+          localStorage.removeItem(LOCAL_STORAGE_POMODORO_POS_KEY); // Clear corrupted saved position
+          hasUserMovedRef.current = false;
         }
       }
 
-      // Calculate default position if no saved position or parsing failed
+      // Calculate default position if no saved position or parsing failed/invalid
       const widgetWidth = 350; // Approximate width of the widget
       const widgetHeight = 300; // Approximate height of the widget
       const margin = 20; // Margin from the right and bottom edges
 
-      const defaultX = window.innerWidth - widgetWidth - margin;
-      const defaultY = window.innerHeight - widgetHeight - margin;
+      // Ensure window.innerWidth/Height are valid before calculating
+      const effectiveWidth = window.innerWidth > 0 ? window.innerWidth : 1200; // Fallback
+      const effectiveHeight = window.innerHeight > 0 ? window.innerHeight : 800; // Fallback
+
+      const defaultX = effectiveWidth - widgetWidth - margin;
+      const defaultY = effectiveHeight - widgetHeight - margin;
       
-      console.log('Pomodoro Widget calculated initial position:', { x: defaultX, y: defaultY });
+      console.log('Pomodoro Widget calculated initial default position:', { x: defaultX, y: defaultY });
       return { x: defaultX, y: defaultY };
     }
     // Fallback for SSR or if window is undefined
+    console.log('Pomodoro Widget defaulting to {0,0} for SSR.');
     return { x: 0, y: 0 };
   });
 
@@ -55,8 +71,11 @@ export function AppWrapper({ children }: AppWrapperProps) {
       const widgetHeight = 300;
       const margin = 20;
 
-      const defaultX = window.innerWidth - widgetWidth - margin;
-      const defaultY = window.innerHeight - widgetHeight - margin;
+      const effectiveWidth = window.innerWidth > 0 ? window.innerWidth : 1200;
+      const effectiveHeight = window.innerHeight > 0 ? window.innerHeight : 800;
+
+      const defaultX = effectiveWidth - widgetWidth - margin;
+      const defaultY = effectiveHeight - widgetHeight - margin;
 
       setPomodoroPosition({ x: defaultX, y: defaultY });
     };
