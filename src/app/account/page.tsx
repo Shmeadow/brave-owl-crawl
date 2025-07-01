@@ -24,7 +24,7 @@ export default function AccountPage() {
   if (session && profile) {
     return (
       <div className="flex items-center justify-center h-full bg-background py-8">
-        <Card className="w-full max-w-md p-6 bg-card/80 backdrop-blur-md">
+        <Card className="w-full max-w-md p-6 bg-card/40 backdrop-blur-xl border-white/20">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-foreground">Your Profile</CardTitle>
             <p className="text-muted-foreground">Manage your account information.</p>
@@ -41,7 +41,7 @@ export default function AccountPage() {
   if (!supabase) {
     return (
       <div className="flex items-center justify-center h-full bg-background">
-        <Card className="w-full max-w-md p-6 bg-card/80 backdrop-blur-md">
+        <Card className="w-full max-w-md p-6 bg-card/40 backdrop-blur-xl border-white/20">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-foreground">Authentication Error</CardTitle>
             <p className="text-muted-foreground">Supabase client is not initialized. Please check environment variables.</p>
@@ -53,7 +53,7 @@ export default function AccountPage() {
 
   return (
     <div className="flex items-center justify-center h-full bg-background py-8">
-      <Card className="w-full max-w-md p-6 bg-card/80 backdrop-blur-md">
+      <Card className="w-full max-w-md p-6 bg-card/40 backdrop-blur-xl border-white/20">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-foreground">Account</CardTitle>
           <p className="text-muted-foreground">Sign up or log in to save your progress</p>

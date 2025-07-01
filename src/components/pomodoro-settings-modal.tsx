@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { PomodoroMode } from "@/hooks/use-pomodoro-state";
+import { DialogContent } from "@/components/ui/dialog"; // Import DialogContent
 
 const formSchema = z.object({
   focusMinutes: z.coerce.number().min(1, { message: "Focus time must be at least 1 minute." }).max(120, { message: "Focus time cannot exceed 120 minutes." }),
@@ -50,49 +51,51 @@ export function PomodoroSettingsModal({ initialTimes, onSave }: PomodoroSettings
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="focusMinutes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Focus Time (minutes)</FormLabel>
-              <FormControl>
-                <Input type="number" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="shortBreakMinutes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Short Break (minutes)</FormLabel>
-              <FormControl>
-                <Input type="number" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="longBreakMinutes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Long Break (minutes)</FormLabel>
-              <FormControl>
-                <Input type="number" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit" className="w-full">Save Settings</Button>
-      </form>
-    </Form>
+    <DialogContent className="sm:max-w-[425px] z-[1001] bg-card/40 backdrop-blur-xl border-white/20"> {/* Applied glass effect here */}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="focusMinutes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Focus Time (minutes)</FormLabel>
+                <FormControl>
+                  <Input type="number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="shortBreakMinutes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Short Break (minutes)</FormLabel>
+                <FormControl>
+                  <Input type="number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="longBreakMinutes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Long Break (minutes)</FormLabel>
+                <FormControl>
+                  <Input type="number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit" className="w-full">Save Settings</Button>
+        </form>
+      </Form>
+    </DialogContent>
   );
 }

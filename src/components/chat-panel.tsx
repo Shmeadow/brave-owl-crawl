@@ -161,9 +161,9 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
           <MessageSquare className="h-7 w-7" />
           <span className="sr-only">Open Chat</span>
         </Button>
-        {unreadCount > 0 && (
+        {unreadChatCount > 0 && (
           <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-            {unreadCount}
+            {unreadChatCount}
           </span>
         )}
       </div>
@@ -172,7 +172,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
 
   return (
     <Card className={cn(
-      "h-[400px] w-80 flex flex-col bg-card/80 backdrop-blur-md border-border",
+      "h-[400px] w-80 flex flex-col bg-card/40 backdrop-blur-xl border-white/20", // Applied glass effect here
       "transition-all duration-300 ease-in-out"
     )}>
       <CardHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
@@ -225,8 +225,8 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
                       className={cn(
                         "max-w-[70%] p-3 rounded-lg",
                         message.user_id === session?.user?.id
-                          ? "bg-primary text-primary-foreground rounded-br-none"
-                          : "bg-muted text-muted-foreground rounded-bl-none"
+                          ? "bg-primary/60 text-primary-foreground rounded-br-none backdrop-blur-md" // Added backdrop-blur-md
+                          : "bg-muted/20 text-muted-foreground rounded-bl-none backdrop-blur-md" // Added backdrop-blur-md
                       )}
                     >
                       {message.user_id !== session?.user?.id && (

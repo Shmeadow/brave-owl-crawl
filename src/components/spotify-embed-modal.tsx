@@ -78,7 +78,7 @@ export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] z-[1001]">
+      <DialogContent className="sm:max-w-[425px] z-[1001] bg-card/40 backdrop-blur-xl border-white/20"> {/* Applied glass effect here */}
         <DialogHeader>
           <DialogTitle>Embed Spotify Player</DialogTitle>
           <DialogDescription>
