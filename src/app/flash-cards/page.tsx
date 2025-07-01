@@ -181,12 +181,24 @@ export default function FlashCardsPage() {
     } else if (data) {
       setCards((prevCards) => {
         const updatedCards = [...prevCards, data as CardData];
-        // If the new card is added and we are in 'all' mode, try to select it
-        if (filterMode === 'all') {
-          setCurrentCardIndex(updatedCards.length - 1); // Select the newly added card
+        // Calculate the new filtered cards to find the correct index for the new card
+        const newFilteredCards = updatedCards.filter(card => {
+          if (filterMode === 'starred') return card.starred;
+          if (filterMode === 'learned') return card.status === 'mastered';
+          const now = new Date();
+          const nextReview = card.last_reviewed_at ? new Date(card.last_reviewed_at) : new Date(0);
+          nextReview.setDate(nextReview.getDate() + card.interval_days);
+          return now >= nextReview;
+        });
+
+        const newCardIndexInFiltered = newFilteredCards.findIndex(card => card.id === data.id);
+
+        if (newCardIndexInFiltered !== -1) {
+          setCurrentCardIndex(newCardIndexInFiltered);
+        } else if (newFilteredCards.length > 0) {
+          setCurrentCardIndex(0); // If new card doesn't match filter, go to first card in current filter
         } else {
-          // If not 'all' mode, the new card might not be visible, so reset to 0
-          setCurrentCardIndex(0);
+          setCurrentCardIndex(0); // If no cards in filter, keep 0
         }
         setIsFlipped(false); // Ensure new card starts unflipped
         return updatedCards;
