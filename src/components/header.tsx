@@ -12,18 +12,21 @@ import { cn } from "@/lib/utils";
 import { MainNavigation } from "@/components/main-navigation";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { ClockDisplay } from "@/components/clock-display"; // Import ClockDisplay
+import { UpgradeButton } from "@/components/upgrade-button"; // Import UpgradeButton
 
 interface HeaderProps {
   onTogglePomodoroVisibility: () => void;
   isPomodoroVisible: boolean;
   onOpenSpotifyModal: () => void;
+  onOpenUpgradeModal: () => void; // New prop for upgrade modal
 }
 
-export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSpotifyModal }: HeaderProps) {
+export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSpotifyModal, onOpenUpgradeModal }: HeaderProps) {
   const pathname = usePathname();
   const isActive = (path: string) => pathname === path;
   const { session, loading, profile } = useSupabase(); // Get profile from context
   const isAdmin = profile?.role === 'admin'; // Use profile.role for admin check
+  const isPremium = profile?.is_premium || false; // Get premium status
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -80,6 +83,7 @@ export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSp
 
       {/* Right side: ThemeToggle and UserNav */}
       <div className="flex items-center gap-4 ml-auto">
+        <UpgradeButton onOpenUpgradeModal={onOpenUpgradeModal} isPremium={isPremium} /> {/* Add UpgradeButton */}
         <Button variant="ghost" size="icon" onClick={onOpenSpotifyModal} title="Open Spotify Embed">
           <Music className="h-5 w-5" />
           <span className="sr-only">Open Spotify Embed</span>

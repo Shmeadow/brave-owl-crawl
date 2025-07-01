@@ -6,35 +6,39 @@ import { Card, CardContent } from "@/components/ui/card";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useSupabase } from "@/integrations/supabase/auth"; // Import useSupabase
 
 const LOCAL_STORAGE_UPGRADED_KEY = 'upgraded';
 
 export function AdsBanner() {
+  const { session, profile, loading: authLoading } = useSupabase();
   const [isVisible, setIsVisible] = useState(false);
-  const [hasUpgraded, setHasUpgraded] = useState(false);
+  const [hasUpgradedLocally, setHasUpgradedLocally] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const upgradedStatus = localStorage.getItem(LOCAL_STORAGE_UPGRADED_KEY);
-      if (upgradedStatus === 'true') {
-        setHasUpgraded(true);
-        setIsVisible(false);
-      } else {
-        setIsVisible(true); // Show banner if not upgraded
-      }
+      setHasUpgradedLocally(upgradedStatus === 'true');
     }
   }, []);
 
-  const handleUpgrade = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(LOCAL_STORAGE_UPGRADED_KEY, 'true');
-      setHasUpgraded(true);
-      setIsVisible(false);
-      toast.success("Thank you for upgrading! Ads are now hidden.");
+  useEffect(() => {
+    if (!authLoading) {
+      const isPremiumUser = profile?.is_premium === true;
+      if (hasUpgradedLocally || isPremiumUser) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true); // Show banner if not upgraded locally and not a premium user
+      }
     }
+  }, [authLoading, hasUpgradedLocally, profile?.is_premium]);
+
+  const handleUpgrade = () => {
+    // This button is now just a placeholder, the actual upgrade logic is in UpgradeModal
+    toast.info("Please use the 'Upgrade' button in the header to go Premium!");
   };
 
-  if (!isVisible || hasUpgraded) {
+  if (!isVisible) {
     return null;
   }
 
