@@ -18,10 +18,12 @@ export function LofiAudioPlayer() {
     if (typeof window !== 'undefined') {
       const savedPlayingState = localStorage.getItem(LOCAL_STORAGE_AUDIO_PLAYING_KEY);
       if (savedPlayingState === 'true' && audioRef.current) {
+        // Attempt to play, but handle autoplay policy
         audioRef.current.play().then(() => {
           setIsPlaying(true);
         }).catch(error => {
           console.warn("Autoplay prevented:", error);
+          // Autoplay failed, keep isPlaying false
           setIsPlaying(false);
         });
       }
@@ -45,7 +47,7 @@ export function LofiAudioPlayer() {
         }).catch(error => {
           toast.error("Failed to play audio. Browser autoplay policy might be blocking it.");
           console.error("Audio play error:", error);
-          setIsPlaying(false);
+          setIsPlaying(false); // Ensure state is correct if play fails
         });
       }
       setIsPlaying(!isPlaying);
@@ -56,7 +58,7 @@ export function LofiAudioPlayer() {
     <div className="fixed bottom-4 right-4 z-50">
       <Button
         size="icon"
-        className="rounded-full h-12 w-12 shadow-lg bg-white/10 text-white/80 hover:bg-white/20 hover:text-accent transition-all duration-200"
+        className="rounded-full h-12 w-12 shadow-lg"
         onClick={togglePlayPause}
         title={isPlaying ? "Pause Lofi Audio" : "Play Lofi Audio"}
       >

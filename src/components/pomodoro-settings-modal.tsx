@@ -57,9 +57,9 @@ export function PomodoroSettingsModal({ initialTimes, onSave }: PomodoroSettings
           name="focusMinutes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-white">Focus Time (minutes)</FormLabel>
+              <FormLabel>Focus Time (minutes)</FormLabel>
               <FormControl>
-                <Input type="number" {...field} className="bg-white/10 text-white border-none focus:ring-1 focus:ring-primary" />
+                <Input type="number" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -70,9 +70,9 @@ export function PomodoroSettingsModal({ initialTimes, onSave }: PomodoroSettings
           name="shortBreakMinutes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-white">Short Break (minutes)</FormLabel>
+              <FormLabel>Short Break (minutes)</FormLabel>
               <FormControl>
-                <Input type="number" {...field} className="bg-white/10 text-white border-none focus:ring-1 focus:ring-primary" />
+                <Input type="number" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -83,15 +83,15 @@ export function PomodoroSettingsModal({ initialTimes, onSave }: PomodoroSettings
           name="longBreakMinutes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-white">Long Break (minutes)</FormLabel>
+              <FormLabel>Long Break (minutes)</FormLabel>
               <FormControl>
-                <Input type="number" {...field} className="bg-white/10 text-white border-none focus:ring-1 focus:ring-primary" />
+                <Input type="number" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">Save Settings</Button>
+        <Button type="submit" className="w-full">Save Settings</Button>
       </form>
     </Form>
   );

@@ -6,44 +6,41 @@ import { Card, CardContent } from "@/components/ui/card";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { useSupabase } from "@/integrations/supabase/auth";
 
 const LOCAL_STORAGE_UPGRADED_KEY = 'upgraded';
 
 export function AdsBanner() {
-  const { session, profile, loading: authLoading } = useSupabase();
   const [isVisible, setIsVisible] = useState(false);
-  const [hasUpgradedLocally, setHasUpgradedLocally] = useState(false);
+  const [hasUpgraded, setHasUpgraded] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const upgradedStatus = localStorage.getItem(LOCAL_STORAGE_UPGRADED_KEY);
-      setHasUpgradedLocally(upgradedStatus === 'true');
+      if (upgradedStatus === 'true') {
+        setHasUpgraded(true);
+        setIsVisible(false);
+      } else {
+        setIsVisible(true); // Show banner if not upgraded
+      }
     }
   }, []);
 
-  useEffect(() => {
-    if (!authLoading) {
-      const isPremiumUser = profile?.is_premium === true;
-      if (hasUpgradedLocally || isPremiumUser) {
-        setIsVisible(false);
-      } else {
-        setIsVisible(true);
-      }
-    }
-  }, [authLoading, hasUpgradedLocally, profile?.is_premium]);
-
   const handleUpgrade = () => {
-    toast.info("Please use the 'Upgrade' button in the header to go Premium!");
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LOCAL_STORAGE_UPGRADED_KEY, 'true');
+      setHasUpgraded(true);
+      setIsVisible(false);
+      toast.success("Thank you for upgrading! Ads are now hidden.");
+    }
   };
 
-  if (!isVisible) {
+  if (!isVisible || hasUpgraded) {
     return null;
   }
 
   return (
-    <Card className="fixed bottom-0 left-0 right-0 z-40 h-[50px] bg-white/10 text-white rounded-none border-t border-white/10 shadow-lg flex items-center justify-center">
-      <CardContent className="flex items-center justify-between p-0 text-sm w-full max-w-screen-xl px-4">
+    <Card className="fixed bottom-0 left-0 right-0 z-40 bg-primary text-primary-foreground rounded-none border-t shadow-lg">
+      <CardContent className="flex items-center justify-between p-3 text-sm">
         <p className="flex-1 text-center">
           Enjoy an ad-free experience!
         </p>
@@ -51,14 +48,14 @@ export function AdsBanner() {
           variant="secondary"
           size="sm"
           onClick={handleUpgrade}
-          className="ml-4 bg-primary text-primary-foreground hover:bg-primary/90"
+          className="ml-4"
         >
           Upgrade Now
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          className="ml-2 h-7 w-7 text-white/80 hover:bg-white/20"
+          className="ml-2 h-7 w-7 text-primary-foreground hover:bg-primary-foreground/20"
           onClick={() => setIsVisible(false)}
           title="Close Ad"
         >

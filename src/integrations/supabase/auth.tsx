@@ -10,7 +10,6 @@ export interface UserProfile {
   last_name: string | null;
   profile_image_url: string | null;
   role: string | null;
-  is_premium: boolean | null; // Add is_premium to UserProfile
 }
 
 interface SupabaseContextType {
@@ -32,7 +31,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
     if (!supabase) return;
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, profile_image_url, role, is_premium') // Select is_premium
+      .select('id, first_name, last_name, profile_image_url, role')
       .eq('id', userId)
       .single();
 
@@ -45,8 +44,8 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
       // If no profile found, create a default one
       const { data: newProfile, error: insertError } = await supabase
         .from('profiles')
-        .insert({ id: userId, first_name: null, last_name: null, profile_image_url: null, role: 'user', is_premium: false }) // Set is_premium default
-        .select('id, first_name, last_name, profile_image_url, role, is_premium') // Select is_premium
+        .insert({ id: userId, first_name: null, last_name: null, profile_image_url: null, role: 'user' })
+        .select('id, first_name, last_name, profile_image_url, role')
         .single();
       if (insertError) {
         console.error("Error creating default profile:", insertError);
