@@ -3,7 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { createClient } from '@supabase/supabase-js';
-import { AppWrapper } from "@/components/app-wrapper"; // Import AppWrapper
+import { AppWrapper } from "@/components/app-wrapper";
+import { SessionContextProvider } from "@/integrations/supabase/auth"; // Import SessionContextProvider
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,17 +56,19 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-          isCozyThemeGloballyEnabled={isCozyThemeGloballyEnabled}
-        >
-          <AppWrapper> {/* Wrap children and other client components */}
-            {children}
-          </AppWrapper>
-        </ThemeProvider>
+        <SessionContextProvider> {/* Wrap the entire app with Supabase context */}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+            isCozyThemeGloballyEnabled={isCozyThemeGloballyEnabled}
+          >
+            <AppWrapper>
+              {children}
+            </AppWrapper>
+          </ThemeProvider>
+        </SessionContextProvider>
       </body>
     </html>
   );

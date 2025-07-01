@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { SessionContextProvider, useSupabase } from "@/integrations/supabase/auth"; // Import useSupabase
+import { useSupabase } from "@/integrations/supabase/auth"; // Import useSupabase
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
 import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { Toaster } from "@/components/ui/sonner";
@@ -82,7 +82,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
   };
 
   return (
-    <SessionContextProvider>
+    <> {/* Removed SessionContextProvider */}
       <Header
         onTogglePomodoroVisibility={handleTogglePomodoroVisibility}
         isPomodoroVisible={isPomodoroBarVisible}
@@ -109,6 +109,6 @@ export function AppWrapper({ children }: AppWrapperProps) {
         onLoginSignup={handleLoginSignupFromEnrollment}
       />
       <Toaster />
-    </SessionContextProvider>
+    </>
   );
 }
