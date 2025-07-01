@@ -165,8 +165,8 @@ export function Widget({
         isMinimized ? "rounded-lg" : "rounded-lg", // Always rounded
         // Docked specific styling
         isDocked ? "fixed bottom-4" : "absolute", // Use fixed for docked, absolute for floating
-        // Background and text colors
-        "bg-card text-card-foreground"
+        // Background and text colors with transparency and blur
+        "bg-card/80 backdrop-blur-md border-border/50"
       )}
       style={{
         left: `${position.x}px`,
@@ -214,15 +214,15 @@ export function Widget({
       {/* Resize handles are only shown when not minimized and not docked */}
       {!isDocked && !isMinimized && (
         <>
-          {/* Resize handles */}
-          <div className="absolute w-3 h-3 bg-muted/50 border border-border rounded-sm opacity-0 group-hover:opacity-100 transition-opacity cursor-nwse-resize top-0 left-0 -mt-1.5 -ml-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "top-left")} />
-          <div className="absolute w-3 h-3 bg-muted/50 border border-border rounded-sm opacity-0 group-hover:opacity-100 transition-opacity cursor-nesw-resize top-0 right-0 -mt-1.5 -mr-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "top-right")} />
-          <div className="absolute w-3 h-3 bg-muted/50 border border-border rounded-sm opacity-0 group-hover:opacity-100 transition-opacity cursor-nesw-resize bottom-0 left-0 -mb-1.5 -ml-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "bottom-left")} />
-          <div className="absolute w-3 h-3 bg-muted/50 border border-border rounded-sm opacity-0 group-hover:opacity-100 transition-opacity cursor-nwse-resize bottom-0 right-0 -mb-1.5 -mr-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "bottom-right")} />
-          <div className="absolute w-full h-3 bg-muted/50 border-t border-b border-border opacity-0 group-hover:opacity-100 transition-opacity cursor-ns-resize top-0 left-0 -mt-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "top")} />
-          <div className="absolute w-full h-3 bg-muted/50 border-t border-b border-border opacity-0 group-hover:opacity-100 transition-opacity cursor-ns-resize bottom-0 left-0 -mb-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "bottom")} />
-          <div className="absolute w-3 h-full bg-muted/50 border-l border-r border-border opacity-0 group-hover:opacity-100 transition-opacity cursor-ew-resize left-0 top-0 -ml-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "left")} />
-          <div className="absolute w-3 h-full bg-muted/50 border-l border-r border-border opacity-0 group-hover:opacity-100 transition-opacity cursor-ew-resize right-0 top-0 -mr-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "right")} />
+          {/* Resize handles - now always visible with opacity-70 */}
+          <div className="absolute w-3 h-3 bg-muted/50 border border-border rounded-sm opacity-70 cursor-nwse-resize top-0 left-0 -mt-1.5 -ml-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "top-left")} />
+          <div className="absolute w-3 h-3 bg-muted/50 border border-border rounded-sm opacity-70 cursor-nesw-resize top-0 right-0 -mt-1.5 -mr-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "top-right")} />
+          <div className="absolute w-3 h-3 bg-muted/50 border border-border rounded-sm opacity-70 cursor-nesw-resize bottom-0 left-0 -mb-1.5 -ml-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "bottom-left")} />
+          <div className="absolute w-3 h-3 bg-muted/50 border border-border rounded-sm opacity-70 cursor-nwse-resize bottom-0 right-0 -mb-1.5 -mr-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "bottom-right")} />
+          <div className="absolute w-full h-3 bg-muted/50 border-t border-b border-border opacity-70 cursor-ns-resize top-0 left-0 -mt-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "top")} />
+          <div className="absolute w-full h-3 bg-muted/50 border-t border-b border-border opacity-70 cursor-ns-resize bottom-0 left-0 -mb-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "bottom")} />
+          <div className="absolute w-3 h-full bg-muted/50 border-l border-r border-border opacity-70 cursor-ew-resize left-0 top-0 -ml-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "left")} />
+          <div className="absolute w-3 h-full bg-muted/50 border-l border-r border-border opacity-70 cursor-ew-resize right-0 top-0 -mr-1.5" onMouseDown={(e) => handleResizeMouseDown(e, "right")} />
         </>
       )}
     </Card>

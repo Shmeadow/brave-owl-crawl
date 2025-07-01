@@ -53,7 +53,7 @@ const MINIMIZED_WIDGET_HEIGHT = 48; // h-12 (to fit text better)
 
 export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProviderProps) {
   const [activeWidgets, setActiveWidgets] = useState<WidgetState[]>([]);
-  const [maxZIndex, setMaxZIndex] = useState(1000);
+  const [maxZIndex, setMaxZIndex] = useState(900); // Start maxZIndex lower than Pomodoro (1001)
 
   const recalculateDockedWidgets = useCallback((currentWidgets: WidgetState[]) => {
     const docked = currentWidgets.filter(w => w.isDocked).sort((a, b) => a.id.localeCompare(b.id)); // Sort to maintain consistent order
@@ -105,13 +105,13 @@ export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProvide
               title,
               position: config.initialPosition,
               size: { width: config.initialWidth, height: config.initialHeight },
-              zIndex: maxZIndex + 1,
+              zIndex: maxZIndex + 1, // Assign new z-index
               isMinimized: false,
               isDocked: false,
               normalSize: { width: config.initialWidth, height: config.initialHeight }, // Store initial normal size
             },
           ];
-          setMaxZIndex(prev => prev + 1);
+          setMaxZIndex(prev => prev + 1); // Increment maxZIndex for next widget
           return newWidgets;
         });
       }

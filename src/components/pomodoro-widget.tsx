@@ -54,7 +54,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, onClose, chatPanel
   return (
     <Card
       className={cn(
-        "fixed bottom-4 left-1/2 -translate-x-1/2 z-50", // Centered horizontally
+        "fixed bottom-4 left-1/2 -translate-x-1/2 z-[1001]", // Centered horizontally, higher z-index
         "bg-background/50 backdrop-blur-md shadow-lg border rounded-lg",
         "flex transition-all duration-300 ease-in-out",
         `w-[${widgetWidth}px]`, // Fixed width

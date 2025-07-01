@@ -29,7 +29,7 @@ export function WidgetContainer() {
   } = useWidget();
 
   return (
-    <div className="fixed inset-0 z-[999] pointer-events-none"> {/* Re-added pointer-events-none */}
+    <div className="fixed inset-0 z-[900] pointer-events-none"> {/* Re-added pointer-events-none, adjusted z-index */}
       {activeWidgets.map(widget => (
         <Widget
           key={widget.id}
