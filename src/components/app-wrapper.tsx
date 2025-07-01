@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
@@ -14,10 +14,13 @@ interface AppWrapperProps {
 }
 
 export function AppWrapper({ children }: AppWrapperProps) {
+  const hasUserMovedRef = useRef(false); // New ref to track if the user has manually moved the widget
+
   const [pomodoroPosition, setPomodoroPosition] = useState(() => {
     if (typeof window !== 'undefined') {
       const savedPos = localStorage.getItem(LOCAL_STORAGE_POMODORO_POS_KEY);
       if (savedPos) {
+        hasUserMovedRef.current = true; // If there's a saved position, assume user moved it
         try {
           return JSON.parse(savedPos);
         } catch (e) {
@@ -25,15 +28,18 @@ export function AppWrapper({ children }: AppWrapperProps) {
         }
       }
     }
-    // Default position: bottom-right corner, offset from edges
-    // These values will be relative to the viewport.
-    // The useEffect below will calculate and set the initial position correctly.
+    // Default initial value, will be overwritten by useEffect if not moved
     return { x: 0, y: 0 };
   });
 
   // Recalculate default position on window resize and initial mount
   useEffect(() => {
     const handleResize = () => {
+      if (hasUserMovedRef.current) {
+        // If user has already moved it, don't auto-reposition on resize
+        return;
+      }
+
       // Assuming widget width ~350px, height ~300px, 20px margin from edges
       const widgetWidth = 350;
       const widgetHeight = 300;
@@ -42,14 +48,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
       const defaultX = window.innerWidth - widgetWidth - margin;
       const defaultY = window.innerHeight - widgetHeight - margin;
 
-      // Only reset if the current position is the initial default (0,0) or if it's very close to the calculated default
-      // This prevents resetting user-dragged positions on resize
-      const isInitialDefault = pomodoroPosition.x === 0 && pomodoroPosition.y === 0;
-      const isNearCalculatedDefault = Math.abs(pomodoroPosition.x - defaultX) < 50 && Math.abs(pomodoroPosition.y - defaultY) < 50;
-
-      if (isInitialDefault || isNearCalculatedDefault) {
-         setPomodoroPosition({ x: defaultX, y: defaultY });
-      }
+      setPomodoroPosition({ x: defaultX, y: defaultY });
     };
 
     if (typeof window !== 'undefined') {
@@ -62,7 +61,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
         window.removeEventListener('resize', handleResize);
       }
     };
-  }, []); // Empty dependency array to run once on mount
+  }, []); // Empty dependency array, as it only depends on window events and ref
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { delta } = event;
@@ -71,6 +70,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
       const newY = prevPosition.y + delta.y;
       const newPos = { x: newX, y: newY };
       localStorage.setItem(LOCAL_STORAGE_POMODORO_POS_KEY, JSON.stringify(newPos));
+      hasUserMovedRef.current = true; // Mark as moved by user
       return newPos;
     });
   };

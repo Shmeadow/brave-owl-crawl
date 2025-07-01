@@ -38,15 +38,14 @@ export function PomodoroWidget({ initialPosition, onPositionChange }: PomodoroWi
   });
 
   const style = {
-    transform: CSS.Transform.toString(transform ? {
-      x: initialPosition.x + transform.x,
-      y: initialPosition.y + transform.y,
-    } : initialPosition),
-    position: 'fixed', // Ensure it's positioned relative to viewport
-    bottom: 'auto', // Override default bottom-4
-    left: 'auto', // Override default left-1/2
-    right: 'auto',
-    top: 'auto',
+    position: 'fixed',
+    // Apply the initial position and the current drag delta using transform
+    transform: CSS.Transform.toString({
+      x: initialPosition.x + (transform ? transform.x : 0),
+      y: initialPosition.y + (transform ? transform.y : 0),
+      scaleX: 1,
+      scaleY: 1,
+    }),
     zIndex: 50,
     cursor: 'grab', // Indicate draggable
   };
@@ -69,8 +68,8 @@ export function PomodoroWidget({ initialPosition, onPositionChange }: PomodoroWi
       ref={setNodeRef}
       style={style}
       className={cn(
-        "w-full max-w-md mx-auto bg-background/50 backdrop-blur-md shadow-lg border",
-        "flex flex-col items-center p-4 gap-4" // Adjusted padding and layout for direct display
+        "w-full max-w-md bg-background/50 backdrop-blur-md shadow-lg border", // Removed mx-auto
+        "flex flex-col items-center p-4 gap-4"
       )}
     >
       <CardHeader className="flex flex-col items-center space-y-4 pb-2 w-full">
