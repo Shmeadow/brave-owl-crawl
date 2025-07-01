@@ -4,22 +4,24 @@ import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Sparkles, Users, Video, Image, Star, Settings, Menu, Music, Clock, LayoutGrid, Calendar, ListTodo, NotebookPen, Wind, BookOpen, Goal, BadgeDollarSign } from "lucide-react";
+import { Search, Sparkles, Users, Video, Image, Star, Settings, Menu, Music, Clock, LayoutGrid, Calendar, ListTodo, NotebookPen, Wind, BookOpen, Goal, Diamond } from "lucide-react"; // Import Diamond
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserNav } from "@/components/user-nav";
 import { ClockDisplay } from "@/components/clock-display";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/components/sidebar/sidebar-context"; // Import useSidebar
+import { Progress } from "@/components/ui/progress"; // Import Progress
 
 interface HeaderProps {
   onTogglePomodoroVisibility: () => void;
   isPomodoroVisible: boolean;
   onOpenSpotifyModal: () => void;
-  onOpenUpgradeModal: () => void; // New prop for upgrade modal
+  onOpenUpgradeModal: () => void;
+  dailyProgress: number; // New prop for daily progress
 }
 
-export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSpotifyModal, onOpenUpgradeModal }: HeaderProps) {
+export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }: HeaderProps) {
   const { setActivePanel } = useSidebar(); // Get setActivePanel from context
 
   return (
@@ -100,7 +102,7 @@ export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSp
                   <Clock className="h-4 w-4" /> {isPomodoroVisible ? "Hide Timer" : "Show Timer"}
                 </Button>
                 <Button variant="ghost" className="justify-start gap-3 mt-2" onClick={onOpenUpgradeModal}>
-                  <BadgeDollarSign className="h-4 w-4" /> Upgrade
+                  <Diamond className="h-4 w-4" /> Upgrade
                 </Button>
               </div>
             </nav>
@@ -113,24 +115,10 @@ export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSp
       </div>
 
       {/* Center Section: Title and Secondary Controls */}
-      <div className="flex-1 flex items-center justify-center gap-4 px-4">
+      <div className="flex-1 flex flex-col items-center justify-center gap-1 px-4">
         <h1 className="text-xl font-bold text-foreground whitespace-nowrap hidden md:block">Shmeadow's Room</h1>
-        <div className="hidden lg:flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
-            <Settings className="h-4 w-4 mr-1" /> Upgrade Desktop App
-          </Button>
-          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
-            <Users className="h-4 w-4 mr-1" /> Invite
-          </Button>
-          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
-            <Video className="h-4 w-4 mr-1" /> Videos
-          </Button>
-          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
-            <Image className="h-4 w-4 mr-1" /> Images
-          </Button>
-          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
-            <Star className="h-4 w-4 mr-1" /> Favorites
-          </Button>
+        <div className="w-full max-w-[300px] hidden md:block">
+          <Progress value={dailyProgress} className="h-2 [&>*]:transition-all [&>*]:duration-1000 [&>*]:ease-linear [&>*]:bg-gradient-to-r [&>*]:from-primary [&>*]:to-accent" />
         </div>
       </div>
 
@@ -154,7 +142,7 @@ export function Header({ onTogglePomodoroVisibility, isPomodoroVisible, onOpenSp
           <span className="sr-only">{isPomodoroVisible ? "Hide Pomodoro Timer" : "Show Pomodoro Timer"}</span>
         </Button>
         <Button variant="ghost" size="icon" onClick={onOpenUpgradeModal} title="Upgrade to Ad-Free" className="hidden sm:flex">
-          <BadgeDollarSign className="h-5 w-5" />
+          <Diamond className="h-5 w-5 animate-spin" /> {/* Diamond icon with rotation */}
           <span className="sr-only">Upgrade to Ad-Free</span>
         </Button>
         <ThemeToggle />

@@ -3,13 +3,13 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Play, Pause, RotateCcw, Coffee, Brain, Home, ChevronDown, X, Settings } from "lucide-react";
+import { Play, Pause, RotateCcw, Coffee, Brain, Home, ChevronDown, Settings } from "lucide-react"; // Removed X icon
 import { usePomodoroState, formatTime, parseTimeToSeconds, PomodoroMode } from "@/hooks/use-pomodoro-state";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PomodoroSettingsModal } from "@/components/pomodoro-settings-modal"; // Import the new settings modal
-import { Progress } from "@/components/ui/progress"; // Import Progress component
+// Progress component removed as it's now in Header
 
 interface PomodoroWidgetProps {
   isMinimized: boolean;
@@ -36,21 +36,6 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, onClose, chatPanel
   } = usePomodoroState();
 
   const inputRef = useRef<HTMLInputElement>(null);
-  const [dailyProgress, setDailyProgress] = useState(0);
-
-  useEffect(() => {
-    const updateDailyProgress = () => {
-      const now = new Date();
-      const secondsIntoDay = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-      const totalSecondsInDay = 24 * 3600;
-      setDailyProgress((secondsIntoDay / totalSecondsInDay) * 100);
-    };
-
-    updateDailyProgress(); // Initial call
-    const intervalId = setInterval(updateDailyProgress, 1000); // Update every second
-
-    return () => clearInterval(intervalId);
-  }, []);
 
   const handleTimeInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -77,13 +62,13 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, onClose, chatPanel
           ? "flex-col items-center px-2 py-1 h-auto cursor-pointer" // Adjusted for new minimized layout
           : "flex-col items-center p-3 gap-3 h-auto" // Auto height for expanded
       )}
-      onClick={isMinimized ? () => setIsMinimized(false) : undefined}
+      onClick={isMinimized ? () => setIsMinimized(false) : undefined} // Only expand on click when minimized
     >
       <CardHeader className={cn(
         "flex flex-row items-center justify-between w-full",
         isMinimized ? "hidden" : "pb-2"
       )}>
-        <CardTitle className="text-lg font-bold flex-1 text-left">
+        <CardTitle className="text-xl font-bold flex-1 text-left"> {/* Increased font size */}
           Pomodoro Timer
         </CardTitle>
         <div className="flex gap-2">
@@ -109,7 +94,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, onClose, chatPanel
             size="icon"
             className="h-8 w-8"
             onClick={(e) => {
-              e.stopPropagation();
+              e.stopPropagation(); // Prevent card from expanding if minimized
               setIsMinimized(true);
             }}
             title="Minimize Pomodoro Timer"
@@ -117,19 +102,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, onClose, chatPanel
             <ChevronDown className="h-5 w-5" />
             <span className="sr-only">Minimize Pomodoro</span>
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={(e) => {
-              e.stopPropagation();
-              onClose(); // Use the new onClose prop
-            }}
-            title="Close Pomodoro Timer"
-          >
-            <X className="h-5 w-5" />
-            <span className="sr-only">Close Pomodoro</span>
-          </Button>
+          {/* Removed the X (close) button */}
         </div>
       </CardHeader>
 
@@ -194,44 +167,27 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, onClose, chatPanel
             <RotateCcw className="mr-2 h-5 w-5" /> Reset
           </Button>
         </div>
-        <div className="w-full px-2">
-          <p className="text-xs text-muted-foreground text-center mb-1">Daily Progress</p>
-          <Progress value={dailyProgress} className="h-2" />
-        </div>
+        {/* Daily Progress bar moved to Header */}
       </CardContent>
 
       {isMinimized && (
         <div className="flex flex-col items-center justify-center w-full h-full py-2">
-          <div className="flex items-center justify-between w-full px-2">
-            <span className="text-sm font-semibold capitalize">{mode.replace('-', ' ')}</span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={(e) => { e.stopPropagation(); onClose(); }}
-              title="Close Pomodoro Timer"
-            >
-              <X className="h-5 w-5" />
-              <span className="sr-only">Close Pomodoro</span>
-            </Button>
-          </div>
+          <span className="text-sm font-semibold capitalize">{mode.replace('-', ' ')}</span> {/* Mode text above numbers */}
           <div
             className="text-4xl font-bold font-mono cursor-pointer hover:text-primary transition-colors my-1"
-            onClick={() => setIsMinimized(false)}
+            onClick={() => setIsMinimized(false)} // Only expand on click when minimized
           >
             {formatTime(timeLeft)}
           </div>
-          <div className="flex gap-2">
-            <Button onClick={handleStartPause} size="icon">
+          <div className="flex gap-2"> {/* Play/Reset buttons below numbers */}
+            <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon">
               {isRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
             </Button>
-            <Button onClick={handleReset} size="icon" variant="secondary">
+            <Button onClick={(e) => { e.stopPropagation(); handleReset(); }} size="icon" variant="secondary">
               <RotateCcw className="h-5 w-5" />
             </Button>
           </div>
-          <div className="w-full px-2 mt-2">
-            <Progress value={dailyProgress} className="h-2" />
-          </div>
+          {/* Daily Progress bar moved to Header */}
         </div>
       )}
     </Card>

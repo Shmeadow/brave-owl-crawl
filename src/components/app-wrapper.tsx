@@ -32,8 +32,9 @@ function AppWrapperContent({ children }: AppWrapperProps) {
   const [isPomodoroBarVisible, setIsPomodoroBarVisible] = useState(true);
   const [isSpotifyModalOpen, setIsSpotifyModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false); // New state for upgrade modal
-  const [isChatOpen, setIsChatOpen] = useState(true); // New state for chat panel
+  const [isChatOpen, setIsChatOpen] = useState(false); // Chat starts closed as a bubble
   const [mounted, setMounted] = useState(false);
+  const [dailyProgress, setDailyProgress] = useState(0); // State for daily progress
 
   useEffect(() => {
     setMounted(true);
@@ -57,6 +58,21 @@ function AppWrapperContent({ children }: AppWrapperProps) {
       localStorage.setItem(LOCAL_STORAGE_POMODORO_VISIBLE_KEY, String(isPomodoroBarVisible));
     }
   }, [isPomodoroBarVisible, mounted]);
+
+  // Calculate daily progress
+  useEffect(() => {
+    const updateDailyProgress = () => {
+      const now = new Date();
+      const secondsIntoDay = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+      const totalSecondsInDay = 24 * 3600;
+      setDailyProgress((secondsIntoDay / totalSecondsInDay) * 100);
+    };
+
+    updateDailyProgress(); // Initial call
+    const intervalId = setInterval(updateDailyProgress, 1000); // Update every second
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   const shouldShowPomodoro = pathname !== '/account';
 
@@ -86,7 +102,8 @@ function AppWrapperContent({ children }: AppWrapperProps) {
         onTogglePomodoroVisibility={handleTogglePomodoroVisibility}
         isPomodoroVisible={isPomodoroBarVisible}
         onOpenSpotifyModal={handleOpenSpotifyModal}
-        onOpenUpgradeModal={handleOpenUpgradeModal} // Pass to Header
+        onOpenUpgradeModal={handleOpenUpgradeModal}
+        dailyProgress={dailyProgress} // Pass daily progress to Header
       />
       <Sidebar /> {/* Render the new Sidebar */}
       <main
