@@ -56,6 +56,8 @@ export const parseTimeToSeconds = (timeString: string): number => {
     return parts[0] * 3600 + parts[1] * 60 + parts[2];
   } else if (parts.length === 2) { // MM:SS format
     return parts[0] * 60 + parts[1];
+  } else if (parts.length === 1) { // SS format (if user just types seconds)
+    return parts[0];
   }
   return 0; // Invalid format
 };
@@ -139,15 +141,24 @@ export function usePomodoroState() {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
-      setState(prevState => ({ ...prevState, isRunning: false })); // Stop running when time is 0
-
-      if (state.mode === 'focus') {
-        toast.success("Focus session complete! Time for a break.");
-        resetTimer('short-break', false); // Don't stop running if it was already running
-      } else {
-        toast.success("Break complete! Time to focus again.");
-        resetTimer('focus', false); // Don't stop running if it was already running
-      }
+      setState(prevState => {
+        let nextMode: PomodoroMode;
+        if (prevState.mode === 'focus') {
+          nextMode = 'short-break';
+          toast.success("Focus session complete! Time for a break.");
+        } else {
+          nextMode = 'focus';
+          toast.success("Break complete! Time to focus again.");
+        }
+        return {
+          ...prevState,
+          mode: nextMode,
+          timeLeft: prevState.customTimes[nextMode], // Set to default time for next mode
+          isRunning: false, // Crucial: Stop running, user must manually start next session
+          isEditingTime: false,
+          editableTimeString: '',
+        };
+      });
     } else if (!state.isRunning && intervalRef.current) {
       clearInterval(intervalRef.current);
     }
@@ -157,7 +168,7 @@ export function usePomodoroState() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [state.isRunning, state.timeLeft, state.mode, resetTimer]);
+  }, [state.isRunning, state.timeLeft, state.mode, state.customTimes]);
 
   const handleStartPause = useCallback(() => {
     setState(prevState => {

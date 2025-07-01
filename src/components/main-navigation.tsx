@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Clock, BookOpen, Timer, Goal, User, Settings } from "lucide-react"; // Import Settings icon
+import { LayoutDashboard, Clock, BookOpen, Goal, User, Settings } from "lucide-react"; // Removed Timer
 import { cn } from "@/lib/utils";
 import { useSupabase } from "@/integrations/supabase/auth"; // Import useSupabase
 
 const navItems = [
   { href: "/time-tracker", icon: Clock, label: "Time Tracker" },
   { href: "/flash-cards", icon: BookOpen, label: "Flash Cards" },
-  { href: "/pomodoro", icon: Timer, label: "Pomodoro" },
   { href: "/goal-focus", icon: Goal, label: "Goal Focus" },
   { href: "/account", icon: User, label: "Account" },
 ];

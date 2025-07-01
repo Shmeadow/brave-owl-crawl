@@ -2,11 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
-import { SessionContextProvider } from "@/integrations/supabase/auth";
-import { GoalReminderBar } from "@/components/goal-reminder-bar";
-import { PomodoroWidget } from "@/components/pomodoro-widget";
-import { createClient } from '@supabase/supabase-js'; // Import createClient for server-side
+import { createClient } from '@supabase/supabase-js';
+import { AppWrapper } from "@/components/app-wrapper"; // Import AppWrapper
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -59,14 +56,11 @@ export default async function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
-          isCozyThemeGloballyEnabled={isCozyThemeGloballyEnabled} // Pass the setting
+          isCozyThemeGloballyEnabled={isCozyThemeGloballyEnabled}
         >
-          <SessionContextProvider>
+          <AppWrapper> {/* Wrap children and other client components */}
             {children}
-            <GoalReminderBar />
-            <PomodoroWidget />
-          </SessionContextProvider>
-          <Toaster />
+          </AppWrapper>
         </ThemeProvider>
       </body>
     </html>

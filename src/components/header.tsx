@@ -3,7 +3,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, LayoutDashboard, Clock, BookOpen, Timer, Goal, User, Settings } from "lucide-react"; // Import Settings icon
+import { Menu, LayoutDashboard, Clock, BookOpen, Goal, User, Settings } from "lucide-react"; // Removed Timer
 import { UserNav } from "@/components/user-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
@@ -44,10 +44,7 @@ export function Header() {
                 <BookOpen className="h-4 w-4" />
                 Flash Cards
               </Link>
-              <Link href="/pomodoro" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary", isActive("/pomodoro") && "text-primary")}>
-                <Timer className="h-4 w-4" />
-                Pomodoro
-              </Link>
+              {/* Removed Pomodoro Link */}
               <Link href="/goal-focus" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary", isActive("/goal-focus") && "text-primary")}>
                 <Goal className="h-4 w-4" />
                 Goal Focus
