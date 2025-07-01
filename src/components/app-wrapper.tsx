@@ -15,6 +15,7 @@ import { ChatPanel } from "@/components/chat-panel";
 import { LofiAudioPlayer } from "@/components/lofi-audio-player";
 import { WidgetProvider } from "@/components/widget/widget-context";
 import { WidgetContainer } from "@/components/widget/widget-container";
+// Removed ClockDisplay import
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
 const LOCAL_STORAGE_POMODORO_VISIBLE_KEY = 'pomodoro_widget_visible';
@@ -149,7 +150,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
         />
       )}
       <SpotifyEmbedModal isOpen={isSpotifyModalOpen} onClose={() => setIsSpotifyModalOpen(false)} />
-      <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModal(false)} />
+      <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
       <Toaster />
       <LofiAudioPlayer />
       {/* Fixed Chat Panel */}
