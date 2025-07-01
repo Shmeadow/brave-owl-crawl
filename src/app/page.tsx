@@ -1,25 +1,74 @@
 "use client";
 
-import React from "react";
-import { MadeWithDyad } from "@/components/made-with-dyad";
-// Removed useSidebar and panel imports as they are now handled by widgets
-// Removed AnimatePresence and motion as widgets manage their own animations
+import { DashboardLayout } from "@/components/dashboard-layout";
+import { Widget } from "@/components/widget/widget";
+import { GoalInput } from "@/components/goal-input";
+import { GoalList } from "@/components/goal-list";
+import { NoteInput } from "@/components/note-input";
+import { NoteList } from "@/components/note-list";
+import { useGoals } from "@/hooks/use-goals";
+import { useNotes } from "@/hooks/use-notes";
+import { CalendarWidget } from "@/components/calendar-widget";
+import { FlashcardWidget } from "@/components/flashcard-widget";
+import { WelcomeWidget } from "@/components/welcome-widget";
+import { SpotifyEmbedWidget } from "@/components/spotify-embed-widget";
+import { AdWidget } from "@/components/ad-widget";
+import { useAppSettings } from "@/hooks/use-app-settings";
+import { useEffect, useState } from "react";
 
 export default function HomePage() {
-  // The activePanel logic and direct panel rendering are now handled by the Widget system.
-  // This page now serves as the main content area for the application,
-  // where widgets will float on top.
+  const { goals, addGoal, toggleGoalComplete, deleteGoal } = useGoals();
+  const { notes, addNote, toggleNoteStar, deleteNote } = useNotes();
+  const { settings, loading: settingsLoading } = useAppSettings();
+  const [isAdVisible, setIsAdVisible] = useState(true);
+
+  useEffect(() => {
+    if (!settingsLoading && settings) {
+      const hasUpgraded = localStorage.getItem('upgraded') === 'true';
+      setIsAdVisible(!hasUpgraded);
+    }
+  }, [settings, settingsLoading]);
 
   return (
-    <div className="flex flex-col min-h-screen w-full pt-16">
-      <div className="flex-1 p-4 overflow-y-auto flex items-center justify-center">
-        {/* This is the main content area. Widgets will float above this. */}
-        <div className="text-center text-foreground text-xl font-semibold">
-          Welcome to your Productivity Hub!
-          <p className="text-muted-foreground text-sm mt-2">Use the sidebar to open your tools.</p>
-        </div>
+    <>
+      <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+        Welcome back!
+      </h1>
+      <div className="flex flex-wrap justify-start gap-4 w-full"> {/* Changed to flex-wrap and justify-start, removed h-full */}
+        <Widget id="welcome" title="Welcome" initialMinimized={false}>
+          <WelcomeWidget />
+        </Widget>
+        <Widget id="goals" title="Goals" initialMinimized={false}>
+          <GoalInput onAddGoal={addGoal} />
+          <GoalList
+            goals={goals}
+            onToggleComplete={toggleGoalComplete}
+            onDelete={deleteGoal}
+          />
+        </Widget>
+        <Widget id="notes" title="Notes" initialMinimized={false}>
+          <NoteInput onAddNote={addNote} />
+          <NoteList
+            notes={notes}
+            onToggleStar={toggleNoteStar}
+            onDelete={deleteNote}
+          />
+        </Widget>
+        <Widget id="calendar" title="Calendar" initialMinimized={false}>
+          <CalendarWidget />
+        </Widget>
+        <Widget id="flashcards" title="Flashcards" initialMinimized={false}>
+          <FlashcardWidget />
+        </Widget>
+        <Widget id="spotify" title="Spotify" initialMinimized={false}>
+          <SpotifyEmbedWidget />
+        </Widget>
+        {isAdVisible && (
+          <Widget id="ad" title="Ad" initialMinimized={false}>
+            <AdWidget />
+          </Widget>
+        )}
       </div>
-      <MadeWithDyad />
-    </div>
+    </>
   );
 }
