@@ -30,7 +30,8 @@ export function Header({
   onOpenUpgradeModal,
   dailyProgress,
 }: HeaderProps) {
-  const [currentTime, setCurrentTime] = useState(new Date());
+  // Initialize currentTime to null to prevent hydration mismatch
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const { isPlaying, togglePlayPause, currentTrack, volume, setVolume, isMuted, toggleMute } = useMusicPlayer();
   const { times, loading: sunTimesLoading, error: sunTimesError } = useSunriseSunset();
   const { setIsSidebarOpen } = useSidebar();
@@ -39,30 +40,34 @@ export function Header({
 
   useEffect(() => {
     const updateClock = () => {
-      const now = new Date();
-      setCurrentTime(now);
+      setCurrentTime(new Date());
     };
 
+    // Set initial time on client mount
     updateClock();
     const intervalId = setInterval(updateClock, 1000);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, []); // Empty dependency array ensures this runs once on mount
 
-  const formattedTime = currentTime.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: !(profile?.time_format_24h ?? true),
-  });
+  const formattedTime = currentTime
+    ? currentTime.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: !(profile?.time_format_24h ?? true),
+      })
+    : "--:--:--"; // Placeholder for server render or until client time is set
 
-  const formattedDate = currentTime.toLocaleDateString([], {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
+  const formattedDate = currentTime
+    ? currentTime.toLocaleDateString([], {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+      })
+    : "--- --"; // Placeholder
 
-  const displayUserName = profile?.first_name || user?.email?.split('@')[0] || "Guest"; // Use first name, or part of email, or 'Guest'
+  const displayUserName = profile?.first_name || user?.email?.split('@')[0] || "Guest";
   const roomName = `${displayUserName}'s Room`;
 
   return (
@@ -78,8 +83,7 @@ export function Header({
           <span className="sr-only">Go to Home Room</span>
         </Button>
         <div className="flex items-center gap-1">
-          <span className="text-sm font-semibold text-primary"></span> {/* Removed "Room:" prefix */}
-          <span className="text-sm text-foreground font-medium">{roomName}</span> {/* Display dynamic room name */}
+          <span className="text-sm text-foreground font-medium">{roomName}</span>
         </div>
         <div className="relative w-32">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
