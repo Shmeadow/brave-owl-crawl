@@ -61,12 +61,16 @@ export function AppWrapper({ children }: AppWrapperProps) {
     setIsPomodoroWidgetMinimized(false); // Ensure it's not minimized when hidden
   };
 
+  const handleOpenSpotifyModal = () => {
+    setIsSpotifyModalOpen(true);
+  };
+
   return (
     <SessionContextProvider>
       <Header
         onTogglePomodoroVisibility={handleTogglePomodoroVisibility}
         isPomodoroVisible={isPomodoroBarVisible}
-        onOpenSpotifyModal={onOpenSpotifyModal}
+        onOpenSpotifyModal={handleOpenSpotifyModal}
       />
       {/* Main content area is now managed by app/page.tsx and other pages directly */}
       {children}
