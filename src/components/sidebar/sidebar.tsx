@@ -1,78 +1,100 @@
 "use client";
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Home, Settings, Bell, Users, Calendar, Book, Lightbulb, MessageSquare, Goal, Brain, Music, Image, SunMoon, Sparkles } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useWidget } from "@/components/widget/widget-context";
+import React, { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
+import { SidebarItem } from "./sidebar-item";
+import { useSidebar } from "./sidebar-context";
+import { useWidget } from "@/components/widget/widget-context"; // Import useWidget
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Wind, BookOpen, Goal } from "lucide-react";
+
+const SIDEBAR_WIDTH = 60; // px
+const HOT_ZONE_WIDTH = 20; // px (includes the 4px visible strip)
+const UNDOCK_DELAY = 500; // ms
 
 export function Sidebar() {
-  const { openWidget } = useWidget();
-  const pathname = usePathname();
+  const { activePanel, setActivePanel, isSidebarOpen, setIsSidebarOpen } = useSidebar();
+  const { toggleWidget } = useWidget(); // Get toggleWidget from WidgetContext
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    setIsSidebarOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      setIsSidebarOpen(false);
+    }, UNDOCK_DELAY);
+  };
+
+  // Handle mouse movement near the left edge
+  const handleMouseMove = (e: MouseEvent) => {
+    if (e.clientX < HOT_ZONE_WIDTH && !isSidebarOpen) {
+      handleMouseEnter();
+    } else if (e.clientX >= SIDEBAR_WIDTH && isSidebarOpen && !sidebarRef.current?.contains(e.target as Node)) {
+      // If mouse moves outside the sidebar area while it's open
+      handleMouseLeave();
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [isSidebarOpen]); // Re-attach listener if sidebar open state changes
 
   const navItems = [
-    { icon: Home, label: "Home", href: "/" },
-    { icon: Settings, label: "Settings", href: "/settings" },
-    { icon: Bell, label: "Notifications", href: "/notifications" },
-    { icon: Users, label: "Community", href: "/community" },
+    { id: "spaces", label: "Spaces", icon: LayoutGrid },
+    { id: "sounds", label: "Sounds", icon: Volume2 },
+    { id: "calendar", label: "Calendar", icon: Calendar },
+    { id: "timer", label: "Timer", icon: Timer },
+    { id: "tasks", label: "Tasks", icon: ListTodo },
+    { id: "notes", label: "Notes", icon: NotebookPen },
+    { id: "media", label: "Media", icon: Image },
+    { id: "fortune", label: "Fortune", icon: Sparkles },
+    { id: "breathe", label: "Breathe", icon: Wind },
+    { id: "flash-cards", label: "Flash Cards", icon: BookOpen },
+    { id: "goal-focus", label: "Goal Focus", icon: Goal },
   ];
 
-  const widgetItems = [
-    { id: "calendar", icon: Calendar, label: "Calendar" },
-    { id: "notes", icon: Book, label: "Notes" },
-    { id: "timer", icon: Lightbulb, label: "Timer" },
-    { id: "chat", icon: MessageSquare, label: "Chat" }, // Assuming chat widget exists
-    { id: "goals", icon: Goal, label: "Goals" }, // Assuming goals widget exists
-    { id: "flash-cards", icon: Brain, label: "Flashcards" },
-    { id: "sounds", icon: Music, label: "Sounds" },
-    { id: "media", icon: Image, label: "Media" },
-    { id: "fortune", icon: Sparkles, label: "Fortune" },
-    { id: "breathe", icon: SunMoon, label: "Breathe" },
-    { id: "spaces", icon: Home, label: "Spaces" }, // Re-using Home icon for Spaces
-    { id: "goal-focus", icon: Goal, label: "Goal Focus" }, // Re-using Goal icon for Goal Focus
-  ];
+  const handleSidebarItemClick = (id: string, label: string) => {
+    setActivePanel(id as any); // Keep activePanel for highlighting
+    toggleWidget(id, label); // Toggle the corresponding widget
+  };
 
   return (
-    <aside className="flex flex-col items-center py-4 px-2 border-r bg-background h-full justify-end"> {/* Added justify-end */}
-      <nav className="flex flex-col gap-2"> {/* Removed flex-grow */}
+    <div
+      ref={sidebarRef}
+      className={cn(
+        "fixed left-0 top-0 h-screen z-50 flex flex-col items-center py-4",
+        "bg-black/60 shadow-lg shadow-black/30 transition-transform duration-300 ease-in-out",
+        isSidebarOpen ? "translate-x-0 w-[60px]" : "translate-x-[calc(-100%+4px)] w-[60px]" // 4px hot zone
+      )}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div className="flex flex-col gap-2">
         {navItems.map((item) => (
-          <Tooltip key={item.label}>
-            <TooltipTrigger asChild>
-              <Link href={item.href}>
-                <Button
-                  variant={pathname === item.href ? "secondary" : "ghost"}
-                  size="icon"
-                  className="h-9 w-9"
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span className="sr-only">{item.label}</span>
-                </Button>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="right">{item.label}</TooltipContent>
-          </Tooltip>
+          <SidebarItem
+            key={item.id}
+            icon={item.icon}
+            label={item.label}
+            isActive={activePanel === item.id}
+            onClick={() => handleSidebarItemClick(item.id, item.label)}
+          />
         ))}
-        <div className="border-t my-2 w-full" />
-        {widgetItems.map((item) => (
-          <Tooltip key={item.id}>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9"
-                onClick={() => openWidget(item.id, item.label)}
-              >
-                <item.icon className="h-5 w-5" />
-                <span className="sr-only">{item.label}</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">{item.label}</TooltipContent>
-          </Tooltip>
-        ))}
-      </nav>
-    </aside>
+      </div>
+    </div>
   );
 }

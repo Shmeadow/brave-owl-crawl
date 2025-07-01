@@ -160,14 +160,11 @@ export function Widget({
     <Card
       ref={cardRef}
       className={cn(
-        "shadow-lg rounded-lg flex flex-col overflow-hidden transition-all duration-200 ease-in-out group pointer-events-auto",
+        "absolute bg-card text-card-foreground shadow-lg rounded-lg flex flex-col overflow-hidden transition-all duration-200 ease-in-out group pointer-events-auto", // Added pointer-events-auto
         isMinimized ? "w-64 h-10" : "",
-        // Styling for docked vs. floating/minimized
-        isDocked
-          ? "relative w-full h-auto bg-background/50 backdrop-blur-md" // Docked: relative, full width of parent, transparent glass
-          : "absolute bg-card text-card-foreground", // Floating/Minimized: absolute, default card styling
+        isDocked ? "relative !top-auto !left-auto !transform-none !w-full !h-auto" : ""
       )}
-      style={!isDocked && !isMinimized ? { // Only apply absolute positioning if not docked and not minimized
+      style={!isDocked && !isMinimized ? {
         left: `${position.x}px`,
         top: `${position.y}px`,
         width: `${size.width}px`,
