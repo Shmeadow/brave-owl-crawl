@@ -1,56 +1,28 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Sidebar } from "@/components/sidebar";
+import React from "react"; // Removed useState, useEffect as they are no longer needed for sidebar collapse
 import { Header } from "@/components/header";
-import { cn } from "@/lib/utils";
-import { FloatingOverviewTab } from "@/components/floating-overview-tab"; // Import the new component
+import { FloatingOverviewTab } from "@/components/floating-overview-tab";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const savedState = localStorage.getItem('isSidebarCollapsed');
-      return savedState === 'true';
-    }
-    return false; // Default to open
-  });
-
-  const toggleSidebarCollapse = () => {
-    const newState = !isSidebarCollapsed;
-    setIsSidebarCollapsed(newState);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('isSidebarCollapsed', String(newState));
-    }
-  };
+  // Removed isSidebarCollapsed state and toggleSidebarCollapse function
 
   return (
-    <div className="flex min-h-screen w-full"> {/* Main flex container */}
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          "hidden lg:block", // Only show on large screens
-          "flex-shrink-0", // Prevent sidebar from shrinking
-          "border-r bg-background text-sidebar-foreground", // Changed bg-sidebar to bg-background
-          "transition-all duration-300 ease-in-out", // Animation
-          isSidebarCollapsed ? "w-0 overflow-hidden" : "w-56", // Collapsed or expanded width (changed from w-64 to w-56)
-          "h-full" // Ensure sidebar takes full height
-        )}
-      >
-        <Sidebar />
-      </aside>
+    <div className="flex min-h-screen w-full">
+      {/* Removed the entire aside element that contained the old Sidebar component */}
 
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col">
-        <Header toggleSidebarCollapse={toggleSidebarCollapse} isSidebarCollapsed={isSidebarCollapsed} />
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-auto bg-background"> {/* Added bg-background */}
+        <Header /> {/* Removed toggleSidebarCollapse and isSidebarCollapsed props */}
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-auto bg-background">
           {children}
         </main>
       </div>
-      {/* Add the new floating overview tab here */}
+      {/* The new floating overview tab remains */}
       <FloatingOverviewTab />
     </div>
   );

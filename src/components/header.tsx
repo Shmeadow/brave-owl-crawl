@@ -1,123 +1,68 @@
 "use client";
 
 import React from "react";
-import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, Menu, PanelLeftClose, PanelLeftOpen, LogOut, User } from "lucide-react"; // Import User icon
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"; // Import Sheet components
-import { Sidebar } from "@/components/sidebar"; // Import Sidebar
-import { useSupabase } from "@/integrations/supabase/auth"; // Import useSupabase
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import Link from "next/link"; // Import Link
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
+import { UserNav } from "@/components/user-nav";
+import { ThemeToggle } from "@/components/theme-toggle";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, Clock, BookOpen, Timer, Goal } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface HeaderProps {
-  toggleSidebarCollapse: () => void;
-  isSidebarCollapsed: boolean;
+  // Removed toggleSidebarCollapse and isSidebarCollapsed props
 }
 
-export function Header({ toggleSidebarCollapse, isSidebarCollapsed }: HeaderProps) {
-  const { setTheme } = useTheme();
-  const { supabase, session } = useSupabase(); // Get session state
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    if (!supabase) {
-      toast.error("Supabase client not available. Cannot log out.");
-      return;
-    }
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error("Failed to log out: " + error.message);
-    } else {
-      toast.success("Logged out successfully!");
-      router.push('/account'); // Redirect to account page after logout
-    }
-  };
+export function Header({}: HeaderProps) { // Removed props from destructuring
+  const pathname = usePathname();
+  const isActive = (path: string) => pathname === path;
 
   return (
-    <header className="flex h-16 items-center justify-between px-4 border-b">
-      <div className="flex items-center gap-2">
-        {/* Mobile Menu Button */}
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden" // Only show on small screens
-            >
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Open sidebar</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-64"> {/* Adjust width as needed */}
-            <Sidebar />
-          </SheetContent>
-        </Sheet>
-
-        {/* Desktop Sidebar Toggle Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleSidebarCollapse}
-          className="hidden lg:inline-flex" // Only show on large screens
-        >
-          {isSidebarCollapsed ? (
-            <PanelLeftOpen className="h-5 w-5" />
-          ) : (
-            <PanelLeftClose className="h-5 w-5" />
-          )}
-          <span className="sr-only">Toggle sidebar</span>
-        </Button>
-
-        <h1 className="text-xl font-semibold ml-2">Productivity Hub</h1> {/* Adjust margin */}
-      </div>
-
-      <div className="flex items-center gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon">
-              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              <span className="sr-only">Toggle theme</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setTheme("light")}>
-              Light
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("dark")}>
-              Dark
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("system")}>
-              System
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("cozy")}>
-              Cozy
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {session ? (
-          <Button variant="outline" size="icon" onClick={handleLogout}>
-            <LogOut className="h-5 w-5" />
-            <span className="sr-only">Logout</span>
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button size="icon" variant="outline" className="sm:hidden">
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle Menu</span>
           </Button>
-        ) : (
-          <Link href="/account">
-            <Button variant="outline" size="icon">
-              <User className="h-5 w-5" />
-              <span className="sr-only">Account</span>
-            </Button>
-          </Link>
-        )}
+        </SheetTrigger>
+        <SheetContent side="left" className="sm:max-w-xs">
+          <nav className="grid gap-6 text-lg font-medium">
+            <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
+              <LayoutDashboard className="h-6 w-6" />
+              <span>Productivity App</span>
+            </Link>
+            <Link href="/" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary", isActive("/") && "text-primary")}>
+              <LayoutDashboard className="h-4 w-4" />
+              Dashboard
+            </Link>
+            <Link href="/time-tracker" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary", isActive("/time-tracker") && "text-primary")}>
+              <Clock className="h-4 w-4" />
+              Time Tracker
+            </Link>
+            <Link href="/flash-cards" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary", isActive("/flash-cards") && "text-primary")}>
+              <BookOpen className="h-4 w-4" />
+              Flash Cards
+            </Link>
+            <Link href="/pomodoro" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary", isActive("/pomodoro") && "text-primary")}>
+              <Timer className="h-4 w-4" />
+              Pomodoro
+            </Link>
+            <Link href="/goal-focus" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary", isActive("/goal-focus") && "text-primary")}>
+              <Goal className="h-4 w-4" />
+              Goal Focus
+            </Link>
+          </nav>
+        </SheetContent>
+      </Sheet>
+      {/* Removed the sidebar toggle button here */}
+      <div className="relative ml-auto flex-1 md:grow-0">
+        {/* Search functionality can go here if needed */}
       </div>
+      <ThemeToggle />
+      <UserNav />
     </header>
   );
 }
