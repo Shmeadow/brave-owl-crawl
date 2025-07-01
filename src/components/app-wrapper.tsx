@@ -153,7 +153,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
   const chatPanelCurrentWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
 
   return (
-    <>
+    <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
       <Header
         onTogglePomodoroVisibility={handleTogglePomodoroVisibility}
         isPomodoroVisible={isPomodoroBarVisible}
@@ -192,7 +192,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
         />
       </div>
       <WidgetContainer />
-    </>
+    </WidgetProvider>
   );
 }
 
@@ -200,9 +200,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
   return (
     <SessionContextProvider>
       <SidebarProvider>
-        <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
-          <AppWrapperContent>{children}</AppWrapperContent>
-        </WidgetProvider>
+        <AppWrapperContent>{children}</AppWrapperContent>
       </SidebarProvider>
     </SessionContextProvider>
   );
