@@ -10,9 +10,11 @@ import { Input } from "@/components/ui/input"; // Import Input for editable time
 
 type PomodoroMode = 'focus' | 'short-break' | 'long-break';
 
-const DEFAULT_FOCUS_TIME_SECONDS = 30 * 60; // 30 minutes
-const DEFAULT_SHORT_BREAK_TIME_SECONDS = 5 * 60; // 5 minutes
-const DEFAULT_LONG_BREAK_TIME_SECONDS = 10 * 60; // 10 minutes
+const DEFAULT_TIMES = {
+  'focus': 30 * 60, // 30 minutes
+  'short-break': 5 * 60, // 5 minutes
+  'long-break': 10 * 60, // 10 minutes
+};
 
 // Helper to convert seconds to HH:MM:SS format
 const formatTime = (totalSeconds: number) => {
@@ -38,38 +40,23 @@ const parseTimeToSeconds = (timeString: string): number => {
 
 export function PomodoroTimer() {
   const [mode, setMode] = useState<PomodoroMode>('focus');
-  const [focusTime, setFocusTime] = useState(DEFAULT_FOCUS_TIME_SECONDS);
-  const [shortBreakTime, setShortBreakTime] = useState(DEFAULT_SHORT_BREAK_TIME_SECONDS);
-  const [longBreakTime, setLongBreakTime] = useState(DEFAULT_LONG_BREAK_TIME_SECONDS);
-  const [timeLeft, setTimeLeft] = useState(focusTime); // Initialize with focusTime
+  const [customTimes, setCustomTimes] = useState(DEFAULT_TIMES); // Store custom times for each mode
+  const [timeLeft, setTimeLeft] = useState(customTimes.focus);
   const [isRunning, setIsRunning] = useState(false);
   const [isEditingTime, setIsEditingTime] = useState(false);
+  const [editableTimeString, setEditableTimeString] = useState(''); // For live input
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Helper to get current time for the active mode
   const getCurrentModeTime = useCallback(() => {
-    switch (mode) {
-      case 'focus': return focusTime;
-      case 'short-break': return shortBreakTime;
-      case 'long-break': return longBreakTime;
-      default: return focusTime;
-    }
-  }, [mode, focusTime, shortBreakTime, longBreakTime]);
-
-  // Helper to set time for a specific mode
-  const setTimeForMode = useCallback((targetMode: PomodoroMode, newTime: number) => {
-    switch (targetMode) {
-      case 'focus': setFocusTime(newTime); break;
-      case 'short-break': setShortBreakTime(newTime); break;
-      case 'long-break': setLongBreakTime(newTime); break;
-    }
-  }, []);
+    return customTimes[mode];
+  }, [mode, customTimes]);
 
   // Initialize timeLeft when component mounts or mode changes
   useEffect(() => {
     setTimeLeft(getCurrentModeTime());
-  }, [mode, getCurrentModeTime]); // Depend on mode and the getter for current mode's time
+  }, [mode, getCurrentModeTime]);
 
   const resetTimer = useCallback((newMode: PomodoroMode, shouldStopRunning: boolean = true) => {
     if (intervalRef.current) {
@@ -79,8 +66,8 @@ export function PomodoroTimer() {
       setIsRunning(false);
     }
     setMode(newMode);
-    // setTimeLeft will be handled by the useEffect above
-  }, []);
+    setTimeLeft(customTimes[newMode]); // Reset to the custom time for the new mode
+  }, [customTimes]);
 
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
@@ -129,25 +116,26 @@ export function PomodoroTimer() {
 
   const handleSwitchMode = (newMode: PomodoroMode) => {
     if (mode !== newMode) {
-      // If timer is running, keep it running but switch mode and time
-      // The useEffect will update timeLeft based on newMode
       setMode(newMode);
+      // timeLeft will be updated by the useEffect that depends on `mode`
       toast.info(`Switched to ${newMode === 'focus' ? 'Focus' : newMode === 'short-break' ? 'Short Break' : 'Long Break'} mode.`);
     }
   };
 
   const handleTimeDisplayClick = () => {
     setIsEditingTime(true);
+    setEditableTimeString(formatTime(timeLeft)); // Initialize with current formatted time
   };
 
-  const handleTimeInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const newTime = parseTimeToSeconds(e.target.value);
+  const handleTimeInputBlur = () => {
+    const newTime = parseTimeToSeconds(editableTimeString);
     if (!isNaN(newTime) && newTime >= 0) {
-      setTimeForMode(mode, newTime); // Save the new time for the current mode
+      setCustomTimes(prev => ({ ...prev, [mode]: newTime })); // Save the new time for the current mode
       setTimeLeft(newTime); // Update the displayed time immediately
       toast.success("Timer time updated!");
     } else {
       toast.error("Invalid time format. Please use HH:MM:SS.");
+      setTimeLeft(getCurrentModeTime()); // Revert to last valid time
     }
     setIsEditingTime(false);
   };
@@ -200,7 +188,8 @@ export function PomodoroTimer() {
           <Input
             ref={inputRef}
             type="text"
-            defaultValue={formatTime(timeLeft)}
+            value={editableTimeString}
+            onChange={(e) => setEditableTimeString(e.target.value)}
             onBlur={handleTimeInputBlur}
             onKeyDown={handleTimeInputKeyDown}
             className="text-7xl font-bold font-mono text-center w-full max-w-[250px]"
