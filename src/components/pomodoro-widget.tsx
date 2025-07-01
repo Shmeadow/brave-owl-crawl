@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Play, Pause, RotateCcw, Coffee, Brain, Home, GripVertical } from "lucide-react";
+import { Play, Pause, RotateCcw, Coffee, Brain, Home, ChevronDown, ChevronUp } from "lucide-react"; // Added ChevronDown, ChevronUp
 import { usePomodoroState, formatTime, parseTimeToSeconds, PomodoroMode } from "@/hooks/use-pomodoro-state";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -11,8 +11,8 @@ import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 
 interface PomodoroWidgetProps {
-  initialPosition: { x: number; y: number };
-  onPositionChange: (newPosition: { x: number; y: number }) => void;
+  initialPosition: { right: number; bottom: number }; // Changed to right/bottom
+  onPositionChange: (newPosition: { right: number; bottom: number }) => void; // Changed to right/bottom
 }
 
 export function PomodoroWidget({ initialPosition, onPositionChange }: PomodoroWidgetProps) {
@@ -32,25 +32,20 @@ export function PomodoroWidget({ initialPosition, onPositionChange }: PomodoroWi
   } = usePomodoroState();
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isMinimized, setIsMinimized] = useState(false); // New state for minimize
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: 'pomodoro-widget',
   });
 
-  // Use top and left for positioning, combining initial position with drag delta
+  // Use bottom and right for positioning, combining initial position with drag delta
   const style = {
-    position: 'fixed' as 'fixed', // Explicitly cast to 'fixed'
-    top: `${initialPosition.y + (transform ? transform.y : 0)}px`,
-    left: `${initialPosition.x + (transform ? transform.x : 0)}px`,
+    position: 'fixed' as 'fixed',
+    bottom: `${initialPosition.bottom - (transform ? transform.y : 0)}px`, // Dragging down (positive delta.y) decreases bottom
+    right: `${initialPosition.right - (transform ? transform.x : 0)}px`,   // Dragging right (positive delta.x) decreases right
     zIndex: 50,
     cursor: 'grab', // Indicate draggable
   };
-
-  // Log the final applied style to the console
-  useEffect(() => {
-    console.log('PomodoroWidget rendering with style:', style);
-  }, [style]);
-
 
   const handleTimeInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -70,24 +65,31 @@ export function PomodoroWidget({ initialPosition, onPositionChange }: PomodoroWi
       ref={setNodeRef}
       style={style}
       className={cn(
-        "w-full max-w-md bg-background/50 backdrop-blur-md shadow-lg border", // Removed mx-auto
-        "flex flex-col items-center p-4 gap-4"
+        "w-full max-w-xs bg-background/50 backdrop-blur-md shadow-lg border",
+        "flex flex-col items-center p-4 gap-4 transition-all duration-300 ease-in-out",
+        isMinimized ? "h-24" : "h-auto" // Adjust height based on minimized state
       )}
+      {...listeners} // Apply listeners to the whole card for dragging
+      {...attributes} // Apply attributes to the whole card for dragging
     >
-      <CardHeader className="flex flex-col items-center space-y-4 pb-2 w-full">
-        <div className="flex justify-between items-center w-full">
-          <CardTitle className="text-xl font-bold text-center flex-1">Pomodoro Timer</CardTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 cursor-grab"
-            {...listeners}
-            {...attributes}
-          >
-            <GripVertical className="h-5 w-5" />
-            <span className="sr-only">Drag Pomodoro</span>
-          </Button>
-        </div>
+      <CardHeader className="flex flex-row items-center justify-between pb-2 w-full cursor-grab">
+        <CardTitle className="text-xl font-bold flex-1 text-left">
+          {isMinimized ? "Pomodoro" : "Pomodoro Timer"}
+        </CardTitle>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent drag from triggering minimize
+            setIsMinimized(!isMinimized);
+          }}
+        >
+          {isMinimized ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+          <span className="sr-only">{isMinimized ? "Maximize" : "Minimize"} Pomodoro</span>
+        </Button>
+      </CardHeader>
+      <CardContent className={cn("flex flex-col items-center gap-6 w-full", isMinimized ? "hidden" : "flex")}>
         <div className="flex gap-2 justify-center w-full">
           <Button
             variant={mode === 'focus' ? 'default' : 'outline'}
@@ -114,8 +116,6 @@ export function PomodoroWidget({ initialPosition, onPositionChange }: PomodoroWi
             <Home className="h-4 w-4 mr-1" /> Long Break
           </Button>
         </div>
-      </CardHeader>
-      <CardContent className="flex flex-col items-center gap-6 w-full">
         {isEditingTime ? (
           <Input
             ref={inputRef}
@@ -124,11 +124,11 @@ export function PomodoroWidget({ initialPosition, onPositionChange }: PomodoroWi
             onChange={(e) => setEditableTimeString(e.target.value)}
             onBlur={handleTimeInputBlur}
             onKeyDown={handleTimeInputKeyDown}
-            className="text-7xl font-bold font-mono text-center w-full max-w-[250px]"
+            className="text-5xl font-bold font-mono text-center w-full max-w-[250px]" // Reduced font size
           />
         ) : (
           <div
-            className="text-7xl font-bold font-mono cursor-pointer hover:text-primary transition-colors"
+            className="text-5xl font-bold font-mono cursor-pointer hover:text-primary transition-colors" // Reduced font size
             onClick={handleTimeDisplayClick}
           >
             {formatTime(timeLeft)}
@@ -151,6 +151,16 @@ export function PomodoroWidget({ initialPosition, onPositionChange }: PomodoroWi
           </Button>
         </div>
       </CardContent>
+      {isMinimized && ( // Show minimalistic clock when minimized
+        <CardContent className="flex items-center justify-center w-full h-full pt-0">
+          <div
+            className="text-4xl font-bold font-mono cursor-pointer hover:text-primary transition-colors"
+            onClick={handleTimeDisplayClick}
+          >
+            {formatTime(timeLeft)}
+          </div>
+        </CardContent>
+      )}
     </Card>
   );
 }

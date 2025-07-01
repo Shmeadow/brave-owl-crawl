@@ -22,8 +22,8 @@ export function AppWrapper({ children }: AppWrapperProps) {
       if (savedPos) {
         try {
           const parsedPos = JSON.parse(savedPos);
-          // Basic validation: if x or y are extremely large/small, reset
-          if (parsedPos.x < -1000 || parsedPos.y < -1000 || parsedPos.x > window.innerWidth + 1000 || parsedPos.y > window.innerHeight + 1000) {
+          // Basic validation: if right or bottom are extremely large/small, reset
+          if (parsedPos.right < -1000 || parsedPos.bottom < -1000 || parsedPos.right > window.innerWidth + 1000 || parsedPos.bottom > window.innerHeight + 1000) {
             console.warn("Saved pomodoro position out of bounds, resetting.");
             localStorage.removeItem(LOCAL_STORAGE_POMODORO_POS_KEY); // Clear invalid saved position
             hasUserMovedRef.current = false; // Reset user moved flag
@@ -40,23 +40,17 @@ export function AppWrapper({ children }: AppWrapperProps) {
       }
 
       // Calculate default position if no saved position or parsing failed/invalid
-      const widgetWidth = 350; // Approximate width of the widget
-      const widgetHeight = 300; // Approximate height of the widget
       const margin = 20; // Margin from the right and bottom edges
-
-      // Ensure window.innerWidth/Height are valid before calculating
-      const effectiveWidth = window.innerWidth > 0 ? window.innerWidth : 1200; // Fallback
-      const effectiveHeight = window.innerHeight > 0 ? window.innerHeight : 800; // Fallback
-
-      const defaultX = effectiveWidth - widgetWidth - margin;
-      const defaultY = effectiveHeight - widgetHeight - margin;
       
-      console.log('Pomodoro Widget calculated initial default position:', { x: defaultX, y: defaultY });
-      return { x: defaultX, y: defaultY };
+      const defaultRight = margin;
+      const defaultBottom = margin;
+      
+      console.log('Pomodoro Widget calculated initial default position:', { right: defaultRight, bottom: defaultBottom });
+      return { right: defaultRight, bottom: defaultBottom };
     }
     // Fallback for SSR or if window is undefined
     console.log('Pomodoro Widget defaulting to {0,0} for SSR.');
-    return { x: 0, y: 0 };
+    return { right: 0, bottom: 0 };
   });
 
   // Recalculate default position on window resize if user hasn't moved it
@@ -67,17 +61,12 @@ export function AppWrapper({ children }: AppWrapperProps) {
         return;
       }
 
-      const widgetWidth = 350;
-      const widgetHeight = 300;
       const margin = 20;
 
-      const effectiveWidth = window.innerWidth > 0 ? window.innerWidth : 1200;
-      const effectiveHeight = window.innerHeight > 0 ? window.innerHeight : 800;
+      const defaultRight = margin;
+      const defaultBottom = margin;
 
-      const defaultX = effectiveWidth - widgetWidth - margin;
-      const defaultY = effectiveHeight - widgetHeight - margin;
-
-      setPomodoroPosition({ x: defaultX, y: defaultY });
+      setPomodoroPosition({ right: defaultRight, bottom: defaultBottom });
     };
 
     if (typeof window !== 'undefined') {
@@ -94,9 +83,11 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const handleDragEnd = (event: DragEndEvent) => {
     const { delta } = event;
     setPomodoroPosition((prevPosition) => {
-      const newX = prevPosition.x + delta.x;
-      const newY = prevPosition.y + delta.y;
-      const newPos = { x: newX, y: newY };
+      // Dragging right (positive delta.x) means 'right' CSS property should decrease
+      // Dragging down (positive delta.y) means 'bottom' CSS property should decrease
+      const newRight = prevPosition.right - delta.x;
+      const newBottom = prevPosition.bottom - delta.y;
+      const newPos = { right: newRight, bottom: newBottom };
       localStorage.setItem(LOCAL_STORAGE_POMODORO_POS_KEY, JSON.stringify(newPos));
       hasUserMovedRef.current = true; // Mark as moved by user
       return newPos;
