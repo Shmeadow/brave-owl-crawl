@@ -137,24 +137,24 @@
     --popover-foreground: 210 10% 25%;
     --primary: 24 59% 67%; /* Clay #DCA278 */
     --primary-foreground: 0 0% 100%; /* White */
-    --secondary: 28 93% 91%; /* Peach #FEECD0 */
+    --secondary: 29 93% 91%; /* Peach #FEECD0 */
     --secondary-foreground: 210 10% 25%;
-    --muted: 73 26% 76%; /* Eucalyptus #CDD4B1 */
+    --muted: 73 26% 71%; /* Eucalyptus #CDD4B1 */
     --muted-foreground: 210 5% 55%; /* Kept existing lighter muted text */
-    --accent: 73 26% 70%; /* Slightly darker Eucalyptus for accent */
+    --accent: 73 26% 65%; /* Slightly darker Eucalyptus for accent */
     --accent-foreground: 210 10% 25%;
     --destructive: 0 70% 55%; /* Kept existing slightly softer red */
     --destructive-foreground: 0 0% 100%;
-    --border: 73 26% 70%; /* Eucalyptus variant for border */
-    --input: 73 26% 70%; /* Eucalyptus variant for input */
+    --border: 73 26% 71%; /* Eucalyptus variant for border */
+    --input: 73 26% 71%; /* Eucalyptus variant for input */
     --ring: 24 59% 67%; /* Clay */
     --sidebar-background: 63 39% 80%; /* Slightly darker Pistachio for sidebar */
     --sidebar-foreground: 210 10% 25%;
     --sidebar-primary: 24 59% 67%; /* Clay */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 73 26% 70%; /* Slightly darker Eucalyptus */
+    --sidebar-accent: 73 26% 65%; /* Slightly darker Eucalyptus */
     --sidebar-accent-foreground: 210 10% 25%;
-    --sidebar-border: 73 26% 65%; /* Even darker Eucalyptus for sidebar border */
+    --sidebar-border: 73 26% 60%; /* Even darker Eucalyptus for sidebar border */
     --sidebar-ring: 24 59% 67%; /* Clay */
   }
 }
