@@ -165,8 +165,8 @@ export function Widget({
         isMinimized ? "rounded-lg" : "rounded-lg", // Always rounded
         // Docked specific styling
         isDocked ? "fixed bottom-4" : "absolute", // Use fixed for docked, absolute for floating
-        // Background and text colors with transparency and blur
-        "bg-card/80 backdrop-blur-md border-border/50"
+        // Background and text colors with transparency and blur for glass effect
+        "bg-card/40 backdrop-blur-xl border-white/20" // Changed opacity, blur, and border
       )}
       style={{
         left: `${position.x}px`,

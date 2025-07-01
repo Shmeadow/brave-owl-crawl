@@ -39,6 +39,12 @@ const WidgetContext = createContext<WidgetContextType | undefined>(undefined);
 interface WidgetProviderProps {
   children: React.ReactNode;
   initialWidgetConfigs: { [key: string]: WidgetConfig };
+  mainContentArea: { // New prop for the available content area
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  };
 }
 
 // Constants for docked widget positioning
@@ -51,16 +57,15 @@ const BOTTOM_DOCK_OFFSET = 16; // Corresponds to 'bottom-4' in Tailwind
 const MINIMIZED_WIDGET_WIDTH = 192; // w-48
 const MINIMIZED_WIDGET_HEIGHT = 48; // h-12 (to fit text better)
 
-export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProviderProps) {
+export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea }: WidgetProviderProps) {
   const [activeWidgets, setActiveWidgets] = useState<WidgetState[]>([]);
   const [maxZIndex, setMaxZIndex] = useState(900); // Start maxZIndex lower than Pomodoro (1001)
 
   const recalculateDockedWidgets = useCallback((currentWidgets: WidgetState[]) => {
     const docked = currentWidgets.filter(w => w.isDocked).sort((a, b) => a.id.localeCompare(b.id)); // Sort to maintain consistent order
 
-    const windowWidth = window.innerWidth;
     // Calculate the right edge of the centered pomodoro widget
-    const pomodoroRightEdgeX = (windowWidth / 2) + (POMODORO_WIDGET_WIDTH / 2);
+    const pomodoroRightEdgeX = (window.innerWidth / 2) + (POMODORO_WIDGET_WIDTH / 2);
     // Starting X for the first docked widget to the right of pomodoro
     const startDockX = pomodoroRightEdgeX + DOCKED_WIDGET_HORIZONTAL_GAP;
 
@@ -97,26 +102,41 @@ export function WidgetProvider({ children, initialWidgetConfigs }: WidgetProvide
     if (!activeWidgets.some(widget => widget.id === id)) {
       const config = initialWidgetConfigs[id];
       if (config) {
+        const newMaxZIndex = maxZIndex + 1;
+        setMaxZIndex(newMaxZIndex);
+
+        // Calculate center of the main content area
+        const centerX = mainContentArea.left + mainContentArea.width / 2;
+        const centerY = mainContentArea.top + mainContentArea.height / 2;
+
+        // Apply offset for stacking
+        const offsetAmount = 20; // pixels
+        const offsetIndex = activeWidgets.length % 5; // Cycle through 5 different offsets
+        const offsetX = offsetIndex * offsetAmount;
+        const offsetY = offsetIndex * offsetAmount;
+
+        const initialX = centerX - (config.initialWidth / 2) + offsetX;
+        const initialY = centerY - (config.initialHeight / 2) + offsetY;
+
         setActiveWidgets(prev => {
           const newWidgets = [
             ...prev,
             {
               id,
               title,
-              position: config.initialPosition,
+              position: { x: initialX, y: initialY },
               size: { width: config.initialWidth, height: config.initialHeight },
-              zIndex: maxZIndex + 1, // Assign new z-index
+              zIndex: newMaxZIndex,
               isMinimized: false,
               isDocked: false,
-              normalSize: { width: config.initialWidth, height: config.initialHeight }, // Store initial normal size
+              normalSize: { width: config.initialWidth, height: config.initialHeight },
             },
           ];
-          setMaxZIndex(prev => prev + 1); // Increment maxZIndex for next widget
           return newWidgets;
         });
       }
     }
-  }, [activeWidgets, initialWidgetConfigs, maxZIndex]);
+  }, [activeWidgets, initialWidgetConfigs, maxZIndex, mainContentArea]); // Add mainContentArea to dependencies
 
   const removeWidget = useCallback((id: string) => {
     setActiveWidgets(prev => {
