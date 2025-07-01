@@ -3,13 +3,13 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Minimize2, Maximize2, X } from "lucide-react";
+import { Minimize2, Maximize2, X, Pin, PinOff } from "lucide-react"; // Import Pin and PinOff
 import { cn } from "@/lib/utils";
 import { useWidget } from "./widget-context";
 import { AnimatePresence, motion } from "framer-motion";
 import { useDraggable } from "@dnd-kit/core";
-import { ResizableBox } from 'react-resizable'; // Import ResizableBox
-import { CSS } from "@dnd-kit/utilities"; // Import CSS utility
+import { ResizableBox } from 'react-resizable';
+import { CSS } from "@dnd-kit/utilities";
 
 interface WidgetProps {
   id: string;
@@ -28,12 +28,12 @@ export function Widget({
   initialWidth,
   initialHeight,
 }: WidgetProps) {
-  const { widgetStates, minimizeWidget, restoreWidget, closeWidget, updateWidgetPosition, updateWidgetSize } = useWidget();
-  const state = widgetStates[id] || { isOpen: false, isMinimized: false, x: initialPosition?.x || 50, y: initialPosition?.y || 50, width: initialWidth || 400, height: initialHeight || 500, previousX: initialPosition?.x || 50, previousY: initialPosition?.y || 50, previousWidth: initialWidth || 400, previousHeight: initialHeight || 500 };
+  const { widgetStates, minimizeWidget, restoreWidget, closeWidget, updateWidgetPosition, updateWidgetSize, toggleDocked } = useWidget();
+  const state = widgetStates[id] || { isOpen: false, isMinimized: false, isDocked: false, x: initialPosition?.x || 50, y: initialPosition?.y || 50, width: initialWidth || 400, height: initialHeight || 500, previousX: initialPosition?.x || 50, previousY: initialPosition?.y || 50, previousWidth: initialWidth || 400, previousHeight: initialHeight || 500 };
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: `draggable-${id}`, // Unique ID for draggable
-    disabled: state.isMinimized, // Disable dragging when minimized
+    disabled: state.isMinimized || state.isDocked, // Disable dragging when minimized or docked
   });
 
   const handleResize = (event: any, { size }: { size: { width: number; height: number } }) => {
@@ -41,11 +41,14 @@ export function Widget({
   };
 
   if (!state.isOpen) {
+    console.log(`Widget ${id} is not open, returning null.`);
     return null; // Don't render if not open
   }
 
   const MINIMIZED_WIDTH = 200;
   const MINIMIZED_HEIGHT = 50;
+
+  console.log(`Rendering Widget ${id}. State:`, state);
 
   return (
     <AnimatePresence>
@@ -82,13 +85,13 @@ export function Widget({
                 position: 'absolute',
                 background: 'transparent',
                 zIndex: 1,
-                // Only show handles when not minimized
-                display: state.isMinimized ? 'none' : 'block',
+                // Only show handles when not minimized or docked
+                display: (state.isMinimized || state.isDocked) ? 'none' : 'block',
               }}
             />
           )}
-          // Disable resizing when minimized
-          resizeHandles={state.isMinimized ? [] : ['sw', 'se', 'nw', 'ne', 'w', 'e', 'n', 's']}
+          // Disable resizing when minimized or docked
+          resizeHandles={(state.isMinimized || state.isDocked) ? [] : ['sw', 'se', 'nw', 'ne', 'w', 'e', 'n', 's']}
           className={cn(
             "flex flex-col h-full w-full",
             state.isMinimized ? "h-auto w-auto" : ""
@@ -98,7 +101,7 @@ export function Widget({
             ref={setNodeRef} // Set ref for draggable handle
             className={cn(
               "flex flex-row items-center justify-between p-3 border-b border-border",
-              state.isMinimized ? "cursor-pointer" : "cursor-grab"
+              state.isMinimized ? "cursor-pointer" : (state.isDocked ? "cursor-default" : "cursor-grab") // Change cursor based on docked state
             )}
             onClick={state.isMinimized ? () => restoreWidget(id) : undefined}
             {...listeners} // Apply listeners to the header for dragging
@@ -108,6 +111,10 @@ export function Widget({
               {title}
             </CardTitle>
             <div className="flex gap-1">
+              <Button variant="ghost" size="icon" onClick={() => toggleDocked(id)} title={state.isDocked ? "Undock" : "Dock"}>
+                {state.isDocked ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+                <span className="sr-only">{state.isDocked ? "Undock" : "Dock"}</span>
+              </Button>
               {state.isMinimized ? (
                 <Button variant="ghost" size="icon" onClick={() => restoreWidget(id)} title="Restore">
                   <Maximize2 className="h-4 w-4" />
@@ -119,7 +126,7 @@ export function Widget({
                   <span className="sr-only">Minimize</span>
                 </Button>
               )}
-              <Button variant="ghost" size="icon" onClick={() => closeWidget(id)} title="Close">
+              <Button variant="ghost" size="icon" onClick={() => { console.log(`Close button clicked for widget ${id}`); closeWidget(id); }} title="Close">
                 <X className="h-4 w-4" />
                 <span className="sr-only">Close</span>
               </Button>

@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 export interface WidgetState {
   isOpen: boolean;
   isMinimized: boolean;
+  isDocked: boolean; // New: indicates if the widget is fixed in place
   x: number;
   y: number;
   width: number;
@@ -24,6 +25,7 @@ interface WidgetContextType {
   closeWidget: (id: string) => void;
   updateWidgetPosition: (id: string, x: number, y: number) => void;
   updateWidgetSize: (id: string, width: number, height: number) => void;
+  toggleDocked: (id: string) => void; // New: function to toggle docked state
 }
 
 const WidgetContext = createContext<WidgetContextType | undefined>(undefined);
@@ -33,6 +35,7 @@ const LOCAL_STORAGE_KEY = 'widget_states';
 const DEFAULT_WIDGET_STATE = {
   isOpen: false,
   isMinimized: false,
+  isDocked: false, // Default to not docked
   x: 50,
   y: 50,
   width: 400,
@@ -92,14 +95,16 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
     setWidgetStates(prevStates => {
       const currentState = prevStates[id] || DEFAULT_WIDGET_STATE;
       const newIsOpen = !currentState.isOpen;
-      const newIsMinimized = newIsOpen ? false : currentState.isMinimized; // Unminimize if opening
+      // When opening, ensure it's not minimized or docked
+      const newIsMinimized = newIsOpen ? false : currentState.isMinimized;
+      const newIsDocked = newIsOpen ? false : currentState.isDocked;
 
       if (newIsOpen) {
         toast.info(`${id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} opened!`);
       } else {
         toast.info(`${id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} closed.`);
       }
-      const newState = { ...currentState, isOpen: newIsOpen, isMinimized: newIsMinimized };
+      const newState = { ...currentState, isOpen: newIsOpen, isMinimized: newIsMinimized, isDocked: newIsDocked };
       console.log(`New state for ${id} after toggle:`, newState);
       return {
         ...prevStates,
@@ -115,6 +120,7 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
       const newState = {
         ...currentState,
         isMinimized: true,
+        isDocked: false, // Cannot be docked and minimized simultaneously
         // Save current position and size before minimizing
         previousX: currentState.x,
         previousY: currentState.y,
@@ -137,6 +143,7 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
       const newState = {
         ...currentState,
         isMinimized: false,
+        isDocked: false, // Restoring means it's no longer docked
         // Restore position and size
         x: currentState.previousX,
         y: currentState.previousY,
@@ -154,7 +161,7 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
 
   const closeWidget = useCallback((id: string) => {
     console.log(`Attempting to close widget: ${id}`);
-    updateWidgetState(id, { isOpen: false, isMinimized: false });
+    updateWidgetState(id, { isOpen: false, isMinimized: false, isDocked: false });
     toast.info(`${id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} closed.`);
   }, [updateWidgetState]);
 
@@ -166,6 +173,31 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
     updateWidgetState(id, { width, height });
   }, [updateWidgetState]);
 
+  const toggleDocked = useCallback((id: string) => {
+    console.log(`Attempting to toggle docked state for widget: ${id}`);
+    setWidgetStates(prevStates => {
+      const currentState = prevStates[id] || DEFAULT_WIDGET_STATE;
+      const newIsDocked = !currentState.isDocked;
+      const newState = {
+        ...currentState,
+        isDocked: newIsDocked,
+        isMinimized: false, // Cannot be docked and minimized simultaneously
+        // When docking, save current position/size to restore later
+        previousX: newIsDocked ? currentState.x : currentState.previousX,
+        previousY: newIsDocked ? currentState.y : currentState.previousY,
+        previousWidth: newIsDocked ? currentState.width : currentState.previousWidth,
+        previousHeight: newIsDocked ? currentState.height : currentState.previousHeight,
+      };
+      console.log(`New state for ${id} after toggleDocked:`, newState);
+      return {
+        ...prevStates,
+        [id]: newState
+      };
+    });
+    toast.info(`${id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} ${!widgetStates[id]?.isDocked ? 'docked' : 'undocked'}.`);
+  }, [updateWidgetState, widgetStates]);
+
+
   const contextValue = React.useMemo(() => ({
     widgetStates,
     toggleWidget,
@@ -174,7 +206,8 @@ export function WidgetProvider({ children }: { children: React.ReactNode }) {
     closeWidget,
     updateWidgetPosition,
     updateWidgetSize,
-  }), [widgetStates, toggleWidget, minimizeWidget, restoreWidget, closeWidget, updateWidgetPosition, updateWidgetSize]);
+    toggleDocked,
+  }), [widgetStates, toggleWidget, minimizeWidget, restoreWidget, closeWidget, updateWidgetPosition, updateWidgetSize, toggleDocked]);
 
   return (
     <WidgetContext.Provider value={contextValue}>
