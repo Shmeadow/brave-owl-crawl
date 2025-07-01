@@ -91,7 +91,7 @@ export function PomodoroWidget({ initialPosition, onPositionChange }: PomodoroWi
         </Button>
       </CardHeader>
       <CardContent className={cn("flex flex-col items-center gap-6 w-full", isMinimized ? "hidden" : "flex")}>
-        <div className="flex gap-2 justify-center w-full flex-wrap"> {/* Added flex-wrap for better fitting */}
+        <div className="flex gap-2 justify-center w-full"> {/* Removed flex-wrap to keep buttons in one line */}
           <Button
             variant={mode === 'focus' ? 'default' : 'outline'}
             size="sm"
@@ -125,11 +125,11 @@ export function PomodoroWidget({ initialPosition, onPositionChange }: PomodoroWi
             onChange={(e) => setEditableTimeString(e.target.value)}
             onBlur={handleTimeInputBlur}
             onKeyDown={handleTimeInputKeyDown}
-            className="text-4xl font-bold font-mono text-center w-full max-w-[250px]" // Reduced font size
+            className="text-4xl font-bold font-mono text-center w-full max-w-[250px]"
           />
         ) : (
           <div
-            className="text-4xl font-bold font-mono cursor-pointer hover:text-primary transition-colors" // Reduced font size
+            className="text-4xl font-bold font-mono cursor-pointer hover:text-primary transition-colors"
             onClick={handleTimeDisplayClick}
           >
             {formatTime(timeLeft)}
@@ -155,7 +155,7 @@ export function PomodoroWidget({ initialPosition, onPositionChange }: PomodoroWi
       {isMinimized && (
         <CardContent className="flex items-center justify-center w-full h-full pt-0">
           <div
-            className="text-3xl font-bold font-mono cursor-pointer hover:text-primary transition-colors" // Further reduced font size for minimized
+            className="text-3xl font-bold font-mono cursor-pointer hover:text-primary transition-colors"
             onClick={handleTimeDisplayClick}
           >
             {formatTime(timeLeft)}

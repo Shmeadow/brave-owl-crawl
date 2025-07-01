@@ -6,10 +6,11 @@ import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
 import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { Toaster } from "@/components/ui/sonner";
-import { Button } from "@/components/ui/button"; // Import Button
-import { Dock } from "lucide-react"; // Import Dock icon
+import { Button } from "@/components/ui/button";
+import { Dock, AlignHorizontalDistributeCenter } from "lucide-react"; // Import new icon
 
 const LOCAL_STORAGE_POMODORO_POS_KEY = 'pomodoro_widget_position';
+const POMODORO_WIDGET_WIDTH_PX = 192; // max-w-xs is 12rem = 192px
 
 interface AppWrapperProps {
   children: React.ReactNode;
@@ -24,6 +25,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
       if (savedPos) {
         try {
           const parsedPos = JSON.parse(savedPos);
+          // Basic validation for saved position
           if (parsedPos.right < -1000 || parsedPos.bottom < -1000 || parsedPos.right > window.innerWidth + 1000 || parsedPos.bottom > window.innerHeight + 1000) {
             console.warn("Saved pomodoro position out of bounds, resetting.");
             localStorage.removeItem(LOCAL_STORAGE_POMODORO_POS_KEY);
@@ -66,7 +68,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
 
     return () => {
       if (typeof window !== 'undefined') {
-        window.removeEventListener('resize', handleResize);
+        window.removeEventListener('change', handleResize); // Changed to 'change' for media queries
       }
     };
   }, []);
@@ -83,12 +85,23 @@ export function AppWrapper({ children }: AppWrapperProps) {
     });
   };
 
-  const handleDockToBottom = () => {
+  const handleDockToBottomRight = () => {
     const margin = 20;
     const dockedPosition = { right: margin, bottom: margin };
     setPomodoroPosition(dockedPosition);
     localStorage.setItem(LOCAL_STORAGE_POMODORO_POS_KEY, JSON.stringify(dockedPosition));
-    hasUserMovedRef.current = true; // Mark as user-moved
+    hasUserMovedRef.current = true;
+  };
+
+  const handleDockToBottomCenter = () => {
+    if (typeof window === 'undefined') return;
+    const margin = 20;
+    const windowWidth = window.innerWidth;
+    const centeredRight = (windowWidth / 2) - (POMODORO_WIDGET_WIDTH_PX / 2);
+    const dockedPosition = { right: centeredRight, bottom: margin };
+    setPomodoroPosition(dockedPosition);
+    localStorage.setItem(LOCAL_STORAGE_POMODORO_POS_KEY, JSON.stringify(dockedPosition));
+    hasUserMovedRef.current = true;
   };
 
   return (
@@ -101,16 +114,28 @@ export function AppWrapper({ children }: AppWrapperProps) {
           onPositionChange={setPomodoroPosition}
         />
       </DndContext>
-      <Button
-        variant="outline"
-        size="icon"
-        className="fixed bottom-4 left-4 z-50 shadow-lg"
-        onClick={handleDockToBottom}
-        title="Dock Pomodoro to Bottom Right"
-      >
-        <Dock className="h-5 w-5" />
-        <span className="sr-only">Dock Pomodoro</span>
-      </Button>
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex gap-2"> {/* Container for dock buttons */}
+        <Button
+          variant="outline"
+          size="icon"
+          className="shadow-lg"
+          onClick={handleDockToBottomRight}
+          title="Dock Pomodoro to Bottom Right"
+        >
+          <Dock className="h-5 w-5" />
+          <span className="sr-only">Dock Pomodoro to Bottom Right</span>
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="shadow-lg"
+          onClick={handleDockToBottomCenter}
+          title="Dock Pomodoro to Bottom Center"
+        >
+          <AlignHorizontalDistributeCenter className="h-5 w-5" />
+          <span className="sr-only">Dock Pomodoro to Bottom Center</span>
+        </Button>
+      </div>
       <Toaster />
     </SessionContextProvider>
   );
