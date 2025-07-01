@@ -5,7 +5,8 @@ import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
 import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { Toaster } from "@/components/ui/sonner";
-import { ContactWidget } from "@/components/contact-widget"; // Import ContactWidget
+import { ContactWidget } from "@/components/contact-widget";
+import { usePathname } from "next/navigation"; // Import usePathname
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
 
@@ -14,6 +15,7 @@ interface AppWrapperProps {
 }
 
 export function AppWrapper({ children }: AppWrapperProps) {
+  const pathname = usePathname(); // Get current pathname
   // Initialize to false for server-side rendering to prevent hydration mismatch
   const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(false);
   const [mounted, setMounted] = useState(false); // New state to track if component has mounted on client
@@ -34,17 +36,19 @@ export function AppWrapper({ children }: AppWrapperProps) {
     }
   }, [isPomodoroWidgetMinimized, mounted]);
 
+  const shouldShowPomodoro = pathname !== '/account'; // Condition to hide on /account page
+
   return (
     <SessionContextProvider>
       {children}
       <GoalReminderBar />
-      {mounted && ( // Conditionally render PomodoroWidget only after client mount
+      {mounted && shouldShowPomodoro && ( // Conditionally render PomodoroWidget
         <PomodoroWidget
           isMinimized={isPomodoroWidgetMinimized}
           setIsMinimized={setIsPomodoroWidgetMinimized}
         />
       )}
-      <ContactWidget /> {/* Add the ContactWidget here */}
+      <ContactWidget />
       <Toaster />
     </SessionContextProvider>
   );

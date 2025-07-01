@@ -1,10 +1,10 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { Session, SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from './client'; // Now `supabase` can be null
 
-interface UserProfile {
+export interface UserProfile {
   id: string;
   first_name: string | null;
   last_name: string | null;
@@ -17,6 +17,7 @@ interface SupabaseContextType {
   session: Session | null;
   profile: UserProfile | null; // Add profile to context
   loading: boolean;
+  refreshProfile: () => Promise<void>; // Add this function
 }
 
 const SupabaseContext = createContext<SupabaseContextType | undefined>(undefined);
@@ -26,7 +27,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
   const [profile, setProfile] = useState<UserProfile | null>(null); // State for user profile
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = useCallback(async (userId: string) => {
     if (!supabase) return;
     const { data, error } = await supabase
       .from('profiles')
@@ -52,7 +53,13 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
         setProfile(newProfile as UserProfile);
       }
     }
-  };
+  }, []); // fetchProfile depends only on supabase, which is a constant import
+
+  const refreshProfile = useCallback(async () => {
+    if (session?.user?.id) {
+      await fetchProfile(session.user.id);
+    }
+  }, [session, fetchProfile]); // Depends on session and fetchProfile
 
   useEffect(() => {
     if (!supabase) {
@@ -82,10 +89,10 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
 
     return () => subscription.unsubscribe();
-  }, []); // Dependency array should be empty as supabase is a constant import
+  }, [fetchProfile]); // Dependency array includes fetchProfile
 
   return (
-    <SupabaseContext.Provider value={{ supabase, session, profile, loading }}>
+    <SupabaseContext.Provider value={{ supabase, session, profile, loading, refreshProfile }}>
       {children}
     </SupabaseContext.Provider>
   );

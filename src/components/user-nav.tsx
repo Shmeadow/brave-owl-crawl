@@ -10,60 +10,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useSupabase } from "@/integrations/supabase/auth";
+import { useSupabase, UserProfile } from "@/integrations/supabase/auth"; // Import UserProfile
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
-
-interface UserProfile {
-  first_name: string | null;
-  last_name: string | null;
-  profile_image_url: string | null;
-  role: string | null;
-}
+// No need for useEffect or useState for profile here, use directly from context
 
 export function UserNav() {
-  const { supabase, session, loading: authLoading } = useSupabase();
+  const { supabase, session, profile, loading: authLoading } = useSupabase(); // Get profile directly
   const router = useRouter();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (session && supabase) {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('first_name, last_name, profile_image_url, role')
-          .eq('id', session.user.id)
-          .single();
-
-        if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
-          console.error("Error fetching user profile for UserNav:", error);
-          setProfile(null);
-        } else if (data) {
-          setProfile(data as UserProfile);
-        } else {
-          // If no profile found, create a default one (should ideally be handled on signup)
-          // For robustness, we'll ensure a basic profile exists here if not found
-          const { data: newProfile, error: insertError } = await supabase
-            .from('profiles')
-            .insert({ id: session.user.id, first_name: null, last_name: null, profile_image_url: null, role: 'user' })
-            .select('first_name, last_name, profile_image_url, role')
-            .single();
-          if (insertError) {
-            console.error("Error creating default profile in UserNav:", insertError);
-          } else if (newProfile) {
-            setProfile(newProfile as UserProfile);
-          }
-        }
-      } else {
-        setProfile(null);
-      }
-    };
-
-    if (!authLoading) {
-      fetchProfile();
-    }
-  }, [session, supabase, authLoading]);
 
   const handleSignOut = async () => {
     if (supabase) {
@@ -73,11 +27,12 @@ export function UserNav() {
         console.error("Error signing out:", error);
       } else {
         toast.success("Signed out successfully!");
-        router.push('/account'); // Redirect to account/login page after sign out
+        router.push('/account');
       }
     }
   };
 
+  // Use profile directly from context
   const displayName = profile?.first_name || profile?.last_name || session?.user?.email || "Guest User";
   const displayEmail = session?.user?.email;
   const displayImage = profile?.profile_image_url || session?.user?.user_metadata?.avatar_url;

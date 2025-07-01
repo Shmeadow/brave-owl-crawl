@@ -2,78 +2,17 @@
 
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
-import { useSupabase } from '@/integrations/supabase/auth';
-import { useEffect, useState, useCallback } from 'react';
+import { useSupabase, UserProfile } from '@/integrations/supabase/auth'; // Import UserProfile
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardLayout } from '@/components/dashboard-layout';
-import { toast } from 'sonner';
-import { ProfileForm } from '@/components/profile-form'; // Import the new ProfileForm
-
-interface UserProfile {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  profile_image_url: string | null;
-  role: string | null;
-}
 
 export default function AccountPage() {
-  const { supabase, session, loading: authLoading } = useSupabase();
+  const { supabase, session, profile, loading, refreshProfile } = useSupabase();
   const router = useRouter();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
 
-  const fetchProfile = useCallback(async () => {
-    if (!supabase || !session) {
-      setProfile(null);
-      setProfileLoading(false);
-      return;
-    }
-
-    setProfileLoading(true);
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, first_name, last_name, profile_image_url, role')
-      .eq('id', session.user.id)
-      .single();
-
-    if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found (new user)
-      console.error("Error fetching profile:", error);
-      toast.error("Failed to load profile data.");
-      setProfile(null);
-    } else if (data) {
-      setProfile(data as UserProfile);
-    } else {
-      // If no profile found, create a default one
-      const { data: newProfile, error: insertError } = await supabase
-        .from('profiles')
-        .insert({ id: session.user.id, first_name: null, last_name: null, profile_image_url: null, role: 'user' })
-        .select('id, first_name, last_name, profile_image_url, role')
-        .single();
-
-      if (insertError) {
-        console.error("Error creating default profile:", insertError);
-        toast.error("Failed to create default profile.");
-      } else if (newProfile) {
-        setProfile(newProfile as UserProfile);
-      }
-    }
-    setProfileLoading(false);
-  }, [supabase, session]);
-
-  useEffect(() => {
-    if (!authLoading) {
-      if (session) {
-        fetchProfile();
-      } else {
-        setProfile(null);
-        setProfileLoading(false);
-      }
-    }
-  }, [session, authLoading, fetchProfile]);
-
-  if (authLoading || profileLoading) {
+  if (loading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-full">
@@ -93,7 +32,7 @@ export default function AccountPage() {
               <p className="text-muted-foreground">Manage your account information.</p>
             </CardHeader>
             <CardContent>
-              <ProfileForm initialProfile={profile} onProfileUpdated={fetchProfile} />
+              <ProfileForm initialProfile={profile} onProfileUpdated={refreshProfile} />
             </CardContent>
           </Card>
         </div>
