@@ -5,7 +5,7 @@ import { useGoals } from "@/hooks/use-goals";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { X, Trash2 } from "lucide-react"; // Import Trash2 icon
 import { cn } from "@/lib/utils";
 
 export function GoalReminderBar() {
@@ -48,7 +48,7 @@ export function GoalReminderBar() {
               className="text-muted-foreground hover:text-destructive h-5 w-5"
               onClick={() => handleDeleteGoal(activeGoal.id)}
             >
-              <X className="h-3 w-3" /> {/* Reusing X icon for delete for now, can be changed to Trash2 if preferred */}
+              <Trash2 className="h-3 w-3" /> {/* Changed to Trash2 icon */}
               <span className="sr-only">Delete Goal</span>
             </Button>
             <Button
