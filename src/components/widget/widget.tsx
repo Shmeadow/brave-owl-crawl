@@ -7,44 +7,48 @@ import { Minimize, Maximize, Pin, PinOff, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDraggable } from "@dnd-kit/core";
 import { ResizableBox } from "@/components/resizable-box"; // Updated import path
-import { WidgetId } from "@/hooks/use-widget-state";
+import { WidgetId } from "@/hooks/use-widget-state"; // Assuming WidgetId is defined here
 
 interface WidgetProps {
   id: WidgetId;
   title: string;
-  icon: React.ElementType;
-  content: React.ElementType;
+  icon: React.ElementType; // Now required
+  content: React.ElementType; // Now required
   isMinimized: boolean;
-  isMaximized: boolean;
-  isPinned: boolean;
-  isOpen: boolean;
+  isMaximized: boolean; // Now required
+  isPinned: boolean; // Now required
+  isOpen: boolean; // Now required (though always true when rendered)
   position: { x: number; y: number };
   size: { width: number; height: number };
+  zIndex: number; // Added zIndex prop
+  onPositionChange: (newPosition: { x: number; y: number }) => void; // Renamed from onDragEnd
+  onSizeChange: (newSize: { width: number; height: number }) => void; // Renamed from onResizeEnd
+  onBringToFront: () => void;
   onMinimize: (id: WidgetId) => void;
-  onMaximize: (id: WidgetId) => void;
-  onPin: (id: WidgetId) => void;
+  onMaximize: (id: WidgetId) => void; // Now required
+  onPin: (id: WidgetId) => void; // Now required
   onClose: (id: WidgetId) => void;
-  onDragEnd: (id: WidgetId, position: { x: number; y: number }) => void;
-  onResizeEnd: (id: WidgetId, size: { width: number; height: number }) => void;
 }
 
 export function Widget({
   id,
   title,
-  icon: Icon,
-  content: Content,
+  icon: Icon, // Destructure Icon
+  content: Content, // Destructure Content
   isMinimized,
   isMaximized,
   isPinned,
-  isOpen,
+  isOpen, // Keep isOpen for completeness, though it's always true here
   position,
   size,
+  zIndex, // Use zIndex
+  onPositionChange, // Use new name
+  onSizeChange, // Use new name
+  onBringToFront,
   onMinimize,
   onMaximize,
   onPin,
   onClose,
-  onDragEnd,
-  onResizeEnd,
 }: WidgetProps) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: `widget-${id}`,
@@ -53,24 +57,17 @@ export function Widget({
 
   const cardRef = useRef<HTMLDivElement>(null);
 
+  // Apply drag transform directly
+  const dragStyle = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined;
+
+  // Handle drag end
   useEffect(() => {
+    // Only update position if actually dragged and not in a fixed state
     if (transform && cardRef.current && !isPinned && !isMaximized && !isMinimized) {
-      const newX = position.x + transform.x;
-      const newY = position.y + transform.y;
-      onDragEnd(id, { x: newX, y: newY });
+      onPositionChange({ x: position.x + transform.x, y: position.y + transform.y });
     }
-  }, [transform, id, onDragEnd, position, isPinned, isMaximized, isMinimized]);
+  }, [transform, id, onPositionChange, position, isPinned, isMaximized, isMinimized]);
 
-  const draggableProps = {
-    ref: setNodeRef,
-    style: transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined,
-    ...listeners,
-    ...attributes,
-  };
-
-  if (!isOpen && !isPinned) {
-    return null;
-  }
 
   const renderCardContent = () => {
     if (isMinimized) {
@@ -95,31 +92,44 @@ export function Widget({
         "transition-all duration-300 ease-in-out",
         isMaximized ? "inset-0 w-full h-full" : "",
         isMinimized ? "w-56 h-12" : `w-[${size.width}px] h-[${size.height}px]`,
-        isPinned ? "relative !w-auto !h-auto" : "",
-        isPinned && !isMinimized && !isMaximized ? "flex-grow" : "",
-        !isPinned && !isMaximized && !isMinimized ? "resize overflow-auto" : "",
-        !isPinned && !isMaximized && !isMinimized ? "cursor-grab" : "",
+        isPinned ? "relative !w-auto !h-auto" : "", // Pinned widgets are relative, not absolute
+        isPinned && !isMinimized && !isMaximized ? "flex-grow" : "", // Pinned and normal size
+        !isPinned && !isMaximized && !isMinimized ? "resize overflow-auto" : "", // Resizable only if floating and not minimized/maximized
+        !isPinned && !isMaximized && !isMinimized ? "cursor-grab" : "", // Draggable only if floating and not minimized/maximized
         isPinned ? "cursor-default" : "",
         isMinimized ? "cursor-pointer" : "",
         "z-50"
       )}
-      style={!isMaximized && !isPinned ? { left: position.x, top: position.y } : {}}
-      onClick={isMinimized ? () => onMinimize(id) : undefined}
+      style={{
+        left: isMaximized || isPinned ? undefined : position.x,
+        top: isMaximized || isPinned ? undefined : position.y,
+        width: isMaximized || isPinned ? undefined : size.width,
+        height: isMaximized || isPinned ? undefined : size.height,
+        zIndex: zIndex, // Apply zIndex
+        ...dragStyle // Apply drag transform
+      }}
+      onClick={isMinimized ? () => onMinimize(id) : undefined} // Only expand on click when minimized
+      onMouseDown={onBringToFront} // Bring to front on any click/interaction
     >
       <CardHeader
         className={cn(
           "flex flex-row items-center justify-between space-y-0 pb-2",
           isMinimized ? "hidden" : "flex"
         )}
-        {...(!isPinned && !isMaximized && !isMinimized && { ...draggableProps })}
+        {...(!isPinned && !isMaximized && !isMinimized && { ...listeners, ...attributes })} // Apply draggable props only if floating and not minimized/maximized
       >
         <CardTitle className="text-lg font-medium leading-none">
           {title}
         </CardTitle>
         <div className="flex gap-1">
-          {!isPinned && ( // Only show minimize/maximize if not pinned
-            <Button variant="ghost" size="icon" onClick={() => onMinimize(id)} title={isMinimized ? "Maximize" : "Minimize"}>
+          {!isPinned && ( // Only show minimize/restore if not pinned
+            <Button variant="ghost" size="icon" onClick={() => onMinimize(id)} title={isMinimized ? "Restore" : "Minimize"}>
               {isMinimized ? <Maximize className="h-4 w-4" /> : <Minimize className="h-4 w-4" />}
+            </Button>
+          )}
+          {!isPinned && ( // Only show maximize/restore if not pinned
+            <Button variant="ghost" size="icon" onClick={() => onMaximize(id)} title={isMaximized ? "Restore" : "Maximize"}>
+              {isMaximized ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
             </Button>
           )}
           <Button variant="ghost" size="icon" onClick={() => onPin(id)} title={isPinned ? "Unpin" : "Pin"}>
@@ -136,8 +146,8 @@ export function Widget({
           width={size.width}
           height={size.height}
           onResizeStop={(e, direction, ref, d) => {
-            if (!isMaximized && !isPinned) {
-              onResizeEnd(id, { width: size.width + d.width, height: size.height + d.height });
+            if (!isMaximized && !isPinned) { // Only allow resizing if not maximized or pinned
+              onSizeChange({ width: size.width + d.width, height: size.height + d.height });
             }
           }}
           minConstraints={[200, 150]}
@@ -146,7 +156,8 @@ export function Widget({
             "flex-grow flex flex-col",
             isMaximized || isPinned ? "w-full h-full" : ""
           )}
-          handle={!isMaximized && !isPinned ? undefined : {}} // Disable handles when maximized or pinned
+          // Disable handles if maximized or pinned
+          handle={!isMaximized && !isPinned ? undefined : {}}
         >
           {renderCardContent()}
         </ResizableBox>
