@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { FlashCardDeck } from "@/components/flash-card-deck";
 import { FlashCardListSidebar } from "@/components/flash-card-list-sidebar";
@@ -31,6 +31,35 @@ export default function FlashCardsPage() {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
+
+  // Helper to update card interaction (seen_count, last_reviewed_at)
+  const updateCardInteraction = useCallback(async (cardId: string) => {
+    if (!session || !supabase) return;
+
+    const cardToUpdate = cards.find(card => card.id === cardId);
+    if (!cardToUpdate) return;
+
+    const newSeenCount = cardToUpdate.seen_count + 1;
+    const now = new Date().toISOString();
+
+    const { data, error } = await supabase
+      .from('flashcards')
+      .update({
+        seen_count: newSeenCount,
+        last_reviewed_at: now,
+      })
+      .eq('id', cardId)
+      .eq('user_id', session.user.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating card interaction:", error);
+      // We'll avoid a toast here to prevent spamming for every interaction
+    } else if (data) {
+      setCards(prevCards => prevCards.map(card => card.id === cardId ? data as CardData : card));
+    }
+  }, [cards, session, supabase]);
 
   useEffect(() => {
     if (authLoading) return; // Wait for auth to load
@@ -87,9 +116,11 @@ export default function FlashCardsPage() {
 
   useEffect(() => {
     // If the current index is out of bounds for the filtered cards, reset to 0
-    if (currentCardIndex >= filteredCards.length && filteredCards.length > 0) {
-      setCurrentCardIndex(0);
-    } else if (filteredCards.length === 0) {
+    if (filteredCards.length > 0) {
+      if (currentCardIndex >= filteredCards.length) {
+        setCurrentCardIndex(0);
+      }
+    } else {
       setCurrentCardIndex(0); // If no cards, ensure index is 0
     }
     setIsFlipped(false); // Always unflip when filter or card set changes
@@ -97,13 +128,18 @@ export default function FlashCardsPage() {
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
+    if (filteredCards.length > 0) {
+      updateCardInteraction(filteredCards[currentCardIndex].id);
+    }
   };
 
   const handleNext = () => {
     setIsFlipped(false);
     setTimeout(() => {
       if (filteredCards.length === 0) return;
-      setCurrentCardIndex((prevIndex) => (prevIndex + 1) % filteredCards.length);
+      const nextIndex = (currentCardIndex + 1) % filteredCards.length;
+      setCurrentCardIndex(nextIndex);
+      updateCardInteraction(filteredCards[nextIndex].id); // Update for the *new* current card
       toast.info("Next card!");
     }, 100);
   };
@@ -112,9 +148,9 @@ export default function FlashCardsPage() {
     setIsFlipped(false);
     setTimeout(() => {
       if (filteredCards.length === 0) return;
-      setCurrentCardIndex((prevIndex) =>
-        prevIndex === 0 ? filteredCards.length - 1 : prevIndex - 1
-      );
+      const prevIndex = currentCardIndex === 0 ? filteredCards.length - 1 : currentCardIndex - 1;
+      setCurrentCardIndex(prevIndex);
+      updateCardInteraction(filteredCards[prevIndex].id); // Update for the *new* current card
       toast.info("Previous card!");
     }, 100);
   };
