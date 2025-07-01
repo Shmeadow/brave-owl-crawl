@@ -4,10 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { SessionContextProvider } from "@/integrations/supabase/auth";
-// Removed server-side redirect and headers import as client-side pages handle navigation
-// import { redirect } from "next/navigation";
-// import { supabase } from "@/integrations/supabase/client";
-// import { headers } from 'next/headers'; // Import headers
+import { GoalReminderBar } from "@/components/goal-reminder-bar"; // Import the new component
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,18 +26,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Removed server-side session check and redirect logic.
-  // Client-side pages will handle redirection based on session.
-  // const { data: { session } } = await supabase.auth.getSession();
-  // const headersList = await headers();
-  // const pathname = headersList.get('x-pathname') || '/';
-
-  // if (!session && pathname !== '/login') {
-  //   redirect('/login');
-  // } else if (session && pathname === '/login') {
-  //   redirect('/');
-  // }
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -54,6 +39,7 @@ export default async function RootLayout({
         >
           <SessionContextProvider>
             {children}
+            <GoalReminderBar /> {/* Render the new goal reminder bar */}
           </SessionContextProvider>
           <Toaster />
         </ThemeProvider>

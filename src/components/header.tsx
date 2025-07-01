@@ -32,7 +32,7 @@ export function Header() {
                 <LayoutDashboard className="h-6 w-6" />
                 <span>Productivity App</span>
               </Link>
-              {/* Mobile Nav Links - excluding Dashboard */}
+              {/* Mobile Nav Links */}
               <Link href="/time-tracker" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary", isActive("/time-tracker") && "text-primary")}>
                 <Clock className="h-4 w-4" />
                 Time Tracker
@@ -45,10 +45,7 @@ export function Header() {
                 <Timer className="h-4 w-4" />
                 Pomodoro
               </Link>
-              <Link href="/goal-focus" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary", isActive("/goal-focus") && "text-primary")}>
-                <Goal className="h-4 w-4" />
-                Goal Focus
-              </Link>
+              {/* Removed Goal Focus link */}
               <Link href="/account" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary", isActive("/account") && "text-primary")}>
                 <User className="h-4 w-4" />
                 Account
