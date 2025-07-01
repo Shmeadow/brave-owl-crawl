@@ -135,11 +135,11 @@
     background-repeat: no-repeat; /* Prevent tiling */
     background-attachment: fixed; /* Keep background fixed on scroll */
 
-    --background: 240 50% 10% / 0.8; /* Deep indigo/night sky with transparency */
+    --background: 240 50% 10% / 0.3; /* Deep indigo/night sky with more transparency */
     --foreground: 0 0% 90%; /* Light text */
-    --card: 220 20% 20% / 0.85; /* Muted blue-gray for house walls, slightly darker for card base with transparency */
+    --card: 220 20% 20% / 0.6; /* Muted blue-gray for house walls, more transparent for card base */
     --card-foreground: 0 0% 90%;
-    --popover: 220 20% 20% / 0.9; /* Slightly less transparent for popovers */
+    --popover: 220 20% 20% / 0.7; /* Slightly less transparent for popovers */
     --popover-foreground: 0 0% 90%;
     --primary: 40 80% 60%; /* Warm orange/gold from lights */
     --primary-foreground: 240 50% 10%; /* Dark text on primary */
@@ -154,7 +154,7 @@
     --border: 220 15% 35%;
     --input: 220 15% 35%;
     --ring: 40 80% 60%;
-    --sidebar-background: 220 25% 15% / 0.85; /* Slightly darker than card for sidebar with transparency */
+    --sidebar-background: 220 25% 15% / 0.6; /* Slightly darker than card for sidebar with more transparency */
     --sidebar-foreground: 0 0% 90%;
     --sidebar-primary: 40 80% 60%;
     --sidebar-primary-foreground: 240 50% 10%;
