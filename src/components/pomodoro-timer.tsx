@@ -10,9 +10,9 @@ import { Input } from "@/components/ui/input"; // Import Input for editable time
 
 type PomodoroMode = 'focus' | 'short-break' | 'long-break';
 
-const FOCUS_TIME_SECONDS = 30 * 60; // 30 minutes
-const SHORT_BREAK_TIME_SECONDS = 5 * 60; // 5 minutes
-const LONG_BREAK_TIME_SECONDS = 10 * 60; // 10 minutes
+const DEFAULT_FOCUS_TIME_SECONDS = 30 * 60; // 30 minutes
+const DEFAULT_SHORT_BREAK_TIME_SECONDS = 5 * 60; // 5 minutes
+const DEFAULT_LONG_BREAK_TIME_SECONDS = 10 * 60; // 10 minutes
 
 // Helper to convert seconds to HH:MM:SS format
 const formatTime = (totalSeconds: number) => {
@@ -38,20 +38,38 @@ const parseTimeToSeconds = (timeString: string): number => {
 
 export function PomodoroTimer() {
   const [mode, setMode] = useState<PomodoroMode>('focus');
-  const [timeLeft, setTimeLeft] = useState(FOCUS_TIME_SECONDS);
+  const [focusTime, setFocusTime] = useState(DEFAULT_FOCUS_TIME_SECONDS);
+  const [shortBreakTime, setShortBreakTime] = useState(DEFAULT_SHORT_BREAK_TIME_SECONDS);
+  const [longBreakTime, setLongBreakTime] = useState(DEFAULT_LONG_BREAK_TIME_SECONDS);
+  const [timeLeft, setTimeLeft] = useState(focusTime); // Initialize with focusTime
   const [isRunning, setIsRunning] = useState(false);
   const [isEditingTime, setIsEditingTime] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const getTimeForMode = useCallback((currentMode: PomodoroMode) => {
-    switch (currentMode) {
-      case 'focus': return FOCUS_TIME_SECONDS;
-      case 'short-break': return SHORT_BREAK_TIME_SECONDS;
-      case 'long-break': return LONG_BREAK_TIME_SECONDS;
-      default: return FOCUS_TIME_SECONDS;
+  // Helper to get current time for the active mode
+  const getCurrentModeTime = useCallback(() => {
+    switch (mode) {
+      case 'focus': return focusTime;
+      case 'short-break': return shortBreakTime;
+      case 'long-break': return longBreakTime;
+      default: return focusTime;
+    }
+  }, [mode, focusTime, shortBreakTime, longBreakTime]);
+
+  // Helper to set time for a specific mode
+  const setTimeForMode = useCallback((targetMode: PomodoroMode, newTime: number) => {
+    switch (targetMode) {
+      case 'focus': setFocusTime(newTime); break;
+      case 'short-break': setShortBreakTime(newTime); break;
+      case 'long-break': setLongBreakTime(newTime); break;
     }
   }, []);
+
+  // Initialize timeLeft when component mounts or mode changes
+  useEffect(() => {
+    setTimeLeft(getCurrentModeTime());
+  }, [mode, getCurrentModeTime]); // Depend on mode and the getter for current mode's time
 
   const resetTimer = useCallback((newMode: PomodoroMode, shouldStopRunning: boolean = true) => {
     if (intervalRef.current) {
@@ -61,8 +79,8 @@ export function PomodoroTimer() {
       setIsRunning(false);
     }
     setMode(newMode);
-    setTimeLeft(getTimeForMode(newMode));
-  }, [getTimeForMode]);
+    // setTimeLeft will be handled by the useEffect above
+  }, []);
 
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
@@ -76,11 +94,10 @@ export function PomodoroTimer() {
       setIsRunning(false);
       if (mode === 'focus') {
         toast.success("Focus session complete! Time for a break.");
-        // For simplicity, let's switch to short break after focus
-        resetTimer('short-break', false); // Don't stop running if it was running
+        resetTimer('short-break', false);
       } else {
         toast.success("Break complete! Time to focus again.");
-        resetTimer('focus', false); // Don't stop running if it was running
+        resetTimer('focus', false);
       }
     } else if (!isRunning && intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -95,9 +112,9 @@ export function PomodoroTimer() {
 
   const handleStartPause = () => {
     if (timeLeft === 0) {
-      // If timer finished, reset to current mode's default time before starting
-      resetTimer(mode, false); // Don't stop running, just reset time
-      setIsRunning(true); // Then start
+      // If timer finished, reset to current mode's *saved* time before starting
+      setTimeLeft(getCurrentModeTime()); // Reset to the current mode's stored time
+      setIsRunning(true);
       toast.info("Timer started!");
     } else {
       setIsRunning(!isRunning);
@@ -106,14 +123,15 @@ export function PomodoroTimer() {
   };
 
   const handleReset = () => {
-    resetTimer(mode, true); // Explicitly stop running
+    resetTimer(mode, true);
     toast.warning("Timer reset.");
   };
 
   const handleSwitchMode = (newMode: PomodoroMode) => {
     if (mode !== newMode) {
       // If timer is running, keep it running but switch mode and time
-      resetTimer(newMode, false); // Don't stop running
+      // The useEffect will update timeLeft based on newMode
+      setMode(newMode);
       toast.info(`Switched to ${newMode === 'focus' ? 'Focus' : newMode === 'short-break' ? 'Short Break' : 'Long Break'} mode.`);
     }
   };
@@ -125,7 +143,8 @@ export function PomodoroTimer() {
   const handleTimeInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const newTime = parseTimeToSeconds(e.target.value);
     if (!isNaN(newTime) && newTime >= 0) {
-      setTimeLeft(newTime);
+      setTimeForMode(mode, newTime); // Save the new time for the current mode
+      setTimeLeft(newTime); // Update the displayed time immediately
       toast.success("Timer time updated!");
     } else {
       toast.error("Invalid time format. Please use HH:MM:SS.");

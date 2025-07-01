@@ -5,28 +5,15 @@ import { PomodoroTimer } from "@/components/pomodoro-timer";
 import { useSupabase } from "@/integrations/supabase/auth";
 
 export default function PomodoroPage() {
-  const { session, loading } = useSupabase();
-
-  if (loading) {
-    return (
-      <DashboardLayout>
-        <div className="flex flex-col items-center justify-center h-full py-8">
-          <p>Loading pomodoro timer...</p>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
+  const { session } = useSupabase();
   return (
-    <DashboardLayout>
-      <div className="flex flex-col items-center justify-center h-full py-8">
-        <PomodoroTimer />
-        {!session && (
-          <p className="text-sm text-muted-foreground mt-4">
-            You are currently browsing as a guest. Pomodoro progress will not be saved unless you log in.
-          </p>
-        )}
-      </div>
+    <DashboardLayout className="flex flex-col items-center justify-center py-8">
+      <PomodoroTimer />
+      {!session && (
+        <p className="text-sm text-muted-foreground mt-4">
+          Log in to save your Pomodoro settings and history.
+        </p>
+      )}
     </DashboardLayout>
   );
 }
