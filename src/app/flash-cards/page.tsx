@@ -56,6 +56,13 @@ export default function FlashCardsPage() {
         console.error("Error fetching flashcards:", error);
       } else {
         setCards(data as CardData[]);
+        // After fetching, ensure currentCardIndex is valid for the fetched cards
+        if (data.length > 0) {
+          setCurrentCardIndex(0); // Start at the first card
+        } else {
+          setCurrentCardIndex(0); // No cards, index remains 0
+        }
+        setIsFlipped(false); // Ensure card is unflipped on load
       }
       setLoading(false);
     };
@@ -79,12 +86,14 @@ export default function FlashCardsPage() {
   });
 
   useEffect(() => {
-    if (filteredCards.length > 0 && currentCardIndex >= filteredCards.length) {
+    // If the current index is out of bounds for the filtered cards, reset to 0
+    if (currentCardIndex >= filteredCards.length && filteredCards.length > 0) {
       setCurrentCardIndex(0);
     } else if (filteredCards.length === 0) {
-      setCurrentCardIndex(0); // Reset index if no cards match filter
+      setCurrentCardIndex(0); // If no cards, ensure index is 0
     }
-  }, [filterMode, filteredCards.length, currentCardIndex]);
+    setIsFlipped(false); // Always unflip when filter or card set changes
+  }, [filterMode, filteredCards.length]); // currentCardIndex is NOT a dependency here.
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
@@ -134,7 +143,18 @@ export default function FlashCardsPage() {
       toast.error("Error adding flashcard: " + error.message);
       console.error("Error adding flashcard:", error);
     } else if (data) {
-      setCards((prevCards) => [...prevCards, data as CardData]);
+      setCards((prevCards) => {
+        const updatedCards = [...prevCards, data as CardData];
+        // If the new card is added and we are in 'all' mode, try to select it
+        if (filterMode === 'all') {
+          setCurrentCardIndex(updatedCards.length - 1); // Select the newly added card
+        } else {
+          // If not 'all' mode, the new card might not be visible, so reset to 0
+          setCurrentCardIndex(0);
+        }
+        setIsFlipped(false); // Ensure new card starts unflipped
+        return updatedCards;
+      });
       toast.success("Flashcard added successfully!");
     }
   };

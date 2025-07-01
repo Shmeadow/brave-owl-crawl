@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { Header } from "@/components/header";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
 
 interface DashboardLayoutProps {
@@ -28,37 +27,28 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   return (
-    <ResizablePanelGroup
-      direction="horizontal"
-      className="min-h-screen w-full rounded-lg border" // Ensure the group takes full height and width
-    >
-      <ResizablePanel
-        defaultSize={isSidebarCollapsed ? 0 : 280} // Initial size based on state
-        minSize={isSidebarCollapsed ? 0 : 15} // If collapsed, minSize is 0. If open, minSize is 15%
-        maxSize={isSidebarCollapsed ? 0 : 30} // If collapsed, maxSize is 0. If open, maxSize is 30%
-        collapsible={true}
-        collapsedSize={0}
-        onCollapse={() => {
-          setIsSidebarCollapsed(true);
-          if (typeof window !== 'undefined') localStorage.setItem('isSidebarCollapsed', 'true');
-        }}
-        onExpand={() => {
-          setIsSidebarCollapsed(false);
-          if (typeof window !== 'undefined') localStorage.setItem('isSidebarCollapsed', 'false');
-        }}
-        className={cn("hidden lg:block", isSidebarCollapsed && "min-w-0")}
+    <div className="flex min-h-screen w-full"> {/* Main flex container */}
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "hidden lg:block", // Only show on large screens
+          "flex-shrink-0", // Prevent sidebar from shrinking
+          "border-r bg-sidebar text-sidebar-foreground", // Styling
+          "transition-all duration-300 ease-in-out", // Animation
+          isSidebarCollapsed ? "w-0 overflow-hidden" : "w-64", // Collapsed or expanded width
+          "h-full" // Ensure sidebar takes full height
+        )}
       >
         <Sidebar />
-      </ResizablePanel>
-      {!isSidebarCollapsed && <ResizableHandle withHandle />}
-      <ResizablePanel>
-        <div className="flex flex-col h-full"> {/* Ensure this div takes full height */}
-          <Header toggleSidebarCollapse={toggleSidebarCollapse} isSidebarCollapsed={isSidebarCollapsed} />
-          <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-auto"> {/* Add overflow-auto for internal scrolling */}
-            {children}
-          </main>
-        </div>
-      </ResizablePanel>
-    </ResizablePanelGroup>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex flex-1 flex-col">
+        <Header toggleSidebarCollapse={toggleSidebarCollapse} isSidebarCollapsed={isSidebarCollapsed} />
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-auto">
+          {children}
+        </main>
+      </div>
+    </div>
   );
 }

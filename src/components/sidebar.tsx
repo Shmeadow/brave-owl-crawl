@@ -3,7 +3,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Clock, LayoutDashboard, Goal, BookOpen, Settings } from "lucide-react";
+import { Clock, LayoutDashboard, Goal, BookOpen, Settings, Timer } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -40,6 +40,12 @@ export function Sidebar({ className }: SidebarProps) {
                 Flash Cards
               </Button>
             </Link>
+            <Link href="/pomodoro">
+              <Button variant={isActive("/pomodoro") ? "secondary" : "ghost"} className="w-full justify-start">
+                <Timer className="mr-2 h-4 w-4" />
+                Pomodoro
+              </Button>
+            </Link>
             <Button variant="ghost" className="w-full justify-start">
               <Goal className="mr-2 h-4 w-4" />
               Goal Focus
@@ -51,10 +57,6 @@ export function Sidebar({ className }: SidebarProps) {
             Tools
           </h2>
           <div className="space-y-1">
-            <Button variant="ghost" className="w-full justify-start">
-              <Clock className="mr-2 h-4 w-4" />
-              Pomodoro
-            </Button>
             <Button variant="ghost" className="w-full justify-start">
               <Settings className="mr-2 h-4 w-4" />
               Dev Tools
