@@ -1,26 +1,39 @@
 "use client";
 
-import React from "react"; // Removed useState, useEffect as isVisible state is no longer needed for user dismissal
+import React, { useState, useEffect } from "react";
 import { useGoals } from "@/hooks/use-goals";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react"; // Removed X icon
+import { Trash2, ChevronRight } from "lucide-react"; // Import ChevronRight for the next button
 import { cn } from "@/lib/utils";
-
-// REMOVED: REMINDER_VISIBILITY_KEY and associated local storage logic
 
 export function GoalReminderBar() {
   const { goals, loading, handleToggleComplete, handleDeleteGoal } = useGoals();
+  const [displayIndex, setDisplayIndex] = useState(0); // State to track which incomplete goal is currently displayed
 
-  // Find the first incomplete goal
-  const activeGoal = goals.find(goal => !goal.completed);
+  // Filter all incomplete goals
+  const incompleteGoals = goals.filter(goal => !goal.completed);
+
+  // Reset displayIndex if the number of incomplete goals changes or if the current index is out of bounds
+  useEffect(() => {
+    if (displayIndex >= incompleteGoals.length) {
+      setDisplayIndex(0);
+    }
+  }, [incompleteGoals.length, displayIndex]);
+
+  // The active goal to display in the bar
+  const activeGoal = incompleteGoals[displayIndex];
 
   // Only render if not loading and an active goal exists
-  // The bar will now always be visible if there's an incomplete goal.
   if (loading || !activeGoal) {
     return null;
   }
+
+  // Function to move to the next incomplete goal in the list
+  const handleNextGoal = () => {
+    setDisplayIndex((prevIndex) => (prevIndex + 1) % incompleteGoals.length);
+  };
 
   return (
     <div className="fixed top-16 left-4 z-50 w-full max-w-xs">
@@ -53,7 +66,17 @@ export function GoalReminderBar() {
               <Trash2 className="h-3 w-3" />
               <span className="sr-only">Delete Goal</span>
             </Button>
-            {/* REMOVED: The X button for closing the reminder bar */}
+            {incompleteGoals.length > 1 && ( // Only show next button if there's more than one incomplete goal
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-foreground h-5 w-5"
+                onClick={handleNextGoal}
+              >
+                <ChevronRight className="h-3 w-3" />
+                <span className="sr-only">Next Goal</span>
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
