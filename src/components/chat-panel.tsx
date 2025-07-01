@@ -12,8 +12,8 @@ import { toast } from "sonner";
 
 interface Message {
   id: string;
-  user_id: string; // Can be a guest ID or Supabase user ID
-  author: string;
+  user_id: string;
+  author: string; // This will be derived from profile or user ID
   content: string;
   created_at: string;
 }
@@ -26,136 +26,62 @@ interface ChatPanelProps {
   unreadCount: number; // Current unread count
 }
 
-const LOCAL_STORAGE_KEY_CHAT = 'guest_chat_messages';
-
 export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnreadMessages, unreadCount }: ChatPanelProps) {
   const { supabase, session, profile, loading: authLoading } = useSupabase();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [showSupportContact, setShowSupportContact] = useState(false);
-  const [isLoggedInMode, setIsLoggedInMode] = useState(false); // New state to track mode
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Effect to handle initial load and auth state changes
-  useEffect(() => {
-    if (authLoading) return;
-
-    const loadMessages = async () => {
-      if (session && supabase) {
-        // User is logged in
-        setIsLoggedInMode(true);
-        console.log("User logged in. Checking for local chat messages to migrate...");
-
-        // 1. Load local messages (if any)
-        const localMessagesString = localStorage.getItem(LOCAL_STORAGE_KEY_CHAT);
-        let localMessages: Message[] = [];
-        try {
-          localMessages = localMessagesString ? JSON.parse(localMessagesString) : [];
-        } catch (e) {
-          console.error("Error parsing local storage chat messages:", e);
-          localMessages = [];
-        }
-
-        // 2. Fetch user's existing messages from Supabase
-        const { data: supabaseMessages, error: fetchError } = await supabase
-          .from('chat_messages')
-          .select('id, user_id, content, created_at')
-          .order('created_at', { ascending: true })
-          .limit(50);
-
-        if (fetchError) {
-          toast.error("Error fetching chat messages from Supabase: " + fetchError.message);
-          console.error("Error fetching messages (Supabase):", fetchError);
-          setMessages([]);
-        } else {
-          let mergedMessages = [...(supabaseMessages as Message[])];
-
-          // 3. Migrate local messages to Supabase if they don't already exist
-          if (localMessages.length > 0) {
-            console.log(`Found ${localMessages.length} local messages. Attempting migration...`);
-            for (const localMsg of localMessages) {
-              // Check if a similar message (by content and approximate time) already exists in Supabase
-              const existsInSupabase = mergedMessages.some(
-                sm => sm.content === localMsg.content && Math.abs(new Date(sm.created_at).getTime() - new Date(localMsg.created_at).getTime()) < 5000 // within 5 seconds
-              );
-
-              if (!existsInSupabase) {
-                const { data: newSupabaseMsg, error: insertError } = await supabase
-                  .from('chat_messages')
-                  .insert({
-                    user_id: session.user.id, // Assign to logged-in user
-                    content: localMsg.content,
-                    created_at: localMsg.created_at || new Date().toISOString(),
-                  })
-                  .select()
-                  .single();
-
-                if (insertError) {
-                  console.error("Error migrating local message to Supabase:", insertError);
-                  toast.error("Error migrating some local chat messages.");
-                } else if (newSupabaseMsg) {
-                  mergedMessages.push(newSupabaseMsg as Message);
-                  console.log("Migrated local message:", newSupabaseMsg.content);
-                }
-              }
-            }
-            // Clear local storage after migration attempt
-            localStorage.removeItem(LOCAL_STORAGE_KEY_CHAT);
-            toast.success("Local chat messages migrated to your account!");
-          }
-          // Format messages with correct authors after merge
-          const formattedMessages = mergedMessages.map(msg => ({
-            ...msg,
-            author: profile?.id === msg.user_id ? (profile.first_name || profile.last_name || 'You') : msg.user_id.substring(0, 8),
-          }));
-          setMessages(formattedMessages);
-        }
-      } else {
-        // User is a guest (not logged in)
-        setIsLoggedInMode(false);
-        const storedMessagesString = localStorage.getItem(LOCAL_STORAGE_KEY_CHAT);
-        let loadedMessages: Message[] = [];
-        try {
-          loadedMessages = storedMessagesString ? JSON.parse(storedMessagesString) : [];
-        } catch (e) {
-          console.error("Error parsing local storage chat messages:", e);
-          loadedMessages = [];
-        }
-        // For guest mode, assign a generic 'Guest' author
-        const formattedGuestMessages = loadedMessages.map(msg => ({
-          ...msg,
-          author: 'Guest',
-        }));
-        setMessages(formattedGuestMessages);
-        if (loadedMessages.length === 0) {
-          toast.info("You are chatting as a guest. Your messages will be saved locally.");
-        }
-      }
-    };
-
-    loadMessages();
-  }, [session, supabase, authLoading, profile]);
-
-  // Effect to save messages to local storage when in guest mode
-  useEffect(() => {
-    if (!isLoggedInMode) {
-      localStorage.setItem(LOCAL_STORAGE_KEY_CHAT, JSON.stringify(messages));
-    }
-  }, [messages, isLoggedInMode]);
-
-  // Supabase Realtime Subscription (only for logged-in users)
-  useEffect(() => {
-    if (!supabase || !session) {
-      // If not logged in or supabase not available, no real-time subscription
+  const fetchMessages = async () => {
+    if (!supabase) {
+      console.warn("Supabase client not available for fetching messages.");
+      toast.error("Chat unavailable: Supabase client not initialized.");
       return;
     }
+    try {
+      // Fetch messages without joining profiles initially for better reliability
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('id, user_id, content, created_at') // Removed profiles join
+        .order('created_at', { ascending: true })
+        .limit(50); // Limit to last 50 messages
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found, which is fine for an empty chat
+        console.error("Error fetching messages:", error);
+        toast.error("Failed to load chat messages: " + error.message); // Added error.message for more detail
+      } else if (data) {
+        const formattedMessages = data.map(msg => ({
+          id: msg.id,
+          user_id: msg.user_id,
+          content: msg.content,
+          created_at: msg.created_at,
+          // Use truncated user_id as author if profile is not available or names are null
+          author: profile?.id === msg.user_id ? (profile.first_name || profile.last_name || 'You') : msg.user_id.substring(0, 8),
+        }));
+        setMessages(formattedMessages);
+      }
+    } catch (networkError: any) {
+      console.error("Network error fetching chat messages:", networkError);
+      toast.error("Failed to connect to chat server. Please check your internet connection or Supabase URL.");
+    }
+  };
+
+  useEffect(() => {
+    if (authLoading) return; // Wait for auth to load before fetching messages or setting up subscription
+
+    fetchMessages();
+
+    // Setup subscription only if supabase is available
+    if (!supabase) return; 
 
     const subscription = supabase
       .channel('chat_room')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, async (payload) => {
-        const newMsg = payload.new as Message;
+        const newMsg = payload.new as Message; // Payload won't have profiles directly
         
-        // Determine author for the new message
+        // To get the author's name for the new message, we'd ideally fetch the profile.
+        // For simplicity and to avoid re-introducing the original error, we'll use a placeholder.
         const authorName = profile?.id === newMsg.user_id ? (profile.first_name || profile.last_name || 'You') : newMsg.user_id.substring(0, 8);
 
         const formattedNewMsg = {
@@ -175,7 +101,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, [supabase, isOpen, session, onNewUnreadMessage, profile]); // Added session to dependencies
+  }, [supabase, isOpen, session?.user?.id, onNewUnreadMessage, profile, authLoading]); // Added authLoading to dependencies
 
   useEffect(() => {
     // Scroll to bottom when messages change or chat opens
@@ -188,13 +114,10 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
   }, [messages, isOpen]);
 
   const handleSendMessage = async () => {
-    const trimmedMessage = inputMessage.trim();
-    if (!trimmedMessage) return;
-
-    if (isLoggedInMode && session?.user && supabase) {
+    if (inputMessage.trim() && session?.user && supabase) {
       const { error } = await supabase.from('chat_messages').insert({
         user_id: session.user.id,
-        content: trimmedMessage,
+        content: inputMessage.trim(),
       });
 
       if (error) {
@@ -203,18 +126,10 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
       } else {
         setInputMessage("");
       }
-    } else {
-      // Guest mode
-      const newGuestMessage: Message = {
-        id: crypto.randomUUID(),
-        user_id: `guest-${crypto.randomUUID().substring(0, 8)}`, // Unique ID for guest
-        author: 'You (Guest)', // Explicitly mark as guest
-        content: trimmedMessage,
-        created_at: new Date().toISOString(),
-      };
-      setMessages((prevMessages) => [...prevMessages, newGuestMessage]);
-      setInputMessage("");
-      toast.success("Message sent (saved locally)!");
+    } else if (!session?.user) {
+      toast.error("You must be logged in to send messages.");
+    } else if (!supabase) {
+      toast.error("Chat is not available. Supabase client not initialized.");
     }
   };
 

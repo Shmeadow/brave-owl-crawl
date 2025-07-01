@@ -8,15 +8,52 @@ import { useWidget } from "@/components/widget/widget-context"; // Import useWid
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Wind, BookOpen, Goal } from "lucide-react";
 
 const SIDEBAR_WIDTH = 60; // px
+const HOT_ZONE_WIDTH = 20; // px (includes the 4px visible strip)
+const UNDOCK_DELAY = 500; // ms
 const HEADER_HEIGHT_REM = 4; // 4rem = 64px
 
 export function Sidebar() {
   const { activePanel, setActivePanel, isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const { toggleWidget } = useWidget(); // Get toggleWidget from WidgetContext
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null); // Corrected initialization
 
-  // Removed all mouse event listeners and hover logic.
-  // The sidebar's open/close state is now controlled externally (e.g., by a button in the Header).
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    setIsSidebarOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      setIsSidebarOpen(false);
+    }, UNDOCK_DELAY);
+  };
+
+  // Handle mouse movement near the left edge
+  const handleMouseMove = (e: MouseEvent) => {
+    if (e.clientX < HOT_ZONE_WIDTH && !isSidebarOpen) {
+      handleMouseEnter();
+    } else if (e.clientX >= SIDEBAR_WIDTH && isSidebarOpen && !sidebarRef.current?.contains(e.target as Node)) {
+      // If mouse moves outside the sidebar area while it's open
+      handleMouseLeave();
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [isSidebarOpen]); // Re-attach listener if sidebar open state changes
 
   const navItems = [
     { id: "spaces", label: "Spaces", icon: LayoutGrid },
@@ -43,11 +80,12 @@ export function Sidebar() {
       className={cn(
         "fixed left-0 top-16 z-50 flex flex-col items-center py-4",
         "bg-black/60 shadow-lg shadow-black/30 transition-transform duration-300 ease-in-out",
-        isSidebarOpen ? "translate-x-0 w-[60px]" : "-translate-x-full w-[60px]", // Fully hide when closed
+        isSidebarOpen ? "translate-x-0 w-[60px]" : "-translate-x-full w-[60px]", // Changed to -translate-x-full for complete hide
         `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]`, // Adjusted height
         "rounded-r-lg" // Added rounded right corners
       )}
-      // Removed onMouseEnter and onMouseLeave
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div className="flex flex-col gap-2 overflow-y-auto h-full">
         {navItems.map((item) => (

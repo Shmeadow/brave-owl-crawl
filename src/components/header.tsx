@@ -34,7 +34,7 @@ export function Header({
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const { isPlaying, togglePlayPause, currentTrack, volume, setVolume, isMuted, toggleMute } = useMusicPlayer();
   const { times, loading: sunTimesLoading, error: sunTimesError } = useSunriseSunset();
-  const { isSidebarOpen, setIsSidebarOpen } = useSidebar(); // Get isSidebarOpen and setIsSidebarOpen
+  const { setIsSidebarOpen } = useSidebar();
   const { profile, session } = useSupabase(); // Changed 'user' to 'session' for consistency
   const router = useRouter();
 
@@ -73,10 +73,6 @@ export function Header({
     <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-background/50 backdrop-blur-lg z-10 relative h-14">
       {/* Left Section: Home, Room Name, Search */}
       <div className="flex items-center space-x-1.5">
-        <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="h-7 w-7">
-          <Menu className="h-4 w-4" />
-          <span className="sr-only">Toggle Sidebar</span>
-        </Button>
         <Button variant="ghost" size="icon" onClick={() => router.push('/')} className="h-7 w-7">
           <Home className="h-4 w-4" />
           <span className="sr-only">Go to Home Room</span>
