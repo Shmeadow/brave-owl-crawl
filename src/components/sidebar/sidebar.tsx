@@ -57,7 +57,7 @@ export function Sidebar() {
     { id: "sounds", label: "Sounds", icon: Volume2 },
     { id: "calendar", label: "Calendar", icon: Calendar },
     { id: "timer", label: "Timer", icon: Timer },
-    { id: "tasks", label: "Tasks", icon: ListTodo },
+    { id: "tasks", label: "Tasks", icon: ListTodo }, // This will now point to GoalFocusPanel
     { id: "notes", label: "Notes", icon: NotebookPen },
     { id: "media", label: "Media", icon: Image },
     { id: "fortune", label: "Fortune", icon: Sparkles },

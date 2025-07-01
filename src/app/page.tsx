@@ -7,7 +7,7 @@ import { SpacesPanel } from "@/components/panels/spaces-panel";
 import { SoundsPanel } from "@/components/panels/sounds-panel";
 import { CalendarPanel } from "@/components/panels/calendar-panel";
 import { TimerPanel } from "@/components/panels/timer-panel";
-import { TasksPanel } from "@/components/panels/tasks-panel";
+import { TasksPanel } from "@/components/panels/tasks-panel"; // Keep import for now, will be removed
 import { NotesPanel } from "@/components/panels/notes-panel";
 import { MediaPanel } from "@/components/panels/media-panel";
 import { FortunePanel } from "@/components/panels/fortune-panel";
@@ -30,8 +30,8 @@ export default function HomePage() {
         return <CalendarPanel />;
       case "timer":
         return <TimerPanel />;
-      case "tasks":
-        return <TasksPanel />;
+      case "tasks": // Now points to GoalFocusPanel
+        return <GoalFocusPanel />;
       case "notes":
         return <NotesPanel />;
       case "media":

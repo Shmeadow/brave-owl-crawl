@@ -1,15 +1,44 @@
 "use client";
 
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AddNoteForm } from "@/components/add-note-form";
+import { NoteList } from "@/components/note-list";
+import { useNotes } from "@/hooks/use-notes";
 
 export function NotesPanel() {
+  const { notes, loading, isLoggedInMode, handleAddNote, handleDeleteNote, handleToggleStar } = useNotes();
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full py-8">
+        <p className="text-foreground">Loading notes...</p>
+      </div>
+    );
+  }
+
   return (
-    <Card className="h-full flex items-center justify-center bg-card/80 backdrop-blur-md p-4">
-      <CardContent className="text-foreground text-center">
-        <h2 className="text-2xl font-bold mb-2">Notes Panel</h2>
-        <p className="text-muted-foreground">A notes editor that auto-saves your thoughts will be here.</p>
-      </CardContent>
-    </Card>
+    <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto h-full">
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Add New Note</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AddNoteForm onAddNote={handleAddNote} />
+        </CardContent>
+      </Card>
+
+      <NoteList
+        notes={notes}
+        onToggleStar={handleToggleStar}
+        onDelete={handleDeleteNote}
+      />
+
+      {!isLoggedInMode && (
+        <p className="text-sm text-muted-foreground mt-4 text-center">
+          You are currently browsing as a guest. Your notes are saved locally in your browser. Log in to save them to your account!
+        </p>
+      )}
+    </div>
   );
 }

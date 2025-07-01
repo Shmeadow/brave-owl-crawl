@@ -14,9 +14,10 @@ interface PomodoroWidgetProps {
   isMinimized: boolean;
   setIsMinimized: (minimized: boolean) => void;
   onClose: () => void; // New prop to handle closing the bar
+  chatPanelWidth: number; // New prop to get chat panel width
 }
 
-export function PomodoroWidget({ isMinimized, setIsMinimized, onClose }: PomodoroWidgetProps) {
+export function PomodoroWidget({ isMinimized, setIsMinimized, onClose, chatPanelWidth }: PomodoroWidgetProps) {
   const {
     mode,
     timeLeft,
@@ -47,17 +48,21 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, onClose }: Pomodor
     }
   }, [isEditingTime]);
 
+  const widgetWidth = 224; // Fixed width for the widget
+  const rightPosition = chatPanelWidth + 16; // Chat panel width + gap
+
   return (
     <Card
       className={cn(
-        "fixed bottom-4 right-[336px] z-50", // Fixed position: bottom-4, right-4 + chat width (320px) + gap (12px) = 336px
-        "bg-background/50 backdrop-blur-md shadow-lg border rounded-lg", // Added border and rounded-lg
+        "fixed bottom-4 z-50",
+        "bg-background/50 backdrop-blur-md shadow-lg border rounded-lg",
         "flex transition-all duration-300 ease-in-out",
-        "w-[224px]", // Fixed width for both states (50% of max-w-md which is 448px)
+        `w-[${widgetWidth}px]`, // Fixed width
         isMinimized
           ? "flex-row items-center justify-between px-2 py-1 h-16 cursor-pointer" // Smaller height for minimized
           : "flex-col items-center p-3 gap-3 h-auto" // Auto height for expanded
       )}
+      style={{ right: `${rightPosition}px` }} // Dynamic right position
       onClick={isMinimized ? () => setIsMinimized(false) : undefined}
     >
       <CardHeader className={cn(
