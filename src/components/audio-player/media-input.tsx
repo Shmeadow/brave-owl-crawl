@@ -1,13 +1,13 @@
 "use client";
 
 import React from 'react';
-import { Link } from 'lucide-react'; // Added missing import
+import { Link } from 'lucide-react';
 
 interface MediaInputProps {
   inputUrl: string;
   setInputUrl: (url: string) => void;
   showUrlInput: boolean;
-  setShowUrlInput: (show: boolean) => void;
+  setShowUrlInput: React.Dispatch<React.SetStateAction<boolean>>; // Corrected type
   onLoadMedia: () => void;
 }
 
