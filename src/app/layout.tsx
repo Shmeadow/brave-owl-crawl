@@ -6,8 +6,6 @@ import { createClient } from '@supabase/supabase-js';
 import { AppWrapper } from "@/app/app-wrapper";
 import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { SidebarProvider } from "@/components/sidebar/sidebar-context";
-import { WidgetProvider } from "@/components/widget/widget-context";
-import { MediaPlayerProvider } from "@/components/media-player-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -97,11 +95,9 @@ export default async function RootLayout({
         >
           <SessionContextProvider>
             <SidebarProvider>
-              <MediaPlayerProvider>
                 <AppWrapper>
                   {children}
                 </AppWrapper>
-              </MediaPlayerProvider>
             </SidebarProvider>
           </SessionContextProvider>
         </ThemeProvider>

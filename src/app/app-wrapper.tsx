@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-// Removed: import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
 import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { Toaster } from "@/components/ui/sonner";
@@ -13,10 +12,9 @@ import { ChatPanel } from "@/components/chat-panel";
 import { WidgetProvider } from "@/components/widget/widget-context";
 import { WidgetContainer } from "@/components/widget/widget-container";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
-import { MediaPlayerBar } from "@/components/media-player-bar";
-import { useMediaPlayer } from "@/components/media-player-context";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { cn } from "@/lib/utils";
+import { SimpleAudioPlayer } from "@/components/simple-audio-player"; // Import the new player
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
 const CHAT_PANEL_WIDTH_OPEN = 320;
@@ -46,7 +44,6 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const pathname = usePathname();
   const { isSidebarOpen } = useSidebar();
   const { isAlwaysOpen } = useSidebarPreference();
-  const { youtubeEmbedUrl, spotifyEmbedUrl } = useMediaPlayer();
   const { currentRoomId, isCurrentRoomWritable } = useCurrentRoom();
 
   const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(true);
@@ -140,7 +137,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
           chatPanelWidth={chatPanelCurrentWidth}
         />
       )}
-      {mounted && (youtubeEmbedUrl || spotifyEmbedUrl) && <MediaPlayerBar />}
+      {mounted && <SimpleAudioPlayer />} {/* Render the new SimpleAudioPlayer */}
       <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
       <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
         <ChatPanel
