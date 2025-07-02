@@ -1,29 +1,10 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { SessionContextProvider } from "@/integrations/supabase/auth";
-import { GoalReminderBar } from "@/components/goal-reminder-bar";
-import { PomodoroWidget } from "@/components/pomodoro-widget";
-import { Toaster } from "@/components/ui/sonner";
-import { UpgradeModal } from "@/components/upgrade-modal";
-import { usePathname } from "next/navigation";
-import { Header } from "@/components/header";
-import { useSidebar } from "@/components/sidebar/sidebar-context";
-import { Sidebar } from "@/components/sidebar/sidebar"; // Import the refactored Sidebar
-import { ChatPanel } from "@/components/chat-panel";
-import { WidgetProvider, useWidget } from "@/components/widget/widget-context"; // Import useWidget
-import { WidgetContainer } from "@/components/widget/widget-container";
-import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
-import { MediaPlayerBar } from "@/components/media-player-bar";
-import { useMediaPlayer } from "@/components/media-player-context";
-import { useCurrentRoom } from "@/hooks/use-current-room";
-import { cn } from "@/lib/utils";
-
-const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
-const CHAT_PANEL_WIDTH_OPEN = 320;
-const CHAT_PANEL_WIDTH_CLOSED = 56;
-const HEADER_HEIGHT = 64;
-const SIDEBAR_WIDTH_CLOSED = 60; // Corrected constant
-const SIDEBAR_WIDTH_OPEN = 200; // New constant for open sidebar width
+import { SidebarProvider } from "@/components/sidebar/sidebar-context";
+import { WidgetProvider } from "@/components/widget/widget-context";
+import { MediaPlayerProvider } from "@/components/media-player-context";
+import { AppContent } from "@/components/app-content"; // Import the new AppContent component
 
 const WIDGET_CONFIGS = {
   "spaces": { initialPosition: { x: 150, y: 100 }, initialWidth: 600, initialHeight: 700 },
@@ -44,18 +25,8 @@ interface AppWrapperProps {
 }
 
 export function AppWrapper({ children }: AppWrapperProps) {
-  const pathname = usePathname();
-  const { isSidebarOpen } = useSidebar();
-  const { isAlwaysOpen } = useSidebarPreference();
-  const { youtubeEmbedUrl, spotifyEmbedUrl } = useMediaPlayer();
-  const { currentRoomId, isCurrentRoomWritable } = useCurrentRoom();
-
-  const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(true);
-  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [unreadChatCount, setUnreadChatCount] = useState(0);
-  const [mounted, setMounted] = useState(false);
-
+  // State for mainContentArea is now managed within AppContent
+  // We still need to calculate it here to pass to WidgetProvider
   const [mainContentArea, setMainContentArea] = useState({
     left: 0,
     top: 0,
@@ -63,119 +34,35 @@ export function AppWrapper({ children }: AppWrapperProps) {
     height: 0,
   });
 
+  // This useEffect is still needed here to provide mainContentArea to WidgetProvider
+  // The actual calculation logic will be duplicated in AppContent for its internal use
+  // This is a trade-off to ensure correct context nesting.
   useEffect(() => {
-    setMounted(true);
-    if (typeof window !== 'undefined') {
-      const savedMinimized = localStorage.getItem(LOCAL_STORAGE_POMODORO_MINIMIZED_KEY);
-      setIsPomodoroWidgetMinimized(savedMinimized === 'false' ? false : true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (mounted && typeof window !== 'undefined') {
-      localStorage.setItem(LOCAL_STORAGE_POMODORO_MINIMIZED_KEY, String(isPomodoroWidgetMinimized));
-    }
-  }, [isPomodoroWidgetMinimized, mounted]);
-
-  useEffect(() => {
-    const updateMainContentArea = () => {
-      const sidebarCurrentWidth = (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH_OPEN : SIDEBAR_WIDTH_CLOSED; // Corrected logic
-      const chatPanelWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
-      
+    const HEADER_HEIGHT = 64;
+    const SIDEBAR_WIDTH_CLOSED = 60;
+    const CHAT_PANEL_WIDTH_CLOSED = 56; // Assuming chat is closed by default for initial calculation
+    
+    const updateMainContentAreaForProvider = () => {
       setMainContentArea({
-        left: sidebarCurrentWidth,
+        left: SIDEBAR_WIDTH_CLOSED, // Use closed width for initial provider setup
         top: HEADER_HEIGHT,
-        width: window.innerWidth - sidebarCurrentWidth - chatPanelWidth,
+        width: window.innerWidth - SIDEBAR_WIDTH_CLOSED - CHAT_PANEL_WIDTH_CLOSED,
         height: window.innerHeight - HEADER_HEIGHT,
       });
     };
 
-    if (mounted) {
-      updateMainContentArea();
-      window.addEventListener('resize', updateMainContentArea);
-      return () => window.removeEventListener('resize', updateMainContentArea);
-    }
-  }, [isSidebarOpen, isChatOpen, isAlwaysOpen, mounted]);
+    updateMainContentAreaForProvider();
+    window.addEventListener('resize', updateMainContentAreaForProvider);
+    return () => window.removeEventListener('resize', updateMainContentAreaForProvider);
+  }, []);
 
-  const shouldShowPomodoro = pathname !== '/account' && pathname !== '/admin-settings';
-
-  const handleOpenUpgradeModal = () => {
-    setIsUpgradeModalOpen(true);
-  };
-
-  const handleNewUnreadMessage = () => {
-    setUnreadChatCount(prev => prev + 1);
-  };
-
-  const handleClearUnreadMessages = () => {
-    setUnreadChatCount(0);
-  };
-
-  // Get toggleWidget from useWidget hook
-  const { toggleWidget } = useWidget();
 
   return (
     <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
-      <SidebarProvider toggleWidget={toggleWidget}> {/* Pass toggleWidget as a prop */}
-        <div className="flex flex-col flex-1 min-h-screen">
-          <Header
-            onOpenUpgradeModal={handleOpenUpgradeModal}
-            isChatOpen={isChatOpen}
-            onToggleChat={() => {
-              setIsChatOpen(!isChatOpen);
-              if (!isChatOpen) {
-                handleClearUnreadMessages();
-              }
-            }}
-            onNewUnreadMessage={handleNewUnreadMessage}
-            onClearUnreadMessages={handleClearUnreadMessages}
-            unreadChatCount={unreadChatCount}
-          />
-          <Sidebar /> {/* The refactored navigation sidebar */}
-          <main
-            className={cn(
-              "flex flex-col flex-1 w-full overflow-auto transition-all duration-300 ease-in-out",
-              "items-center justify-center"
-            )}
-            style={{
-              marginLeft: mainContentArea.left,
-              width: mainContentArea.width,
-              height: mainContentArea.height,
-              marginTop: mainContentArea.top,
-            }}
-          >
-            {children}
-          </main>
-        </div>
-
-        <GoalReminderBar />
-        {mounted && shouldShowPomodoro && (
-          <PomodoroWidget
-            isMinimized={isPomodoroWidgetMinimized}
-            setIsMinimized={setIsPomodoroWidgetMinimized}
-            chatPanelWidth={isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED}
-          />
-        )}
-        {mounted && (youtubeEmbedUrl || spotifyEmbedUrl) && <MediaPlayerBar />}
-        <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
-        <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
-          <ChatPanel
-            isOpen={isChatOpen}
-            onToggleOpen={() => {
-              setIsChatOpen(!isChatOpen);
-              if (!isChatOpen) {
-                handleClearUnreadMessages();
-              }
-            }}
-            onNewUnreadMessage={handleNewUnreadMessage}
-            onClearUnreadMessages={handleClearUnreadMessages}
-            unreadCount={unreadChatCount}
-            currentRoomId={currentRoomId}
-            isCurrentRoomWritable={isCurrentRoomWritable}
-          />
-        </div>
-        <Toaster />
-        <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} /> {/* This is where draggable widgets are rendered */}
+      <SidebarProvider> {/* SidebarProvider no longer needs toggleWidget prop here */}
+        <AppContent>
+          {children}
+        </AppContent>
       </SidebarProvider>
     </WidgetProvider>
   );

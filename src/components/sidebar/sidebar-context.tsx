@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useWidget } from '../widget/widget-context'; // Import useWidget
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Wind, BookOpen, Goal } from "lucide-react";
 
 // Define navigation items and their icons
@@ -29,14 +30,11 @@ interface SidebarContextType {
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
-interface SidebarProviderProps {
-  children: React.ReactNode;
-  toggleWidget: (id: string, title: string) => void; // Accept toggleWidget as a prop
-}
-
-export function SidebarProvider({ children, toggleWidget }: SidebarProviderProps) {
+export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [activePanel, setActivePanelState] = useState<ActivePanel | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const { toggleWidget } = useWidget(); // Get toggleWidget from WidgetContext (now safe to call here)
 
   // Load active panel from local storage on mount
   useEffect(() => {
