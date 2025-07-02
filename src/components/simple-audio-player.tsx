@@ -164,11 +164,11 @@ const SimpleAudioPlayer = () => {
             <p className="text-[0.6rem] text-gray-600 truncate">{audioArtist}</p>
             <button
               onClick={() => setShowUrlInput(prev => !prev)}
-              className="text-xs font-bold text-blue-600 hover:underline mt-0.5 flex items-center" // Increased font size and made bold
+              className="text-xs font-bold text-blue-600 hover:underline mt-0.5 flex items-center"
               title="Change Music URL"
             >
-              <Link size={12} className="mr-0.5" /> {/* Increased icon size */}
-              {showUrlInput ? 'Hide URL' : 'Change Music'}
+              <Link size={12} className="mr-0.5" />
+              {showUrlInput ? 'Hide URL' : 'Embed URL'}
             </button>
           </div>
 
@@ -244,8 +244,8 @@ const SimpleAudioPlayer = () => {
 
         {/* URL Input Section */}
         {showUrlInput && (
-          <div className="mt-1 p-1 bg-gray-50 rounded-lg border border-gray-100">
-            <label htmlFor="audio-url" className="block text-[0.6rem] font-medium text-gray-700 mb-0.5">
+          <div className="mt-1 p-1 bg-muted rounded-lg border border-border">
+            <label htmlFor="audio-url" className="block text-[0.6rem] font-medium text-muted-foreground mb-0.5">
               Embed URL:
             </label>
             <input
@@ -254,9 +254,9 @@ const SimpleAudioPlayer = () => {
               value={audioUrl}
               onChange={(e) => setAudioUrl(e.target.value)}
               placeholder="e.g., song.mp3"
-              className="w-full p-0.5 text-[0.6rem] border border-gray-200 rounded-md focus:ring-gray-400 focus:border-gray-400 mb-0.5 text-gray-800"
+              className="w-full p-0.5 text-[0.6rem] border border-border rounded-md focus:ring-primary focus:border-primary mb-0.5 bg-background text-foreground placeholder-muted-foreground"
             />
-            <label htmlFor="audio-title" className="block text-[0.6rem] font-medium text-gray-700 mb-0.5">
+            <label htmlFor="audio-title" className="block text-[0.6rem] font-medium text-muted-foreground mb-0.5">
               Title:
             </label>
             <input
@@ -265,9 +265,9 @@ const SimpleAudioPlayer = () => {
               value={audioTitle}
               onChange={(e) => setAudioTitle(e.target.value)}
               placeholder="e.g., My Song"
-              className="w-full p-0.5 text-[0.6rem] border border-gray-200 rounded-md focus:ring-gray-400 focus:border-gray-400 mb-0.5 text-gray-800"
+              className="w-full p-0.5 text-[0.6rem] border border-border rounded-md focus:ring-primary focus:border-primary mb-0.5 bg-background text-foreground placeholder-muted-foreground"
             />
-            <label htmlFor="audio-artist" className="block text-[0.6rem] font-medium text-gray-700 mb-0.5">
+            <label htmlFor="audio-artist" className="block text-[0.6rem] font-medium text-muted-foreground mb-0.5">
               Artist:
             </label>
             <input
@@ -276,11 +276,11 @@ const SimpleAudioPlayer = () => {
               value={audioArtist}
               onChange={(e) => setAudioArtist(e.target.value)}
               placeholder="e.g., Artist Name"
-              className="w-full p-0.5 text-[0.6rem] border border-gray-200 rounded-md focus:ring-gray-400 focus:border-gray-400 mb-1 text-gray-800"
+              className="w-full p-0.5 text-[0.6rem] border border-border rounded-md focus:ring-primary focus:border-primary mb-1 bg-background text-foreground placeholder-muted-foreground"
             />
             <button
               onClick={loadNewAudio}
-              className="w-full bg-gray-600 text-white text-[0.6rem] py-0.5 px-1 rounded-md hover:bg-gray-700 transition duration-300 shadow-xs"
+              className="w-full bg-primary text-primary-foreground text-[0.6rem] py-0.5 px-1 rounded-md hover:bg-primary/90 transition duration-300 shadow-xs"
             >
               Load Music
             </button>
