@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useGoals } from "@/hooks/use-goals";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Button } => "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Trash2, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCurrentRoom } from "@/hooks/use-current-room";
