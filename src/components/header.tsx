@@ -3,20 +3,20 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Home, Sun, Moon, Bell, Search } from "lucide-react"; // Removed Settings icon
+import { Home, Sun, Moon, Bell, Search } from "lucide-react";
 import { useTheme } from "next-themes";
 import { ChatPanel } from "@/components/chat-panel";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
-import { UserNav } from "@/components/user-nav"; // Import UserNav
-import { UpgradeButton } from "@/components/upgrade-button"; // Import UpgradeButton
-import { useCurrentRoom } from "@/hooks/use-current-room"; // Import useCurrentRoom
+import { UserNav } from "@/components/user-nav";
+import { UpgradeButton } from "@/components/upgrade-button";
+import { useCurrentRoom } from "@/hooks/use-current-room";
 
 interface HeaderProps {
   onOpenSpotifyModal: () => void;
   onOpenUpgradeModal: () => void;
-  dailyProgress: number; // Keep dailyProgress for the clock
+  dailyProgress: number;
 }
 
 export function Header({ onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }: HeaderProps) {
@@ -26,7 +26,7 @@ export function Header({ onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatMessages, setUnreadChatMessages] = useState(0);
   const router = useRouter();
-  const { currentRoomName } = useCurrentRoom(); // Get current room name
+  const { currentRoomName } = useCurrentRoom();
 
   useEffect(() => {
     const updateClock = () => {
@@ -65,7 +65,7 @@ export function Header({ onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }
     setUnreadChatMessages(0);
   };
 
-  const displayUserName = profile?.first_name || profile?.last_name || session?.user?.email?.split('@')[0] || "Guest";
+  const displayName = profile?.first_name || profile?.last_name || session?.user?.email?.split('@')[0] || "Guest";
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md flex items-center h-16 px-4 md:px-6">
@@ -84,32 +84,32 @@ export function Header({ onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => router.push('/dashboard')} // Navigate to dashboard
+          onClick={() => router.push('/dashboard')}
           title="Go to My Room"
         >
           <Home className="h-6 w-6" />
           <span className="sr-only">Go to My Room</span>
         </Button>
-        <h1 className="text-xl font-semibold hidden sm:block truncate max-w-[150px]"> {/* Added truncate and max-w */}
-          {currentRoomName}
+        <h1 className="text-xl font-semibold hidden sm:block truncate max-w-[150px]">
+          {displayName}'s {currentRoomName}
         </h1>
       </div>
 
-      {/* Center Section: Clock and Progress Bar */}
-      <div className="flex flex-col items-center gap-1 flex-grow mx-auto w-full">
-        <div className="flex items-baseline gap-2"> {/* Time and Date side-by-side */}
-          <p className="text-4xl font-bold text-foreground leading-none">{formattedTime}</p>
-          <p className="text-sm text-muted-foreground leading-none">{formattedDate}</p>
+      {/* Right Section: Clock, Progress Bar, and Actions */}
+      <div className="flex items-center gap-4 ml-auto">
+        {/* Clock and Progress */}
+        <div className="flex flex-col items-end gap-1">
+          <div className="flex items-baseline gap-2">
+            <p className="text-4xl font-bold text-foreground leading-none">{formattedTime}</p>
+            <p className="text-sm text-muted-foreground leading-none">{formattedDate}</p>
+          </div>
+          <div className="w-full max-w-[180px] mt-1">
+            <Progress value={dailyProgress} className="h-2 rounded-full" />
+          </div>
         </div>
-        {/* Progress Bar */}
-        <div className="w-full max-w-[150px] mt-1"> {/* Added max-w-[150px] */}
-          <Progress value={dailyProgress} className="h-2 rounded-full" /> {/* Taller height */}
-        </div>
-      </div>
 
-      {/* Right Section: Actions */}
-      <div className="flex items-center gap-2 ml-auto">
-        <UpgradeButton onOpenUpgradeModal={onOpenUpgradeModal} /> {/* Replaced Search with UpgradeButton */}
+        {/* Other action buttons */}
+        <UpgradeButton onOpenUpgradeModal={onOpenUpgradeModal} />
         <Button variant="ghost" size="icon" onClick={toggleTheme} title="Toggle Theme">
           {theme === "dark" ? (
             <Sun className="h-6 w-6" />
@@ -131,7 +131,7 @@ export function Header({ onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }
             unreadCount={unreadChatMessages}
           />
         )}
-        <UserNav /> {/* Replaced Settings with UserNav */}
+        <UserNav />
       </div>
     </header>
   );
