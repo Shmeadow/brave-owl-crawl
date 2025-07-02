@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { Session, SupabaseClient } from '@supabase/supabase-js';
-import { supabase } from './client'; // Now `supabase` can be null
+import { createBrowserClient } from './client'; // Import the function
 
 export interface UserProfile {
   id: string;
@@ -10,29 +10,44 @@ export interface UserProfile {
   last_name: string | null;
   profile_image_url: string | null;
   role: string | null;
-  time_format_24h: boolean | null; // Added new field
+  time_format_24h: boolean | null;
 }
 
 interface SupabaseContextType {
-  supabase: SupabaseClient | null; // Allow null
+  supabase: SupabaseClient | null;
   session: Session | null;
-  profile: UserProfile | null; // Add profile to context
+  profile: UserProfile | null;
   loading: boolean;
-  refreshProfile: () => Promise<void>; // Add this function
+  refreshProfile: () => Promise<void>;
 }
 
 const SupabaseContext = createContext<SupabaseContextType | undefined>(undefined);
 
 export function SessionContextProvider({ children }: { children: React.ReactNode }) {
+  const [supabaseClient, setSupabaseClient] = useState<SupabaseClient | null>(null); // State for the Supabase client
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null); // State for user profile
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = useCallback(async (userId: string) => {
-    if (!supabase) return;
-    const { data, error } = await supabase
+  // Effect to initialize Supabase client once on mount
+  useEffect(() => {
+    if (!supabaseClient) { // Only attempt to initialize if not already initialized
+      console.log("SessionContextProvider: Attempting to create Supabase client...");
+      const client = createBrowserClient();
+      setSupabaseClient(client);
+      if (!client) {
+        console.error("SessionContextProvider: Supabase client failed to initialize.");
+        setLoading(false); // If client fails to initialize, stop loading
+      } else {
+        console.log("SessionContextProvider: Supabase client created successfully.");
+      }
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount
+
+  const fetchProfile = useCallback(async (userId: string, client: SupabaseClient) => {
+    const { data, error } = await client
       .from('profiles')
-      .select('id, first_name, last_name, profile_image_url, role, time_format_24h') // Select new field
+      .select('id, first_name, last_name, profile_image_url, role, time_format_24h')
       .eq('id', userId)
       .single();
 
@@ -43,9 +58,9 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
       setProfile(data as UserProfile);
     } else {
       // If no profile found, create a default one
-      const { data: newProfile, error: insertError } = await supabase
+      const { data: newProfile, error: insertError } = await client
         .from('profiles')
-        .insert({ id: userId, first_name: null, last_name: null, profile_image_url: null, role: 'user', time_format_24h: true }) // Default to 24h
+        .insert({ id: userId, first_name: null, last_name: null, profile_image_url: null, role: 'user', time_format_24h: true })
         .select('id, first_name, last_name, profile_image_url, role, time_format_24h')
         .single();
       if (insertError) {
@@ -54,46 +69,56 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
         setProfile(newProfile as UserProfile);
       }
     }
-  }, []); // fetchProfile depends only on supabase, which is a constant import
+  }, []);
 
   const refreshProfile = useCallback(async () => {
-    if (session?.user?.id) {
-      await fetchProfile(session.user.id);
+    if (session?.user?.id && supabaseClient) {
+      await fetchProfile(session.user.id, supabaseClient);
     }
-  }, [session, fetchProfile]); // Depends on session and fetchProfile
+  }, [session, fetchProfile, supabaseClient]);
 
   useEffect(() => {
-    if (!supabase) {
-      console.error("Supabase client is not initialized. Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set.");
-      setLoading(false);
+    if (!supabaseClient) {
+      // Supabase client is not yet available, wait for it.
+      // If loading is already false, it means client initialization failed.
+      if (loading) { // Only if we are still in a loading state
+        console.log("SessionContextProvider: Waiting for Supabase client to be ready...");
+      }
       return;
     }
 
+    console.log("SessionContextProvider: Supabase client is ready. Setting up auth state listener.");
     const handleAuthStateChange = async (_event: string, currentSession: Session | null) => {
       setSession(currentSession);
       if (currentSession) {
-        await fetchProfile(currentSession.user.id);
+        console.log("Auth state changed: User is logged in. Fetching profile...");
+        await fetchProfile(currentSession.user.id, supabaseClient);
       } else {
-        setProfile(null); // Clear profile if no session
+        console.log("Auth state changed: User is logged out. Clearing profile.");
+        setProfile(null);
       }
       setLoading(false);
     };
 
     // Initial session check
-    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+    supabaseClient.auth.getSession().then(({ data: { session: initialSession } }) => {
+      console.log("Initial Supabase session fetched.");
       handleAuthStateChange('INITIAL_LOAD', initialSession);
     }).catch(error => {
       console.error("Error fetching initial Supabase session:", error);
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(handleAuthStateChange);
 
-    return () => subscription.unsubscribe();
-  }, [fetchProfile]); // Dependency array includes fetchProfile
+    return () => {
+      console.log("Cleaning up Supabase auth state listener.");
+      subscription.unsubscribe();
+    };
+  }, [supabaseClient, fetchProfile, loading]); // Add loading to dependency array to avoid infinite loop if client fails
 
   return (
-    <SupabaseContext.Provider value={{ supabase, session, profile, loading, refreshProfile }}>
+    <SupabaseContext.Provider value={{ supabase: supabaseClient, session, profile, loading, refreshProfile }}>
       {children}
     </SupabaseContext.Provider>
   );
