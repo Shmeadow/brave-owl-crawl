@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Pause, Volume2, VolumeX, Youtube, Music, Minus, ChevronLeft } from "lucide-react"; // Removed X icon
+import { Play, Pause, Volume2, VolumeX, Youtube, Music, Minus, ChevronLeft, X } from "lucide-react"; // Added X icon
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { useYouTubePlayer } from "@/hooks/use-youtube-player";
