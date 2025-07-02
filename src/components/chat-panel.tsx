@@ -13,8 +13,8 @@ import { toast } from "sonner";
 interface Message {
   id: string;
   user_id: string;
-  room_id: string; // Added room_id
-  author: string; // This will be derived from profile or user ID
+  room_id: string;
+  author: string;
   content: string;
   created_at: string;
 }
@@ -22,13 +22,14 @@ interface Message {
 interface ChatPanelProps {
   isOpen: boolean;
   onToggleOpen: () => void;
-  onNewUnreadMessage: () => void; // Callback for new unread messages
-  onClearUnreadMessages: () => void; // Callback to clear unread messages
-  unreadCount: number; // Current unread count
-  currentRoomId: string | null; // New prop for current room ID
+  onNewUnreadMessage: () => void;
+  onClearUnreadMessages: () => void;
+  unreadCount: number;
+  currentRoomId: string | null;
+  isCurrentRoomWritable: boolean; // New prop
 }
 
-export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnreadMessages, unreadCount, currentRoomId }: ChatPanelProps) {
+export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnreadMessages, unreadCount, currentRoomId, isCurrentRoomWritable }: ChatPanelProps) {
   const { supabase, session, profile, loading: authLoading } = useSupabase();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
@@ -45,7 +46,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
       const { data, error } = await supabase
         .from('chat_messages')
         .select('id, user_id, room_id, content, created_at')
-        .eq('room_id', roomId) // Filter by room_id
+        .eq('room_id', roomId)
         .order('created_at', { ascending: true })
         .limit(50);
 
@@ -77,10 +78,8 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
   useEffect(() => {
     if (authLoading || !supabase || !currentRoomId) return;
 
-    // Fetch messages for the current room
     fetchMessages(currentRoomId);
 
-    // Setup subscription for the current room
     const channelName = `chat_room_${currentRoomId}`;
     const subscription = supabase
       .channel(channelName)
@@ -108,7 +107,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
 
     return () => {
       supabase.removeChannel(subscription);
-      setMessages([]); // Clear messages when room changes or unmounts
+      setMessages([]);
     };
   }, [supabase, isOpen, session?.user?.id, onNewUnreadMessage, profile, authLoading, currentRoomId]);
 
@@ -122,6 +121,10 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
   }, [messages, isOpen]);
 
   const handleSendMessage = async () => {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to send messages in this room.");
+      return;
+    }
     if (!currentRoomId) {
       toast.error("Please select a room to chat in.");
       return;
@@ -130,7 +133,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
       const userId = session?.user?.id || null;
       const { error } = await supabase.from('chat_messages').insert({
         user_id: userId,
-        room_id: currentRoomId, // Include room_id
+        room_id: currentRoomId,
         content: inputMessage.trim(),
       });
 
@@ -272,9 +275,9 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
                   handleSendMessage();
                 }
               }}
-              disabled={!currentRoomId}
+              disabled={!currentRoomId || !isCurrentRoomWritable}
             />
-            <Button type="submit" size="icon" onClick={handleSendMessage} disabled={!currentRoomId}>
+            <Button type="submit" size="icon" onClick={handleSendMessage} disabled={!currentRoomId || !isCurrentRoomWritable}>
               <Send className="h-4 w-4" />
               <span className="sr-only">Send Message</span>
             </Button>

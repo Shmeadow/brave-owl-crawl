@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns"; // Corrected: Removed '='
+import { format } from "date-fns";
 import { CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSupabase } from "@/integrations/supabase/auth";
@@ -30,7 +30,7 @@ interface CalendarEvent {
   user_id?: string;
   title: string;
   description: string | null;
-  event_date: string; // ISO date string
+  event_date: string;
   created_at: string;
 }
 
@@ -41,7 +41,11 @@ const eventFormSchema = z.object({
   description: z.string().optional(),
 });
 
-export function CalendarWidget() {
+interface CalendarWidgetProps {
+  isCurrentRoomWritable: boolean;
+}
+
+export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
   const { supabase, session, loading: authLoading } = useSupabase();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -62,7 +66,6 @@ export function CalendarWidget() {
     setLoadingEvents(true);
     if (session && supabase) {
       setIsLoggedInMode(true);
-      // Migrate local events first
       const localEventsString = localStorage.getItem(LOCAL_STORAGE_KEY_EVENTS);
       let localEvents: CalendarEvent[] = [];
       try {
@@ -143,6 +146,10 @@ export function CalendarWidget() {
   }, [events, isLoggedInMode, loadingEvents]);
 
   const handleAddEvent = useCallback(async (values: z.infer<typeof eventFormSchema>) => {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to add events in this room.");
+      return;
+    }
     if (!date) {
       toast.error("Please select a date for the event.");
       return;
@@ -181,9 +188,13 @@ export function CalendarWidget() {
       toast.success("Event added successfully (saved locally)!");
       form.reset();
     }
-  }, [date, isLoggedInMode, session, supabase, form]);
+  }, [date, isLoggedInMode, session, supabase, form, isCurrentRoomWritable]);
 
   const handleDeleteEvent = useCallback(async (eventId: string) => {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to delete events in this room.");
+      return;
+    }
     if (isLoggedInMode && session && supabase) {
       const { error } = await supabase
         .from('calendar_events')
@@ -202,7 +213,7 @@ export function CalendarWidget() {
       setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
       toast.success("Event deleted (locally).");
     }
-  }, [isLoggedInMode, session, supabase]);
+  }, [isLoggedInMode, session, supabase, isCurrentRoomWritable]);
 
   const selectedDayEvents = date
     ? events.filter(event => event.event_date === format(date, 'yyyy-MM-dd'))
@@ -224,7 +235,7 @@ export function CalendarWidget() {
       <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto py-4">
         <h1 className="text-3xl font-bold text-foreground">Your Calendar</h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
-          <Card className="p-4 flex flex-col items-center bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
+          <Card className="p-4 flex flex-col items-center bg-card backdrop-blur-xl border-white/20">
             <CardHeader className="w-full text-center pb-4">
               <CardTitle className="text-xl">Select a Date</CardTitle>
             </CardHeader>
@@ -240,7 +251,7 @@ export function CalendarWidget() {
             </CardContent>
           </Card>
 
-          <Card className="p-4 flex flex-col bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
+          <Card className="p-4 flex flex-col bg-card backdrop-blur-xl border-white/20">
             <CardHeader className="w-full text-center pb-4">
               <CardTitle className="text-xl">
                 Events for {date ? format(date, 'PPP') : 'Selected Date'}
@@ -256,7 +267,7 @@ export function CalendarWidget() {
                       <FormItem>
                         <FormLabel>Event Title</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., Team Meeting" {...field} />
+                          <Input placeholder="e.g., Team Meeting" {...field} disabled={!isCurrentRoomWritable} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -269,13 +280,13 @@ export function CalendarWidget() {
                       <FormItem>
                         <FormLabel>Description (Optional)</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Details about the event..." {...field} rows={2} />
+                          <Textarea placeholder="Details about the event..." {...field} rows={2} disabled={!isCurrentRoomWritable} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={!date}>
+                  <Button type="submit" className="w-full" disabled={!date || !isCurrentRoomWritable}>
                     <PlusCircle className="mr-2 h-4 w-4" /> Add Event
                   </Button>
                 </form>
@@ -291,7 +302,7 @@ export function CalendarWidget() {
                   <ScrollArea className="flex-1 max-h-[300px] lg:max-h-[unset]">
                     <div className="space-y-2 pr-2">
                       {selectedDayEvents.map((event) => (
-                        <div key={event.id} className="flex items-center justify-between p-2 border rounded-md bg-muted backdrop-blur-md"> {/* Removed /20 */}
+                        <div key={event.id} className="flex items-center justify-between p-2 border rounded-md bg-muted backdrop-blur-md">
                           <div>
                             <p className="font-medium text-sm">{event.title}</p>
                             {event.description && <p className="text-xs text-muted-foreground">{event.description}</p>}
@@ -301,6 +312,7 @@ export function CalendarWidget() {
                             size="icon"
                             className="text-red-500 hover:bg-red-100 hover:text-red-600 h-7 w-7"
                             onClick={() => handleDeleteEvent(event.id)}
+                            disabled={!isCurrentRoomWritable}
                           >
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Delete Event</span>

@@ -16,7 +16,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { PomodoroMode } from "@/hooks/use-pomodoro-state";
-import { DialogContent } from "@/components/ui/dialog"; // Import DialogContent
+import { DialogContent } from "@/components/ui/dialog";
+import { useCurrentRoom } from "@/hooks/use-current-room"; // Import useCurrentRoom
 
 const formSchema = z.object({
   focusMinutes: z.coerce.number().min(1, { message: "Focus time must be at least 1 minute." }).max(120, { message: "Focus time cannot exceed 120 minutes." }),
@@ -34,6 +35,7 @@ interface PomodoroSettingsModalProps {
 }
 
 export function PomodoroSettingsModal({ initialTimes, onSave }: PomodoroSettingsModalProps) {
+  const { isCurrentRoomWritable } = useCurrentRoom(); // Get writability status
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -44,6 +46,10 @@ export function PomodoroSettingsModal({ initialTimes, onSave }: PomodoroSettings
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to change Pomodoro settings in this room.");
+      return;
+    }
     onSave('focus', values.focusMinutes * 60);
     onSave('short-break', values.shortBreakMinutes * 60);
     onSave('long-break', values.longBreakMinutes * 60);
@@ -51,7 +57,7 @@ export function PomodoroSettingsModal({ initialTimes, onSave }: PomodoroSettings
   }
 
   return (
-    <DialogContent className="sm:max-w-[425px] z-[1001] bg-card backdrop-blur-xl border-white/20"> {/* Applied glass effect here, removed /40 */}
+    <DialogContent className="sm:max-w-[425px] z-[1001] bg-card backdrop-blur-xl border-white/20">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
@@ -61,7 +67,7 @@ export function PomodoroSettingsModal({ initialTimes, onSave }: PomodoroSettings
               <FormItem>
                 <FormLabel>Focus Time (minutes)</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} />
+                  <Input type="number" {...field} disabled={!isCurrentRoomWritable} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -74,7 +80,7 @@ export function PomodoroSettingsModal({ initialTimes, onSave }: PomodoroSettings
               <FormItem>
                 <FormLabel>Short Break (minutes)</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} />
+                  <Input type="number" {...field} disabled={!isCurrentRoomWritable} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -87,13 +93,13 @@ export function PomodoroSettingsModal({ initialTimes, onSave }: PomodoroSettings
               <FormItem>
                 <FormLabel>Long Break (minutes)</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} />
+                  <Input type="number" {...field} disabled={!isCurrentRoomWritable} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full">Save Settings</Button>
+          <Button type="submit" className="w-full" disabled={!isCurrentRoomWritable}>Save Settings</Button>
         </form>
       </Form>
     </DialogContent>

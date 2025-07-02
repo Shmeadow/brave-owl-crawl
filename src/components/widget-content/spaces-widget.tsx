@@ -14,7 +14,11 @@ import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
-export function SpacesWidget() {
+interface SpacesWidgetProps {
+  isCurrentRoomWritable: boolean;
+}
+
+export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
   const { supabase, session, profile, loading: authLoading } = useSupabase();
   const {
     rooms,
@@ -34,6 +38,10 @@ export function SpacesWidget() {
   const [generatedInviteCodes, setGeneratedInviteCodes] = useState<{ [roomId: string]: string | null }>({});
 
   const handleCreateNewRoom = async () => {
+    if (!session) {
+      toast.error("You must be logged in to create a room.");
+      return;
+    }
     if (!newRoomName.trim()) {
       toast.error("Room name cannot be empty.");
       return;
@@ -52,6 +60,10 @@ export function SpacesWidget() {
   };
 
   const handleGenerateCodeClick = async (roomId: string) => {
+    if (!session) {
+      toast.error("You must be logged in to generate an invite code.");
+      return;
+    }
     const code = await handleGenerateInviteCode(roomId);
     if (code) {
       setGeneratedInviteCodes(prev => ({ ...prev, [roomId]: code }));
@@ -59,6 +71,10 @@ export function SpacesWidget() {
   };
 
   const handleJoinCodeSubmit = async () => {
+    if (!session) {
+      toast.error("You must be logged in to join a room.");
+      return;
+    }
     if (!inviteCodeInput.trim()) {
       toast.error("Please enter an invite code.");
       return;
@@ -104,6 +120,7 @@ export function SpacesWidget() {
                   placeholder="e.g., Cozy Study Nook"
                   value={newRoomName}
                   onChange={(e) => setNewRoomName(e.target.value)}
+                  disabled={!session}
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -112,9 +129,10 @@ export function SpacesWidget() {
                   id="new-room-public"
                   checked={isNewRoomPublic}
                   onCheckedChange={setIsNewRoomPublic}
+                  disabled={!session}
                 />
               </div>
-              <Button onClick={handleCreateNewRoom} className="w-full">
+              <Button onClick={handleCreateNewRoom} className="w-full" disabled={!session}>
                 <PlusCircle className="mr-2 h-4 w-4" /> Create Room
               </Button>
             </CardContent>
@@ -153,6 +171,7 @@ export function SpacesWidget() {
                             size="icon"
                             onClick={() => handleGenerateCodeClick(room.id)}
                             title="Generate Invite Code"
+                            disabled={!session}
                           >
                             <Share2 className="h-4 w-4" />
                             <span className="sr-only">Generate Invite Code</span>
@@ -163,6 +182,7 @@ export function SpacesWidget() {
                           size="icon"
                           onClick={() => handleToggleRoomPublicStatus(room.id, room.is_public)}
                           title={room.is_public ? "Make Private" : "Make Public"}
+                          disabled={!session}
                         >
                           {room.is_public ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
                           <span className="sr-only">{room.is_public ? "Make Private" : "Make Public"}</span>
@@ -183,6 +203,7 @@ export function SpacesWidget() {
                           className="text-red-500 hover:bg-red-100 hover:text-red-600"
                           onClick={() => handleDeleteRoom(room.id)}
                           title="Delete Room"
+                          disabled={!session}
                         >
                           <Trash2 className="h-4 w-4" />
                           <span className="sr-only">Delete Room</span>
@@ -221,6 +242,7 @@ export function SpacesWidget() {
                           className="text-red-500 hover:bg-red-100 hover:text-red-600"
                           onClick={() => handleLeaveRoom(room.id)}
                           title="Leave Room"
+                          disabled={!session}
                         >
                           <LogOut className="h-4 w-4" />
                           <span className="sr-only">Leave Room</span>
@@ -247,9 +269,10 @@ export function SpacesWidget() {
                   placeholder="Enter invite code"
                   value={inviteCodeInput}
                   onChange={(e) => setInviteCodeInput(e.target.value)}
+                  disabled={!session}
                 />
               </div>
-              <Button onClick={handleJoinCodeSubmit} className="w-full">
+              <Button onClick={handleJoinCodeSubmit} className="w-full" disabled={!session}>
                 <LogIn className="mr-2 h-4 w-4" /> Join Room
               </Button>
             </CardContent>

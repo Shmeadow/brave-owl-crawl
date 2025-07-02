@@ -16,17 +16,17 @@ interface WidgetProps {
   isMinimized: boolean;
   isMaximized: boolean;
   isPinned: boolean;
-  isTopmost: boolean; // New prop
+  isTopmost: boolean;
   position: { x: number; y: number };
   size: { width: number; height: number };
   zIndex: number;
-  // onPositionChange: (newPosition: { x: number; y: number }) => void; // Removed this prop
   onSizeChange: (newSize: { width: number; height: number }) => void;
   onBringToFront: () => void;
   onMinimize: (id: string) => void;
   onMaximize: (id: string) => void;
   onPin: (id: string) => void;
   onClose: (id: string) => void;
+  isCurrentRoomWritable: boolean;
 }
 
 export function Widget({
@@ -37,81 +37,73 @@ export function Widget({
   isMinimized,
   isMaximized,
   isPinned,
-  isTopmost, // Destructure new prop
+  isTopmost,
   position,
   size,
   zIndex,
-  // onPositionChange, // This will be handled by onDragEnd in parent
   onSizeChange,
   onBringToFront,
   onMinimize,
   onMaximize,
   onPin,
   onClose,
+  isCurrentRoomWritable,
 }: WidgetProps) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: `widget-${id}`,
-    data: { id, type: "widget", initialPosition: position }, // Pass initial position for onDragEnd
+    data: { id, type: "widget", initialPosition: position },
     disabled: isPinned || isMaximized,
   });
 
-  // Apply transform only for active dragging, otherwise use the stored position
-  // The transform object contains the delta from the start of the drag.
-  // The actual position update will happen in the parent's onDragEnd.
   const currentTransformStyle = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
   } : {};
 
   const isVisuallyMinimized = isMinimized || isPinned;
   const isResizable = !isMaximized && !isVisuallyMinimized;
-  const isDraggable = !isMaximized && !isPinned; // Draggable if not maximized or pinned (includes minimized)
+  const isDraggable = !isMaximized && !isPinned;
 
-  // Helper function to render the widget's main content area
   const renderWidgetContent = () => {
     return (
       <CardContent className="flex-grow p-0 overflow-hidden">
-        <Content />
+        <Content isCurrentRoomWritable={isCurrentRoomWritable} />
       </CardContent>
     );
   };
 
   return (
     <Card
-      ref={setNodeRef} // Set node ref for draggable
+      ref={setNodeRef}
       className={cn(
-        "absolute bg-card border-white/20 shadow-lg rounded-lg flex flex-col overflow-hidden", // Removed /40
+        "absolute bg-card border-white/20 shadow-lg rounded-lg flex flex-col overflow-hidden",
         "transition-all duration-300 ease-in-out",
-        isTopmost ? "backdrop-blur-2xl" : "backdrop-blur-xl", // Dynamic blur based on isTopmost
-        // Sizing based on state
+        isTopmost ? "backdrop-blur-2xl" : "backdrop-blur-xl",
         isMaximized ? "inset-0 w-full h-full" : "",
-        isPinned ? "w-[192px] h-[48px]" : "", // Pinned fixed size
-        isMinimized && !isPinned ? "w-56 h-12" : "", // Floating minimized fixed size
+        isPinned ? "w-[192px] h-[48px]" : "",
+        isMinimized && !isPinned ? "w-56 h-12" : "",
         
-        // Cursor and resize behavior
         isResizable ? "resize" : "",
-        isMinimized && !isPinned ? "cursor-pointer" : "", // Minimized is clickable to restore
+        isMinimized && !isPinned ? "cursor-pointer" : "",
         "pointer-events-auto"
       )}
       style={{
-        left: isMaximized ? undefined : position.x, // Apply position.x if not maximized
-        top: isMaximized ? undefined : position.y, // Apply position.y if not maximized
-        width: (!isMaximized && !isPinned && !isMinimized) ? size.width : undefined, // Only apply if normal floating
-        height: (!isMaximized && !isPinned && !isMinimized) ? size.height : undefined, // Only apply if normal floating
-        zIndex: zIndex, // Use the zIndex from props
-        ...currentTransformStyle // Apply transform for dragging
+        left: isMaximized ? undefined : position.x,
+        top: isMaximized ? undefined : position.y,
+        width: (!isMaximized && !isPinned && !isMinimized) ? size.width : undefined,
+        height: (!isMaximized && !isPinned && !isMinimized) ? size.height : undefined,
+        zIndex: zIndex,
+        ...currentTransformStyle
       }}
-      onClick={isMinimized && !isPinned ? () => onMinimize(id) : undefined} // Only expand floating minimized on click
+      onClick={isMinimized && !isPinned ? () => onMinimize(id) : undefined}
       onMouseDown={onBringToFront}
     >
-      {/* Always render CardHeader, but its content changes */}
       <CardHeader
         className={cn(
           "flex flex-row items-center justify-between space-y-0",
-          isVisuallyMinimized ? "p-2 h-12" : "pb-2" // Smaller padding/height for minimized/pinned header
+          isVisuallyMinimized ? "p-2 h-12" : "pb-2"
         )}
       >
         {isVisuallyMinimized ? (
-          // Content for minimized/pinned header
           <>
             <div 
               className={cn("flex items-center gap-2 flex-1 min-w-0", isDraggable && "cursor-grab")}
@@ -122,7 +114,6 @@ export function Widget({
             </div>
             <div className="flex gap-1">
               {isPinned ? (
-                // Pinned controls
                 <>
                   <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
                     <Maximize className="h-4 w-4" />
@@ -132,7 +123,6 @@ export function Widget({
                   </Button>
                 </>
               ) : (
-                // Floating minimized controls
                 <>
                   <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
                     <Maximize className="h-4 w-4" />
@@ -148,7 +138,6 @@ export function Widget({
             </div>
           </>
         ) : (
-          // Content for normal/maximized header
           <>
             <div 
               className={cn("flex-1 min-w-0", isDraggable && "cursor-grab")}
@@ -176,7 +165,6 @@ export function Widget({
         )}
       </CardHeader>
 
-      {/* Render content only if not visually minimized */}
       {!isVisuallyMinimized && (
         <ResizableBox
           width={size.width}
@@ -189,7 +177,7 @@ export function Widget({
           minConstraints={[200, 150]}
           maxConstraints={[window.innerWidth, window.innerHeight]}
           className={cn(
-            "flex-grow flex flex-col overflow-hidden", // This should be overflow-hidden to prevent ResizableBox from having its own scrollbar
+            "flex-grow flex flex-col overflow-hidden",
             isMaximized ? "w-full h-full" : ""
           )}
           handle={null}

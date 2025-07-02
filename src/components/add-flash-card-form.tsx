@@ -24,9 +24,10 @@ const formSchema = z.object({
 
 interface AddFlashCardFormProps {
   onAddCard: (card: { front: string; back: string }) => void;
+  isCurrentRoomWritable: boolean;
 }
 
-export function AddFlashCardForm({ onAddCard }: AddFlashCardFormProps) {
+export function AddFlashCardForm({ onAddCard, isCurrentRoomWritable }: AddFlashCardFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -36,6 +37,10 @@ export function AddFlashCardForm({ onAddCard }: AddFlashCardFormProps) {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to add flashcards in this room.");
+      return;
+    }
     onAddCard(values);
     form.reset();
     toast.success("Flashcard added successfully!");
@@ -51,7 +56,7 @@ export function AddFlashCardForm({ onAddCard }: AddFlashCardFormProps) {
             <FormItem>
               <FormLabel>Card Front (Question)</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., What is the capital of France?" {...field} />
+                <Input placeholder="e.g., What is the capital of France?" {...field} disabled={!isCurrentRoomWritable} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -64,13 +69,13 @@ export function AddFlashCardForm({ onAddCard }: AddFlashCardFormProps) {
             <FormItem>
               <FormLabel>Card Back (Answer)</FormLabel>
               <FormControl>
-                <Textarea placeholder="e.g., Paris" {...field} />
+                <Textarea placeholder="e.g., Paris" {...field} disabled={!isCurrentRoomWritable} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">Add Card</Button>
+        <Button type="submit" className="w-full" disabled={!isCurrentRoomWritable}>Add Card</Button>
       </form>
     </Form>
   );

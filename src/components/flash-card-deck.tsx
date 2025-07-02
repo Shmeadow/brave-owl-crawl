@@ -9,7 +9,7 @@ import { EditFlashCardForm } from "@/components/edit-flash-card-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { CardData } from "@/hooks/use-flashcards"; // Corrected import path for CardData
+import { CardData } from "@/hooks/use-flashcards";
 
 interface FlashCardDeckProps {
   cards: CardData[];
@@ -27,6 +27,7 @@ interface FlashCardDeckProps {
   filterMode: 'all' | 'starred' | 'learned';
   setFilterMode: (mode: 'all' | 'starred' | 'learned') => void;
   onResetProgress: () => void;
+  isCurrentRoomWritable: boolean;
 }
 
 export function FlashCardDeck({
@@ -45,6 +46,7 @@ export function FlashCardDeck({
   filterMode,
   setFilterMode,
   onResetProgress,
+  isCurrentRoomWritable,
 }: FlashCardDeckProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const dialogTitleId = useId();
@@ -58,28 +60,60 @@ export function FlashCardDeck({
 
 
   const handleDeleteCurrentCard = () => {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to delete flashcards in this room.");
+      return;
+    }
     if (currentCard) {
       onDeleteCard(currentCard.id);
     }
   };
 
   const handleToggleStarCurrentCard = () => {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to star/unstar flashcards in this room.");
+      return;
+    }
     if (currentCard) {
       onToggleStar(currentCard.id);
     }
   };
 
   const handleMarkAsLearnedCurrentCard = () => {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to mark flashcards as learned in this room.");
+      return;
+    }
     if (currentCard) {
       onMarkAsLearned(currentCard.id);
     }
   };
 
   const handleUpdateCurrentCard = (updatedData: { front: string; back: string }) => {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to update flashcards in this room.");
+      return;
+    }
     if (currentCard) {
       onUpdateCard(currentCard.id, updatedData);
       setIsEditDialogOpen(false);
     }
+  };
+
+  const handleShuffleCardsClick = () => {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to shuffle flashcards in this room.");
+      return;
+    }
+    onShuffleCards();
+  };
+
+  const handleResetProgressClick = () => {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to reset flashcard progress in this room.");
+      return;
+    }
+    onResetProgress();
   };
 
   return (
@@ -101,21 +135,21 @@ export function FlashCardDeck({
             </Button>
           </div>
           <div className="flex gap-2 w-full justify-center">
-            <Button onClick={handleToggleStarCurrentCard} variant="ghost" size="icon" className={cn(currentCard.starred && "text-yellow-500")}>
+            <Button onClick={handleToggleStarCurrentCard} variant="ghost" size="icon" className={cn(currentCard.starred && "text-yellow-500")} disabled={!isCurrentRoomWritable}>
               <Star className="h-5 w-5 fill-current" />
               <span className="sr-only">Toggle Star</span>
             </Button>
-            <Button onClick={handleMarkAsLearnedCurrentCard} variant="ghost" size="icon" className={cn(currentCard.status === 'mastered' && "text-green-500")}>
+            <Button onClick={handleMarkAsLearnedCurrentCard} variant="ghost" size="icon" className={cn(currentCard.status === 'mastered' && "text-green-500")} disabled={!isCurrentRoomWritable}>
               <CheckCircle className="h-5 w-5 fill-current" />
               <span className="sr-only">Mark as Learned</span>
             </Button>
-            <Button onClick={onShuffleCards} variant="ghost" size="icon">
+            <Button onClick={handleShuffleCardsClick} variant="ghost" size="icon" disabled={!isCurrentRoomWritable}>
               <Shuffle className="h-5 w-5" />
               <span className="sr-only">Shuffle Cards</span>
             </Button>
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" disabled={totalCards === 0}>
+                <Button variant="ghost" size="icon" disabled={totalCards === 0 || !isCurrentRoomWritable}>
                   <Edit className="h-5 w-5" />
                   <span className="sr-only">Edit Card</span>
                 </Button>
@@ -129,11 +163,12 @@ export function FlashCardDeck({
                     initialData={{ front: currentCard.front, back: currentCard.back }}
                     onSave={handleUpdateCurrentCard}
                     onCancel={() => setIsEditDialogOpen(false)}
+                    isCurrentRoomWritable={isCurrentRoomWritable}
                   />
                 )}
               </DialogContent>
             </Dialog>
-            <Button onClick={handleDeleteCurrentCard} variant="ghost" size="icon" className="text-red-500">
+            <Button onClick={handleDeleteCurrentCard} variant="ghost" size="icon" className="text-red-500" disabled={!isCurrentRoomWritable}>
               <Trash2 className="h-5 w-5" />
               <span className="sr-only">Delete Card</span>
             </Button>
@@ -142,7 +177,6 @@ export function FlashCardDeck({
             <p>Card {currentCardIndex + 1} of {totalCards}</p>
             <p>{masteredCards} mastered, {starredCards} starred</p>
           </div>
-          {/* Progress display */}
           <div className="w-full text-center text-sm text-muted-foreground">
             <p>Progress: {totalCards > 0 ? ((uniqueSeenCards / totalCards) * 100).toFixed(0) : 0}% seen ({uniqueSeenCards}/{totalCards} unique cards)</p>
             <p>Total views: {seenCardsCount}</p>
@@ -150,7 +184,7 @@ export function FlashCardDeck({
           </div>
         </>
       ) : (
-        <Card className="w-full bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
+        <Card className="w-full bg-card backdrop-blur-xl border-white/20">
           <CardHeader>
             <CardTitle>No Flashcards Yet!</CardTitle>
           </CardHeader>
@@ -160,16 +194,16 @@ export function FlashCardDeck({
         </Card>
       )}
 
-      <Card className="w-full bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
+      <Card className="w-full bg-card backdrop-blur-xl border-white/20">
         <CardHeader>
           <CardTitle>Add New Flashcard</CardTitle>
         </CardHeader>
         <CardContent>
-          <AddFlashCardForm onAddCard={onAddCard} />
+          <AddFlashCardForm onAddCard={onAddCard} isCurrentRoomWritable={isCurrentRoomWritable} />
         </CardContent>
       </Card>
 
-      <Card className="w-full bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
+      <Card className="w-full bg-card backdrop-blur-xl border-white/20">
         <CardHeader>
           <CardTitle>Options</CardTitle>
         </CardHeader>
@@ -199,7 +233,7 @@ export function FlashCardDeck({
           </div>
           <div>
             <h3 className="text-md font-semibold mb-2">Progress Tracking</h3>
-            <Button onClick={onResetProgress} variant="secondary" className="w-full">
+            <Button onClick={handleResetProgressClick} variant="secondary" className="w-full" disabled={!isCurrentRoomWritable}>
               <RefreshCcw className="mr-2 h-4 w-4" /> Reset All Progress
             </Button>
           </div>

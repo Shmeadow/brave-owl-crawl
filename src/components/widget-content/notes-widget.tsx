@@ -6,7 +6,11 @@ import { AddNoteForm } from "@/components/add-note-form";
 import { NoteList } from "@/components/note-list";
 import { useNotes } from "@/hooks/use-notes";
 
-export function NotesWidget() {
+interface NotesWidgetProps {
+  isCurrentRoomWritable: boolean;
+}
+
+export function NotesWidget({ isCurrentRoomWritable }: NotesWidgetProps) {
   const { notes, loading, isLoggedInMode, handleAddNote, handleDeleteNote, handleToggleStar } = useNotes();
 
   if (loading) {
@@ -25,7 +29,7 @@ export function NotesWidget() {
             <CardTitle>Add New Note</CardTitle>
           </CardHeader>
           <CardContent>
-            <AddNoteForm onAddNote={handleAddNote} />
+            <AddNoteForm onAddNote={handleAddNote} isCurrentRoomWritable={isCurrentRoomWritable} />
           </CardContent>
         </Card>
 
@@ -33,6 +37,7 @@ export function NotesWidget() {
           notes={notes}
           onToggleStar={handleToggleStar}
           onDelete={handleDeleteNote}
+          isCurrentRoomWritable={isCurrentRoomWritable}
         />
 
         {!isLoggedInMode && (

@@ -26,15 +26,20 @@ interface EditFlashCardFormProps {
   initialData: { front: string; back: string };
   onSave: (card: { front: string; back: string }) => void;
   onCancel: () => void;
+  isCurrentRoomWritable: boolean;
 }
 
-export function EditFlashCardForm({ initialData, onSave, onCancel }: EditFlashCardFormProps) {
+export function EditFlashCardForm({ initialData, onSave, onCancel, isCurrentRoomWritable }: EditFlashCardFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData,
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to edit flashcards in this room.");
+      return;
+    }
     onSave(values);
     toast.success("Flashcard updated successfully!");
   }
@@ -49,7 +54,7 @@ export function EditFlashCardForm({ initialData, onSave, onCancel }: EditFlashCa
             <FormItem>
               <FormLabel>Card Front (Question)</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., What is the capital of France?" {...field} />
+                <Input placeholder="e.g., What is the capital of France?" {...field} disabled={!isCurrentRoomWritable} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -62,7 +67,7 @@ export function EditFlashCardForm({ initialData, onSave, onCancel }: EditFlashCa
             <FormItem>
               <FormLabel>Card Back (Answer)</FormLabel>
               <FormControl>
-                <Textarea placeholder="e.g., Paris" {...field} />
+                <Textarea placeholder="e.g., Paris" {...field} disabled={!isCurrentRoomWritable} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -72,7 +77,7 @@ export function EditFlashCardForm({ initialData, onSave, onCancel }: EditFlashCa
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button type="submit">Save Changes</Button>
+          <Button type="submit" disabled={!isCurrentRoomWritable}>Save Changes</Button>
         </div>
       </form>
     </Form>

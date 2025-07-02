@@ -22,9 +22,10 @@ const formSchema = z.object({
 
 interface AddGoalFormProps {
   onAddGoal: (title: string) => void;
+  isCurrentRoomWritable: boolean;
 }
 
-export function AddGoalForm({ onAddGoal }: AddGoalFormProps) {
+export function AddGoalForm({ onAddGoal, isCurrentRoomWritable }: AddGoalFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -33,6 +34,10 @@ export function AddGoalForm({ onAddGoal }: AddGoalFormProps) {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to add goals in this room.");
+      return;
+    }
     onAddGoal(values.title);
     form.reset();
     toast.success("Goal added successfully!");
@@ -48,13 +53,13 @@ export function AddGoalForm({ onAddGoal }: AddGoalFormProps) {
             <FormItem>
               <FormLabel>New Goal</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Learn React Hooks" {...field} />
+                <Input placeholder="e.g., Learn React Hooks" {...field} disabled={!isCurrentRoomWritable} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">Add Goal</Button>
+        <Button type="submit" className="w-full" disabled={!isCurrentRoomWritable}>Add Goal</Button>
       </form>
     </Form>
   );

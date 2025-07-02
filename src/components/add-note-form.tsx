@@ -22,9 +22,10 @@ const formSchema = z.object({
 
 interface AddNoteFormProps {
   onAddNote: (content: string) => void;
+  isCurrentRoomWritable: boolean;
 }
 
-export function AddNoteForm({ onAddNote }: AddNoteFormProps) {
+export function AddNoteForm({ onAddNote, isCurrentRoomWritable }: AddNoteFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -33,6 +34,10 @@ export function AddNoteForm({ onAddNote }: AddNoteFormProps) {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to add notes in this room.");
+      return;
+    }
     onAddNote(values.content);
     form.reset();
     toast.success("Note added successfully!");
@@ -48,13 +53,13 @@ export function AddNoteForm({ onAddNote }: AddNoteFormProps) {
             <FormItem>
               <FormLabel>New Note</FormLabel>
               <FormControl>
-                <Textarea placeholder="Write your note here..." {...field} rows={4} />
+                <Textarea placeholder="Write your note here..." {...field} rows={4} disabled={!isCurrentRoomWritable} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">Add Note</Button>
+        <Button type="submit" className="w-full" disabled={!isCurrentRoomWritable}>Add Note</Button>
       </form>
     </Form>
   );

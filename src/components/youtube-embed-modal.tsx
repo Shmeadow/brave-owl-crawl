@@ -24,7 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { getYouTubeEmbedUrl } from "@/lib/utils";
-import { useMediaPlayer } from '@/components/media-player-context'; // Import useMediaPlayer
+import { useMediaPlayer } from '@/components/media-player-context';
 
 const youtubeUrlSchema = z.object({
   url: z.string().min(1, { message: "URL cannot be empty." }).refine(
@@ -38,27 +38,31 @@ const youtubeUrlSchema = z.object({
 interface YoutubeEmbedModalProps {
   isOpen: boolean;
   onClose: () => void;
+  isCurrentRoomWritable: boolean; // New prop
 }
 
-export function YoutubeEmbedModal({ isOpen, onClose }: YoutubeEmbedModalProps) {
-  const { youtubeEmbedUrl, setYoutubeEmbedUrl, setActivePlayer } = useMediaPlayer(); // Use context
+export function YoutubeEmbedModal({ isOpen, onClose, isCurrentRoomWritable }: YoutubeEmbedModalProps) {
+  const { youtubeEmbedUrl, setYoutubeEmbedUrl, setActivePlayer } = useMediaPlayer();
   const form = useForm<z.infer<typeof youtubeUrlSchema>>({
     resolver: zodResolver(youtubeUrlSchema),
     defaultValues: {
-      url: youtubeEmbedUrl || "", // Initialize with current context value
+      url: youtubeEmbedUrl || "",
     },
   });
 
   useEffect(() => {
-    // Update form default if context URL changes externally
     form.reset({ url: youtubeEmbedUrl || "" });
   }, [youtubeEmbedUrl, form]);
 
   const onSubmit = (values: z.infer<typeof youtubeUrlSchema>) => {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to embed YouTube videos in this room.");
+      return;
+    }
     const convertedUrl = getYouTubeEmbedUrl(values.url);
     if (convertedUrl) {
-      setYoutubeEmbedUrl(convertedUrl); // Update context
-      setActivePlayer('youtube'); // Set YouTube as the active player
+      setYoutubeEmbedUrl(convertedUrl);
+      setActivePlayer('youtube');
       toast.success("YouTube embed URL saved and activated!");
       onClose();
     } else {
@@ -67,8 +71,12 @@ export function YoutubeEmbedModal({ isOpen, onClose }: YoutubeEmbedModalProps) {
   };
 
   const handleRemoveEmbed = () => {
-    setYoutubeEmbedUrl(null); // Clear URL in context
-    setActivePlayer(null); // No player active
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to remove YouTube embeds in this room.");
+      return;
+    }
+    setYoutubeEmbedUrl(null);
+    setActivePlayer(null);
     form.reset({ url: "" });
     toast.info("YouTube embed removed.");
   };
@@ -91,7 +99,7 @@ export function YoutubeEmbedModal({ isOpen, onClose }: YoutubeEmbedModalProps) {
                 <FormItem>
                   <FormLabel>YouTube URL</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., https://www.youtube.com/watch?v=..." {...field} />
+                    <Input placeholder="e.g., https://www.youtube.com/watch?v=..." {...field} disabled={!isCurrentRoomWritable} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -99,11 +107,11 @@ export function YoutubeEmbedModal({ isOpen, onClose }: YoutubeEmbedModalProps) {
             />
             <div className="flex justify-end gap-2">
               {youtubeEmbedUrl && (
-                <Button type="button" variant="outline" onClick={handleRemoveEmbed}>
+                <Button type="button" variant="outline" onClick={handleRemoveEmbed} disabled={!isCurrentRoomWritable}>
                   Remove Embed
                 </Button>
               )}
-              <Button type="submit">Save Embed</Button>
+              <Button type="submit" disabled={!isCurrentRoomWritable}>Save Embed</Button>
             </div>
           </form>
         </Form>
@@ -111,7 +119,7 @@ export function YoutubeEmbedModal({ isOpen, onClose }: YoutubeEmbedModalProps) {
         {youtubeEmbedUrl && (
           <div className="mt-4">
             <h3 className="text-md font-semibold mb-2">Currently Embedded:</h3>
-            <div className="relative w-full" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */ }}>
+            <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
               <iframe
                 src={youtubeEmbedUrl}
                 width="100%"

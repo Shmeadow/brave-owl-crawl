@@ -23,24 +23,22 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useMediaPlayer } from '@/components/media-player-context'; // Import useMediaPlayer
+import { useMediaPlayer } from '@/components/media-player-context';
 
 // Helper function to convert a regular Spotify URL to an embed URL
 const convertToEmbedUrl = (url: string): string | null => {
   const regex = /open\.spotify\.com\/(track|playlist|album)\/([a-zA-Z0-9]+)/;
   const match = url.match(regex);
   if (match && match[1] && match[2]) {
-    // For playlists and albums, the embed URL is slightly different
     if (match[1] === 'playlist' || match[1] === 'album') {
       return `https://open.spotify.com/embed/${match[1]}/${match[2]}?utm_source=generator`;
     }
     return `https://open.spotify.com/embed/${match[1]}/${match[2]}`;
   }
-  // If it's already an embed URL, return it as is
   if (url.includes("spotify.com/embed/")) {
     return url;
   }
-  return null; // Not a valid Spotify URL or embed URL
+  return null;
 };
 
 const spotifyUrlSchema = z.object({
@@ -55,28 +53,32 @@ const spotifyUrlSchema = z.object({
 interface SpotifyEmbedModalProps {
   isOpen: boolean;
   onClose: () => void;
+  isCurrentRoomWritable: boolean; // New prop
 }
 
-export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
-  const { spotifyEmbedUrl, setSpotifyEmbedUrl, setActivePlayer } = useMediaPlayer(); // Use context
+export function SpotifyEmbedModal({ isOpen, onClose, isCurrentRoomWritable }: SpotifyEmbedModalProps) {
+  const { spotifyEmbedUrl, setSpotifyEmbedUrl, setActivePlayer } = useMediaPlayer();
 
   const form = useForm<z.infer<typeof spotifyUrlSchema>>({
     resolver: zodResolver(spotifyUrlSchema),
     defaultValues: {
-      url: spotifyEmbedUrl || "", // Initialize with current context value
+      url: spotifyEmbedUrl || "",
     },
   });
 
   useEffect(() => {
-    // Update form default if context URL changes externally
     form.reset({ url: spotifyEmbedUrl || "" });
   }, [spotifyEmbedUrl, form]);
 
   const onSubmit = (values: z.infer<typeof spotifyUrlSchema>) => {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to embed Spotify players in this room.");
+      return;
+    }
     const convertedUrl = convertToEmbedUrl(values.url);
     if (convertedUrl) {
-      setSpotifyEmbedUrl(convertedUrl); // Update context
-      setActivePlayer('spotify'); // Set Spotify as the active player
+      setSpotifyEmbedUrl(convertedUrl);
+      setActivePlayer('spotify');
       toast.success("Spotify embed URL saved and activated!");
       onClose();
     } else {
@@ -85,8 +87,12 @@ export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
   };
 
   const handleRemoveEmbed = () => {
-    setSpotifyEmbedUrl(null); // Clear URL in context
-    setActivePlayer(null); // No player active
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to remove Spotify embeds in this room.");
+      return;
+    }
+    setSpotifyEmbedUrl(null);
+    setActivePlayer(null);
     form.reset({ url: "" });
     toast.info("Spotify embed removed.");
   };
@@ -114,7 +120,7 @@ export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
                 <FormItem>
                   <FormLabel>Spotify URL</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., https://open.spotify.com/playlist/..." {...field} />
+                    <Input placeholder="e.g., https://open.spotify.com/playlist/..." {...field} disabled={!isCurrentRoomWritable} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -122,11 +128,11 @@ export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
             />
             <div className="flex justify-end gap-2">
               {spotifyEmbedUrl && (
-                <Button type="button" variant="outline" onClick={handleRemoveEmbed}>
+                <Button type="button" variant="outline" onClick={handleRemoveEmbed} disabled={!isCurrentRoomWritable}>
                   Remove Embed
                 </Button>
               )}
-              <Button type="submit">Save Embed</Button>
+              <Button type="submit" disabled={!isCurrentRoomWritable}>Save Embed</Button>
             </div>
           </form>
         </Form>
@@ -134,7 +140,7 @@ export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
         {spotifyEmbedUrl && (
           <div className="mt-4">
             <h3 className="text-md font-semibold mb-2">Currently Embedded:</h3>
-            <div className="relative w-full" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */ }}>
+            <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
               <iframe
                 src={spotifyEmbedUrl}
                 width="100%"

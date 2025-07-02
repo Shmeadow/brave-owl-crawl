@@ -10,11 +10,12 @@ interface GoalListProps {
   goals: GoalData[];
   onToggleComplete: (goalId: string, currentCompleted: boolean) => void;
   onDelete: (goalId: string) => void;
+  isCurrentRoomWritable: boolean;
 }
 
-export function GoalList({ goals, onToggleComplete, onDelete }: GoalListProps) {
+export function GoalList({ goals, onToggleComplete, onDelete, isCurrentRoomWritable }: GoalListProps) {
   return (
-    <Card className="w-full flex flex-col flex-1 bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
+    <Card className="w-full flex flex-col flex-1 bg-card backdrop-blur-xl border-white/20">
       <CardHeader>
         <CardTitle>Your Goals</CardTitle>
       </CardHeader>
@@ -30,6 +31,7 @@ export function GoalList({ goals, onToggleComplete, onDelete }: GoalListProps) {
                   goal={goal}
                   onToggleComplete={onToggleComplete}
                   onDelete={onDelete}
+                  isCurrentRoomWritable={isCurrentRoomWritable}
                 />
               ))}
             </div>

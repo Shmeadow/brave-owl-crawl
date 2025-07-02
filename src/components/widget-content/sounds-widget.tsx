@@ -6,21 +6,23 @@ import { Button } from "@/components/ui/button";
 import { Settings, Link, Youtube } from "lucide-react";
 import { SpotifyEmbedModal } from "@/components/spotify-embed-modal";
 import { YoutubeEmbedModal } from "@/components/youtube-embed-modal";
-import { useMediaPlayer } from '@/components/media-player-context'; // Import useMediaPlayer
+import { useMediaPlayer } from '@/components/media-player-context';
 
-export function SoundsWidget() {
+interface SoundsWidgetProps {
+  isCurrentRoomWritable: boolean;
+}
+
+export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
   const { youtubeEmbedUrl, spotifyEmbedUrl, setYoutubeEmbedUrl, setSpotifyEmbedUrl, setActivePlayer } = useMediaPlayer();
   const [isSpotifyModalOpen, setIsSpotifyModalOpen] = useState(false);
   const [isYoutubeModalOpen, setIsYoutubeModalOpen] = useState(false);
 
   const handleSpotifyModalClose = () => {
     setIsSpotifyModalOpen(false);
-    // The context's setSpotifyEmbedUrl already updates local storage
   };
 
   const handleYoutubeModalClose = () => {
     setIsYoutubeModalOpen(false);
-    // The context's setYoutubeEmbedUrl already updates local storage
   };
 
   return (
@@ -28,7 +30,7 @@ export function SoundsWidget() {
       <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto py-4">
         <h1 className="text-3xl font-bold text-foreground text-center">Sounds & Music</h1>
 
-        <Card className="w-full bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
+        <Card className="w-full bg-card backdrop-blur-xl border-white/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Youtube className="h-6 w-6 text-red-500" /> YouTube Background Player
@@ -39,7 +41,7 @@ export function SoundsWidget() {
               Embed a YouTube video to play as background music.
               Paste a standard YouTube video URL, and it will be converted for embedding.
             </p>
-            <Button onClick={() => setIsYoutubeModalOpen(true)} className="w-full">
+            <Button onClick={() => setIsYoutubeModalOpen(true)} className="w-full" disabled={!isCurrentRoomWritable}>
               <Settings className="mr-2 h-4 w-4" /> Manage YouTube Embed
             </Button>
 
@@ -55,7 +57,7 @@ export function SoundsWidget() {
           </CardContent>
         </Card>
 
-        <Card className="w-full bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
+        <Card className="w-full bg-card backdrop-blur-xl border-white/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Link className="h-6 w-6" /> Spotify Embed
@@ -66,7 +68,7 @@ export function SoundsWidget() {
               Embed your favorite Spotify playlists, tracks, or albums directly into your space.
               Paste a standard Spotify URL, and it will be converted for embedding.
             </p>
-            <Button onClick={() => setIsSpotifyModalOpen(true)} className="w-full">
+            <Button onClick={() => setIsSpotifyModalOpen(true)} className="w-full" disabled={!isCurrentRoomWritable}>
               <Settings className="mr-2 h-4 w-4" /> Manage Spotify Embed
             </Button>
             {spotifyEmbedUrl ? (
@@ -82,8 +84,8 @@ export function SoundsWidget() {
           </CardContent>
         </Card>
 
-        <SpotifyEmbedModal isOpen={isSpotifyModalOpen} onClose={handleSpotifyModalClose} />
-        <YoutubeEmbedModal isOpen={isYoutubeModalOpen} onClose={handleYoutubeModalClose} />
+        <SpotifyEmbedModal isOpen={isSpotifyModalOpen} onClose={handleSpotifyModalClose} isCurrentRoomWritable={isCurrentRoomWritable} />
+        <YoutubeEmbedModal isOpen={isYoutubeModalOpen} onClose={handleYoutubeModalClose} isCurrentRoomWritable={isCurrentRoomWritable} />
       </div>
     </div>
   );

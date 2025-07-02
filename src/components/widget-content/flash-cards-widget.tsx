@@ -9,7 +9,11 @@ import { useFlashcardNavigation } from "@/hooks/use-flashcard-navigation";
 
 type FilterMode = 'all' | 'starred' | 'learned';
 
-export function FlashCardsWidget() {
+interface FlashCardsWidgetProps {
+  isCurrentRoomWritable: boolean;
+}
+
+export function FlashCardsWidget({ isCurrentRoomWritable }: FlashCardsWidgetProps) {
   const {
     cards,
     loading: flashcardsLoading,
@@ -86,6 +90,7 @@ export function FlashCardsWidget() {
               filterMode={filterMode}
               setFilterMode={setFilterMode}
               onResetProgress={resetAllProgressAndNavigation}
+              isCurrentRoomWritable={isCurrentRoomWritable}
             />
           </div>
         </ResizablePanel>
@@ -101,6 +106,7 @@ export function FlashCardsWidget() {
               onToggleStar={handleToggleStar}
               onMarkAsLearned={handleMarkAsLearned}
               onReorderCards={handleReorderCards}
+              isCurrentRoomWritable={isCurrentRoomWritable}
             />
           </div>
         </ResizablePanel>

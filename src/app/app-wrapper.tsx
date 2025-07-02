@@ -47,7 +47,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const { isSidebarOpen } = useSidebar();
   const { isAlwaysOpen } = useSidebarPreference();
   const { youtubeEmbedUrl, spotifyEmbedUrl } = useMediaPlayer();
-  const { currentRoomId } = useCurrentRoom();
+  const { currentRoomId, isCurrentRoomWritable } = useCurrentRoom();
 
   const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(true);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
@@ -110,9 +110,6 @@ export function AppWrapper({ children }: AppWrapperProps) {
     setUnreadChatCount(0);
   };
 
-  const calculatedSidebarWidth = mounted && (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH : 0;
-  const calculatedChatPanelWidth = mounted && isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
-
   return (
     <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
       <div className="flex flex-col flex-1 min-h-screen">
@@ -135,7 +132,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
             "flex flex-col flex-1 w-full overflow-auto transition-all duration-300 ease-in-out",
             "items-center justify-center"
           )}
-          style={mounted ? { marginLeft: `${calculatedSidebarWidth}px`, marginRight: `${calculatedChatPanelWidth}px` } : {}}
+          // Removed marginLeft and marginRight to prevent content shifting
         >
           {children}
         </main>
@@ -146,7 +143,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
         <PomodoroWidget
           isMinimized={isPomodoroWidgetMinimized}
           setIsMinimized={setIsPomodoroWidgetMinimized}
-          chatPanelWidth={calculatedChatPanelWidth}
+          chatPanelWidth={isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED}
         />
       )}
       {mounted && (youtubeEmbedUrl || spotifyEmbedUrl) && <MediaPlayerBar />}
@@ -164,10 +161,11 @@ export function AppWrapper({ children }: AppWrapperProps) {
           onClearUnreadMessages={handleClearUnreadMessages}
           unreadCount={unreadChatCount}
           currentRoomId={currentRoomId}
+          isCurrentRoomWritable={isCurrentRoomWritable}
         />
       </div>
       <Toaster />
-      <WidgetContainer />
+      <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} />
     </WidgetProvider>
   );
 }

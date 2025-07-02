@@ -1,7 +1,7 @@
 "use client";
 
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
-import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Wind, BookOpen, Goal } from "lucide-react"; // Added missing imports
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Wind, BookOpen, Goal } from "lucide-react";
 
 // Import all widget content components
 import { SpacesWidget } from "@/components/widget-content/spaces-widget";
@@ -33,7 +33,11 @@ const WIDGET_COMPONENTS = {
   "goal-focus": { icon: Goal, content: GoalFocusWidget },
 };
 
-export function WidgetContainer() {
+interface WidgetContainerProps {
+  isCurrentRoomWritable: boolean;
+}
+
+export function WidgetContainer({ isCurrentRoomWritable }: WidgetContainerProps) {
   const {
     activeWidgets,
     updateWidgetPosition,
@@ -94,6 +98,7 @@ export function WidgetContainer() {
               onMaximize={maximizeWidget}
               onPin={togglePinned}
               onClose={closeWidget}
+              isCurrentRoomWritable={isCurrentRoomWritable}
             />
           );
         })}

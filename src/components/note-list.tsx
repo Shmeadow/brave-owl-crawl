@@ -10,11 +10,12 @@ interface NoteListProps {
   notes: NoteData[];
   onToggleStar: (noteId: string) => void;
   onDelete: (noteId: string) => void;
+  isCurrentRoomWritable: boolean;
 }
 
-export function NoteList({ notes, onToggleStar, onDelete }: NoteListProps) {
+export function NoteList({ notes, onToggleStar, onDelete, isCurrentRoomWritable }: NoteListProps) {
   return (
-    <Card className="w-full flex flex-col flex-1 bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
+    <Card className="w-full flex flex-col flex-1 bg-card backdrop-blur-xl border-white/20">
       <CardHeader>
         <CardTitle>Your Notes</CardTitle>
       </CardHeader>
@@ -30,6 +31,7 @@ export function NoteList({ notes, onToggleStar, onDelete }: NoteListProps) {
                   note={note}
                   onToggleStar={onToggleStar}
                   onDelete={onDelete}
+                  isCurrentRoomWritable={isCurrentRoomWritable}
                 />
               ))}
             </div>

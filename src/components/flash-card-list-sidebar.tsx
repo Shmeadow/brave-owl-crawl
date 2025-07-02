@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Star, CheckCircle, Edit, Trash2, GripVertical } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { EditFlashCardForm } from "@/components/edit-flash-card-form";
+import { toast } from "sonner";
 import {
   DndContext,
   closestCenter,
@@ -24,7 +25,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { CardData } from "@/hooks/use-flashcards"; // Corrected import path for CardData
+import { CardData } from "@/hooks/use-flashcards";
 
 interface FlashCardListSidebarProps {
   cards: CardData[];
@@ -35,6 +36,7 @@ interface FlashCardListSidebarProps {
   onToggleStar: (cardId: string) => void;
   onMarkAsLearned: (cardId: string) => void;
   onReorderCards: (newOrder: CardData[]) => void;
+  isCurrentRoomWritable: boolean;
 }
 
 interface SortableFlashCardItemProps {
@@ -45,7 +47,8 @@ interface SortableFlashCardItemProps {
   onDeleteCard: (cardId: string) => void;
   onUpdateCard: (cardId: string, updatedData: { front: string; back: string }) => void;
   onToggleStar: (cardId: string) => void;
-  onMarkAsLearned: (cardId: string) => void; // Corrected typo here
+  onMarkAsLearned: (cardId: string) => void;
+  isCurrentRoomWritable: boolean;
 }
 
 function SortableFlashCardItem({
@@ -56,7 +59,8 @@ function SortableFlashCardItem({
   onDeleteCard,
   onUpdateCard,
   onToggleStar,
-  onMarkAsLearned, // Corrected typo here
+  onMarkAsLearned,
+  isCurrentRoomWritable,
 }: SortableFlashCardItemProps) {
   const {
     attributes,
@@ -65,7 +69,7 @@ function SortableFlashCardItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: card.id });
+  } = useSortable({ id: card.id, disabled: !isCurrentRoomWritable }); // Disable sorting if not writable
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -79,10 +83,18 @@ function SortableFlashCardItem({
 
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to edit flashcards in this room.");
+      return;
+    }
     setIsEditDialogOpen(true);
   };
 
   const handleSaveEdit = (updatedData: { front: string; back: string }) => {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to edit flashcards in this room.");
+      return;
+    }
     onUpdateCard(card.id, updatedData);
     setIsEditDialogOpen(false);
   };
@@ -91,15 +103,43 @@ function SortableFlashCardItem({
     setIsEditDialogOpen(false);
   };
 
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to delete flashcards in this room.");
+      return;
+    }
+    onDeleteCard(card.id);
+  };
+
+  const handleToggleStarClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to star/unstar flashcards in this room.");
+      return;
+    }
+    onToggleStar(card.id);
+  };
+
+  const handleMarkAsLearnedClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to mark flashcards as learned in this room.");
+      return;
+    }
+    onMarkAsLearned(card.id);
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex items-center justify-between p-2 border rounded-md cursor-pointer transition-colors",
-        "hover:bg-accent hover:text-accent-foreground backdrop-blur-xl", // Adjusted hover for glass
-        index === currentCardIndex && "bg-primary text-primary-foreground backdrop-blur-xl", // Adjusted active for glass
-        isDragging && "ring-2 ring-primary"
+        "flex items-center justify-between p-2 border rounded-md transition-colors",
+        "hover:bg-accent hover:text-accent-foreground backdrop-blur-xl",
+        index === currentCardIndex && "bg-primary text-primary-foreground backdrop-blur-xl",
+        isDragging && "ring-2 ring-primary",
+        isCurrentRoomWritable ? "cursor-pointer" : "cursor-not-allowed opacity-70"
       )}
       onClick={() => onSelectCard(index)}
     >
@@ -108,11 +148,12 @@ function SortableFlashCardItem({
           variant="ghost"
           size="icon"
           className={cn(
-            "h-6 w-6 cursor-grab",
-            index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent"
+            "h-6 w-6",
+            index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent",
+            !isCurrentRoomWritable ? "cursor-not-allowed opacity-50" : "cursor-grab"
           )}
-          {...listeners}
-          {...attributes}
+          {...(isCurrentRoomWritable && { ...listeners, ...attributes })}
+          disabled={!isCurrentRoomWritable}
         >
           <GripVertical className="h-3.5 w-3.5" />
           <span className="sr-only">Drag to reorder</span>
@@ -131,7 +172,8 @@ function SortableFlashCardItem({
           variant="ghost"
           size="icon"
           className={cn("h-6 w-6", index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent")}
-          onClick={(e) => { e.stopPropagation(); onToggleStar(card.id); }}
+          onClick={handleToggleStarClick}
+          disabled={!isCurrentRoomWritable}
         >
           <Star className={cn("h-3.5 w-3.5", card.starred && (index === currentCardIndex ? "text-yellow-300" : "text-yellow-500"))} fill="currentColor" />
           <span className="sr-only">Toggle Star</span>
@@ -140,7 +182,8 @@ function SortableFlashCardItem({
           variant="ghost"
           size="icon"
           className={cn("h-6 w-6", index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent")}
-          onClick={(e) => { e.stopPropagation(); onMarkAsLearned(card.id); }} // Corrected typo here
+          onClick={handleMarkAsLearnedClick}
+          disabled={!isCurrentRoomWritable}
         >
           <CheckCircle className={cn("h-3.5 w-3.5", card.status === 'mastered' && (index === currentCardIndex ? "text-green-300" : "text-green-500"))} fill="currentColor" />
           <span className="sr-only">Mark as Learned</span>
@@ -150,6 +193,7 @@ function SortableFlashCardItem({
           size="icon"
           className={cn("h-6 w-6", index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent")}
           onClick={handleEditClick}
+          disabled={!isCurrentRoomWritable}
         >
           <Edit className="h-3.5 w-3.5" />
           <span className="sr-only">Edit Card</span>
@@ -158,7 +202,8 @@ function SortableFlashCardItem({
           variant="ghost"
           size="icon"
           className={cn("h-6 w-6", index === currentCardIndex ? "text-red-300 hover:bg-primary/80" : "text-red-500 hover:bg-accent")}
-          onClick={(e) => { e.stopPropagation(); onDeleteCard(card.id); }}
+          onClick={handleDeleteClick}
+          disabled={!isCurrentRoomWritable}
         >
           <Trash2 className="h-3.5 w-3.5" />
           <span className="sr-only">Delete Card</span>
@@ -170,11 +215,14 @@ function SortableFlashCardItem({
           <DialogHeader>
             <DialogTitle id={dialogTitleId}>Edit Flashcard</DialogTitle>
           </DialogHeader>
-          <EditFlashCardForm
-            initialData={{ front: card.front, back: card.back }}
-            onSave={handleSaveEdit}
-            onCancel={handleCancelEdit}
-          />
+          {card && (
+            <EditFlashCardForm
+              initialData={{ front: card.front, back: card.back }}
+              onSave={handleSaveEdit}
+              onCancel={handleCancelEdit}
+              isCurrentRoomWritable={isCurrentRoomWritable}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>
@@ -190,6 +238,7 @@ export function FlashCardListSidebar({
   onToggleStar,
   onMarkAsLearned,
   onReorderCards,
+  isCurrentRoomWritable,
 }: FlashCardListSidebarProps) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -246,6 +295,7 @@ export function FlashCardListSidebar({
                       onUpdateCard={onUpdateCard}
                       onToggleStar={onToggleStar}
                       onMarkAsLearned={onMarkAsLearned}
+                      isCurrentRoomWritable={isCurrentRoomWritable}
                     />
                   ))}
                 </div>
