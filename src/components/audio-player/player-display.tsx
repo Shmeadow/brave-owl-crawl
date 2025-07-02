@@ -8,9 +8,21 @@ interface PlayerDisplayProps {
   inputUrl: string;
   iframeId: string;
   audioRef: React.RefObject<HTMLAudioElement>;
+  // New props for HTML audio event handlers
+  onLoadedMetadata: () => void;
+  onTimeUpdate: () => void;
+  onEnded: () => void;
 }
 
-export function PlayerDisplay({ playerType, inputUrl, iframeId, audioRef }: PlayerDisplayProps) {
+export function PlayerDisplay({
+  playerType,
+  inputUrl,
+  iframeId,
+  audioRef,
+  onLoadedMetadata, // Destructure new props
+  onTimeUpdate,
+  onEnded,
+}: PlayerDisplayProps) {
   const youtubeEmbedUrl = playerType === 'youtube' ? getYouTubeEmbedUrl(inputUrl) : null;
   const spotifyEmbedUrl = playerType === 'spotify' ? getSpotifyEmbedUrl(inputUrl) : null;
 
@@ -20,9 +32,9 @@ export function PlayerDisplay({ playerType, inputUrl, iframeId, audioRef }: Play
         <audio
           ref={audioRef}
           src={inputUrl}
-          onLoadedMetadata={() => { /* Handled by useHtmlAudioPlayer */ }}
-          onTimeUpdate={() => { /* Handled by useHtmlAudioPlayer */ }}
-          onEnded={() => { /* Handled by useHtmlAudioPlayer */ }}
+          onLoadedMetadata={onLoadedMetadata} // Pass the handler
+          onTimeUpdate={onTimeUpdate}       // Pass the handler
+          onEnded={onEnded}                 // Pass the handler
           preload="metadata"
         >
           Your browser does not support the audio element.

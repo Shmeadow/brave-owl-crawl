@@ -13,9 +13,11 @@ declare global {
 interface UseYouTubePlayerResult {
   isPlaying: boolean;
   volume: number;
+  isMuted: boolean; // New: Expose mute status
   togglePlayPause: () => void;
   setVolume: (vol: number) => void;
-  seekTo: (seconds: number) => void; // New: Expose seekTo
+  toggleMute: () => void; // New: Expose toggleMute
+  seekTo: (seconds: number) => void;
   playerReady: boolean;
   iframeId: string; // ID to assign to the iframe
   youtubeCurrentTime: number; // Exposed current time
@@ -26,6 +28,8 @@ export function useYouTubePlayer(embedUrl: string | null): UseYouTubePlayerResul
   const playerRef = useRef<any>(null); // YT.Player instance
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState(50); // Default volume 0-100
+  const [isMuted, setIsMuted] = useState(false); // New: Mute state
+  const prevVolumeRef = useRef(50); // New: To store volume before muting
   const [playerReady, setPlayerReady] = useState(false);
   const [youtubeCurrentTime, setYoutubeCurrentTime] = useState(0);
   const [youtubeDuration, setYoutubeDuration] = useState(0);
@@ -74,6 +78,7 @@ export function useYouTubePlayer(embedUrl: string | null): UseYouTubePlayerResul
       setPlayerReady(true);
       event.target.setVolume(volume);
       setIsPlaying(event.target.getPlayerState() === window.YT.PlayerState.PLAYING);
+      setIsMuted(event.target.isMuted()); // Initialize mute state
       setYoutubeDuration(event.target.getDuration());
       setYoutubeCurrentTime(event.target.getCurrentTime());
       
@@ -165,6 +170,25 @@ export function useYouTubePlayer(embedUrl: string | null): UseYouTubePlayerResul
     if (playerReady && playerRef.current) {
       playerRef.current.setVolume(vol);
       setVolumeState(vol);
+      setIsMuted(vol === 0); // Update mute state based on volume
+      if (vol > 0) {
+        prevVolumeRef.current = vol; // Store non-zero volume
+      }
+    }
+  }, [playerReady]);
+
+  const toggleMute = useCallback(() => {
+    if (playerReady && playerRef.current) {
+      if (playerRef.current.isMuted()) {
+        playerRef.current.unMute();
+        setVolumeState(prevVolumeRef.current > 0 ? prevVolumeRef.current : 50); // Restore previous volume or default
+        setIsMuted(false);
+      } else {
+        prevVolumeRef.current = playerRef.current.getVolume(); // Store current volume before muting
+        playerRef.current.mute();
+        setVolumeState(0); // Set state to 0 for visual feedback
+        setIsMuted(true);
+      }
     }
   }, [playerReady]);
 
@@ -177,9 +201,11 @@ export function useYouTubePlayer(embedUrl: string | null): UseYouTubePlayerResul
   return {
     isPlaying,
     volume,
+    isMuted,
     togglePlayPause,
     setVolume,
-    seekTo, // Expose seekTo
+    toggleMute,
+    seekTo,
     playerReady,
     iframeId,
     youtubeCurrentTime,

@@ -53,8 +53,10 @@ const SimpleAudioPlayer = () => {
   const {
     isPlaying: youtubeIsPlaying,
     volume: youtubeVolume,
+    isMuted: youtubeIsMuted, // Use the new isMuted state
     togglePlayPause: youtubeTogglePlayPause,
     setVolume: youtubeSetVolume,
+    toggleMute: youtubeToggleMute, // Use the new toggleMute
     seekTo: youtubeSeekTo,
     playerReady: youtubePlayerReady,
     iframeId,
@@ -119,12 +121,7 @@ const SimpleAudioPlayer = () => {
     if (playerType === 'audio') {
       htmlAudioToggleMute();
     } else if (playerType === 'youtube') {
-      // YouTube API doesn't have a direct toggleMute, so we simulate it
-      if (youtubeVolume === 0) {
-        youtubeSetVolume(50); // Unmute to a default volume
-      } else {
-        youtubeSetVolume(0); // Mute
-      }
+      youtubeToggleMute(); // Use the new direct toggleMute from the hook
     }
   };
 
@@ -161,7 +158,7 @@ const SimpleAudioPlayer = () => {
   const totalDuration = playerType === 'youtube' ? youtubeDuration : audioDuration;
   const currentVolume = playerType === 'youtube' ? youtubeVolume / 100 : audioVolume;
   const currentIsPlaying = playerType === 'youtube' ? youtubeIsPlaying : audioIsPlaying;
-  const currentIsMuted = playerType === 'youtube' ? youtubeVolume === 0 : audioIsMuted;
+  const currentIsMuted = playerType === 'youtube' ? youtubeIsMuted : audioIsMuted; // Use youtubeIsMuted
   const playerIsReady = playerType === 'youtube' ? youtubePlayerReady : true; // HTML audio is always ready, Spotify embed is also "ready" once loaded
 
   const PlayerIcon = playerType === 'youtube' ? Youtube : playerType === 'spotify' ? ListMusic : Music;
@@ -186,6 +183,10 @@ const SimpleAudioPlayer = () => {
               inputUrl={inputUrl}
               iframeId={iframeId}
               audioRef={audioRef}
+              // Pass HTML audio event handlers
+              onLoadedMetadata={htmlAudioOnLoadedMetadata}
+              onTimeUpdate={htmlAudioOnTimeUpdate}
+              onEnded={htmlAudioOnEnded}
             />
 
             {/* Main Player Row: Album Art, Track Info, Controls */}
