@@ -17,7 +17,8 @@ import {
   GoalFocusWidget,
   PomodoroTimerWidget
 } from "@/components/widget-content";
-import { useWidget, Widget } from ".";
+import { useWidget } from "./widget-context";
+import { Widget } from "./widget";
 
 // Map widget IDs to their components and icons
 const WIDGET_COMPONENTS = {
