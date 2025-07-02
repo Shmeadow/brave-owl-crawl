@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button }m from "@/components/ui/button";
 import { Send, MessageSquare, X } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -39,6 +39,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
       toast.error("Chat unavailable: Supabase client not initialized.");
       return;
     }
+    console.log("Attempting to fetch messages from Supabase URL:", supabase.supabaseUrl); // Added this line
     try {
       // Fetch messages without joining profiles initially for better reliability
       const { data, error } = await supabase
