@@ -1,16 +1,25 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, Volume2, VolumeX, FastForward, Rewind, Music, Link } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, FastForward, Rewind, Music, Link, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useYouTubePlayer } from '@/hooks/use-youtube-player';
-import { getYouTubeEmbedUrl, getYouTubeVideoId } from '@/lib/utils'; // Import utility functions
+import { getYouTubeEmbedUrl, getSpotifyEmbedUrl } from '@/lib/utils'; // Import utility functions
+
+const LOCAL_STORAGE_DOCKED_KEY = 'simple_audio_player_docked';
 
 const SimpleAudioPlayer = () => {
-  const [inputUrl, setInputUrl] = useState('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
-  const [playerType, setPlayerType] = useState<'audio' | 'youtube' | null>(null);
-  const [currentTitle, setCurrentTitle] = useState('SoundHelix Song 1');
-  const [currentArtist, setCurrentArtist] = useState('SoundHelix');
+  const [inputUrl, setInputUrl] = useState(''); // Empty by default
+  const [playerType, setPlayerType] = useState<'audio' | 'youtube' | 'spotify' | null>(null);
+  const [currentTitle, setCurrentTitle] = useState('No Media Loaded');
+  const [currentArtist, setCurrentArtist] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
+  const [isDocked, setIsDocked] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const savedDocked = localStorage.getItem(LOCAL_STORAGE_DOCKED_KEY);
+      return savedDocked === 'true'; // Default to false if not set
+    }
+    return false;
+  });
 
   // State for HTML Audio Player
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -34,16 +43,27 @@ const SimpleAudioPlayer = () => {
     youtubeDuration,
   } = useYouTubePlayer(youtubeEmbedUrl);
 
+  // Effect to save docked state to local storage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LOCAL_STORAGE_DOCKED_KEY, String(isDocked));
+    }
+  }, [isDocked]);
+
   // Determine player type and set initial title/artist when inputUrl changes
   useEffect(() => {
     if (inputUrl.includes('youtube.com') || inputUrl.includes('youtu.be')) {
       setPlayerType('youtube');
       setCurrentTitle('YouTube Video');
-      setCurrentArtist('Unknown Artist'); // Cannot easily get from client-side YouTube API without key
+      setCurrentArtist('Unknown Artist');
+    } else if (inputUrl.includes('open.spotify.com')) {
+      setPlayerType('spotify');
+      setCurrentTitle('Spotify Media');
+      setCurrentArtist('Unknown Artist');
     } else if (inputUrl.match(/\.(mp3|wav|ogg|aac|flac)$/i)) {
       setPlayerType('audio');
       setCurrentTitle('Direct Audio');
-      setCurrentArtist('Unknown Artist'); // Cannot easily get from client-side
+      setCurrentArtist('Unknown Artist');
     } else {
       setPlayerType(null); // Invalid or unsupported URL
       setCurrentTitle('No Media Loaded');
@@ -90,7 +110,7 @@ const SimpleAudioPlayer = () => {
     }
   }, []);
 
-  // Common functions for both players
+  // Common functions for all players
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
@@ -102,6 +122,9 @@ const SimpleAudioPlayer = () => {
       setAudioIsPlaying(prev => !prev);
     } else if (playerType === 'youtube') {
       youtubeTogglePlayPause();
+    } else if (playerType === 'spotify') {
+      // Spotify embed has its own controls, no programmatic toggle here
+      // User must interact with the iframe directly
     }
   };
 
@@ -128,7 +151,7 @@ const SimpleAudioPlayer = () => {
       } else {
         prevAudioVolumeRef.current = audioVolume;
         setAudioVolume(0);
-        setAudioIsMuted(true);
+        setIsMuted(true);
       }
     } else if (playerType === 'youtube') {
       // YouTube API doesn't have a direct mute toggle, set volume to 0 or previous
@@ -147,9 +170,7 @@ const SimpleAudioPlayer = () => {
       audioRef.current.currentTime = newTime;
       setAudioCurrentTime(newTime);
     } else if (playerType === 'youtube' && youtubePlayerReady) {
-      // YouTube player seekTo expects seconds
       playerRef.current?.seekTo(newTime, true);
-      // setYoutubeCurrentTime(newTime); // Will be updated by interval
     }
   };
 
@@ -171,7 +192,7 @@ const SimpleAudioPlayer = () => {
     }
   };
 
-  const loadNewAudio = () => {
+  const loadNewMedia = () => {
     setShowUrlInput(false);
     // Player type and title/artist will be updated by the useEffect when inputUrl changes
   };
@@ -181,13 +202,27 @@ const SimpleAudioPlayer = () => {
   const currentVolume = playerType === 'youtube' ? youtubeVolume / 100 : audioVolume;
   const currentIsPlaying = playerType === 'youtube' ? youtubeIsPlaying : audioIsPlaying;
   const currentIsMuted = playerType === 'youtube' ? youtubeVolume === 0 : audioIsMuted;
-  const playerIsReady = playerType === 'youtube' ? youtubePlayerReady : true; // HTML audio is always ready
+  const playerIsReady = playerType === 'youtube' ? youtubePlayerReady : true; // HTML audio is always ready, Spotify embed is also "ready" once loaded
+
+  const toggleDocked = () => {
+    setIsDocked(prev => !prev);
+  };
+
+  const spotifyEmbedUrl = playerType === 'spotify' ? getSpotifyEmbedUrl(inputUrl) : null;
 
   return (
-    <div className="fixed right-4 z-[1000] top-20">
-      <div className="bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm max-w-[16rem] w-full">
+    <div className={`fixed right-4 z-[1000] top-20 transition-all duration-300 ease-in-out ${isDocked ? 'w-12' : 'max-w-[16rem] w-full'}`}>
+      <div className="bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex flex-col">
+        {/* Dock/Undock Button */}
+        <button
+          onClick={toggleDocked}
+          className="absolute -left-8 top-1/2 -translate-y-1/2 p-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-md"
+          title={isDocked ? "Undock Player" : "Dock Player"}
+        >
+          {isDocked ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+        </button>
 
-        {/* Conditional Audio/YouTube Player */}
+        {/* Conditional Audio/YouTube/Spotify Player */}
         {playerType === 'audio' && (
           <audio
             ref={audioRef}
@@ -200,12 +235,12 @@ const SimpleAudioPlayer = () => {
             Your browser does not support the audio element.
           </audio>
         )}
-        {playerType === 'youtube' && (
-          <div className="relative w-full aspect-video mb-1">
+        {playerType === 'youtube' && youtubeEmbedUrl && (
+          <div className={`relative w-full aspect-video ${isDocked ? 'hidden' : 'mb-1'}`}>
             <iframe
               id={iframeId}
               className="absolute top-0 left-0 w-full h-full rounded-lg"
-              src={youtubeEmbedUrl || ""}
+              src={youtubeEmbedUrl}
               frameBorder="0"
               allow="autoplay; encrypted-media"
               allowFullScreen
@@ -213,120 +248,143 @@ const SimpleAudioPlayer = () => {
             ></iframe>
           </div>
         )}
+        {playerType === 'spotify' && spotifyEmbedUrl && (
+          <div className={`relative w-full aspect-square ${isDocked ? 'hidden' : 'mb-1'}`}>
+            <iframe
+              src={spotifyEmbedUrl}
+              width="100%"
+              height="100%"
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              loading="lazy"
+              className="rounded-lg"
+              title="Spotify Embed"
+            ></iframe>
+          </div>
+        )}
 
         {/* Main Player Row: Album Art, Track Info, Controls */}
-        <div className="flex items-center justify-between space-x-1.5 mb-1">
+        <div className={`flex items-center justify-between space-x-1.5 ${isDocked ? 'flex-col' : 'mb-1'}`}>
           {/* Album Art Placeholder */}
-          <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs">
-            <Music size={24} />
+          <div className={`flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs ${isDocked ? 'w-10 h-10 mb-1' : 'w-12 h-12'}`}>
+            <Music size={isDocked ? 18 : 24} />
           </div>
 
           {/* Track Info and URL Input Toggle */}
-          <div className="flex-grow min-w-0">
-            <p className="text-sm font-semibold text-foreground truncate leading-tight">{currentTitle}</p>
-            <p className="text-xs text-muted-foreground truncate">{currentArtist}</p>
-            <button
-              onClick={() => setShowUrlInput(prev => !prev)}
-              className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
-              title="Change Music URL"
-            >
-              <Link size={12} className="mr-0.5" />
-              {showUrlInput ? 'Hide URL' : 'Embed URL'}
-            </button>
-          </div>
+          {!isDocked && (
+            <div className="flex-grow min-w-0">
+              <p className="text-sm font-semibold text-foreground truncate leading-tight">{currentTitle}</p>
+              <p className="text-xs text-muted-foreground truncate">{currentArtist}</p>
+              <button
+                onClick={() => setShowUrlInput(prev => !prev)}
+                className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
+                title="Change Media URL"
+              >
+                <Link size={12} className="mr-0.5" />
+                {showUrlInput ? 'Hide URL' : 'Embed URL'}
+              </button>
+            </div>
+          )}
 
           {/* Playback Controls and Volume */}
-          <div className="flex items-center space-x-0.5 flex-shrink-0">
-            <button
-              onClick={skipBackward}
-              className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
-              aria-label="Skip backward 10 seconds"
-              title="Skip Backward"
-              disabled={!playerIsReady}
-            >
-              <Rewind size={12} />
-            </button>
-            <button
-              onClick={togglePlayPause}
-              className="p-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105"
-              aria-label={currentIsPlaying ? "Pause" : "Play"}
-              title={currentIsPlaying ? "Pause" : "Play"}
-              disabled={!playerIsReady}
-            >
-              {currentIsPlaying ? <Pause size={14} /> : <Play size={14} />}
-            </button>
-            <button
-              onClick={skipForward}
-              className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
-              aria-label="Skip forward 10 seconds"
-              title="Skip Forward"
-              disabled={!playerIsReady}
-            >
-              <FastForward size={12} />
-            </button>
+          <div className={`flex items-center space-x-0.5 flex-shrink-0 ${isDocked ? 'flex-col space-y-1' : ''}`}>
+            {playerType !== 'spotify' && ( // Spotify has its own controls
+              <>
+                <button
+                  onClick={skipBackward}
+                  className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
+                  aria-label="Skip backward 10 seconds"
+                  title="Skip Backward"
+                  disabled={!playerIsReady || playerType === 'spotify'}
+                >
+                  <Rewind size={isDocked ? 10 : 12} />
+                </button>
+                <button
+                  onClick={togglePlayPause}
+                  className="p-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105"
+                  aria-label={currentIsPlaying ? "Pause" : "Play"}
+                  title={currentIsPlaying ? "Pause" : "Play"}
+                  disabled={!playerIsReady || playerType === 'spotify'}
+                >
+                  {currentIsPlaying ? <Pause size={isDocked ? 12 : 14} /> : <Play size={isDocked ? 12 : 14} />}
+                </button>
+                <button
+                  onClick={skipForward}
+                  className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
+                  aria-label="Skip forward 10 seconds"
+                  title="Skip Forward"
+                  disabled={!playerIsReady || playerType === 'spotify'}
+                >
+                  <FastForward size={isDocked ? 10 : 12} />
+                </button>
+              </>
+            )}
 
             {/* Volume Control */}
-            <div className="flex items-center space-x-0.5 ml-1">
-              <button
-                onClick={toggleMute}
-                className="p-0.5 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300"
-                aria-label={currentIsMuted ? "Unmute" : "Mute"}
-                title={currentIsMuted ? "Unmute" : "Mute"}
-                disabled={!playerIsReady}
-              >
-                {currentIsMuted || currentVolume === 0 ? <VolumeX size={10} /> : <Volume2 size={10} />}
-              </button>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={currentVolume}
-                onChange={handleVolumeChange}
-                className="w-8 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
-                style={{
-                  background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${currentVolume * 100}%, hsl(var(--muted)) ${currentVolume * 100}%, hsl(var(--muted)) 100%)`
-                }}
-                disabled={!playerIsReady}
-              />
-            </div>
+            {!isDocked && (
+              <div className="flex items-center space-x-0.5 ml-1">
+                <button
+                  onClick={toggleMute}
+                  className="p-0.5 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300"
+                  aria-label={currentIsMuted ? "Unmute" : "Mute"}
+                  title={currentIsMuted ? "Unmute" : "Mute"}
+                  disabled={!playerIsReady || playerType === 'spotify'}
+                >
+                  {currentIsMuted || currentVolume === 0 ? <VolumeX size={10} /> : <Volume2 size={10} />}
+                </button>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={currentVolume}
+                  onChange={handleVolumeChange}
+                  className="w-8 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
+                  style={{
+                    background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${currentVolume * 100}%, hsl(var(--muted)) ${currentVolume * 100}%, hsl(var(--muted)) 100%)`
+                  }}
+                  disabled={!playerIsReady || playerType === 'spotify'}
+                />
+              </div>
+            )}
           </div>
         </div>
 
         {/* Progress Bar and Time */}
-        <div className="flex items-center space-x-1 mb-1">
-          <span className="text-xs text-muted-foreground w-8 text-right">{formatTime(currentPlaybackTime)}</span>
-          <input
-            type="range"
-            min="0"
-            max={totalDuration || 0}
-            value={currentPlaybackTime}
-            onChange={handleProgressBarChange}
-            className="w-full h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
-            style={{
-              background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${(currentPlaybackTime / totalDuration) * 100}%, hsl(var(--muted)) ${(currentPlaybackTime / totalDuration) * 100}%, hsl(var(--muted)) 100%)`
-            }}
-            disabled={!playerIsReady || totalDuration === 0}
-          />
-          <span className="text-xs text-muted-foreground w-8 text-left">{formatTime(totalDuration)}</span>
-        </div>
+        {!isDocked && (
+          <div className="flex items-center space-x-1 mb-1">
+            <span className="text-xs text-muted-foreground w-8 text-right">{formatTime(currentPlaybackTime)}</span>
+            <input
+              type="range"
+              min="0"
+              max={totalDuration || 0}
+              value={currentPlaybackTime}
+              onChange={handleProgressBarChange}
+              className="w-full h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
+              style={{
+                background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${(currentPlaybackTime / totalDuration) * 100}%, hsl(var(--muted)) ${(currentPlaybackTime / totalDuration) * 100}%, hsl(var(--muted)) 100%)`
+              }}
+              disabled={!playerIsReady || totalDuration === 0 || playerType === 'spotify'}
+            />
+            <span className="text-xs text-muted-foreground w-8 text-left">{formatTime(totalDuration)}</span>
+          </div>
+        )}
 
         {/* URL Input Section */}
-        {showUrlInput && (
+        {showUrlInput && !isDocked && (
           <div className="mt-1 p-1 bg-muted rounded-lg border border-border">
-            <label htmlFor="audio-url" className="block text-xs font-medium text-muted-foreground mb-0.5">
+            <label htmlFor="media-url" className="block text-xs font-medium text-muted-foreground mb-0.5">
               Embed URL:
             </label>
             <input
               type="text"
-              id="audio-url"
+              id="media-url"
               value={inputUrl}
               onChange={(e) => setInputUrl(e.target.value)}
-              placeholder="e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+              placeholder="e.g., YouTube or Spotify link"
               className="w-full p-0.5 text-xs border border-border rounded-md focus:ring-primary focus:border-primary mb-1 bg-background text-foreground placeholder-muted-foreground"
             />
             <button
-              onClick={loadNewAudio}
+              onClick={loadNewMedia}
               className="w-full bg-primary text-primary-foreground text-xs py-0.5 px-1 rounded-md hover:bg-primary/90 transition duration-300 shadow-xs"
             >
               Load Media
