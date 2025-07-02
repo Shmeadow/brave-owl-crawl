@@ -21,8 +21,9 @@ const POMODORO_WIDGET_HEIGHT_EST = 200; // px, estimated height when expanded
 const POMODORO_WIDGET_BOTTOM_OFFSET = 20; // px, from PomodoroWidget's fixed bottom-20
 const PLAYER_POMODORO_BUFFER = 20; // px
 
-const MAXIMIZED_PLAYER_BOTTOM_OFFSET = POMODORO_WIDGET_BOTTOM_OFFSET + POMODORO_WIDGET_HEIGHT_EST + PLAYER_POMODORO_BUFFER;
-const MAXIMIZED_PLAYER_TOP_OFFSET = HEADER_HEIGHT;
+// Calculate the exact bottom position for the player
+const MAXIMIZED_PLAYER_BOTTOM_POSITION = POMODORO_WIDGET_BOTTOM_OFFSET + POMODORO_WIDGET_HEIGHT_EST + PLAYER_POMODORO_BUFFER;
+const MAXIMIZED_PLAYER_TOP_POSITION = HEADER_HEIGHT;
 
 
 const SimpleAudioPlayer = () => {
@@ -177,29 +178,30 @@ const SimpleAudioPlayer = () => {
   return (
     <div className={cn(
       "fixed z-[1000] transition-all duration-300 ease-in-out",
-      displayMode === 'normal' && 'top-20 right-4 w-80 h-auto',
-      displayMode === 'maximized' && `left-1/2 -translate-x-1/2 w-full max-w-4xl top-[${MAXIMIZED_PLAYER_TOP_OFFSET}px] bottom-[${MAXIMIZED_PLAYER_BOTTOM_OFFSET}px]`,
+      displayMode === 'normal' && 'top-20 right-4 w-80',
+      displayMode === 'maximized' && `left-1/2 -translate-x-1/2 w-full max-w-4xl top-[${MAXIMIZED_PLAYER_TOP_POSITION}px] bottom-[${MAXIMIZED_PLAYER_BOTTOM_POSITION}px]`,
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-16',
     )}>
-      {/* PlayerDisplay is always mounted, but its visual container might be hidden */}
-      <PlayerDisplay
-        playerType={playerType}
-        inputUrl={committedMediaUrl}
-        audioRef={audioRef}
-        youtubeIframeRef={youtubeIframeRef}
-        onLoadedMetadata={htmlAudioOnLoadedMetadata}
-        onTimeUpdate={htmlAudioOnTimeUpdate}
-        onEnded={htmlAudioOnEnded}
-        className={displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : ''}
-      />
-
       {/* Normal/Maximized Player UI */}
       <div className={cn(
         "bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex flex-col w-full h-full",
         displayMode === 'minimized' && 'hidden'
       )}>
+        {/* PlayerDisplay is now inside and will fill available space */}
+        <PlayerDisplay
+          playerType={playerType}
+          inputUrl={committedMediaUrl}
+          audioRef={audioRef}
+          youtubeIframeRef={youtubeIframeRef}
+          onLoadedMetadata={htmlAudioOnLoadedMetadata}
+          onTimeUpdate={htmlAudioOnTimeUpdate}
+          onEnded={htmlAudioOnEnded}
+          isMaximized={displayMode === 'maximized'} // New prop for PlayerDisplay
+          className={displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : ''}
+        />
+
         {/* Main Player Row: Album Art, Track Info, Controls */}
-        <div className="flex items-center justify-between space-x-1.5 mb-1">
+        <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0">
           {/* Album Art Placeholder */}
           <div className="flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs w-12 h-12">
             <PlayerIcon size={24} />

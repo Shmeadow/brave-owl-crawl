@@ -13,6 +13,7 @@ interface PlayerDisplayProps {
   onTimeUpdate: () => void;
   onEnded: () => void;
   className?: string; // New prop for conditional styling
+  isMaximized: boolean; // New prop
 }
 
 export function PlayerDisplay({
@@ -24,6 +25,7 @@ export function PlayerDisplay({
   onTimeUpdate,
   onEnded,
   className, // Destructure new prop
+  isMaximized, // Destructure new prop
 }: PlayerDisplayProps) {
   const youtubeEmbedUrl = playerType === 'youtube' ? getYouTubeEmbedUrl(inputUrl) : null;
   const spotifyEmbedUrl = playerType === 'spotify' ? getSpotifyEmbedUrl(inputUrl) : null;
@@ -38,13 +40,17 @@ export function PlayerDisplay({
           onTimeUpdate={onTimeUpdate}
           onEnded={onEnded}
           preload="metadata"
-          className={className} // Apply className here
+          className={cn(className, isMaximized ? 'flex-grow' : 'h-auto')} // Use flex-grow for audio
         >
           Your browser does not support the audio element.
         </audio>
       )}
       {playerType === 'youtube' && youtubeEmbedUrl && (
-        <div className={cn("relative w-full aspect-video mb-1", className)}> {/* Apply className here */}
+        <div className={cn(
+          "relative w-full mb-1",
+          className,
+          isMaximized ? 'flex-grow' : 'aspect-video' // Use flex-grow when maximized, aspect-video otherwise
+        )}>
           <iframe
             ref={youtubeIframeRef}
             className="absolute top-0 left-0 w-full h-full rounded-lg"
@@ -57,7 +63,11 @@ export function PlayerDisplay({
         </div>
       )}
       {playerType === 'spotify' && spotifyEmbedUrl && (
-        <div className={cn("relative w-full aspect-square mb-1", className)}> {/* Apply className here */}
+        <div className={cn(
+          "relative w-full mb-1",
+          className,
+          isMaximized ? 'flex-grow' : 'aspect-square' // Use flex-grow when maximized, aspect-square otherwise
+        )}>
           <iframe
             src={spotifyEmbedUrl}
             width="100%"
