@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { UserNav } from "@/components/user-nav";
 import { UpgradeButton } from "@/components/upgrade-button";
 import { useCurrentRoom } from "@/hooks/use-current-room";
-import { toast } from "sonner"; // Import toast
+import { toast } from "sonner";
 
 interface HeaderProps {
   onOpenSpotifyModal: () => void;
@@ -22,36 +22,39 @@ interface HeaderProps {
 
 export function Header({ onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }: HeaderProps) {
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, mounted } = useTheme();
   const { session, profile } = useSupabase();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatMessages, setUnreadChatMessages] = useState(0);
   const router = useRouter();
-  const { currentRoomName } = useCurrentRoom(); // Keep this if needed elsewhere, but not for the h1 text
+  const { currentRoomName } = useCurrentRoom();
 
   useEffect(() => {
+    // Only run on client side after component has mounted
+    if (!mounted) return;
+
     const updateClock = () => {
       setCurrentTime(new Date());
     };
 
-    updateClock();
+    updateClock(); // Initial call on client mount
     const timer = setInterval(updateClock, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [mounted]); // Depend on mounted state
 
   const formattedTime = currentTime?.toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
     hour12: profile?.time_format_24h === false,
-  }) || '--:--:--';
-  
+  }) || '--:--:--'; // Placeholder for server render
+
   const formattedDate = currentTime?.toLocaleDateString([], {
     weekday: "short",
     month: "short",
     day: "numeric",
-  }) || '--- --';
+  }) || '--- --'; // Placeholder for server render
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -91,7 +94,7 @@ export function Header({ onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }
           <Home className="h-6 w-6" />
           <span className="sr-only">Go to My Room</span>
         </Button>
-        <h1 className="text-xl font-semibold hidden sm:block"> {/* Removed truncate and max-w */}
+        <h1 className="text-xl font-semibold hidden sm:block">
           {displayName}'s Room
         </h1>
       </div>
@@ -104,7 +107,7 @@ export function Header({ onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }
             <p className="text-4xl font-bold text-foreground leading-none">{formattedTime}</p>
             <p className="text-sm text-muted-foreground leading-none">{formattedDate}</p>
           </div>
-          <div className="w-full mt-1"> {/* Removed max-w to match parent width */}
+          <div className="w-full mt-1">
             <Progress value={dailyProgress} className="h-2 rounded-full" />
           </div>
         </div>
@@ -112,10 +115,14 @@ export function Header({ onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }
         {/* Other action buttons */}
         <UpgradeButton onOpenUpgradeModal={onOpenUpgradeModal} />
         <Button variant="ghost" size="icon" onClick={toggleTheme} title="Toggle Theme">
-          {theme === "dark" ? (
-            <Sun className="h-6 w-6" />
+          {mounted ? (
+            theme === "dark" ? (
+              <Sun className="h-6 w-6" />
+            ) : (
+              <Moon className="h-6 w-6" />
+            )
           ) : (
-            <Moon className="h-6 w-6" />
+            <div className="h-6 w-6" /> // Placeholder for hydration
           )}
           <span className="sr-only">Toggle Theme</span>
         </Button>
