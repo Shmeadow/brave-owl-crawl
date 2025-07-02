@@ -1,13 +1,3 @@
 {
-  "extends": [
-    "next/core-web-vitals",
-    "next/typescript"
-    "rules": {
-    "quotes": "off",
-    "semi": "off",
-    "no-mixed-spaces-and-tabs": "off",
-    "prettier/prettier": "off"
-  }
-}
-  ]
+  "extends": "next/core-web-vitals"
 }
