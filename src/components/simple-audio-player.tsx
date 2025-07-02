@@ -213,7 +213,7 @@ const SimpleAudioPlayer = () => {
   const playerContainerClasses = cn(
     "fixed z-[1000] transition-all duration-300 ease-in-out",
     {
-      'right-4 top-1/2 -translate-y-1/2 w-12 h-12': displayMode === 'minimized', // Minimized (docked)
+      'right-4 bottom-4 w-96 h-16': displayMode === 'minimized', // Minimized (docked)
       'top-20 right-4 w-80 h-auto': displayMode === 'normal', // Normal (top-right, fixed width)
       'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-4xl w-full h-auto': displayMode === 'maximized', // Maximized (centered, larger)
     }
@@ -425,29 +425,92 @@ const SimpleAudioPlayer = () => {
       {/* Minimized Player Content (only visible when displayMode is 'minimized') */}
       {displayMode === 'minimized' && (
         <div
-          onClick={() => setDisplayMode('normal')}
           className={cn(
-            "fixed z-[1000] p-1 rounded-lg shadow-sm flex flex-col items-center justify-center cursor-pointer",
+            "fixed z-[1000] p-1 rounded-lg shadow-sm flex items-center justify-between", // Horizontal layout
             "bg-card backdrop-blur-xl border-white/20",
-            "right-4 top-1/2 -translate-y-1/2 w-12 h-12" // Minimized (docked)
+            "right-4 bottom-4 w-96 h-16" // Docked at bottom right
           )}
           title="Expand Player"
         >
-          {/* Album Art Placeholder */}
-          <div className="flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs w-10 h-10 mb-1">
+          {/* Album Art / Icon */}
+          <div className="flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs w-10 h-10">
             <PlayerIcon size={18} />
           </div>
-          <p className="text-xs font-semibold text-foreground truncate leading-tight w-full text-center">
-            {currentTitle.length > 10 ? currentTitle.substring(0, 8) + '...' : currentTitle}
-          </p>
+
+          {/* Track Info (truncated) */}
+          <div className="flex-grow min-w-0 mx-2">
+            <p className="text-sm font-semibold text-foreground truncate leading-tight">{currentTitle}</p>
+            <p className="text-xs text-muted-foreground truncate">{currentArtist}</p>
+          </div>
+
+          {/* Playback Controls */}
+          <div className="flex items-center space-x-0.5 flex-shrink-0">
+            {playerType !== 'spotify' && (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); skipBackward(); }}
+                  className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
+                  aria-label="Skip backward 10 seconds"
+                  title="Skip Backward"
+                  disabled={!playerIsReady || playerType === 'spotify'}
+                >
+                  <Rewind size={12} />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); togglePlayPause(); }}
+                  className="p-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105"
+                  aria-label={currentIsPlaying ? "Pause" : "Play"}
+                  title={currentIsPlaying ? "Pause" : "Play"}
+                  disabled={!playerIsReady || playerType === 'spotify'}
+                >
+                  {currentIsPlaying ? <Pause size={14} /> : <Play size={14} />}
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); skipForward(); }}
+                  className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
+                  aria-label="Skip forward 10 seconds"
+                  title="Skip Forward"
+                  disabled={!playerIsReady || playerType === 'spotify'}
+                >
+                  <FastForward size={12} />
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Volume Control */}
+          <div className="flex items-center space-x-0.5 ml-1 flex-shrink-0">
+            <button
+              onClick={(e) => { e.stopPropagation(); toggleMute(); }}
+              className="p-0.5 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300"
+              aria-label={currentIsMuted ? "Unmute" : "Mute"}
+              title={currentIsMuted ? "Unmute" : "Mute"}
+              disabled={!playerIsReady || playerType === 'spotify'}
+            >
+              {currentIsMuted || currentVolume === 0 ? <VolumeX size={10} /> : <Volume2 size={10} />}
+            </button>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={currentVolume}
+              onChange={handleVolumeChange}
+              className="w-16 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
+              style={{
+                background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${currentVolume * 100}%, hsl(var(--muted)) ${currentVolume * 100}%, hsl(var(--muted)) 100%)`
+              }}
+              disabled={!playerIsReady || playerType === 'spotify'}
+            />
+          </div>
+
+          {/* Expand Button */}
           <button
-            onClick={togglePlayPause}
-            className="p-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105 mt-1"
-            aria-label={currentIsPlaying ? "Pause" : "Play"}
-            title={currentIsPlaying ? "Pause" : "Play"}
-            disabled={!playerIsReady || playerType === 'spotify'}
+            onClick={(e) => { e.stopPropagation(); setDisplayMode('normal'); }}
+            className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 ml-1 flex-shrink-0"
+            title="Expand Player"
           >
-            {currentIsPlaying ? <Pause size={12} /> : <Play size={12} />}
+            <ChevronRight size={16} />
           </button>
         </div>
       )}
