@@ -15,7 +15,7 @@ export function useRooms() {
     handleToggleGuestWriteAccess,
     handleSetRoomPassword,
     handleDeleteRoom,
-  } = useRoomManagement({ setRooms: (newRooms) => {}, fetchRooms }); // Removed 'newRooms' as it was unused
+  } = useRoomManagement({ setRooms: () => {}, fetchRooms }); // Removed 'newRooms' parameter
   const {
     handleGenerateInviteCode,
     handleJoinRoomByCode,

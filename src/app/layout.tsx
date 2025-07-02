@@ -22,10 +22,6 @@ export const metadata: Metadata = {
   description: "Your all-in-one productivity tool.",
 };
 
-// Constants for layout dimensions (needed for mainContentArea calculation)
-const HEADER_HEIGHT = 64; // px
-const SIDEBAR_WIDTH = 60; // px
-
 export default async function RootLayout({
   children,
 }: Readonly<{

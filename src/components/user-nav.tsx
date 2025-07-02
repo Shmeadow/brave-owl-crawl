@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useSupabase } from "@/integrations/supabase/auth"; // Removed UserProfile
+import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
@@ -19,9 +19,9 @@ import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { useTheme } from "next-themes";
 
 export function UserNav() {
-  const { supabase, session, profile } = useSupabase(); // Removed authLoading
+  const { supabase, session, profile } = useSupabase();
   const { isAlwaysOpen, toggleAlwaysOpen } = useSidebarPreference();
-  const { themes } = useTheme(); // Removed theme, setTheme
+  const { } = useTheme(); // Removed themes as it was unused
   const router = useRouter();
 
   const handleSignOut = async () => {

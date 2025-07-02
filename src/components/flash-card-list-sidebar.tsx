@@ -47,7 +47,7 @@ interface SortableFlashCardItemProps {
   onDeleteCard: (cardId: string) => void;
   onUpdateCard: (cardId: string, updatedData: { front: string; back: string }) => void;
   onToggleStar: (cardId: string) => void;
-  onMarkAsLearned: (cardId: string) => void;
+  onMarkAsLearned: (cardId: string) => void; // Fixed typo here
   isCurrentRoomWritable: boolean;
 }
 
@@ -59,7 +59,7 @@ function SortableFlashCardItem({
   onDeleteCard,
   onUpdateCard,
   onToggleStar,
-  onMarkAsLearLearned,
+  onMarkAsLearned, // Fixed typo here
   isCurrentRoomWritable,
 }: SortableFlashCardItemProps) {
   const {

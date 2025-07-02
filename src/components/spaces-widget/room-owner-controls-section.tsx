@@ -18,7 +18,7 @@ interface RoomOwnerControlsSectionProps {
 }
 
 export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: RoomOwnerControlsSectionProps) {
-  const { supabase, session } = useSupabase(); // Removed 'profile' as it was unused
+  const { supabase, session } = useSupabase();
   const {
     handleToggleGuestWriteAccess,
     handleSetRoomPassword,
@@ -112,7 +112,7 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
           <Switch
             id="allow-guest-write"
             checked={currentRoom.allow_guest_write}
-            onCheckedChange={(checkedStatus) => handleToggleGuestWriteAccess(currentRoom.id, currentRoom.allow_guest_write)}
+            onCheckedChange={() => handleToggleGuestWriteAccess(currentRoom.id, currentRoom.allow_guest_write)}
           />
         </div>
         <p className="text-sm text-muted-foreground">

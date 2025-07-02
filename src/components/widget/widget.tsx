@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react"; // Removed useRef, useEffect
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Minimize, Maximize, Pin, PinOff, X } from "lucide-react";
@@ -118,7 +118,7 @@ export function Widget({
       <ResizableBox
         width={actualWidth}
         height={actualHeight}
-        onResizeStop={(e, direction, ref, d) => { // Removed 'd' as it was unused
+        onResizeStop={(e, direction, ref) => { // Removed 'd' as it was unused
           if (isResizable && ref) {
             onSizeChange({ width: ref.offsetWidth, height: ref.offsetHeight });
           }

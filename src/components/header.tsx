@@ -22,9 +22,9 @@ interface HeaderProps {
 }
 
 export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnreadMessage, onClearUnreadMessages, unreadChatCount }: HeaderProps) {
-  const { session, profile } = useSupabase();
+  const { session } = useSupabase(); // Removed profile as it was unused
   const router = useRouter();
-  const { currentRoomName, currentRoomId, isCurrentRoomWritable } = useCurrentRoom();
+  const { currentRoomName } = useCurrentRoom(); // Removed currentRoomId and isCurrentRoomWritable as they were unused
 
   // displayName was not used in this component's JSX
   // const displayName = profile?.first_name || profile?.last_name || session?.user?.email?.split('@')[0] || "Guest";
@@ -73,17 +73,7 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
           <Settings className="h-5 w-5" />
           <span className="sr-only">Settings</span>
         </Button>
-        {session && (
-          <ChatPanel
-            isOpen={isChatOpen}
-            onToggleOpen={onToggleChat}
-            onNewUnreadMessage={onNewUnreadMessage}
-            onClearUnreadMessages={onClearUnreadMessages}
-            unreadCount={unreadChatCount}
-            currentRoomId={currentRoomId}
-            isCurrentRoomWritable={isCurrentRoomWritable}
-          />
-        )}
+        {/* ChatPanel is rendered in AppWrapper, removed from here to avoid duplication */}
         <UserNav />
       </div>
     </header>

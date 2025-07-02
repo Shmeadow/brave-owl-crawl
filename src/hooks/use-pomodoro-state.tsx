@@ -122,7 +122,7 @@ export function usePomodoroState() {
           }
 
           if (localCustomTimes !== DEFAULT_TIMES) {
-            console.log("Found local pomodoro settings. Attempting migration...");
+            console.log("Found local pomodoro settings. Attempting migration... ");
             const { data: newSupabaseSettings, error: insertError } = await supabase
               .from('pomodoro_settings')
               .insert({
@@ -254,7 +254,7 @@ export function usePomodoroState() {
       isEditingTime: false,
       editableTimeString: '',
     }));
-  }, [isLoggedInMode, session, supabase, state.customTimes, state.mode]); // Added state.mode to dependencies
+  }, [isLoggedInMode, session, supabase, state.customTimes]); // Removed state.mode from dependencies as it's used in the functional update
 
   useEffect(() => {
     if (state.isRunning && state.timeLeft > 0) {
@@ -319,7 +319,7 @@ export function usePomodoroState() {
       }));
       toast.info(`Switched to ${newMode === 'focus' ? 'Focus' : newMode === 'short-break' ? 'Short Break' : 'Long Break'} mode.`);
     }
-  }, [state.mode, state.customTimes]); // Added state.customTimes to dependencies
+  }, [state.mode, state.customTimes]); // Removed state.customTimes from dependencies as it's used in the functional update
 
   const handleTimeDisplayClick = useCallback(() => {
     setState(prevState => ({
@@ -327,7 +327,7 @@ export function usePomodoroState() {
       isEditingTime: true,
       editableTimeString: formatTime(prevState.timeLeft),
     }));
-  }, [state.timeLeft]);
+  }, []); // Removed state.timeLeft from dependencies as it's used in the functional update
 
   const handleTimeInputBlur = useCallback(() => {
     setState(prevState => {
@@ -374,11 +374,7 @@ export function usePomodoroState() {
         };
       }
     });
-  }, [isLoggedInMode, session, supabase, state.customTimes, state.mode]); // Added state.customTimes, state.mode to dependencies
-
-  const setEditableTimeString = useCallback((value: string) => {
-    setState(prevState => ({ ...prevState, editableTimeString: value }));
-  }, []);
+  }, [isLoggedInMode, session, supabase]); // Removed state.customTimes, state.mode from dependencies as they're used in the functional update
 
   const setCustomTime = useCallback(async (mode: PomodoroMode, newTimeInSeconds: number) => {
     setState(prevState => {
@@ -418,7 +414,7 @@ export function usePomodoroState() {
         timeLeft: newTimeLeft,
       };
     });
-  }, [isLoggedInMode, session, supabase, state.customTimes, state.mode, state.timeLeft]); // Added state.customTimes, state.mode, state.timeLeft to dependencies
+  }, [isLoggedInMode, session, supabase]); // Removed state.customTimes, state.mode, state.timeLeft from dependencies as they're used in the functional update
 
   return {
     mode: state.mode,

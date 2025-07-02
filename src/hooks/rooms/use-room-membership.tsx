@@ -63,7 +63,7 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
     const MAX_ATTEMPTS = 5;
 
     while (!isCodeUnique && attempts < MAX_ATTEMPTS) {
-      const { data: existingCode, error: codeCheckError } = await supabase // Removed 'existingCode' as it was unused
+      const { data: existingCodeData, error: codeCheckError } = await supabase // Renamed existingCode to existingCodeData
         .from('room_invites')
         .select('id')
         .eq('code', newCode)
@@ -131,7 +131,7 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
       return;
     }
 
-    const { data: existingMembership, error: membershipError } = await supabase // Removed 'membershipError' as it was unused
+    const { data: existingMembership } = await supabase // Removed membershipError
       .from('room_members')
       .select('id')
       .eq('room_id', invite.room_id)
@@ -200,7 +200,7 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
       return;
     }
 
-    const { data: existingMembership, error: membershipError } = await supabase // Removed 'membershipError' as it was unused
+    const { data: existingMembership } = await supabase // Removed membershipError
       .from('room_members')
       .select('id')
       .eq('room_id', roomId)

@@ -10,11 +10,7 @@ import { JoinRoomSection } from "@/components/spaces-widget/join-room-section";
 import { PublicRoomsSection } from "@/components/spaces-widget/public-rooms-section";
 import { RoomOwnerControlsSection } from "@/components/spaces-widget/room-owner-controls-section";
 
-interface SpacesWidgetProps {
-  // isCurrentRoomWritable prop was not used in this component
-}
-
-export function SpacesWidget({}: SpacesWidgetProps) {
+export function SpacesWidget() {
   const { session, loading: authLoading } = useSupabase();
   const { rooms, loading: roomsLoading } = useRooms();
   const { currentRoomId } = useCurrentRoom();

@@ -115,8 +115,6 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
   }, [activeWidgets, mounted]);
 
   const recalculatePinnedWidgets = useCallback((currentWidgets: WidgetState[]) => {
-    // 'pinned' variable was not used
-    // const pinned = currentWidgets.filter(w => w.isPinned).sort((a, b) => a.id.localeCompare(b.id));
     let currentX = mainContentArea.left + DOCKED_WIDGET_HORIZONTAL_GAP;
 
     return currentWidgets.map(widget => {
@@ -203,7 +201,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
         });
       }
     }
-  }, [activeWidgets, initialWidgetConfigs, maxZIndex, mainContentArea]);
+  }, [activeWidgets, maxZIndex, mainContentArea, initialWidgetConfigs]); // initialWidgetConfigs is a valid dependency
 
   const removeWidget = useCallback((id: string) => {
     setActiveWidgets(prev => {
@@ -246,7 +244,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
         return widget;
       })
     );
-  }, [mainContentArea]);
+  }, [mainContentArea]); // mainContentArea is a valid dependency
 
   const bringWidgetToFront = useCallback((id: string) => {
     setActiveWidgets(prev => {
@@ -311,8 +309,6 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       const updatedWidgets = prev.map(widget => {
         if (widget.id === id) {
           if (widget.isPinned) {
-            // 'config' variable was not used
-            // const config = initialWidgetConfigs[id];
             return {
               ...widget,
               isPinned: false,

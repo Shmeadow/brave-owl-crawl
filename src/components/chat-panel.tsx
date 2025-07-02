@@ -54,7 +54,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
         console.error("Error fetching messages from Supabase:", error.message, "Details:", error.details, "Hint:", error.hint);
         toast.error("Failed to load chat messages: " + error.message);
       } else if (data) {
-        const formattedMessages = data.map((msg: any) => { // Added type for msg
+        const formattedMessages = data.map((msg: Message) => { // Changed type from any to Message
           const authorName = (profile && profile.id === msg.user_id)
             ? (profile.first_name || profile.last_name || 'You')
             : msg.user_id?.substring(0, 8) || 'Guest';
@@ -69,11 +69,11 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
         });
         setMessages(formattedMessages);
       }
-    } catch (networkError: any) {
+    } catch (networkError: unknown) { // Changed type from any to unknown
       console.error("Network error fetching chat messages:", networkError);
       toast.error("Failed to connect to chat server. Please check your internet connection or Supabase URL.");
     }
-  }, [supabase, profile]); // Added profile to dependencies
+  }, [supabase, profile]);
 
   useEffect(() => {
     if (authLoading || !supabase || !currentRoomId) return;
@@ -109,7 +109,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
       supabase.removeChannel(subscription);
       setMessages([]);
     };
-  }, [supabase, isOpen, session?.user?.id, onNewUnreadMessage, profile, authLoading, currentRoomId, fetchMessages]); // Added fetchMessages to dependencies
+  }, [supabase, isOpen, session?.user?.id, onNewUnreadMessage, profile, authLoading, currentRoomId, fetchMessages]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {

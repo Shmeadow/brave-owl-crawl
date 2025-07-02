@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 declare global {
   interface Window {
     onYouTubeIframeAPIReady?: () => void;
@@ -60,7 +61,7 @@ interface UseYouTubePlayerResult {
 }
 
 export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefObject<HTMLIFrameElement>): UseYouTubePlayerResult {
-  const playerRef = useRef<YT.Player | null>(null); // Fixed 'any' type
+  const playerRef = useRef<YT.Player | null>(null);
   const timeUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const currentVideoIdRef = useRef<string | null>(null);
 
@@ -79,7 +80,7 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
     }
   }, []);
 
-  const onPlayerReady = useCallback((event: { target: YT.Player }) => { // Fixed 'any' type
+  const onPlayerReady = useCallback((event: { target: YT.Player }) => {
     console.log("YouTube Player Ready:", event.target);
     setPlayerReady(true);
     event.target.setVolume(volume);
@@ -100,7 +101,7 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
     }, 1000);
   }, [volume, clearTimeUpdateInterval]);
 
-  const onPlayerStateChange = useCallback((event: { data: number; target: YT.Player }) => { // Fixed 'any' type
+  const onPlayerStateChange = useCallback((event: { data: number; target: YT.Player }) => {
     if (window.YT) {
       setIsPlaying(event.data === window.YT.PlayerState.PLAYING);
       if (event.data === window.YT.PlayerState.PLAYING) {
@@ -133,7 +134,7 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
     const newVideoIdMatch = embedUrl?.match(/\/embed\/([\w-]+)/);
     const newVideoId = newVideoIdMatch ? newVideoIdMatch[1] : null;
 
-    const currentIframe = iframeRef.current; // Capture current ref value for cleanup
+    const currentIframe = iframeRef.current;
 
     const createOrUpdatePlayer = () => {
       if (!newVideoId || !currentIframe || !window.YT || !window.YT.Player) {
@@ -220,7 +221,7 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
         delete window.onYouTubeIframeAPIReady;
       }
     };
-  }, [embedUrl, iframeRef, volume, onPlayerReady, onPlayerStateChange, clearTimeUpdateInterval]); // Added iframeRef to dependencies
+  }, [embedUrl, iframeRef, volume, onPlayerReady, onPlayerStateChange, clearTimeUpdateInterval]);
 
   const togglePlayPause = useCallback(() => {
     if (playerReady && playerRef.current) {

@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react"; // Re-added useState, useCallback
+import React, { useEffect, useRef } from "react"; // Removed useState, useCallback
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Play, Pause, RotateCcw, Coffee, Brain, Home, ChevronDown, Settings } from "lucide-react";
-import { usePomodoroState, formatTime } from "@/hooks/use-pomodoro-state"; // parseTimeToSeconds and PomodoroMode are not directly used here
+import { usePomodoroState, formatTime } from "@/hooks/use-pomodoro-state";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";

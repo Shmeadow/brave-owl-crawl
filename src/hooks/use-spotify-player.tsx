@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 declare global {
   interface Window {
     onSpotifyWebPlaybackSDKReady?: () => void;
@@ -17,7 +18,7 @@ declare global {
   }
   namespace Spotify {
     interface Player {
-      addListener: (event: string, callback: (data: any) => void) => void;
+      addListener: (event: string, callback: (data: PlaybackState | WebPlaybackInstance) => void) => void; // Specific type for data
       connect: () => Promise<boolean>;
       disconnect: () => void;
       togglePlay: () => Promise<void>;
@@ -40,6 +41,10 @@ declare global {
         // Add other track window properties if needed
       };
       // Add other state properties if needed
+    }
+
+    interface WebPlaybackInstance {
+      device_id: string;
     }
 
     interface PlayOptions {
@@ -83,7 +88,7 @@ interface UseSpotifyPlayerResult {
 }
 
 export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerResult {
-  const playerRef = useRef<Spotify.Player | null>(null); // Fixed 'any' type
+  const playerRef = useRef<Spotify.Player | null>(null);
   const deviceIdRef = useRef<string | null>(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -101,7 +106,7 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
     }
   }, []);
 
-  const updatePlaybackState = useCallback((state: Spotify.PlaybackState | null) => { // Fixed 'any' type
+  const updatePlaybackState = useCallback((state: Spotify.PlaybackState | null) => {
     if (!state) {
       setIsPlaying(false);
       setCurrentTrack(null);
@@ -119,7 +124,7 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
     if (!state.paused && !intervalRef.current) {
       intervalRef.current = setInterval(() => {
         if (playerRef.current) {
-          playerRef.current.getCurrentState().then((s: Spotify.PlaybackState | null) => { // Fixed 'any' type
+          playerRef.current.getCurrentState().then((s: Spotify.PlaybackState | null) => {
             if (s) setSpotifyCurrentTime(s.position / 1000);
           });
         }
@@ -151,14 +156,14 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
       volume: volume,
     });
 
-    player.addListener('ready', ({ device_id }: { device_id: string }) => {
+    player.addListener('ready', ({ device_id }: Spotify.WebPlaybackInstance) => {
       console.log('Ready with Device ID', device_id);
       deviceIdRef.current = device_id;
       setPlayerReady(true);
       toast.success("Connected to Spotify!");
     });
 
-    player.addListener('not_ready', ({ device_id }: { device_id: string }) => {
+    player.addListener('not_ready', ({ device_id }: Spotify.WebPlaybackInstance) => {
       console.log('Device ID has gone offline', device_id);
       setPlayerReady(false);
       toast.error("Spotify device went offline.");
@@ -221,7 +226,7 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
 
   const togglePlayPause = useCallback(() => {
     if (playerReady && playerRef.current) {
-      playerRef.current.togglePlay().catch((e: Error) => console.error("Error toggling play/pause:", e)); // Fixed 'any' type
+      playerRef.current.togglePlay().catch((e: Error) => console.error("Error toggling play/pause:", e));
     } else {
       toast.error("Spotify player not ready. Please connect first.");
     }
@@ -232,7 +237,7 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
       playerRef.current.setVolume(vol).then(() => {
         setVolumeState(vol);
         setIsMuted(vol === 0);
-      }).catch((e: Error) => console.error("Error setting volume:", e)); // Fixed 'any' type
+      }).catch((e: Error) => console.error("Error setting volume:", e));
     }
   }, [playerReady]);
 
@@ -241,13 +246,13 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
       playerRef.current.setVolume(isMuted ? (volume > 0 ? volume : 0.5) : 0).then(() => {
         setIsMuted(!isMuted);
         setVolumeState(isMuted ? (volume > 0 ? volume : 0.5) : 0);
-      }).catch((e: Error) => console.error("Error toggling mute:", e)); // Fixed 'any' type
+      }).catch((e: Error) => console.error("Error toggling mute:", e));
     }
   }, [playerReady, isMuted, volume]);
 
   const seekTo = useCallback((seconds: number) => {
     if (playerReady && playerRef.current) {
-      playerRef.current.seek(seconds * 1000).catch((e: Error) => console.error("Error seeking:", e)); // Fixed 'any' type
+      playerRef.current.seek(seconds * 1000).catch((e: Error) => console.error("Error seeking:", e));
     }
   }, [playerReady]);
 

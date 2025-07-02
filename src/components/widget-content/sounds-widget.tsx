@@ -4,11 +4,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Music } from "lucide-react";
 
-interface SoundsWidgetProps {
-  // isCurrentRoomWritable prop was not used in this component
-}
-
-export function SoundsWidget({}: SoundsWidgetProps) {
+export function SoundsWidget() {
   return (
     <div className="h-full w-full flex flex-col items-center justify-center">
       <Card className="w-full h-full bg-card backdrop-blur-xl border-white/20 flex flex-col items-center justify-center">
