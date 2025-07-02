@@ -17,6 +17,8 @@ interface UseYouTubePlayerResult {
   setVolume: (vol: number) => void;
   playerReady: boolean;
   iframeId: string; // ID to assign to the iframe
+  youtubeCurrentTime: number; // Exposed current time
+  youtubeDuration: number; // Exposed duration
 }
 
 export function useYouTubePlayer(embedUrl: string | null): UseYouTubePlayerResult {
@@ -24,7 +26,17 @@ export function useYouTubePlayer(embedUrl: string | null): UseYouTubePlayerResul
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState(50); // Default volume 0-100
   const [playerReady, setPlayerReady] = useState(false);
+  const [youtubeCurrentTime, setYoutubeCurrentTime] = useState(0);
+  const [youtubeDuration, setYoutubeDuration] = useState(0);
   const iframeId = useRef(`youtube-player-${Math.random().toString(36).substring(2, 9)}`).current;
+  const timeUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const clearTimeUpdateInterval = useCallback(() => {
+    if (timeUpdateIntervalRef.current) {
+      clearInterval(timeUpdateIntervalRef.current);
+      timeUpdateIntervalRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
     if (!embedUrl) {
@@ -34,6 +46,9 @@ export function useYouTubePlayer(embedUrl: string | null): UseYouTubePlayerResul
       }
       setPlayerReady(false);
       setIsPlaying(false);
+      setYoutubeCurrentTime(0);
+      setYoutubeDuration(0);
+      clearTimeUpdateInterval();
       return;
     }
 
@@ -56,15 +71,33 @@ export function useYouTubePlayer(embedUrl: string | null): UseYouTubePlayerResul
 
     const onPlayerReady = (event: any) => {
       setPlayerReady(true);
-      // Set initial volume and mute state based on current state
       event.target.setVolume(volume);
-      // Autoplay is handled by URL param, but ensure state is synced
       setIsPlaying(event.target.getPlayerState() === window.YT.PlayerState.PLAYING);
+      setYoutubeDuration(event.target.getDuration());
+      setYoutubeCurrentTime(event.target.getCurrentTime());
+      
+      // Start polling for current time if already playing
+      if (event.target.getPlayerState() === window.YT.PlayerState.PLAYING) {
+        timeUpdateIntervalRef.current = setInterval(() => {
+          setYoutubeCurrentTime(event.target.getCurrentTime());
+        }, 1000);
+      }
     };
 
     const onPlayerStateChange = (event: any) => {
       if (window.YT) {
         setIsPlaying(event.data === window.YT.PlayerState.PLAYING);
+        if (event.data === window.YT.PlayerState.PLAYING) {
+          clearTimeUpdateInterval(); // Clear any existing interval
+          timeUpdateIntervalRef.current = setInterval(() => {
+            setYoutubeCurrentTime(event.target.getCurrentTime());
+          }, 1000);
+        } else {
+          clearTimeUpdateInterval();
+          if (event.data === window.YT.PlayerState.ENDED) {
+            setYoutubeCurrentTime(0); // Reset to 0 when ended
+          }
+        }
       }
     };
 
@@ -79,7 +112,7 @@ export function useYouTubePlayer(embedUrl: string | null): UseYouTubePlayerResul
             autoplay: 1, // Autoplay on load
             loop: 1,
             playlist: videoId, // Required for loop
-            controls: 1,
+            controls: 0, // Hide controls for custom UI
             modestbranding: 1,
             rel: 0,
             disablekb: 1,
@@ -109,12 +142,13 @@ export function useYouTubePlayer(embedUrl: string | null): UseYouTubePlayerResul
         playerRef.current.destroy();
         playerRef.current = null;
       }
+      clearTimeUpdateInterval();
       // Clean up global callback if component unmounts before API is ready
       if (window.onYouTubeIframeAPIReady === createPlayer) {
         delete window.onYouTubeIframeAPIReady;
       }
     };
-  }, [embedUrl, iframeId, volume]); // Re-create player if embedUrl changes, or volume for initial set
+  }, [embedUrl, iframeId, volume, clearTimeUpdateInterval]); // Re-create player if embedUrl changes, or volume for initial set
 
   const togglePlayPause = useCallback(() => {
     if (playerReady && playerRef.current) {
@@ -140,5 +174,7 @@ export function useYouTubePlayer(embedUrl: string | null): UseYouTubePlayerResul
     setVolume,
     playerReady,
     iframeId,
+    youtubeCurrentTime,
+    youtubeDuration,
   };
 }
