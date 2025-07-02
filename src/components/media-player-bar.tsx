@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Pause, Volume2, VolumeX, Youtube, Music, Minus, ChevronLeft } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Youtube, Music, Minus, ChevronLeft } from "lucide-react"; // Removed X icon
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { useYouTubePlayer } from "@/hooks/use-youtube-player";
@@ -15,8 +15,8 @@ export function MediaPlayerBar() {
     activePlayer,
     youtubeEmbedUrl,
     spotifyEmbedUrl,
-    setYoutubeEmbedUrl,
-    setSpotifyEmbedUrl,
+    setYoutubeEmbedUrl, // Keep this for internal logic if needed, but not exposed via button
+    setSpotifyEmbedUrl, // Keep this for internal logic if needed, but not exposed via button
     setActivePlayer,
   } = useMediaPlayer();
 
@@ -44,6 +44,10 @@ export function MediaPlayerBar() {
     return null;
   }
 
+  // The handleClearEmbed function is no longer directly triggered from the bar's 'X' button.
+  // It remains available in the SoundsWidget for managing embeds.
+  // Removed handleClearEmbed function as it's no longer needed here.
+
   const handleToggleMinimize = () => {
     setIsMinimized(!isMinimized);
   };
@@ -53,7 +57,7 @@ export function MediaPlayerBar() {
       className={cn(
         "fixed right-4 z-[1000]",
         "bg-card border-white/20 shadow-lg rounded-lg",
-        "flex flex-col px-3 py-2 transition-all duration-300 ease-in-out", // Reduced padding
+        "flex flex-col px-4 py-2 transition-all duration-300 ease-in-out",
         "backdrop-blur-2xl", // Stronger blur
         activePlayer === 'spotify' ? 'border-primary' : 'border-transparent', // Highlight if Spotify is active
         isMinimized
@@ -71,16 +75,19 @@ export function MediaPlayerBar() {
       ) : (
         // Expanded state content
         <>
-          <div className="flex items-center justify-between mb-1"> {/* Reduced margin-bottom */}
+          <div className="flex items-center justify-between mb-2">
             <h3 className="text-md font-semibold text-foreground">Media Player</h3>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleToggleMinimize} title="Minimize Media Player">
-              <Minus className="h-4 w-4" />
-              <span className="sr-only">Minimize Media Player</span>
-            </Button>
+            <div className="flex gap-1">
+              {/* Removed the "Remove Current Embed" button */}
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleToggleMinimize} title="Minimize Media Player">
+                <Minus className="h-4 w-4" />
+                <span className="sr-only">Minimize Media Player</span>
+              </Button>
+            </div>
           </div>
 
           {/* Player Selector */}
-          <div className="flex gap-2 mb-2"> {/* Reduced margin-bottom */}
+          <div className="flex gap-2 mb-4">
             {youtubeEmbedUrl && (
               <Button
                 variant={activePlayer === 'youtube' ? 'default' : 'outline'}
@@ -105,7 +112,7 @@ export function MediaPlayerBar() {
 
           {/* Conditional Player Rendering */}
           {activePlayer === 'youtube' && youtubeEmbedUrl && (
-            <CardContent className="relative z-10 flex flex-col p-0"> {/* Removed h-full, p-0 maintained */}
+            <CardContent className="relative z-10 flex flex-col justify-between h-full p-0">
               {/* YouTube Player Iframe Container (hidden but active) */}
               <div className="absolute inset-0 overflow-hidden rounded-lg pointer-events-none">
                 <div
@@ -125,24 +132,24 @@ export function MediaPlayerBar() {
                 </span>
               </div>
 
-              <div className="flex items-center gap-2 w-full mt-2"> {/* Reduced gap */}
+              <div className="flex items-center gap-4 w-full mt-2">
                 <Button
                   onClick={toggleYouTubePlayPause}
                   disabled={!youTubePlayerReady}
                   size="icon"
-                  className="h-8 w-8 flex-shrink-0" {/* Smaller buttons */}
+                  className="h-10 w-10 flex-shrink-0"
                 >
-                  {isYouTubePlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                  {isYouTubePlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
                 </Button>
-                <div className="flex items-center gap-1 flex-1"> {/* Reduced gap */}
+                <div className="flex items-center gap-2 flex-1">
                   <Button
                     onClick={toggleYouTubeMute}
                     disabled={!youTubePlayerReady}
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7" {/* Smaller buttons */}
+                    className="h-8 w-8"
                   >
-                    {isYouTubeMuted || youtubeVolume === 0 ? <VolumeX className="h-4 w-4 text-muted-foreground" /> : <Volume2 className="h-4 w-4 text-muted-foreground" />}
+                    {isYouTubeMuted || youtubeVolume === 0 ? <VolumeX className="h-5 w-5 text-muted-foreground" /> : <Volume2 className="h-5 w-5 text-muted-foreground" />}
                     <span className="sr-only">{isYouTubeMuted ? "Unmute" : "Mute"}</span>
                   </Button>
                   <Slider
@@ -159,15 +166,15 @@ export function MediaPlayerBar() {
           )}
 
           {activePlayer === 'spotify' && spotifyEmbedUrl && (
-            <CardContent className="relative z-10 flex flex-col p-0"> {/* Removed h-full, p-0 maintained */}
-              <div className="relative w-full rounded-md overflow-hidden" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */ }}>
+            <CardContent className="relative z-10 flex flex-col justify-between h-full p-0">
+              <div className="relative w-full" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */ }}>
                 <iframe
                   src={spotifyEmbedUrl}
                   width="100%"
                   height="100%"
                   allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                   loading="lazy"
-                  className="absolute top-0 left-0 w-full h-full" // Removed rounded-md here as it's on parent div
+                  className="absolute top-0 left-0 w-full h-full rounded-md"
                   title="Spotify Player"
                 ></iframe>
               </div>
