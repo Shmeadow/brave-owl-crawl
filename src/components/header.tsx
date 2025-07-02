@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Menu, Sun, Moon, Settings, Bell, MessageSquare } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Sidebar } from "@/components/sidebar";
+import { Sidebar } from "@/components/sidebar/sidebar"; // Corrected import path
 import { ChatPanel } from "@/components/chat-panel";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
