@@ -49,14 +49,17 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const { isAlwaysOpen } = useSidebarPreference();
   const { youtubeEmbedUrl, spotifyEmbedUrl } = useMediaPlayer();
 
+  // Initialize with a consistent default, then update from localStorage in useEffect
   const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(true);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [mounted, setMounted] = useState(false);
+  // Initialize with 0, then update in useEffect
   const [dailyProgress, setDailyProgress] = useState(0);
 
   // State to hold the dimensions of the main content area
+  // Initialize with fixed defaults, then update based on window in useEffect
   const [mainContentArea, setMainContentArea] = useState({
     left: 0,
     top: 0,
@@ -66,6 +69,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
 
   useEffect(() => {
     setMounted(true);
+    // Read from localStorage only after component mounts on client
     if (typeof window !== 'undefined') {
       const savedMinimized = localStorage.getItem(LOCAL_STORAGE_POMODORO_MINIMIZED_KEY);
       setIsPomodoroWidgetMinimized(savedMinimized === 'false' ? false : true);
@@ -78,7 +82,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
     }
   }, [isPomodoroWidgetMinimized, mounted]);
 
-  // Calculate daily progress
+  // Calculate daily progress only after component mounts
   useEffect(() => {
     const updateDailyProgress = () => {
       const now = new Date();
@@ -87,13 +91,14 @@ export function AppWrapper({ children }: AppWrapperProps) {
       setDailyProgress((secondsIntoDay / totalSecondsInDay) * 100);
     };
 
-    updateDailyProgress(); // Initial call
-    const intervalId = setInterval(updateDailyProgress, 1000); // Update every second
+    if (mounted) { // Only run on client after mount
+      updateDailyProgress(); // Initial call
+      const intervalId = setInterval(updateDailyProgress, 1000); // Update every second
+      return () => clearInterval(intervalId);
+    }
+  }, [mounted]);
 
-    return () => clearInterval(intervalId);
-  }, []);
-
-  // Calculate main content area dimensions dynamically
+  // Calculate main content area dimensions dynamically only after component mounts
   useEffect(() => {
     const updateMainContentArea = () => {
       const sidebarCurrentWidth = (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH : 0;
@@ -107,10 +112,12 @@ export function AppWrapper({ children }: AppWrapperProps) {
       });
     };
 
-    updateMainContentArea();
-    window.addEventListener('resize', updateMainContentArea);
-    return () => window.removeEventListener('resize', updateMainContentArea);
-  }, [isSidebarOpen, isChatOpen, isAlwaysOpen]);
+    if (mounted) { // Only run on client after mount
+      updateMainContentArea();
+      window.addEventListener('resize', updateMainContentArea);
+      return () => window.removeEventListener('resize', updateMainContentArea);
+    }
+  }, [isSidebarOpen, isChatOpen, isAlwaysOpen, mounted]); // Added mounted to dependencies
 
   const shouldShowPomodoro = pathname !== '/account' && pathname !== '/admin-settings';
 

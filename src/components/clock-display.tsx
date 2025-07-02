@@ -10,8 +10,9 @@ interface ClockDisplayProps {
 
 export function ClockDisplay({ dailyProgress }: ClockDisplayProps) {
   const { profile } = useSupabase();
-  const [currentTime, setCurrentTime] = useState("");
-  const [currentDate, setCurrentDate] = useState("");
+  // Initialize with static values to prevent hydration mismatch
+  const [currentTime, setCurrentTime] = useState("--:--:--");
+  const [currentDate, setCurrentDate] = useState("--- -- --");
 
   useEffect(() => {
     const updateClock = () => {
@@ -32,11 +33,12 @@ export function ClockDisplay({ dailyProgress }: ClockDisplayProps) {
       setCurrentDate(now.toLocaleDateString('en-US', dateOptions));
     };
 
+    // Run once on mount, then set interval
     updateClock();
     const intervalId = setInterval(updateClock, 1000);
 
     return () => clearInterval(intervalId);
-  }, [profile?.time_format_24h]);
+  }, [profile?.time_format_24h]); // Depend on profile?.time_format_24h to re-run if it changes
 
   return (
     <div
