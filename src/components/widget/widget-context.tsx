@@ -35,6 +35,7 @@ interface WidgetContextType {
   togglePinned: (id: string) => void;
   closeWidget: (id: string) => void;
   toggleWidget: (id: string, title: string) => void;
+  topmostZIndex: number; // Expose topmost Z-index
 }
 
 const WidgetContext = createContext<WidgetContextType | undefined>(undefined);
@@ -360,6 +361,13 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
     }
   }, [activeWidgets, addWidget, closeWidget]);
 
+  // Calculate the topmost Z-index among visible, non-minimized, non-maximized, non-pinned widgets
+  const topmostZIndex = useMemo(() => {
+    const visibleWidgets = activeWidgets.filter(w => !w.isMinimized && !w.isMaximized && !w.isPinned);
+    if (visibleWidgets.length === 0) return 0;
+    return Math.max(...visibleWidgets.map(w => w.zIndex));
+  }, [activeWidgets]);
+
   const contextValue = useMemo(
     () => ({
       activeWidgets,
@@ -373,6 +381,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       togglePinned,
       closeWidget,
       toggleWidget,
+      topmostZIndex, // Include topmostZIndex in context
     }),
     [
       activeWidgets,
@@ -386,6 +395,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       togglePinned,
       closeWidget,
       toggleWidget,
+      topmostZIndex,
     ]
   );
 

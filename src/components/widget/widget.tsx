@@ -16,6 +16,7 @@ interface WidgetProps {
   isMinimized: boolean;
   isMaximized: boolean;
   isPinned: boolean;
+  isTopmost: boolean; // New prop
   position: { x: number; y: number };
   size: { width: number; height: number };
   zIndex: number;
@@ -36,6 +37,7 @@ export function Widget({
   isMinimized,
   isMaximized,
   isPinned,
+  isTopmost, // Destructure new prop
   position,
   size,
   zIndex,
@@ -77,8 +79,9 @@ export function Widget({
     <Card
       ref={setNodeRef} // Set node ref for draggable
       className={cn(
-        "absolute bg-card backdrop-blur-xl border-white/20 shadow-lg rounded-lg flex flex-col overflow-hidden", // Removed /40
+        "absolute bg-card border-white/20 shadow-lg rounded-lg flex flex-col overflow-hidden", // Removed /40
         "transition-all duration-300 ease-in-out",
+        isTopmost ? "backdrop-blur-2xl" : "backdrop-blur-xl", // Dynamic blur based on isTopmost
         // Sizing based on state
         isMaximized ? "inset-0 w-full h-full" : "",
         isPinned ? "w-[192px] h-[48px]" : "", // Pinned fixed size

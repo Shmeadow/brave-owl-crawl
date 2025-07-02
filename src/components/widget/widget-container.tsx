@@ -1,9 +1,5 @@
 "use client";
 
-import React from "react";
-import { Widget } from "./widget";
-import { useWidget } from "./widget-context";
-import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Wind, BookOpen, Goal } from "lucide-react";
 import { DndContext, DragEndEvent } from "@dnd-kit/core"; // Import DndContext and DragEndEvent
 
 // Import all widget content components
@@ -18,6 +14,8 @@ import { FortuneWidget } from "@/components/widget-content/fortune-widget";
 import { BreatheWidget } from "@/components/widget-content/breathe-widget";
 import { FlashCardsWidget } from "@/components/widget-content/flash-cards-widget";
 import { GoalFocusWidget } from "@/components/widget-content/goal-focus-widget";
+import { useWidget } from "./widget-context"; // Import useWidget
+import { Widget } from "./widget"; // Import Widget
 
 // Map widget IDs to their components and icons
 const WIDGET_COMPONENTS = {
@@ -44,6 +42,7 @@ export function WidgetContainer() {
     maximizeWidget,
     togglePinned,
     closeWidget,
+    topmostZIndex, // Get topmostZIndex from context
   } = useWidget();
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -72,6 +71,9 @@ export function WidgetContainer() {
             return null;
           }
 
+          // Determine if this widget is the topmost visible widget
+          const isTopmost = !widget.isMinimized && !widget.isMaximized && !widget.isPinned && widget.zIndex === topmostZIndex;
+
           return (
             <Widget
               key={widget.id}
@@ -85,6 +87,7 @@ export function WidgetContainer() {
               isMinimized={widget.isMinimized}
               isMaximized={widget.isMaximized}
               isPinned={widget.isPinned}
+              isTopmost={isTopmost} // Pass isTopmost prop
               onSizeChange={(newSize) => updateWidgetSize(widget.id, newSize)}
               onBringToFront={() => bringWidgetToFront(widget.id)}
               onMinimize={minimizeWidget}
