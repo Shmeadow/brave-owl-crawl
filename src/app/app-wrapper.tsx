@@ -11,7 +11,7 @@ import { useSidebar } from "@/components/sidebar/sidebar-context";
 import { Sidebar } from "@/components/sidebar/sidebar";
 import { ChatPanel } from "@/components/chat-panel";
 import { WidgetProvider } from "@/components/widget/widget-context";
-import { WidgetContainer } from "@/components/widget/widget-container";
+import { WidgetContainer } => "@/components/widget/widget-container";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { MediaPlayerBar } from "@/components/media-player-bar";
 import { useMediaPlayer } from "@/components/media-player-context";
@@ -55,12 +55,21 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [mounted, setMounted] = useState(false);
 
-  const [mainContentArea, setMainContentArea] = useState({
-    left: 0,
-    top: 0,
-    width: 0,
-    height: 0,
+  // Use useRef to create a stable object for WidgetProvider's initial mainContentArea
+  const mainContentAreaForWidgets = useRef({
+    left: SIDEBAR_WIDTH,
+    top: HEADER_HEIGHT,
+    width: 0, // Will be calculated once on mount
+    height: 0, // Will be calculated once on mount
   });
+
+  // Calculate initial width/height once on mount for the ref
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      mainContentAreaForWidgets.current.width = window.innerWidth - SIDEBAR_WIDTH - CHAT_PANEL_WIDTH_CLOSED;
+      mainContentAreaForWidgets.current.height = window.innerHeight - HEADER_HEIGHT;
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   useEffect(() => {
     setMounted(true);
@@ -76,26 +85,6 @@ export function AppWrapper({ children }: AppWrapperProps) {
     }
   }, [isPomodoroWidgetMinimized, mounted]);
 
-  useEffect(() => {
-    const updateMainContentArea = () => {
-      const sidebarCurrentWidth = (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH : 0;
-      const chatPanelWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
-      
-      setMainContentArea({
-        left: sidebarCurrentWidth,
-        top: HEADER_HEIGHT,
-        width: window.innerWidth - sidebarCurrentWidth - chatPanelWidth,
-        height: window.innerHeight - HEADER_HEIGHT,
-      });
-    };
-
-    if (mounted) {
-      updateMainContentArea();
-      window.addEventListener('resize', updateMainContentArea);
-      return () => window.removeEventListener('resize', updateMainContentArea);
-    }
-  }, [isSidebarOpen, isChatOpen, isAlwaysOpen, mounted]);
-
   const shouldShowPomodoro = pathname !== '/account' && pathname !== '/admin-settings';
 
   const handleOpenUpgradeModal = () => {
@@ -110,62 +99,71 @@ export function AppWrapper({ children }: AppWrapperProps) {
     setUnreadChatCount(0);
   };
 
-  return (
-    <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
-      <div className="flex flex-col flex-1 min-h-screen">
-        <Header
-          onOpenUpgradeModal={handleOpenUpgradeModal}
-          isChatOpen={isChatOpen}
-          onToggleChat={() => {
-            setIsChatOpen(!isChatOpen);
-            if (!isChatOpen) {
-              handleClearUnreadMessages();
-            }
-          }}
-          onNewUnreadMessage={handleNewUnreadMessage}
-          onClearUnreadMessages={handleClearUnreadMessages}
-          unreadChatCount={unreadChatCount}
-        />
-        <Sidebar />
-        <main
-          className={cn(
-            "flex flex-col flex-1 w-full overflow-auto transition-all duration-300 ease-in-out",
-            "items-center justify-center"
-          )}
-          // Removed marginLeft and marginRight to prevent content shifting
-        >
-          {children}
-        </main>
-      </div>
+  const sidebarCurrentWidth = (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH : 0;
+  const chatPanelCurrentWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
 
-      <GoalReminderBar />
-      {mounted && shouldShowPomodoro && (
-        <PomodoroWidget
-          isMinimized={isPomodoroWidgetMinimized}
-          setIsMinimized={setIsPomodoroWidgetMinimized}
-          chatPanelWidth={isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED}
-        />
-      )}
-      {mounted && (youtubeEmbedUrl || spotifyEmbedUrl) && <MediaPlayerBar />}
-      <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
-      <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
-        <ChatPanel
-          isOpen={isChatOpen}
-          onToggleOpen={() => {
-            setIsChatOpen(!isChatOpen);
-            if (!isChatOpen) {
-              handleClearUnreadMessages();
-            }
-          }}
-          onNewUnreadMessage={handleNewUnreadMessage}
-          onClearUnreadMessages={handleClearUnreadMessages}
-          unreadCount={unreadChatCount}
-          currentRoomId={currentRoomId}
-          isCurrentRoomWritable={isCurrentRoomWritable}
-        />
-      </div>
-      <Toaster />
-      <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} />
+  return (
+    <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentAreaForWidgets.current}>
+      <SessionContextProvider>
+        <SidebarProvider>
+          <div className="flex flex-col flex-1 min-h-screen">
+            <Header
+              onOpenUpgradeModal={handleOpenUpgradeModal}
+              isChatOpen={isChatOpen}
+              onToggleChat={() => {
+                setIsChatOpen(!isChatOpen);
+                if (!isChatOpen) {
+                  handleClearUnreadMessages();
+                }
+              }}
+              onNewUnreadMessage={handleNewUnreadMessage}
+              onClearUnreadMessages={handleClearUnreadMessages}
+              unreadChatCount={unreadChatCount}
+            />
+            <Sidebar />
+            <main
+              className={cn(
+                "flex flex-col flex-1 w-full overflow-auto transition-all duration-300 ease-in-out",
+                `ml-[${sidebarCurrentWidth}px]`, // Dynamic left margin
+                `mr-[${chatPanelCurrentWidth}px]`, // Dynamic right margin
+                "items-center justify-center"
+              )}
+              style={{ paddingTop: HEADER_HEIGHT }}
+            >
+              {children}
+            </main>
+          </div>
+
+          <GoalReminderBar />
+          {mounted && shouldShowPomodoro && (
+            <PomodoroWidget
+              isMinimized={isPomodoroWidgetMinimized}
+              setIsMinimized={setIsPomodoroWidgetMinimized}
+              chatPanelWidth={chatPanelCurrentWidth}
+            />
+          )}
+          {mounted && (youtubeEmbedUrl || spotifyEmbedUrl) && <MediaPlayerBar />}
+          <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
+          <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
+            <ChatPanel
+              isOpen={isChatOpen}
+              onToggleOpen={() => {
+                setIsChatOpen(!isChatOpen);
+                if (!isChatOpen) {
+                  handleClearUnreadMessages();
+                }
+              }}
+              onNewUnreadMessage={handleNewUnreadMessage}
+              onClearUnreadMessages={handleClearUnreadMessages}
+              unreadCount={unreadChatCount}
+              currentRoomId={currentRoomId}
+              isCurrentRoomWritable={isCurrentRoomWritable}
+            />
+          </div>
+          <Toaster />
+          <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} />
+        </SidebarProvider>
+      </SessionContextProvider>
     </WidgetProvider>
   );
 }
