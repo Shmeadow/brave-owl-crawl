@@ -11,11 +11,6 @@ export default function HomePage() {
         This is your personalized dashboard. Here you can manage your tasks,
         notes, and more.
       </p>
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <Button asChild variant="outline" size="lg">
-          <Link href="/settings">Settings</Link>
-        </Button>
-      </div>
     </div>
   );
 }

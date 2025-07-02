@@ -184,7 +184,9 @@ const SimpleAudioPlayer = () => {
     )}>
       {/* Normal/Maximized Player UI */}
       <div className={cn(
-        "bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex flex-col w-full h-full",
+        "bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full h-full",
+        displayMode === 'normal' && 'p-1',
+        displayMode === 'maximized' && 'p-4', // Increased padding for maximized mode
         displayMode === 'minimized' && 'hidden'
       )}>
         {/* PlayerDisplay is now inside and will fill available space */}
