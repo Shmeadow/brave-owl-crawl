@@ -154,7 +154,7 @@ export function useYouTubePlayer(embedUrl: string | null): UseYouTubePlayerResul
         delete window.onYouTubeIframeAPIReady;
       }
     };
-  }, [embedUrl, iframeId, volume, clearTimeUpdateInterval]); // Re-create player if embedUrl changes, or volume for initial set
+  }, [embedUrl, iframeId, clearTimeUpdateInterval]); // Removed 'volume' from dependencies
 
   const togglePlayPause = useCallback(() => {
     if (playerReady && playerRef.current) {
