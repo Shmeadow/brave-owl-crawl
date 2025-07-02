@@ -28,7 +28,7 @@ interface HeaderProps {
 export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnreadMessage, onClearUnreadMessages, unreadChatCount }: HeaderProps) {
   const { session, profile } = useSupabase();
   const router = useRouter();
-  const { currentRoomName, isCurrentRoomWritable } = useCurrentRoom(); // Use currentRoomName and isCurrentRoomWritable
+  const { currentRoomName, currentRoomId, isCurrentRoomWritable } = useCurrentRoom(); // Destructure currentRoomId here
 
   const displayName = profile?.first_name || profile?.last_name || session?.user?.email?.split('@')[0] || "Guest";
 
