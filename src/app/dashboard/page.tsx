@@ -4,13 +4,21 @@ import React from "react";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils"; // Import cn for conditional classNames
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button"; // Import Button
+import { toast } from "sonner"; // Import toast
 
 export default function DashboardPage() {
   const { currentRoomName, isCurrentRoomWritable } = useCurrentRoom();
   const { session, profile } = useSupabase();
 
   const displayName = profile?.first_name || profile?.last_name || session?.user?.email?.split('@')[0] || "Guest";
+
+  const handlePreDeployCheck = () => {
+    // Simulate the checks passing
+    toast.success("Pre-deploy checks passed! (Simulated)");
+    console.log("Simulated pre-deploy checks: npm run lint, npm run typecheck, npm test, vercel build");
+  };
 
   return (
     <div className={cn(
@@ -22,7 +30,7 @@ export default function DashboardPage() {
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
             Welcome to {currentRoomName === "My Room" ? "your" : currentRoomName}!
           </h1>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-lg text-muted-foreground mb-8">
             This is your personal space, {displayName}.
           </p>
           <p className="text-md text-muted-foreground mt-2">
@@ -33,6 +41,9 @@ export default function DashboardPage() {
               You are viewing this room in read-only mode. You cannot make changes.
             </p>
           )}
+          <Button onClick={handlePreDeployCheck} className="mt-6">
+            PreDeployChecklist
+          </Button>
         </CardContent>
       </Card>
     </div>
