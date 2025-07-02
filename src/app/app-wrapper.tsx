@@ -8,15 +8,13 @@ import { Toaster } from "@/components/ui/sonner";
 import { UpgradeModal } from "@/components/upgrade-modal";
 import { usePathname } from "next/navigation";
 import { Header } from "@/components/header";
-import { SpotifyEmbedModal } from "@/components/spotify-embed-modal";
 import { useSidebar } from "@/components/sidebar/sidebar-context";
 import { Sidebar } from "@/components/sidebar/sidebar";
 import { ChatPanel } from "@/components/chat-panel";
 import { WidgetProvider } from "@/components/widget/widget-context";
 import { WidgetContainer } from "@/components/widget/widget-container";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
-import { YouTubePlayerBar } from "@/components/youtube-player-bar";
-import { SpotifyPlayerBar } from "@/components/spotify-player-bar"; // Import SpotifyPlayerBar
+import { MediaPlayerBar } from "@/components/media-player-bar"; // Import the new unified player bar
 import { useMediaPlayer } from "@/components/media-player-context"; // Import useMediaPlayer
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
@@ -153,8 +151,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
             chatPanelWidth={chatPanelCurrentWidth}
           />
         )}
-        {mounted && youtubeEmbedUrl && <YouTubePlayerBar youtubeEmbedUrl={youtubeEmbedUrl} />}
-        {mounted && spotifyEmbedUrl && <SpotifyPlayerBar spotifyEmbedUrl={spotifyEmbedUrl} />} {/* Render SpotifyPlayerBar */}
+        {mounted && (youtubeEmbedUrl || spotifyEmbedUrl) && <MediaPlayerBar />} {/* Render the new unified player bar */}
         <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
         <Toaster />
         <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">

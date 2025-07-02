@@ -15,12 +15,12 @@ import { useCurrentRoom } from "@/hooks/use-current-room";
 import { toast } from "sonner";
 
 interface HeaderProps {
-  onOpenSpotifyModal: () => void;
+  // onOpenSpotifyModal: () => void; // Removed this prop
   onOpenUpgradeModal: () => void;
   dailyProgress: number;
 }
 
-export function Header({ onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }: HeaderProps) {
+export function Header({ onOpenUpgradeModal, dailyProgress }: HeaderProps) {
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const { theme, setTheme, mounted } = useTheme();
   const { session, profile } = useSupabase();

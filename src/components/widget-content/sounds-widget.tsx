@@ -23,18 +23,6 @@ export function SoundsWidget() {
     // The context's setYoutubeEmbedUrl already updates local storage
   };
 
-  const handleActivateSpotify = () => {
-    if (spotifyEmbedUrl) {
-      setActivePlayer('spotify');
-    }
-  };
-
-  const handleActivateYoutube = () => {
-    if (youtubeEmbedUrl) {
-      setActivePlayer('youtube');
-    }
-  };
-
   return (
     <div className="h-full w-full overflow-y-auto p-4">
       <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto py-4">
@@ -56,14 +44,9 @@ export function SoundsWidget() {
             </Button>
 
             {youtubeEmbedUrl ? (
-              <div className="flex flex-col gap-2">
-                <p className="text-sm text-muted-foreground text-center">
-                  A YouTube video is currently embedded and playing in the background bar.
-                </p>
-                <Button onClick={handleActivateYoutube} className="w-full" variant="secondary">
-                  Activate YouTube Player
-                </Button>
-              </div>
+              <p className="text-sm text-muted-foreground text-center mt-4">
+                A YouTube video is currently embedded. It will appear in the media player bar.
+              </p>
             ) : (
               <p className="text-sm text-muted-foreground text-center mt-4">
                 No YouTube video embedded. Click "Manage YouTube Embed" to add one.
@@ -87,14 +70,10 @@ export function SoundsWidget() {
               <Settings className="mr-2 h-4 w-4" /> Manage Spotify Embed
             </Button>
             {spotifyEmbedUrl ? (
-              <div className="flex flex-col gap-2">
-                <p className="text-sm text-muted-foreground text-center">
-                  A Spotify player is currently embedded. **Please use the controls directly within the Spotify player bar to play/pause/adjust volume.**
-                </p>
-                <Button onClick={handleActivateSpotify} className="w-full" variant="secondary">
-                  Activate Spotify Player (pauses YouTube if playing)
-                </Button>
-              </div>
+              <p className="text-sm text-muted-foreground text-center mt-4">
+                A Spotify player is currently embedded. It will appear in the media player bar.
+                **Please use the controls directly within the Spotify player.**
+              </p>
             ) : (
               <p className="text-sm text-muted-foreground text-center mt-4">
                 No Spotify player embedded. Click "Manage Spotify Embed" to add one.
