@@ -55,19 +55,41 @@ export function useCurrentRoom() {
         return;
       }
 
-      const { data: roomData, error } = await supabase
+      // Fetch room details including creator_id and allow_guest_write
+      const { data: roomData, error: roomError } = await supabase
         .from('rooms')
-        .select('creator_id')
+        .select('creator_id, allow_guest_write')
         .eq('id', currentRoomId)
         .single();
 
-      if (error || !roomData) {
-        console.error("Error fetching room data for write access check:", error);
+      if (roomError || !roomData) {
+        console.error("Error fetching room data for write access check:", roomError);
         setIsCurrentRoomWritable(false);
         return;
       }
 
-      setIsCurrentRoomWritable(session.user.id === roomData.creator_id);
+      // Check if user is the creator
+      if (session.user.id === roomData.creator_id) {
+        setIsCurrentRoomWritable(true);
+        return;
+      }
+
+      // If not creator, check if guest write is allowed AND user is a member
+      if (roomData.allow_guest_write) {
+        const { data: membership, error: membershipError } = await supabase
+          .from('room_members')
+          .select('id')
+          .eq('room_id', currentRoomId)
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (!membershipError && membership) {
+          setIsCurrentRoomWritable(true); // Guest write allowed and user is a member
+          return;
+        }
+      }
+      
+      setIsCurrentRoomWritable(false); // Default to false if no conditions met
     };
 
     checkWriteAccess();

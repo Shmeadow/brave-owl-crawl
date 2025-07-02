@@ -9,6 +9,8 @@ export interface RoomData {
   creator_id: string;
   name: string;
   is_public: boolean;
+  allow_guest_write: boolean; // New field
+  password_hash: string | null; // New field
   created_at: string;
   is_member?: boolean; // Client-side flag to indicate if the current user is a member
 }
@@ -20,6 +22,18 @@ export interface RoomInvite {
   creator_id: string;
   expires_at: string | null;
   created_at: string;
+}
+
+export interface RoomMember {
+  id: string;
+  room_id: string;
+  user_id: string;
+  joined_at: string;
+  profiles: {
+    first_name: string | null;
+    last_name: string | null;
+    profile_image_url: string | null;
+  } | null;
 }
 
 export function useRooms() {
@@ -37,7 +51,7 @@ export function useRooms() {
     // Fetch public rooms
     const { data: publicRooms, error: publicError } = await supabase
       .from('rooms')
-      .select('*')
+      .select('*, room_members(user_id)') // Select room_members to check if current user is a member
       .eq('is_public', true)
       .order('created_at', { ascending: true });
 
@@ -45,7 +59,10 @@ export function useRooms() {
       toast.error("Error fetching public rooms: " + publicError.message);
       console.error("Error fetching public rooms:", publicError);
     } else {
-      allRooms = publicRooms as RoomData[];
+      allRooms = publicRooms.map(room => ({
+        ...room,
+        is_member: session?.user?.id ? room.room_members.some((m: any) => m.user_id === session.user.id) : false,
+      })) as RoomData[];
     }
 
     // If logged in, fetch rooms created by user and rooms user is a member of
@@ -53,7 +70,7 @@ export function useRooms() {
       // Fetch rooms created by the user
       const { data: userCreatedRooms, error: createdError } = await supabase
         .from('rooms')
-        .select('*')
+        .select('*, room_members(user_id)')
         .eq('creator_id', session.user.id)
         .order('created_at', { ascending: true });
 
@@ -64,12 +81,19 @@ export function useRooms() {
         // Add user-created rooms, avoiding duplicates if they are also public
         userCreatedRooms.forEach(room => {
           if (!allRooms.some(r => r.id === room.id)) {
-            allRooms.push(room as RoomData);
+            allRooms.push({
+              ...room,
+              is_member: true, // Creator is always a member
+            } as RoomData);
+          } else {
+            // If it's a public room created by user, ensure is_member is true
+            const existingRoom = allRooms.find(r => r.id === room.id);
+            if (existingRoom) existingRoom.is_member = true;
           }
         });
       }
 
-      // Fetch rooms the user is a member of
+      // Fetch rooms the user is a member of (excluding their own created rooms)
       const { data: memberships, error: memberError } = await supabase
         .from('room_members')
         .select('room_id')
@@ -84,7 +108,7 @@ export function useRooms() {
         // Fetch details for rooms the user is a member of, if not already fetched
         const { data: memberRooms, error: memberRoomsError } = await supabase
           .from('rooms')
-          .select('*')
+          .select('*, room_members(user_id)')
           .in('id', Array.from(memberRoomIds))
           .order('created_at', { ascending: true });
 
@@ -127,6 +151,8 @@ export function useRooms() {
         creator_id: session.user.id,
         name: name,
         is_public: isPublic,
+        allow_guest_write: false, // Default to false
+        password_hash: null, // Default to null
       })
       .select()
       .single();
@@ -135,7 +161,8 @@ export function useRooms() {
       toast.error("Error creating room: " + error.message);
       console.error("Error creating room:", error);
     } else if (data) {
-      setRooms((prevRooms) => [...prevRooms, data as RoomData]);
+      // Add the new room with is_member: true since creator is always a member
+      setRooms((prevRooms) => [...prevRooms, { ...data, is_member: true } as RoomData]);
       toast.success(`Room "${data.name}" created successfully! It is currently ${data.is_public ? 'public' : 'private'}.`);
     }
   }, [session, supabase]);
@@ -165,26 +192,96 @@ export function useRooms() {
     }
   }, [session, supabase]);
 
-  const handleDeleteRoom = useCallback(async (roomId: string) => {
+  const handleToggleGuestWriteAccess = useCallback(async (roomId: string, currentStatus: boolean) => {
     if (!session?.user?.id || !supabase) {
-      toast.error("You must be logged in to delete a room.");
+      toast.error("You must be logged in to change room settings.");
       return;
     }
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('rooms')
-      .delete()
+      .update({ allow_guest_write: !currentStatus })
       .eq('id', roomId)
-      .eq('creator_id', session.user.id); // Ensure only creator can delete
+      .eq('creator_id', session.user.id)
+      .select()
+      .single();
 
     if (error) {
-      toast.error("Error deleting room: " + error.message);
-      console.error("Error deleting room:", error);
+      toast.error("Error updating guest write access: " + error.message);
+      console.error("Error updating guest write access:", error);
+    } else if (data) {
+      setRooms(prevRooms => prevRooms.map(room => room.id === roomId ? data as RoomData : room));
+      toast.success(`Guest write access for "${data.name}" is now ${data.allow_guest_write ? 'enabled' : 'disabled'}.`);
     } else {
-      setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId));
-      toast.success("Room deleted successfully.");
+      toast.error("Failed to update guest write access. You might not be the owner.");
     }
   }, [session, supabase]);
+
+  const handleSetRoomPassword = useCallback(async (roomId: string, password?: string) => {
+    if (!session?.user?.id || !supabase) {
+      toast.error("You must be logged in to set a room password.");
+      return;
+    }
+
+    try {
+      const response = await fetch('https://mrdupsekghsnbooyrdmj.supabase.co/functions/v1/set-room-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ roomId, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error("Error setting password: " + (data.error || "Unknown error"));
+        console.error("Error setting password:", data.error);
+      } else {
+        // Update local state with the new password hash (or null if removed)
+        setRooms(prevRooms => prevRooms.map(room =>
+          room.id === roomId ? { ...room, password_hash: password ? 'SET' : null } : room // 'SET' is a placeholder, actual hash is not returned
+        ));
+        toast.success(password ? "Room password set successfully!" : "Room password removed.");
+        fetchRooms(); // Re-fetch to get the actual state if needed, or just rely on placeholder
+      }
+    } catch (error) {
+      toast.error("Failed to set password due to network error.");
+      console.error("Network error setting password:", error);
+    }
+  }, [session, supabase, fetchRooms]);
+
+  const handleKickUser = useCallback(async (roomId: string, userIdToKick: string) => {
+    if (!session?.user?.id || !supabase) {
+      toast.error("You must be logged in to kick users.");
+      return;
+    }
+
+    try {
+      const response = await fetch('https://mrdupsekghsnbooyrdmj.supabase.co/functions/v1/kick-room-member', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ roomId, userIdToKick }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error("Error kicking user: " + (data.error || "Unknown error"));
+        console.error("Error kicking user:", data.error);
+      } else {
+        toast.success("User kicked successfully!");
+        fetchRooms(); // Re-fetch rooms to update membership lists
+      }
+    } catch (error) {
+      toast.error("Failed to kick user due to network error.");
+      console.error("Network error kicking user:", error);
+    }
+  }, [session, supabase, fetchRooms]);
 
   const generateRandomCode = () => {
     return Math.random().toString(36).substring(2, 8).toUpperCase(); // 6 alphanumeric characters
@@ -338,6 +435,79 @@ export function useRooms() {
     }
   }, [session, supabase, fetchRooms]);
 
+  const handleJoinRoomByPassword = useCallback(async (roomId: string, passwordAttempt: string) => {
+    if (!session?.user?.id || !supabase) {
+      toast.error("You must be logged in to join a room.");
+      return;
+    }
+
+    // Fetch room details including password_hash
+    const { data: room, error: roomError } = await supabase
+      .from('rooms')
+      .select('password_hash')
+      .eq('id', roomId)
+      .single();
+
+    if (roomError || !room) {
+      toast.error("Room not found.");
+      console.error("Error fetching room for password check:", roomError);
+      return;
+    }
+
+    if (!room.password_hash) {
+      toast.error("This room does not have a password set.");
+      return;
+    }
+
+    // Verify password using pgcrypto's check function via a database function
+    const { data: passwordMatch, error: checkError } = await supabase.rpc('check_password', {
+      _password_attempt: passwordAttempt,
+      _password_hash: room.password_hash,
+    });
+
+    if (checkError) {
+      console.error('Password check error:', checkError);
+      toast.error("An error occurred during password verification.");
+      return;
+    }
+
+    if (!passwordMatch) {
+      toast.error("Incorrect password.");
+      return;
+    }
+
+    // If password matches, proceed to join the room (similar to invite code join)
+    // Check if already a member
+    const { data: existingMembership, error: membershipError } = await supabase
+      .from('room_members')
+      .select('id')
+      .eq('room_id', roomId)
+      .eq('user_id', session.user.id)
+      .single();
+
+    if (existingMembership) {
+      toast.info("You are already a member of this room.");
+      return;
+    }
+
+    const { data: newMembership, error: insertError } = await supabase
+      .from('room_members')
+      .insert({
+        room_id: roomId,
+        user_id: session.user.id,
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      toast.error("Error joining room: " + insertError.message);
+      console.error("Error inserting membership:", insertError);
+    } else if (newMembership) {
+      toast.success("Successfully joined the room!");
+      fetchRooms(); // Re-fetch rooms to update the list
+    }
+  }, [session, supabase, fetchRooms]);
+
   const handleLeaveRoom = useCallback(async (roomId: string) => {
     if (!session?.user?.id || !supabase) {
       toast.error("You must be logged in to leave a room.");
@@ -361,6 +531,7 @@ export function useRooms() {
       toast.error("Error leaving room: " + error.message);
       console.error("Error leaving room:", error);
     } else {
+      setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId));
       toast.success("Successfully left the room.");
       fetchRooms(); // Re-fetch rooms to update the list
     }
@@ -371,9 +542,12 @@ export function useRooms() {
     loading,
     handleCreateRoom,
     handleToggleRoomPublicStatus,
-    handleDeleteRoom,
+    handleToggleGuestWriteAccess, // Expose new function
+    handleSetRoomPassword, // Expose new function
+    handleKickUser, // Expose new function
     handleGenerateInviteCode,
     handleJoinRoomByCode,
+    handleJoinRoomByPassword, // Expose new function
     handleLeaveRoom,
     fetchRooms,
   };
