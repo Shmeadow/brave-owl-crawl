@@ -1,6 +1,7 @@
 "use client";
 
-import { DndContext, DragEndEvent } from "@dnd-kit/core"; // Import DndContext and DragEndEvent
+import { DndContext, DragEndEvent } from "@dnd-kit/core";
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Wind, BookOpen, Goal } from "lucide-react"; // Added missing imports
 
 // Import all widget content components
 import { SpacesWidget } from "@/components/widget-content/spaces-widget";
@@ -14,8 +15,8 @@ import { FortuneWidget } from "@/components/widget-content/fortune-widget";
 import { BreatheWidget } from "@/components/widget-content/breathe-widget";
 import { FlashCardsWidget } from "@/components/widget-content/flash-cards-widget";
 import { GoalFocusWidget } from "@/components/widget-content/goal-focus-widget";
-import { useWidget } from "./widget-context"; // Import useWidget
-import { Widget } from "./widget"; // Import Widget
+import { useWidget } from "./widget-context";
+import { Widget } from "./widget";
 
 // Map widget IDs to their components and icons
 const WIDGET_COMPONENTS = {
@@ -42,7 +43,7 @@ export function WidgetContainer() {
     maximizeWidget,
     togglePinned,
     closeWidget,
-    topmostZIndex, // Get topmostZIndex from context
+    topmostZIndex,
   } = useWidget();
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -60,7 +61,7 @@ export function WidgetContainer() {
   };
 
   return (
-    <DndContext onDragEnd={handleDragEnd}> {/* Wrap with DndContext */}
+    <DndContext onDragEnd={handleDragEnd}>
       <div className="fixed inset-0 z-[900] pointer-events-none">
         {activeWidgets.map(widget => {
           const WidgetIcon = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.icon;
@@ -71,7 +72,6 @@ export function WidgetContainer() {
             return null;
           }
 
-          // Determine if this widget is the topmost visible widget
           const isTopmost = !widget.isMinimized && !widget.isMaximized && !widget.isPinned && widget.zIndex === topmostZIndex;
 
           return (
@@ -87,7 +87,7 @@ export function WidgetContainer() {
               isMinimized={widget.isMinimized}
               isMaximized={widget.isMaximized}
               isPinned={widget.isPinned}
-              isTopmost={isTopmost} // Pass isTopmost prop
+              isTopmost={isTopmost}
               onSizeChange={(newSize) => updateWidgetSize(widget.id, newSize)}
               onBringToFront={() => bringWidgetToFront(widget.id)}
               onMinimize={minimizeWidget}
