@@ -14,8 +14,8 @@ import { ChatPanel } from "@/components/chat-panel";
 import { WidgetProvider } from "@/components/widget/widget-context";
 import { WidgetContainer } from "@/components/widget/widget-container";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
-import { MediaPlayerBar } from "@/components/media-player-bar"; // Import the new unified player bar
-import { useMediaPlayer } from "@/components/media-player-context"; // Import useMediaPlayer
+import { MediaPlayerBar } from "@/components/media-player-bar";
+import { useMediaPlayer } from "@/components/media-player-context";
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
 const CHAT_PANEL_WIDTH_OPEN = 320; // px
@@ -46,7 +46,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const pathname = usePathname();
   const { isSidebarOpen } = useSidebar();
   const { isAlwaysOpen } = useSidebarPreference();
-  const { youtubeEmbedUrl, spotifyEmbedUrl } = useMediaPlayer(); // Get URLs from context
+  const { youtubeEmbedUrl, spotifyEmbedUrl } = useMediaPlayer();
 
   const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(true);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
@@ -132,7 +132,6 @@ export function AppWrapper({ children }: AppWrapperProps) {
     <>
       <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
         <Header
-          onOpenSpotifyModal={() => { /* No longer needed here, managed by SoundsWidget */ }}
           onOpenUpgradeModal={handleOpenUpgradeModal}
           dailyProgress={dailyProgress}
         />
@@ -151,7 +150,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
             chatPanelWidth={chatPanelCurrentWidth}
           />
         )}
-        {mounted && (youtubeEmbedUrl || spotifyEmbedUrl) && <MediaPlayerBar />} {/* Render the new unified player bar */}
+        {mounted && (youtubeEmbedUrl || spotifyEmbedUrl) && <MediaPlayerBar />}
         <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
         <Toaster />
         <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">

@@ -15,7 +15,6 @@ import { useCurrentRoom } from "@/hooks/use-current-room";
 import { toast } from "sonner";
 
 interface HeaderProps {
-  // onOpenSpotifyModal: () => void; // Removed this prop
   onOpenUpgradeModal: () => void;
   dailyProgress: number;
 }
