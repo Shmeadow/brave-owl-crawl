@@ -62,7 +62,6 @@ const SimpleAudioPlayer = () => {
     toggleMute: youtubeToggleMute,
     seekTo: youtubeSeekTo,
     playerReady: youtubePlayerReady,
-    iframeId,
     youtubeCurrentTime,
     youtubeDuration,
   } = useYouTubePlayer(youtubeEmbedUrl, youtubeIframeRef); // Pass youtubeIframeRef
@@ -185,7 +184,6 @@ const SimpleAudioPlayer = () => {
             <PlayerDisplay
               playerType={playerType}
               inputUrl={committedMediaUrl} // Pass committedMediaUrl
-              iframeId={iframeId}
               audioRef={audioRef}
               youtubeIframeRef={youtubeIframeRef} // Pass the ref here
               onLoadedMetadata={htmlAudioOnLoadedMetadata}

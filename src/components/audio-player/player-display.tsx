@@ -6,7 +6,6 @@ import { getYouTubeEmbedUrl, getSpotifyEmbedUrl } from '@/lib/utils';
 interface PlayerDisplayProps {
   playerType: 'audio' | 'youtube' | 'spotify' | null;
   inputUrl: string;
-  iframeId: string;
   audioRef: React.RefObject<HTMLAudioElement>;
   youtubeIframeRef: React.RefObject<HTMLIFrameElement>; // New prop for YouTube iframe ref
   // New props for HTML audio event handlers
@@ -18,7 +17,6 @@ interface PlayerDisplayProps {
 export function PlayerDisplay({
   playerType,
   inputUrl,
-  iframeId,
   audioRef,
   youtubeIframeRef, // Destructure new prop
   onLoadedMetadata,
@@ -45,7 +43,6 @@ export function PlayerDisplay({
       {playerType === 'youtube' && youtubeEmbedUrl && (
         <div className="relative w-full aspect-video mb-1">
           <iframe
-            id={iframeId}
             ref={youtubeIframeRef} // Pass the ref here
             className="absolute top-0 left-0 w-full h-full rounded-lg"
             src={youtubeEmbedUrl}
