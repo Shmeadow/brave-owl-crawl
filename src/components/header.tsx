@@ -96,12 +96,14 @@ export function Header({ onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }
       </div>
 
       {/* Center Section: Clock and Progress Bar */}
-      <div className="flex flex-col items-center gap-1 flex-grow max-w-[200px] mx-auto w-full">
-        <p className="text-4xl font-bold text-foreground leading-none">{formattedTime}</p>
-        <p className="text-sm text-muted-foreground leading-none">{formattedDate}</p> {/* Added date */}
+      <div className="flex flex-col items-center gap-1 flex-grow mx-auto w-full">
+        <div className="flex items-baseline gap-2"> {/* Time and Date side-by-side */}
+          <p className="text-4xl font-bold text-foreground leading-none">{formattedTime}</p>
+          <p className="text-sm text-muted-foreground leading-none">{formattedDate}</p>
+        </div>
         {/* Progress Bar */}
-        <div className="w-full mt-1"> {/* Added mt-1 for spacing */}
-          <Progress value={dailyProgress} className="h-1 rounded-full" />
+        <div className="w-full mt-1">
+          <Progress value={dailyProgress} className="h-2 rounded-full" /> {/* Taller height */}
         </div>
       </div>
 
