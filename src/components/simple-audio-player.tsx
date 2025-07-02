@@ -23,7 +23,7 @@ const PLAYER_POMODORO_BUFFER = 20; // px
 
 // Calculate the exact bottom position for the player
 const MAXIMIZED_PLAYER_BOTTOM_POSITION = POMODORO_WIDGET_BOTTOM_OFFSET + POMODORO_WIDGET_HEIGHT_EST + PLAYER_POMODORO_BUFFER;
-const MAXIMIZED_PLAYER_TOP_POSITION = HEADER_HEIGHT;
+const MAXIMIZED_PLAYER_TOP_POSITION = HEADER_HEIGHT + 20; // Moved down by 20px
 
 
 const SimpleAudioPlayer = () => {
@@ -180,13 +180,13 @@ const SimpleAudioPlayer = () => {
       "fixed z-[1000] transition-all duration-300 ease-in-out",
       displayMode === 'normal' && 'top-20 right-4 w-80',
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-16',
-      displayMode === 'maximized' && 'left-1/2 -translate-x-1/2 w-full max-w-4xl flex flex-col' // Added flex flex-col
+      displayMode === 'maximized' && 'left-1/2 -translate-x-1/2 w-full max-w-3xl flex flex-col' // Changed max-w-4xl to max-w-3xl
     )}
     style={displayMode === 'maximized' ? { top: `${MAXIMIZED_PLAYER_TOP_POSITION}px`, bottom: `${MAXIMIZED_PLAYER_BOTTOM_POSITION}px` } : {}}
     >
       {/* Normal/Maximized Player UI */}
       <div className={cn(
-        "bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex flex-col w-full h-full",
+        "bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full h-full",
         displayMode === 'normal' && 'p-1',
         displayMode === 'maximized' && 'p-4', // Increased padding for maximized mode
         displayMode === 'minimized' && 'hidden'
