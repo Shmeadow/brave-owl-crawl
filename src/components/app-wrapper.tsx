@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-// Removed SessionContextProvider, SidebarProvider as they are now in layout.tsx
+import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
 import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { Toaster } from "@/components/ui/sonner";
@@ -16,6 +16,7 @@ import { LofiAudioPlayer } from "@/components/lofi-audio-player";
 import { WidgetProvider } from "@/components/widget/widget-context"; // Still imported here
 import { WidgetContainer } from "@/components/widget/widget-container";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
+import { MusicPlayerBar } from "@/components/music-player-bar"; // Import the new music player bar
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
 const CHAT_PANEL_WIDTH_OPEN = 320; // px
@@ -128,14 +129,14 @@ export function AppWrapper({ children }: AppWrapperProps) {
   };
 
   const handleClearUnreadMessages = () => {
-    setUnreadChatMessages(0);
+    setUnreadChatCount(0);
   };
 
   const chatPanelCurrentWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
   const sidebarCurrentWidth = (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH : 0; // Use combined state for margin
 
   return (
-    <> {/* Removed SessionContextProvider and SidebarProvider */}
+    <>
       <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
         <Header
           onOpenSpotifyModal={handleOpenSpotifyModal}
@@ -157,7 +158,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
             chatPanelWidth={chatPanelCurrentWidth}
           />
         )}
-        <SpotifyEmbedModal isOpen={isSpotifyModalOpen} onClose={() => setIsSpotifyModalOpen(false)} />
+        {/* SpotifyEmbedModal is now managed by SoundsWidget */}
         <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModal(false)} />
         <Toaster />
         <LofiAudioPlayer />
@@ -171,6 +172,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
             unreadCount={unreadChatCount}
           />
         </div>
+        <MusicPlayerBar /> {/* New Music Player Bar */}
         <WidgetContainer />
       </WidgetProvider>
     </>
