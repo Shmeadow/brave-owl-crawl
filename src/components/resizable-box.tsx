@@ -4,23 +4,21 @@ import React from 'react';
 import { ResizableBox as ReactResizableBox, ResizableBoxProps } from 'react-resizable';
 import { cn } from '@/lib/utils';
 
-// Extend ResizableBoxProps to allow for custom className
+// Extend ResizableBoxProps to allow for custom className and ensure children is defined
 type CustomResizableBoxProps = ResizableBoxProps & {
   className?: string;
+  children: React.ReactNode;
 };
 
-export const ResizableBox = React.forwardRef<HTMLDivElement, CustomResizableBoxProps>(
-  ({ children, className, ...props }, ref) => {
-    return (
-      <ReactResizableBox
-        ref={ref} // Forward the ref to the underlying ReactResizableBox
-        className={cn("relative", className)} // Add relative positioning for handles
-        {...props}
-      >
-        {children}
-      </ReactResizableBox>
-    );
-  }
-);
+export const ResizableBox = ({ children, className, ...props }: CustomResizableBoxProps) => {
+  return (
+    <ReactResizableBox
+      className={cn("relative", className)} // Add relative positioning for handles
+      {...props}
+    >
+      {children}
+    </ReactResizableBox>
+  );
+};
 
-ResizableBox.displayName = "ResizableBox"; // Add display name for better debugging
+ResizableBox.displayName = "ResizableBox";
