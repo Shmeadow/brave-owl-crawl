@@ -15,9 +15,10 @@ import { ChatPanel } from "@/components/chat-panel";
 import { LofiAudioPlayer } from "@/components/lofi-audio-player";
 import { WidgetProvider } from "@/components/widget/widget-context";
 import { WidgetContainer } from "@/components/widget/widget-container";
-import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
+import { useSidebarPreference } from "@/hooks/use-sidebar-preference"; // Import useSidebarPreference
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
+const LOCAL_STORAGE_POMODORO_VISIBLE_KEY = 'pomodoro_widget_visible'; // This key is no longer directly used for visibility, but for initial state
 const CHAT_PANEL_WIDTH_OPEN = 320; // px
 const CHAT_PANEL_WIDTH_CLOSED = 56; // px (w-14)
 const HEADER_HEIGHT = 64; // px (h-14 + py-2*2 = 56 + 8 = 64)
@@ -45,8 +46,8 @@ interface AppWrapperProps {
 // Inner component to use useSidebar hook
 function AppWrapperContent({ children }: AppWrapperProps) {
   const pathname = usePathname();
-  const { isSidebarOpen } = useSidebar();
-  const { isAlwaysOpen } = useSidebarPreference();
+  const { isSidebarOpen } = useSidebar(); // This is the hover state
+  const { isAlwaysOpen } = useSidebarPreference(); // This is the user preference
 
   const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(true);
   const [isSpotifyModalOpen, setIsSpotifyModalOpen] = useState(false);
@@ -87,8 +88,8 @@ function AppWrapperContent({ children }: AppWrapperProps) {
       setDailyProgress((secondsIntoDay / totalSecondsInDay) * 100);
     };
 
-    updateDailyProgress();
-    const intervalId = setInterval(updateDailyProgress, 1000);
+    updateDailyProgress(); // Initial call
+    const intervalId = setInterval(updateDailyProgress, 1000); // Update every second
 
     return () => clearInterval(intervalId);
   }, []);
@@ -96,6 +97,7 @@ function AppWrapperContent({ children }: AppWrapperProps) {
   // Calculate main content area dimensions dynamically
   useEffect(() => {
     const updateMainContentArea = () => {
+      // Sidebar width depends on 'always open' preference OR hover state
       const sidebarCurrentWidth = (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH : 0;
       const chatPanelWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
       
@@ -107,12 +109,13 @@ function AppWrapperContent({ children }: AppWrapperProps) {
       });
     };
 
+    // Update on mount, resize, and when sidebar/chat state changes
     updateMainContentArea();
     window.addEventListener('resize', updateMainContentArea);
     return () => window.removeEventListener('resize', updateMainContentArea);
-  }, [isSidebarOpen, isChatOpen, isAlwaysOpen]);
+  }, [isSidebarOpen, isChatOpen, isAlwaysOpen]); // Dependencies for recalculation
 
-  const shouldShowPomodoro = pathname !== '/account' && pathname !== '/admin-settings';
+  const shouldShowPomodoro = pathname !== '/account' && pathname !== '/admin-settings'; // Hide on account/admin pages
 
   const handleOpenSpotifyModal = () => {
     setIsSpotifyModalOpen(true);
@@ -127,23 +130,25 @@ function AppWrapperContent({ children }: AppWrapperProps) {
   };
 
   const handleClearUnreadMessages = () => {
-    onClearUnreadMessages();
+    setUnreadChatCount(0);
   };
 
   const chatPanelCurrentWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
-  const sidebarCurrentWidth = (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH : 0;
+  const sidebarCurrentWidth = (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH : 0; // Use combined state for margin
 
   return (
     <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
       <Header
+        onTogglePomodoroVisibility={() => setIsPomodoroWidgetMinimized(prev => !prev)} // Toggle minimize
+        isPomodoroVisible={!isPomodoroWidgetMinimized} // Pass minimized state as visibility
         onOpenSpotifyModal={handleOpenSpotifyModal}
         onOpenUpgradeModal={handleOpenUpgradeModal}
         dailyProgress={dailyProgress}
       />
       <Sidebar />
       <main
-        className={`flex flex-col flex-1 w-full h-[calc(100vh-${HEADER_HEIGHT}px)] overflow-auto transition-all duration-300 ease-in-out`}
-        style={{ marginLeft: `${sidebarCurrentWidth}px`, marginRight: `${chatPanelCurrentWidth}px` }}
+        className={`flex flex-col flex-1 w-full h-[calc(100vh-${HEADER_HEIGHT}px)] overflow-auto transition-all duration-300 ease-in-out`} // Changed min-h to h
+        style={{ marginLeft: `${sidebarCurrentWidth}px`, marginRight: `${chatPanelCurrentWidth}px` }} // Changed margin-left to 0px when closed
       >
         {children}
       </main>
@@ -152,12 +157,15 @@ function AppWrapperContent({ children }: AppWrapperProps) {
         <PomodoroWidget
           isMinimized={isPomodoroWidgetMinimized}
           setIsMinimized={setIsPomodoroWidgetMinimized}
+          onClose={() => { /* Pomodoro widget no longer has a close button, only minimize */ }}
+          chatPanelWidth={chatPanelCurrentWidth}
         />
       )}
       <SpotifyEmbedModal isOpen={isSpotifyModalOpen} onClose={() => setIsSpotifyModalOpen(false)} />
       <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModal(false)} />
       <Toaster />
       <LofiAudioPlayer />
+      {/* Fixed Chat Panel */}
       <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
         <ChatPanel
           isOpen={isChatOpen}

@@ -16,12 +16,17 @@ import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 
 interface HeaderProps {
+  onTogglePomodoroVisibility: () => void;
+  isPomodoroVisible: boolean; // This now means "is not minimized"
   onOpenSpotifyModal: () => void;
   onOpenUpgradeModal: () => void;
   dailyProgress: number;
+  // Removed onToggleChat and unreadChatCount as they are managed by AppWrapper's ChatPanel
 }
 
 export function Header({
+  onTogglePomodoroVisibility,
+  isPomodoroVisible,
   onOpenSpotifyModal,
   onOpenUpgradeModal,
   dailyProgress,
@@ -30,7 +35,7 @@ export function Header({
   const { isPlaying, togglePlayPause, currentTrack, volume, setVolume, isMuted, toggleMute } = useMusicPlayer();
   const { times, loading: sunTimesLoading, error: sunTimesError } = useSunriseSunset();
   const { setIsSidebarOpen } = useSidebar();
-  const { profile, session } = useSupabase();
+  const { profile, session } = useSupabase(); // Changed 'user' to 'session' for consistency
   const router = useRouter();
 
   useEffect(() => {
@@ -61,7 +66,7 @@ export function Header({
       })
     : "--- --";
 
-  const displayUserName = profile?.first_name || session?.user?.email?.split('@')[0] || "Guest";
+  const displayUserName = profile?.first_name || session?.user?.email?.split('@')[0] || "Guest"; // Use session.user.email
   const roomName = `${displayUserName}'s Room`;
 
   return (
