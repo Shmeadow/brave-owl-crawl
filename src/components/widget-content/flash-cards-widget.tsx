@@ -73,7 +73,7 @@ export function FlashCardsWidget({ isCurrentRoomWritable }: FlashCardsWidgetProp
       <h1 className="text-3xl font-bold mb-8 text-center text-foreground">Flash Cards</h1>
       <ResizablePanelGroup direction="horizontal" className="flex-1 rounded-lg border border-border">
         <ResizablePanel defaultSize={70} minSize={40}>
-          <div className="flex flex-col items-center justify-center h-full p-4">
+          <div className="flex flex-col items-center justify-start h-full p-4 overflow-y-auto">
             <FlashCardDeck
               cards={filteredCards}
               currentCardIndex={currentCardIndex}
