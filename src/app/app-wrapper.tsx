@@ -7,7 +7,7 @@ import { UpgradeModal } from "@/components/upgrade-modal";
 import { usePathname } from "next/navigation";
 import { Header } from "@/components/header";
 import { useSidebar } from "@/components/sidebar/sidebar-context";
-import { Sidebar } from "@/components/sidebar/sidebar";
+import { Sidebar } => "@/components/sidebar/sidebar";
 import { ChatPanel } from "@/components/chat-panel";
 import { WidgetProvider } from "@/components/widget/widget-context";
 import { WidgetContainer } from "@/components/widget/widget-container";
@@ -125,15 +125,6 @@ export function AppWrapper({ children }: AppWrapperProps) {
     <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}> {/* Pass state */}
       <div
         className="flex flex-col flex-1 min-h-screen"
-        style={{
-          '--sidebar-width': `${sidebarCurrentWidth}px`,
-          '--chat-width': `${chatPanelCurrentWidth}px`,
-          '--header-height': `${HEADER_HEIGHT}px`,
-          // These are estimates for the player to position itself relative to the pomodoro widget
-          '--pomodoro-widget-height-est': `200px`, // Defined here
-          '--pomodoro-widget-bottom-offset': `20px`, // Defined here
-          '--player-pomodoro-buffer': `20px`, // Defined here
-        } as React.CSSProperties} // Cast to React.CSSProperties for custom properties
       >
         <Header
           onOpenUpgradeModal={handleOpenUpgradeModal}
@@ -152,9 +143,9 @@ export function AppWrapper({ children }: AppWrapperProps) {
         <main
           className={cn(
             "flex flex-col flex-1 w-full overflow-auto transition-all duration-300 ease-in-out",
-            `ml-[var(--sidebar-width)]`, // Dynamic left margin
-            `mr-[var(--chat-width)]`,    // Dynamic right margin
-            `pt-[var(--header-height)]`, // Dynamic top padding
+            `ml-[${sidebarCurrentWidth}px]`, // Dynamic left margin
+            `mr-[${chatPanelCurrentWidth}px]`,    // Dynamic right margin
+            `pt-[${HEADER_HEIGHT}px]`, // Dynamic top padding
             "items-center justify-center"
           )}
         >

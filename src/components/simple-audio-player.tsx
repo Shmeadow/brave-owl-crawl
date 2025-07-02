@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Music, ListMusic, Youtube, VolumeX, Volume2, ChevronLeft } from 'lucide-react';
 import { useYouTubePlayer } from '@/hooks/use-youtube-player';
-import { useHtmlAudioPlayer } from '@/hooks/use-html-audio-player';
+import { useHtmlAudioPlayer } => '@/hooks/use-html-audio-player';
 import { useSpotifyPlayer } from '@/hooks/use-spotify-player'; // Import the new Spotify hook
 import { cn, getYouTubeEmbedUrl } from '@/lib/utils';
 import { useSupabase } from '@/integrations/supabase/auth'; // To get session for Spotify token
@@ -18,11 +18,15 @@ import { PlayerModeButtons } from './audio-player/player-mode-buttons';
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 
 // Constants for layout dimensions (should match AppWrapper and PomodoroWidget)
-// These are now read from CSS variables set in AppWrapper
-const HEADER_HEIGHT_VAR = 'var(--header-height)';
-const POMODORO_WIDGET_HEIGHT_EST_VAR = 'var(--pomodoro-widget-height-est)';
-const POMODORO_WIDGET_BOTTOM_OFFSET_VAR = 'var(--pomodoro-widget-bottom-offset)';
-const PLAYER_POMODORO_BUFFER_VAR = 'var(--player-pomodoro-buffer)';
+const HEADER_HEIGHT = 64; // px
+const POMODORO_WIDGET_HEIGHT_EST = 200; // px, estimated height when expanded
+const POMODORO_WIDGET_BOTTOM_OFFSET = 20; // px, from PomodoroWidget's fixed bottom-20
+const PLAYER_POMODORO_BUFFER = 20; // px
+
+// Calculate the exact bottom position for the player
+const MAXIMIZED_PLAYER_BOTTOM_POSITION = POMODORO_WIDGET_BOTTOM_OFFSET + POMODORO_WIDGET_HEIGHT_EST + PLAYER_POMODORO_BUFFER + 20; // Added 20px buffer
+const MAXIMIZED_PLAYER_TOP_POSITION = HEADER_HEIGHT + 40; // Moved down by 40px
+
 
 const SimpleAudioPlayer = () => {
   const { session } = useSupabase(); // Get session to access access_token for Spotify
@@ -202,13 +206,11 @@ const SimpleAudioPlayer = () => {
       displayMode === 'normal' && 'top-20 right-4 w-80',
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-16',
       // Maximize to fill the main content area, respecting header, sidebar, chat, and pomodoro widget
-      displayMode === 'maximized' && 'inset-0 flex flex-col items-center justify-center',
+      displayMode === 'maximized' && 'left-1/2 -translate-x-1/2 w-full max-w-3xl flex flex-col items-center justify-center'
     )}
     style={displayMode === 'maximized' ? {
-      top: `calc(${HEADER_HEIGHT_VAR} + 40px)`, // Use CSS variable
-      bottom: `calc(${POMODORO_WIDGET_HEIGHT_EST_VAR} + ${POMODORO_WIDGET_BOTTOM_OFFSET_VAR} + ${PLAYER_POMODORO_BUFFER_VAR} + 20px)`, // Use CSS variables
-      left: `var(--sidebar-width)`, // Use CSS variable
-      right: `var(--chat-width)`, // Use CSS variable
+      top: `${MAXIMIZED_PLAYER_TOP_POSITION}px`,
+      bottom: `${MAXIMIZED_PLAYER_BOTTOM_POSITION}px`
     } : {}}
     >
       {/* Normal/Maximized Player UI */}
