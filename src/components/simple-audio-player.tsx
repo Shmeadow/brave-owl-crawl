@@ -205,37 +205,32 @@ const SimpleAudioPlayer = () => {
       "fixed z-[1000] transition-all duration-300 ease-in-out",
       displayMode === 'normal' && 'top-20 right-4 w-80',
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-16',
-      displayMode === 'maximized' && 'left-1/2 -translate-x-1/2 w-full flex flex-col items-center justify-center' // Removed max-w-3xl
+      displayMode === 'maximized' && 'left-1/2 -translate-x-1/2 w-full max-w-3xl flex flex-col items-center justify-center'
     )}
     style={displayMode === 'maximized' ? { top: `${MAXIMIZED_PLAYER_TOP_POSITION}px`, bottom: `${MAXIMIZED_PLAYER_BOTTOM_POSITION}px` } : {}}
     >
       {/* Normal/Maximized Player UI */}
       <div className={cn(
-        "bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full", // Removed h-full, added flex-1
+        "bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full h-full",
         displayMode === 'normal' && 'p-1',
-        displayMode === 'maximized' && 'p-4 items-center justify-center flex-1', // Added flex-1
+        displayMode === 'maximized' && 'p-4 items-center justify-center',
         displayMode === 'minimized' && 'hidden'
       )}>
-        {/* PlayerDisplay needs to be inside a flex-grow container */}
-        <div className={cn(
-          "flex-grow w-full flex items-center justify-center", // This div will grow and center content
-          (playerType === 'youtube' || playerType === 'spotify') ? 'flex-grow' : '' // Ensure it grows for visual players
-        )}>
-          <PlayerDisplay
-            playerType={playerType}
-            inputUrl={committedMediaUrl}
-            audioRef={audioRef}
-            youtubeIframeRef={youtubeIframeRef}
-            onLoadedMetadata={htmlAudioOnLoadedMetadata}
-            onTimeUpdate={htmlAudioOnTimeUpdate}
-            onEnded={htmlAudioOnEnded}
-            isMaximized={displayMode === 'maximized'}
-            className={cn(
-              displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : '',
-              (playerType === 'youtube' || playerType === 'spotify') ? 'w-full h-full' : 'w-full' // PlayerDisplay itself should fill its parent
-            )}
-          />
-        </div>
+        {/* PlayerDisplay is now inside and will fill available space */}
+        <PlayerDisplay
+          playerType={playerType}
+          inputUrl={committedMediaUrl}
+          audioRef={audioRef}
+          youtubeIframeRef={youtubeIframeRef}
+          onLoadedMetadata={htmlAudioOnLoadedMetadata}
+          onTimeUpdate={htmlAudioOnTimeUpdate}
+          onEnded={htmlAudioOnEnded}
+          isMaximized={displayMode === 'maximized'}
+          className={cn(
+            displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : '',
+            (playerType === 'youtube' || playerType === 'spotify') ? 'w-full flex-grow' : 'w-full' // Make visual players flex-grow
+          )}
+        />
 
         {/* Main Player Row: URL Input Toggle and Controls */}
         <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
