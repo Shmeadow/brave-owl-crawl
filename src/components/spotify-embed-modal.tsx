@@ -97,9 +97,12 @@ export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
         <DialogHeader>
           <DialogTitle>Embed Spotify Player</DialogTitle>
           <DialogDescription>
-            Paste a Spotify track, playlist, or album URL. It will be converted to an embeddable player.
+            Paste a Spotify **track, playlist, or album** URL. It will be converted to an embeddable player.
             <br />
-            <span className="text-yellow-400 font-semibold">Note: External play/pause/volume controls are not available for Spotify embeds. Please use the controls within the embedded player.</span>
+            <span className="text-yellow-400 font-semibold">
+              Note: Due to Spotify's API limitations, external play/pause/volume controls are not available.
+              Please use the controls directly within the embedded Spotify player.
+            </span>
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

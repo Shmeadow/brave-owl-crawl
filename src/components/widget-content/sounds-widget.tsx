@@ -89,10 +89,10 @@ export function SoundsWidget() {
             {spotifyEmbedUrl ? (
               <div className="flex flex-col gap-2">
                 <p className="text-sm text-muted-foreground text-center">
-                  A Spotify player is currently embedded and can be controlled via the Spotify Player Bar.
+                  A Spotify player is currently embedded. **Please use the controls directly within the Spotify player bar to play/pause/adjust volume.**
                 </p>
                 <Button onClick={handleActivateSpotify} className="w-full" variant="secondary">
-                  Activate Spotify Player
+                  Activate Spotify Player (pauses YouTube if playing)
                 </Button>
               </div>
             ) : (

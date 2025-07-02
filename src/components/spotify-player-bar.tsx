@@ -70,7 +70,7 @@ export function SpotifyPlayerBar({ spotifyEmbedUrl }: SpotifyPlayerBarProps) {
         </div>
       </CardContent>
       <p className="text-xs text-muted-foreground text-center mt-1">
-        Interact directly with the Spotify player for controls.
+        (Use controls within the player for playback and volume)
       </p>
     </Card>
   );
