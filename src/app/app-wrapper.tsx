@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { SessionContextProvider } from "@/integrations/supabase/auth";
+// Removed: import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
 import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { Toaster } from "@/components/ui/sonner";
@@ -104,66 +104,62 @@ export function AppWrapper({ children }: AppWrapperProps) {
 
   return (
     <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentAreaForWidgets.current}>
-      <SessionContextProvider>
-        <SidebarProvider>
-          <div className="flex flex-col flex-1 min-h-screen">
-            <Header
-              onOpenUpgradeModal={handleOpenUpgradeModal}
-              isChatOpen={isChatOpen}
-              onToggleChat={() => {
-                setIsChatOpen(!isChatOpen);
-                if (!isChatOpen) {
-                  handleClearUnreadMessages();
-                }
-              }}
-              onNewUnreadMessage={handleNewUnreadMessage}
-              onClearUnreadMessages={handleClearUnreadMessages}
-              unreadChatCount={unreadChatCount}
-            />
-            <Sidebar />
-            <main
-              className={cn(
-                "flex flex-col flex-1 w-full overflow-auto transition-all duration-300 ease-in-out",
-                `ml-[${sidebarCurrentWidth}px]`, // Dynamic left margin
-                `mr-[${chatPanelCurrentWidth}px]`, // Dynamic right margin
-                "items-center justify-center"
-              )}
-              style={{ paddingTop: HEADER_HEIGHT }}
-            >
-              {children}
-            </main>
-          </div>
-
-          <GoalReminderBar />
-          {mounted && shouldShowPomodoro && (
-            <PomodoroWidget
-              isMinimized={isPomodoroWidgetMinimized}
-              setIsMinimized={setIsPomodoroWidgetMinimized}
-              chatPanelWidth={chatPanelCurrentWidth}
-            />
+      <div className="flex flex-col flex-1 min-h-screen">
+        <Header
+          onOpenUpgradeModal={handleOpenUpgradeModal}
+          isChatOpen={isChatOpen}
+          onToggleChat={() => {
+            setIsChatOpen(!isChatOpen);
+            if (!isChatOpen) {
+              handleClearUnreadMessages();
+            }
+          }}
+          onNewUnreadMessage={handleNewUnreadMessage}
+          onClearUnreadMessages={handleClearUnreadMessages}
+          unreadChatCount={unreadChatCount}
+        />
+        <Sidebar />
+        <main
+          className={cn(
+            "flex flex-col flex-1 w-full overflow-auto transition-all duration-300 ease-in-out",
+            `ml-[${sidebarCurrentWidth}px]`, // Dynamic left margin
+            `mr-[${chatPanelCurrentWidth}px]`, // Dynamic right margin
+            "items-center justify-center"
           )}
-          {mounted && (youtubeEmbedUrl || spotifyEmbedUrl) && <MediaPlayerBar />}
-          <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
-          <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
-            <ChatPanel
-              isOpen={isChatOpen}
-              onToggleOpen={() => {
-                setIsChatOpen(!isChatOpen);
-                if (!isChatOpen) {
-                  handleClearUnreadMessages();
-                }
-              }}
-              onNewUnreadMessage={handleNewUnreadMessage}
-              onClearUnreadMessages={handleClearUnreadMessages}
-              unreadCount={unreadChatCount}
-              currentRoomId={currentRoomId}
-              isCurrentRoomWritable={isCurrentRoomWritable}
-            />
-          </div>
-          <Toaster />
-          <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} />
-        </SidebarProvider>
-      </SessionContextProvider>
+          style={{ paddingTop: HEADER_HEIGHT }}
+        >
+          {children}
+        </main>
+      </div>
+
+      <GoalReminderBar />
+      {mounted && shouldShowPomodoro && (
+        <PomodoroWidget
+          isMinimized={isPomodoroWidgetMinimized}
+          setIsMinimized={setIsPomodoroWidgetMinimized}
+          chatPanelWidth={chatPanelCurrentWidth}
+        />
+      )}
+      {mounted && (youtubeEmbedUrl || spotifyEmbedUrl) && <MediaPlayerBar />}
+      <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
+      <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
+        <ChatPanel
+          isOpen={isChatOpen}
+          onToggleOpen={() => {
+            setIsChatOpen(!isChatOpen);
+            if (!isChatOpen) {
+              handleClearUnreadMessages();
+            }
+          }}
+          onNewUnreadMessage={handleNewUnreadMessage}
+          onClearUnreadMessages={handleClearUnreadMessages}
+          unreadCount={unreadChatCount}
+          currentRoomId={currentRoomId}
+          isCurrentRoomWritable={isCurrentRoomWritable}
+        />
+      </div>
+      <Toaster />
+      <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} />
     </WidgetProvider>
   );
 }
