@@ -29,8 +29,8 @@ export function YouTubePlayerBar({ youtubeEmbedUrl }: YouTubePlayerBarProps) {
   return (
     <Card
       className={cn(
-        "fixed bottom-4 left-1/2 -translate-x-1/2 z-[1000]", // Fixed position, centered horizontally
-        "w-full max-w-md h-16", // Fixed width and height
+        "fixed top-20 right-4 z-[1000]", // Positioned top-right, below header
+        "w-64 h-24", // Adjusted fixed width and height
         "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg", // Glass effect
         "flex items-center justify-between px-4 py-2 transition-all duration-300 ease-in-out"
       )}
