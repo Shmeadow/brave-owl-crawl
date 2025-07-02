@@ -3,20 +3,23 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Pause, Volume2, VolumeX, Youtube, Music, Minus, ChevronLeft } from "lucide-react"; // Removed X icon
+import { Play, Pause, Volume2, VolumeX, Youtube, Music, Minus, ChevronLeft, SkipBack, SkipForward } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { useYouTubePlayer } from "@/hooks/use-youtube-player";
 import { useMediaPlayer } from '@/components/media-player-context';
 import { toast } from "sonner";
+import { AudioPlayer } from "@/components/audio-player"; // Import AudioPlayer
 
 export function MediaPlayerBar() {
   const {
     activePlayer,
     youtubeEmbedUrl,
     spotifyEmbedUrl,
-    setYoutubeEmbedUrl, // Keep this for internal logic if needed, but not exposed via button
-    setSpotifyEmbedUrl, // Keep this for internal logic if needed, but not exposed via button
+    localAudioPlaylist,
+    currentLocalAudioIndex,
+    setLocalAudioPlaylist, // Keep this for internal logic if needed, but not exposed via button
+    setCurrentLocalAudioIndex, // Keep this for internal logic if needed, but not exposed via button
     setActivePlayer,
   } = useMediaPlayer();
 
@@ -35,22 +38,166 @@ export function MediaPlayerBar() {
     iframeContainerRef: youtubeIframeContainerRef,
   } = useYouTubePlayer(youtubeEmbedUrl);
 
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [isLocalAudioPlaying, setIsLocalAudioPlaying] = useState(false);
+  const [localAudioCurrentTime, setLocalAudioCurrentTime] = useState(0);
+  const [localAudioDuration, setLocalAudioDuration] = useState(0);
+  const [isLocalAudioMuted, setIsLocalAudioMuted] = useState(false);
+  const [localAudioVolume, setLocalAudioVolumeState] = useState(0.6); // Default volume for local audio
+
   const [isMinimized, setIsMinimized] = useState(false);
 
   // Determine if the bar should be visible at all
-  const isBarVisible = youtubeEmbedUrl !== null || spotifyEmbedUrl !== null;
+  const isBarVisible = youtubeEmbedUrl !== null || spotifyEmbedUrl !== null || (localAudioPlaylist && localAudioPlaylist.length > 0);
+
+  // Sync local audio player state with context
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const updateDuration = () => {
+      setLocalAudioDuration(audio.duration);
+    };
+
+    const updateProgressUI = () => {
+      setLocalAudioCurrentTime(audio.currentTime);
+    };
+
+    const handleEnded = () => {
+      if (localAudioPlaylist && localAudioPlaylist.length > 0) {
+        const nextIndex = (currentLocalAudioIndex + 1) % localAudioPlaylist.length;
+        setCurrentLocalAudioIndex(nextIndex);
+        // Audio element's src will be updated by the next useEffect, then it will play
+      }
+    };
+
+    audio.addEventListener('loadedmetadata', updateDuration);
+    audio.addEventListener('timeupdate', updateProgressUI);
+    audio.addEventListener('ended', handleEnded);
+
+    return () => {
+      audio.removeEventListener('loadedmetadata', updateDuration);
+      audio.removeEventListener('timeupdate', updateProgressUI);
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, [localAudioPlaylist, currentLocalAudioIndex, setCurrentLocalAudioIndex]);
+
+  // Load track when currentLocalAudioIndex changes
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio && localAudioPlaylist && localAudioPlaylist.length > 0) {
+      audio.src = localAudioPlaylist[currentLocalAudioIndex].src;
+      audio.load();
+      if (isLocalAudioPlaying && activePlayer === 'local-audio') {
+        audio.play().catch(e => console.error("Error playing local audio:", e));
+      }
+    }
+  }, [localAudioPlaylist, currentLocalAudioIndex, isLocalAudioPlaying, activePlayer]);
+
+  // Control local audio play/pause based on activePlayer
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (activePlayer === 'local-audio') {
+      if (!isLocalAudioPlaying) {
+        audio.play().catch(e => console.error("Error playing local audio:", e));
+        setIsLocalAudioPlaying(true);
+      }
+    } else {
+      if (isLocalAudioPlaying) {
+        audio.pause();
+        setIsLocalAudioPlaying(false);
+      }
+    }
+  }, [activePlayer, isLocalAudioPlaying]);
+
+  const toggleLocalAudioPlayPause = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      if (isLocalAudioPlaying) {
+        audio.pause();
+        toast.info("Local audio paused.");
+      } else {
+        audio.play().catch(e => {
+          console.error("Error playing local audio:", e);
+          toast.error("Failed to play local audio. Browser autoplay policy might be blocking it.");
+        });
+        toast.success("Local audio playing.");
+      }
+      setIsLocalAudioPlaying(!isLocalAudioPlaying);
+      setActivePlayer('local-audio');
+    }
+  }, [isLocalAudioPlaying, setActivePlayer]);
+
+  const setLocalAudioVolume = useCallback((value: number[]) => {
+    const vol = value[0];
+    const audio = audioRef.current;
+    if (audio) {
+      audio.volume = vol;
+      setLocalAudioVolumeState(vol);
+      setIsLocalAudioMuted(vol === 0);
+    }
+  }, []);
+
+  const toggleLocalAudioMute = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.muted = !audio.muted;
+      setIsLocalAudioMuted(audio.muted);
+      if (!audio.muted && audio.volume === 0) {
+        audio.volume = 0.6;
+        setLocalAudioVolumeState(0.6);
+      } else if (audio.muted) {
+        setLocalAudioVolumeState(0);
+      } else {
+        setLocalAudioVolumeState(audio.volume);
+      }
+    }
+  }, []);
+
+  const handleLocalAudioNext = useCallback(() => {
+    if (localAudioPlaylist && localAudioPlaylist.length > 0) {
+      const nextIndex = (currentLocalAudioIndex + 1) % localAudioPlaylist.length;
+      setCurrentLocalAudioIndex(nextIndex);
+      setActivePlayer('local-audio');
+      toast.info(`Now playing: ${localAudioPlaylist[nextIndex].title}`);
+    }
+  }, [localAudioPlaylist, currentLocalAudioIndex, setCurrentLocalAudioIndex, setActivePlayer]);
+
+  const handleLocalAudioPrevious = useCallback(() => {
+    if (localAudioPlaylist && localAudioPlaylist.length > 0) {
+      const prevIndex = (currentLocalAudioIndex === 0 ? localAudioPlaylist.length - 1 : currentLocalAudioIndex - 1);
+      setCurrentLocalAudioIndex(prevIndex);
+      setActivePlayer('local-audio');
+      toast.info(`Now playing: ${localAudioPlaylist[prevIndex].title}`);
+    }
+  }, [localAudioPlaylist, currentLocalAudioIndex, setCurrentLocalAudioIndex, setActivePlayer]);
+
+  const formatTime = useCallback((seconds: number) => {
+    if (isNaN(seconds) || seconds < 0) return "--:--";
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
+  }, []);
 
   if (!isBarVisible) {
     return null;
   }
 
-  // The handleClearEmbed function is no longer directly triggered from the bar's 'X' button.
-  // It remains available in the SoundsWidget for managing embeds.
-  // Removed handleClearEmbed function as it's no longer needed here.
-
   const handleToggleMinimize = () => {
     setIsMinimized(!isMinimized);
   };
+
+  const currentTrackTitle = localAudioPlaylist && localAudioPlaylist.length > 0
+    ? localAudioPlaylist[currentLocalAudioIndex]?.title
+    : "No track";
+  const currentTrackArtist = localAudioPlaylist && localAudioPlaylist.length > 0
+    ? localAudioPlaylist[currentLocalAudioIndex]?.artist
+    : "";
+  const currentTrackCover = localAudioPlaylist && localAudioPlaylist.length > 0
+    ? localAudioPlaylist[currentLocalAudioIndex]?.cover
+    : "/placeholder-music.png"; // Placeholder image
 
   return (
     <Card
@@ -59,7 +206,6 @@ export function MediaPlayerBar() {
         "bg-card border-white/20 shadow-lg rounded-lg",
         "flex flex-col px-4 py-2 transition-all duration-300 ease-in-out",
         "backdrop-blur-2xl", // Stronger blur
-        activePlayer === 'spotify' ? 'border-primary' : 'border-transparent', // Highlight if Spotify is active
         isMinimized
           ? "w-12 h-12 top-1/2 -translate-y-1/2 items-center justify-center cursor-pointer" // Minimized state
           : "w-80 h-auto top-20" // Expanded state
@@ -78,7 +224,6 @@ export function MediaPlayerBar() {
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-md font-semibold text-foreground">Media Player</h3>
             <div className="flex gap-1">
-              {/* Removed the "Remove Current Embed" button */}
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleToggleMinimize} title="Minimize Media Player">
                 <Minus className="h-4 w-4" />
                 <span className="sr-only">Minimize Media Player</span>
@@ -106,6 +251,16 @@ export function MediaPlayerBar() {
                 className="flex-1"
               >
                 <Music className="h-4 w-4 mr-1" /> Spotify
+              </Button>
+            )}
+            {localAudioPlaylist && localAudioPlaylist.length > 0 && (
+              <Button
+                variant={activePlayer === 'local-audio' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setActivePlayer('local-audio')}
+                className="flex-1"
+              >
+                <Music className="h-4 w-4 mr-1" /> Local
               </Button>
             )}
           </div>
@@ -184,7 +339,63 @@ export function MediaPlayerBar() {
             </CardContent>
           )}
 
-          {!activePlayer && (youtubeEmbedUrl || spotifyEmbedUrl) && (
+          {activePlayer === 'local-audio' && localAudioPlaylist && localAudioPlaylist.length > 0 && (
+            <CardContent className="relative z-10 flex flex-col justify-between h-full p-0">
+              <audio ref={audioRef} preload="metadata"></audio>
+              <div className="flex items-center gap-2 mb-2">
+                <img src={currentTrackCover} alt="Cover" className="w-12 h-12 rounded-md object-cover" />
+                <div className="flex flex-col text-sm text-foreground flex-1 truncate">
+                  <span className="font-semibold truncate">{currentTrackTitle}</span>
+                  <span className="text-xs text-muted-foreground truncate">{currentTrackArtist}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 w-full">
+                <span className="text-xs text-muted-foreground">{formatTime(localAudioCurrentTime)}</span>
+                <Slider
+                  value={[localAudioCurrentTime]}
+                  max={localAudioDuration}
+                  step={1}
+                  onValueChange={([val]) => {
+                    if (audioRef.current) audioRef.current.currentTime = val;
+                    setLocalAudioCurrentTime(val);
+                  }}
+                  className="flex-1"
+                />
+                <span className="text-xs text-muted-foreground">{formatTime(localAudioDuration)}</span>
+              </div>
+
+              <div className="flex items-center justify-center gap-2 w-full mt-2">
+                <Button onClick={handleLocalAudioPrevious} size="icon" variant="ghost">
+                  <SkipBack className="h-5 w-5" />
+                </Button>
+                <Button onClick={toggleLocalAudioPlayPause} size="icon" className="h-10 w-10">
+                  {isLocalAudioPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+                </Button>
+                <Button onClick={handleLocalAudioNext} size="icon" variant="ghost">
+                  <SkipForward className="h-5 w-5" />
+                </Button>
+                <Button
+                  onClick={toggleLocalAudioMute}
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                >
+                  {isLocalAudioMuted || localAudioVolume === 0 ? <VolumeX className="h-5 w-5 text-muted-foreground" /> : <Volume2 className="h-5 w-5 text-muted-foreground" />}
+                  <span className="sr-only">{isLocalAudioMuted ? "Unmute" : "Mute"}</span>
+                </Button>
+                <Slider
+                  value={[localAudioVolume]}
+                  max={1}
+                  step={0.01}
+                  onValueChange={setLocalAudioVolume}
+                  className="w-20"
+                />
+              </div>
+            </CardContent>
+          )}
+
+          {!activePlayer && (youtubeEmbedUrl || spotifyEmbedUrl || (localAudioPlaylist && localAudioPlaylist.length > 0)) && (
             <CardContent className="text-center text-muted-foreground text-sm p-0">
               Select a player above to activate.
             </CardContent>

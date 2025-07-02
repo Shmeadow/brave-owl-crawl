@@ -3,17 +3,49 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Settings, Link, Youtube } from "lucide-react";
+import { Settings, Link, Youtube, Music, ListMusic } from "lucide-react";
 import { SpotifyEmbedModal } from "@/components/spotify-embed-modal";
 import { YoutubeEmbedModal } from "@/components/youtube-embed-modal";
-import { useMediaPlayer } from '@/components/media-player-context';
+import { useMediaPlayer, Track } from '@/components/media-player-context';
+import { toast } from "sonner";
 
 interface SoundsWidgetProps {
   isCurrentRoomWritable: boolean;
 }
 
+// Define a default local audio playlist
+const DEFAULT_LOCAL_PLAYLIST: Track[] = [
+  {
+    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    title: "SoundHelix Song 1",
+    artist: "SoundHelix",
+    cover: "https://via.placeholder.com/150/FF5733/FFFFFF?text=Track1",
+  },
+  {
+    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    title: "SoundHelix Song 2",
+    artist: "SoundHelix",
+    cover: "https://via.placeholder.com/150/33FF57/FFFFFF?text=Track2",
+  },
+  {
+    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+    title: "SoundHelix Song 3",
+    artist: "SoundHelix",
+    cover: "https://via.placeholder.com/150/3357FF/FFFFFF?text=Track3",
+  },
+];
+
 export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
-  const { youtubeEmbedUrl, spotifyEmbedUrl, setYoutubeEmbedUrl, setSpotifyEmbedUrl, setActivePlayer } = useMediaPlayer();
+  const {
+    youtubeEmbedUrl,
+    spotifyEmbedUrl,
+    localAudioPlaylist,
+    setYoutubeEmbedUrl,
+    setSpotifyEmbedUrl,
+    setLocalAudioPlaylist,
+    setActivePlayer
+  } = useMediaPlayer();
+
   const [isSpotifyModalOpen, setIsSpotifyModalOpen] = useState(false);
   const [isYoutubeModalOpen, setIsYoutubeModalOpen] = useState(false);
 
@@ -23,6 +55,28 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
 
   const handleYoutubeModalClose = () => {
     setIsYoutubeModalOpen(false);
+  };
+
+  const handleLoadDefaultPlaylist = () => {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to load local audio in this room.");
+      return;
+    }
+    setLocalAudioPlaylist(DEFAULT_LOCAL_PLAYLIST);
+    setActivePlayer('local-audio');
+    toast.success("Default local audio playlist loaded!");
+  };
+
+  const handleClearLocalPlaylist = () => {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to clear local audio in this room.");
+      return;
+    }
+    setLocalAudioPlaylist(null);
+    if (activePlayer === 'local-audio') {
+      setActivePlayer(null);
+    }
+    toast.info("Local audio playlist cleared.");
   };
 
   return (
@@ -79,6 +133,31 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
             ) : (
               <p className="text-sm text-muted-foreground text-center mt-4">
                 No Spotify player embedded. Click "Manage Spotify Embed" to add one.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="w-full bg-card backdrop-blur-xl border-white/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ListMusic className="h-6 w-6" /> Local Audio Player
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <p className="text-sm text-muted-foreground">
+              Play pre-defined local audio tracks.
+            </p>
+            <Button onClick={handleLoadDefaultPlaylist} className="w-full" disabled={!isCurrentRoomWritable}>
+              Load Default Playlist
+            </Button>
+            {localAudioPlaylist && localAudioPlaylist.length > 0 ? (
+              <Button onClick={handleClearLocalPlaylist} variant="outline" className="w-full" disabled={!isCurrentRoomWritable}>
+                Clear Local Playlist
+              </Button>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center mt-2">
+                No local audio playlist loaded.
               </p>
             )}
           </CardContent>
