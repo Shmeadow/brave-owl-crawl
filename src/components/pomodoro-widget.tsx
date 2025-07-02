@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react"; // Removed useState, useCallback
+import React, { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Play, Pause, RotateCcw, Coffee, Brain, Home, ChevronDown, Settings } from "lucide-react";
@@ -14,7 +14,6 @@ import { useCurrentRoom } from "@/hooks/use-current-room";
 interface PomodoroWidgetProps {
   isMinimized: boolean;
   setIsMinimized: (minimized: boolean) => void;
-  // chatPanelWidth prop was not used in this component, so it remains removed.
 }
 
 export function PomodoroWidget({ isMinimized, setIsMinimized }: PomodoroWidgetProps) {
