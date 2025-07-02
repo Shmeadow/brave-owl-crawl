@@ -15,7 +15,6 @@ import { ChatPanel } from "@/components/chat-panel";
 import { WidgetProvider } from "@/components/widget/widget-context"; // Still imported here
 import { WidgetContainer } from "@/components/widget/widget-container";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
-import { MusicPlayerBar } from "@/components/music-player-bar"; // Import the new music player bar
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
 const CHAT_PANEL_WIDTH_OPEN = 320; // px
@@ -160,7 +159,6 @@ export function AppWrapper({ children }: AppWrapperProps) {
         {/* SpotifyEmbedModal is now managed by SoundsWidget */}
         <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModal(false)} />
         <Toaster />
-        {/* LofiAudioPlayer removed as audio element is now in MusicPlayerBar */}
         {/* Fixed Chat Panel */}
         <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
           <ChatPanel
@@ -176,7 +174,6 @@ export function AppWrapper({ children }: AppWrapperProps) {
             unreadCount={unreadChatCount}
           />
         </div>
-        <MusicPlayerBar /> {/* New Music Player Bar */}
         <WidgetContainer />
       </WidgetProvider>
     </>

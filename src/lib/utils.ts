@@ -24,8 +24,10 @@ export function getYouTubeEmbedUrl(url: string): string | null {
     // disablekb=1: Disables keyboard controls
     // fs=0: Disables the fullscreen button
     // iv_load_policy=3: Hides video annotations
+    // enablejsapi=1: Enables JavaScript API for programmatic control
+    // origin: Crucial for API to work, will be set by the player itself
     // Note: The 'showinfo=0' parameter is deprecated and may not always hide the video title within the player.
-    return `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=1&modestbranding=1&rel=0&disablekb=1&fs=0&iv_load_policy=3`;
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=1&modestbranding=1&rel=0&disablekb=1&fs=0&iv_load_policy=3&enablejsapi=1`;
   }
   return null;
 }

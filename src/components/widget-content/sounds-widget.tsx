@@ -5,24 +5,33 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, Volume2, VolumeX, Settings, Music, Link, Youtube } from "lucide-react";
 import { SpotifyEmbedModal } from "@/components/spotify-embed-modal";
-import { YoutubeEmbedModal } from "@/components/youtube-embed-modal"; // Import the new modal
+import { YoutubeEmbedModal } from "@/components/youtube-embed-modal";
 import { Slider } from "@/components/ui/slider";
+import { useYouTubePlayer } from "@/hooks/use-youtube-player"; // Import the new hook
 
 const LOCAL_STORAGE_SPOTIFY_EMBED_KEY = 'spotify_embed_url';
-const LOCAL_STORAGE_YOUTUBE_EMBED_KEY = 'youtube_embed_url'; // New local storage key
+const LOCAL_STORAGE_YOUTUBE_EMBED_KEY = 'youtube_embed_url';
 
 export function SoundsWidget() {
-  // Removed useMusicPlayer hook as it's no longer needed for the main player bar
-
   const [isSpotifyModalOpen, setIsSpotifyModalOpen] = useState(false);
-  const [isYoutubeModalOpen, setIsYoutubeModalOpen] = useState(false); // New state for YouTube modal
+  const [isYoutubeModalOpen, setIsYoutubeModalOpen] = useState(false);
   const [spotifyEmbedUrl, setSpotifyEmbedUrl] = useState<string | null>(null);
-  const [youtubeEmbedUrl, setYoutubeEmbedUrl] = useState<string | null>(null); // New state for YouTube embed
+  const [youtubeEmbedUrl, setYoutubeEmbedUrl] = useState<string | null>(null);
+
+  // Use the new YouTube player hook
+  const {
+    isPlaying,
+    volume,
+    togglePlayPause,
+    setVolume,
+    playerReady,
+    iframeId,
+  } = useYouTubePlayer(youtubeEmbedUrl);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setSpotifyEmbedUrl(localStorage.getItem(LOCAL_STORAGE_SPOTIFY_EMBED_KEY));
-      setYoutubeEmbedUrl(localStorage.getItem(LOCAL_STORAGE_YOUTUBE_EMBED_KEY)); // Load YouTube URL
+      setYoutubeEmbedUrl(localStorage.getItem(LOCAL_STORAGE_YOUTUBE_EMBED_KEY));
     }
   }, [isSpotifyModalOpen, isYoutubeModalOpen]); // Re-check when either modal closes
 
@@ -31,7 +40,7 @@ export function SoundsWidget() {
     setSpotifyEmbedUrl(localStorage.getItem(LOCAL_STORAGE_SPOTIFY_EMBED_KEY));
   };
 
-  const handleYoutubeModalClose = () => { // New handler for YouTube modal
+  const handleYoutubeModalClose = () => {
     setIsYoutubeModalOpen(false);
     setYoutubeEmbedUrl(localStorage.getItem(LOCAL_STORAGE_YOUTUBE_EMBED_KEY));
   };
@@ -44,36 +53,58 @@ export function SoundsWidget() {
         <Card className="w-full bg-card/40 backdrop-blur-xl border-white/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Youtube className="h-6 w-6 text-red-500" /> Main Music Player (YouTube)
+              <Youtube className="h-6 w-6 text-red-500" /> YouTube Background Player
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <p className="text-sm text-muted-foreground">
-              The main music player bar (top-right) now streams YouTube videos.
-              Embed a YouTube video directly into your space.
+              Embed a YouTube video to play as background music.
               Paste a standard YouTube video URL, and it will be converted for embedding.
             </p>
             <Button onClick={() => setIsYoutubeModalOpen(true)} className="w-full">
               <Settings className="mr-2 h-4 w-4" /> Manage YouTube Embed
             </Button>
+
             {youtubeEmbedUrl ? (
-              <div className="mt-4">
+              <div className="mt-4 flex flex-col gap-4">
                 <h3 className="text-md font-semibold mb-2">Currently Embedded:</h3>
-                <div className="relative w-full" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */ }}>
+                <div className="relative w-full rounded-md overflow-hidden" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */ }}>
                   <iframe
+                    id={iframeId} // Assign the ID from the hook
                     src={youtubeEmbedUrl}
                     width="100%"
                     height="100%"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allow="autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
                     loading="lazy"
-                    className="absolute top-0 left-0 w-full h-full rounded-md"
+                    className="absolute top-0 left-0 w-full h-full"
+                    title="YouTube Background Player"
                   ></iframe>
+                </div>
+                <div className="flex items-center justify-center gap-4 mt-2">
+                  <Button
+                    onClick={togglePlayPause}
+                    disabled={!playerReady}
+                    size="icon"
+                  >
+                    {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+                  </Button>
+                  <div className="flex items-center gap-2 w-full max-w-[200px]">
+                    {volume === 0 ? <VolumeX className="h-5 w-5 text-muted-foreground" /> : <Volume2 className="h-5 w-5 text-muted-foreground" />}
+                    <Slider
+                      value={[volume]}
+                      max={100}
+                      step={1}
+                      onValueChange={([val]) => setVolume(val)}
+                      disabled={!playerReady}
+                      className="w-full"
+                    />
+                  </div>
                 </div>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center mt-4">
-                No YouTube video embedded in the main player. Click "Manage YouTube Embed" to add one.
+                No YouTube video embedded. Click "Manage YouTube Embed" to add one.
               </p>
             )}
           </CardContent>
