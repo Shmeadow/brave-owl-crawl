@@ -41,10 +41,12 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined') {
       const savedPanel = localStorage.getItem('active_sidebar_panel');
       if (savedPanel && Object.keys(NAV_ITEMS).includes(savedPanel)) {
-        setActivePanelState(savedPanel as ActivePanel);
-        // Also ensure the widget is open if it was saved as active
-        const savedLabel = NAV_ITEMS[savedPanel as ActivePanel].label;
-        toggleWidget(savedPanel, savedLabel);
+        // Defer the state update to avoid "setState in render" warning
+        setTimeout(() => {
+          setActivePanelState(savedPanel as ActivePanel);
+          const savedLabel = NAV_ITEMS[savedPanel as ActivePanel].label;
+          toggleWidget(savedPanel, savedLabel);
+        }, 0); // Defer to the next tick
       }
     }
   }, [toggleWidget]);
