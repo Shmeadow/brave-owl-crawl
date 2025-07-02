@@ -1,6 +1,8 @@
-// Make sure the import matches the export style
 import { PomodoroWidget } from "@/components/pomodoro-widget";
-// OR if using default export:
-// import PomodoroWidget from "@/components/pomodoro-widget";
 
-// ... rest of the AppWrapper implementation ...
+// Verify the import
+console.assert(PomodoroWidget, 'PomodoroWidget component import failed!');
+
+export function AppWrapper({ children }: { children: React.ReactNode }) {
+  // ... implementation using PomodoroWidget ...
+}
