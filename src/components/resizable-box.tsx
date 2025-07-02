@@ -5,9 +5,9 @@ import { ResizableBox as ReactResizableBox, ResizableBoxProps } from 'react-resi
 import { cn } from '@/lib/utils';
 
 // Extend ResizableBoxProps to allow for custom className
-interface CustomResizableBoxProps extends ResizableBoxProps { // Removed <any> here
+type CustomResizableBoxProps = ResizableBoxProps & { // Changed from interface extends to type &
   className?: string;
-}
+};
 
 export function ResizableBox({ children, className, ...props }: CustomResizableBoxProps) {
   return (
