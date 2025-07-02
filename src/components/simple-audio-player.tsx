@@ -136,8 +136,8 @@ const SimpleAudioPlayer = () => {
   };
 
   return (
-    <div className="fixed right-4 z-[1000] top-20"> {/* Positioned where MediaPlayerBar was */}
-      <div className="bg-card backdrop-blur-xl border-white/20 p-2 rounded-xl shadow-lg max-w-sm w-full"> {/* Softer border */}
+    <div className="fixed right-4 z-[1000] top-20">
+      <div className="bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm max-w-[16rem] w-full">
 
         {/* Audio element - hidden but controls playback */}
         <audio
@@ -152,62 +152,62 @@ const SimpleAudioPlayer = () => {
         </audio>
 
         {/* Main Player Row: Album Art, Track Info, Controls */}
-        <div className="flex items-center justify-between space-x-3 mb-2">
+        <div className="flex items-center justify-between space-x-1.5 mb-1">
           {/* Album Art Placeholder */}
-          <div className="flex-shrink-0 w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center text-purple-500 shadow-sm">
-            <Music size={32} />
+          <div className="flex-shrink-0 w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 shadow-xs">
+            <Music size={24} />
           </div>
 
           {/* Track Info and URL Input Toggle */}
           <div className="flex-grow min-w-0">
-            <p className="text-sm font-semibold text-gray-700 truncate leading-tight">{audioTitle}</p>
-            <p className="text-xs text-gray-600 truncate">{audioArtist}</p>
+            <p className="text-[0.7rem] font-semibold text-gray-700 truncate leading-tight">{audioTitle}</p>
+            <p className="text-[0.6rem] text-gray-600 truncate">{audioArtist}</p>
             <button
               onClick={() => setShowUrlInput(prev => !prev)}
-              className="text-xxs text-blue-500 hover:underline mt-0.5 flex items-center" // Softer blue
+              className="text-[0.55rem] text-blue-600 hover:underline mt-0.5 flex items-center"
               title="Change Music URL"
             >
-              <Link size={12} className="mr-0.5" />
+              <Link size={9} className="mr-0.5" />
               {showUrlInput ? 'Hide URL' : 'Change Music'}
             </button>
           </div>
 
           {/* Playback Controls and Volume */}
-          <div className="flex items-center space-x-1.5 flex-shrink-0">
+          <div className="flex items-center space-x-0.5 flex-shrink-0">
             <button
               onClick={skipBackward}
-              className="p-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 transition duration-300" // Lighter purple
+              className="p-0.5 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition duration-300"
               aria-label="Skip backward 10 seconds"
               title="Skip Backward"
             >
-              <Rewind size={16} />
+              <Rewind size={12} />
             </button>
             <button
               onClick={togglePlayPause}
-              className="p-2 rounded-full bg-purple-500 text-white hover:bg-purple-600 transition duration-300 shadow-md transform hover:scale-105" // Softer main button
+              className="p-1 rounded-full bg-gray-600 text-white hover:bg-gray-700 transition duration-300 shadow-xs transform hover:scale-105"
               aria-label={isPlaying ? "Pause" : "Play"}
               title={isPlaying ? "Pause" : "Play"}
             >
-              {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+              {isPlaying ? <Pause size={14} /> : <Play size={14} />}
             </button>
             <button
               onClick={skipForward}
-              className="p-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 transition duration-300" // Lighter purple
+              className="p-0.5 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition duration-300"
               aria-label="Skip forward 10 seconds"
               title="Skip Forward"
             >
-              <FastForward size={16} />
+              <FastForward size={12} />
             </button>
 
             {/* Volume Control */}
-            <div className="flex items-center space-x-1 ml-2">
+            <div className="flex items-center space-x-0.5 ml-1">
               <button
                 onClick={toggleMute}
-                className="p-1 rounded-full bg-purple-50 text-purple-500 hover:bg-purple-100 transition duration-300" // Very light background
+                className="p-0.5 rounded-full bg-gray-50 text-gray-500 hover:bg-gray-100 transition duration-300"
                 aria-label={isMuted ? "Unmute" : "Mute"}
                 title={isMuted ? "Unmute" : "Mute"}
               >
-                {isMuted || volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                {isMuted || volume === 0 ? <VolumeX size={10} /> : <Volume2 size={10} />}
               </button>
               <input
                 type="range"
@@ -216,9 +216,9 @@ const SimpleAudioPlayer = () => {
                 step="0.01"
                 value={isMuted ? 0 : volume}
                 onChange={handleVolumeChange}
-                className="w-12 h-1 bg-purple-100 rounded-lg appearance-none cursor-pointer accent-purple-400" // Lighter track, softer accent
+                className="w-8 h-[0.15rem] bg-gray-100 rounded-lg appearance-none cursor-pointer accent-gray-500"
                 style={{
-                  background: `linear-gradient(to right, #c084fc 0%, #c084fc ${(isMuted ? 0 : volume) * 100}%, #e9d5ff ${(isMuted ? 0 : volume) * 100}%, #e9d5ff 100%)`
+                  background: `linear-gradient(to right, #6b7280 0%, #6b7280 ${(isMuted ? 0 : volume) * 100}%, #d1d5db ${(isMuted ? 0 : volume) * 100}%, #d1d5db 100%)`
                 }}
               />
             </div>
@@ -226,48 +226,48 @@ const SimpleAudioPlayer = () => {
         </div>
 
         {/* Progress Bar and Time */}
-        <div className="flex items-center space-x-1.5 mb-2">
-          <span className="text-xxs text-gray-600 w-8 text-right">{formatTime(currentTime)}</span>
+        <div className="flex items-center space-x-1 mb-1">
+          <span className="text-[0.55rem] text-gray-600 w-6 text-right">{formatTime(currentTime)}</span>
           <input
             type="range"
             min="0"
             max={duration}
             value={currentTime}
             onChange={handleProgressBarChange}
-            className="w-full h-1 bg-purple-100 rounded-lg appearance-none cursor-pointer accent-purple-400" // Lighter track, softer accent
+            className="w-full h-[0.15rem] bg-gray-100 rounded-lg appearance-none cursor-pointer accent-gray-500"
             style={{
-              background: `linear-gradient(to right, #c084fc 0%, #c084fc ${(currentTime / duration) * 100}%, #e9d5ff ${(currentTime / duration) * 100}%, #e9d5ff 100%)`
+              background: `linear-gradient(to right, #6b7280 0%, #6b7280 ${(currentTime / duration) * 100}%, #d1d5db ${(currentTime / duration) * 100}%, #d1d5db 100%)`
             }}
           />
-          <span className="text-xxs text-gray-600 w-8 text-left">{formatTime(duration)}</span>
+          <span className="text-[0.55rem] text-gray-600 w-6 text-left">{formatTime(duration)}</span>
         </div>
 
         {/* URL Input Section */}
         {showUrlInput && (
-          <div className="mt-2 p-2 bg-purple-50 rounded-md border border-purple-100"> {/* Softer border */}
-            <label htmlFor="audio-url" className="block text-xs font-medium text-gray-700 mb-1">
-              Embed Music URL:
+          <div className="mt-1 p-1 bg-gray-50 rounded-lg border border-gray-100">
+            <label htmlFor="audio-url" className="block text-[0.6rem] font-medium text-gray-700 mb-0.5">
+              Embed URL:
             </label>
             <input
               type="text"
               id="audio-url"
               value={audioUrl}
               onChange={(e) => setAudioUrl(e.target.value)}
-              placeholder="e.g., https://example.com/song.mp3"
-              className="w-full p-1 text-xs border border-purple-200 rounded-sm focus:ring-purple-400 focus:border-purple-400 mb-1.5 text-gray-800" // Softer border/focus
+              placeholder="e.g., song.mp3"
+              className="w-full p-0.5 text-[0.6rem] border border-gray-200 rounded-md focus:ring-gray-400 focus:border-gray-400 mb-0.5 text-gray-800"
             />
-            <label htmlFor="audio-title" className="block text-xs font-medium text-gray-700 mb-1">
-              Music Title:
+            <label htmlFor="audio-title" className="block text-[0.6rem] font-medium text-gray-700 mb-0.5">
+              Title:
             </label>
             <input
               type="text"
               id="audio-title"
               value={audioTitle}
               onChange={(e) => setAudioTitle(e.target.value)}
-              placeholder="e.g., My Awesome Song"
-              className="w-full p-1 text-xs border border-purple-200 rounded-sm focus:ring-purple-400 focus:border-purple-400 mb-1.5 text-gray-800" // Softer border/focus
+              placeholder="e.g., My Song"
+              className="w-full p-0.5 text-[0.6rem] border border-gray-200 rounded-md focus:ring-gray-400 focus:border-gray-400 mb-0.5 text-gray-800"
             />
-            <label htmlFor="audio-artist" className="block text-xs font-medium text-gray-700 mb-1">
+            <label htmlFor="audio-artist" className="block text-[0.6rem] font-medium text-gray-700 mb-0.5">
               Artist:
             </label>
             <input
@@ -275,12 +275,12 @@ const SimpleAudioPlayer = () => {
               id="audio-artist"
               value={audioArtist}
               onChange={(e) => setAudioArtist(e.target.value)}
-              placeholder="e.g., The Great Artist"
-              className="w-full p-1 text-xs border border-purple-200 rounded-sm focus:ring-purple-400 focus:border-purple-400 mb-2 text-gray-800" // Softer border/focus
+              placeholder="e.g., Artist Name"
+              className="w-full p-0.5 text-[0.6rem] border border-gray-200 rounded-md focus:ring-gray-400 focus:border-gray-400 mb-1 text-gray-800"
             />
             <button
               onClick={loadNewAudio}
-              className="w-full bg-purple-500 text-white text-xs py-1 px-2 rounded-sm hover:bg-purple-600 transition duration-300 shadow-sm" // Softer button
+              className="w-full bg-gray-600 text-white text-[0.6rem] py-0.5 px-1 rounded-md hover:bg-gray-700 transition duration-300 shadow-xs"
             >
               Load Music
             </button>
