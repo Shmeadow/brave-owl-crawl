@@ -59,8 +59,8 @@ export default function AdminSettingsPage() {
             />
           </div>
           <p className="text-sm text-muted-foreground">
-            When enabled, the "Cozy" theme will be available in the theme selector.
-            When disabled, the "Cozy" theme will be hidden.
+            When enabled, the &quot;Cozy&quot; theme will be available in the theme selector.
+            When disabled, the &quot;Cozy&quot; theme will be hidden.
           </p>
         </CardContent>
       </Card>
