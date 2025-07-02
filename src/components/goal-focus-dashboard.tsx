@@ -5,9 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddGoalForm } from "@/components/add-goal-form";
 import { GoalList } from "@/components/goal-list";
 import { useGoals } from "@/hooks/use-goals";
+import { useCurrentRoom } from "@/hooks/use-current-room"; // Import useCurrentRoom
 
 export function GoalFocusDashboard() {
   const { goals, loading, isLoggedInMode, handleAddGoal, handleToggleComplete, handleDeleteGoal } = useGoals();
+  const { isCurrentRoomWritable } = useCurrentRoom(); // Get writability status
 
   if (loading) {
     return (
@@ -24,7 +26,7 @@ export function GoalFocusDashboard() {
           <CardTitle>Add New Goal</CardTitle>
         </CardHeader>
         <CardContent>
-          <AddGoalForm onAddGoal={handleAddGoal} />
+          <AddGoalForm onAddGoal={handleAddGoal} isCurrentRoomWritable={isCurrentRoomWritable} />
         </CardContent>
       </Card>
 
@@ -32,6 +34,7 @@ export function GoalFocusDashboard() {
         goals={goals}
         onToggleComplete={handleToggleComplete}
         onDelete={handleDeleteGoal}
+        isCurrentRoomWritable={isCurrentRoomWritable}
       />
 
       {!isLoggedInMode && (
