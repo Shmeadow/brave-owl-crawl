@@ -143,10 +143,11 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
     setShowSupportContact(false);
   };
 
+  // This function is now correctly defined within ChatPanel
   const handleToggleOpenAndClearUnread = () => {
-    onToggleOpen();
-    if (!isOpen) {
-      onClearUnreadMessages();
+    onToggleOpen(); // This calls the prop passed from AppWrapper
+    if (!isOpen) { // If the chat is currently closed (meaning it's about to open)
+      onClearUnreadMessages(); // Clear unread messages
     }
   };
 

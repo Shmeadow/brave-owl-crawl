@@ -128,7 +128,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
   };
 
   const handleClearUnreadMessages = () => {
-    setUnreadChatMessages(0);
+    setUnreadChatCount(0); // Corrected from setUnreadChatMessages
   };
 
   const chatPanelCurrentWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
@@ -165,7 +165,12 @@ export function AppWrapper({ children }: AppWrapperProps) {
         <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
           <ChatPanel
             isOpen={isChatOpen}
-            onToggleOpen={handleToggleOpenAndClearUnread}
+            onToggleOpen={() => {
+              setIsChatOpen(!isChatOpen);
+              if (!isChatOpen) { // If opening, clear unread messages
+                handleClearUnreadMessages();
+              }
+            }}
             onNewUnreadMessage={handleNewUnreadMessage}
             onClearUnreadMessages={handleClearUnreadMessages}
             unreadCount={unreadChatCount}
