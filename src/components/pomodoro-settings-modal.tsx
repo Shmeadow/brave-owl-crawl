@@ -51,7 +51,7 @@ export function PomodoroSettingsModal({ initialTimes, onSave }: PomodoroSettings
   }
 
   return (
-    <DialogContent className="sm:max-w-[425px] z-[1001] bg-card/40 backdrop-blur-xl border-white/20"> {/* Applied glass effect here */}
+    <DialogContent className="sm:max-w-[425px] z-[1001] bg-card backdrop-blur-xl border-white/20"> {/* Applied glass effect here, removed /40 */}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField

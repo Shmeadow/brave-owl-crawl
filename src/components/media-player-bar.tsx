@@ -58,7 +58,7 @@ export function MediaPlayerBar() {
       className={cn(
         "fixed top-20 right-4 z-[1000]",
         "w-80 h-auto", // Auto height to adjust to content
-        "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg",
+        "bg-card backdrop-blur-xl border-white/20 shadow-lg rounded-lg", // Removed /40
         "flex flex-col px-4 py-2 transition-all duration-300 ease-in-out",
         activePlayer === 'spotify' ? 'border-primary' : 'border-transparent' // Highlight if Spotify is active
       )}

@@ -77,7 +77,7 @@ export function Widget({
     <Card
       ref={setNodeRef} // Set node ref for draggable
       className={cn(
-        "absolute bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg flex flex-col overflow-hidden",
+        "absolute bg-card backdrop-blur-xl border-white/20 shadow-lg rounded-lg flex flex-col overflow-hidden", // Removed /40
         "transition-all duration-300 ease-in-out",
         // Sizing based on state
         isMaximized ? "inset-0 w-full h-full" : "",

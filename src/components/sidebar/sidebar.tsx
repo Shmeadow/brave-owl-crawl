@@ -91,7 +91,7 @@ export function Sidebar() {
       ref={sidebarRef}
       className={cn(
         "fixed left-0 top-16 z-50 flex flex-col items-center py-4",
-        "bg-black/60 shadow-lg shadow-black/30 transition-transform duration-300 ease-in-out",
+        "bg-sidebar backdrop-blur-md shadow-lg shadow-black/30 transition-transform duration-300 ease-in-out", // Removed /60
         actualSidebarOpen ? "translate-x-0 w-[60px]" : "-translate-x-full w-[60px]",
         `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]`,
         "rounded-r-lg"

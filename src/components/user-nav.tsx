@@ -13,13 +13,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSupabase, UserProfile } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Switch } from "@/components/ui/switch"; // Import Switch
-import { Label } from "@/components/ui/label"; // Import Label
-import { useSidebarPreference } from "@/hooks/use-sidebar-preference"; // Import useSidebarPreference
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
+import { useTheme } from "next-themes"; // Import useTheme
 
 export function UserNav() {
   const { supabase, session, profile, loading: authLoading } = useSupabase();
-  const { isAlwaysOpen, toggleAlwaysOpen } = useSidebarPreference(); // Use the new hook
+  const { isAlwaysOpen, toggleAlwaysOpen } = useSidebarPreference();
+  const { theme, setTheme, themes, mounted } = useTheme(); // Get theme, setTheme, themes, and mounted
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -73,6 +75,21 @@ export function UserNav() {
           Account
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        {mounted && ( // Only render theme options on client side after mounted
+          <>
+            <DropdownMenuLabel className="font-normal px-2 py-1.5">Theme</DropdownMenuLabel>
+            {themes.map((t) => (
+              <DropdownMenuItem
+                key={t}
+                onClick={() => setTheme(t)}
+                className={theme === t ? "bg-accent text-accent-foreground" : ""}
+              >
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem className="p-0">
           <div className="flex items-center justify-between px-2 py-1.5 w-full">
             <Label htmlFor="sidebar-toggle" className="cursor-pointer text-sm font-normal">

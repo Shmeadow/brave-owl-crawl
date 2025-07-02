@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
+import { format } = from "date-fns";
 import { CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSupabase } from "@/integrations/supabase/auth";
@@ -224,7 +224,7 @@ export function CalendarWidget() {
       <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto py-4">
         <h1 className="text-3xl font-bold text-foreground">Your Calendar</h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
-          <Card className="p-4 flex flex-col items-center bg-card/40 backdrop-blur-xl border-white/20">
+          <Card className="p-4 flex flex-col items-center bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
             <CardHeader className="w-full text-center pb-4">
               <CardTitle className="text-xl">Select a Date</CardTitle>
             </CardHeader>
@@ -240,7 +240,7 @@ export function CalendarWidget() {
             </CardContent>
           </Card>
 
-          <Card className="p-4 flex flex-col bg-card/40 backdrop-blur-xl border-white/20">
+          <Card className="p-4 flex flex-col bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
             <CardHeader className="w-full text-center pb-4">
               <CardTitle className="text-xl">
                 Events for {date ? format(date, 'PPP') : 'Selected Date'}
@@ -291,7 +291,7 @@ export function CalendarWidget() {
                   <ScrollArea className="flex-1 max-h-[300px] lg:max-h-[unset]">
                     <div className="space-y-2 pr-2">
                       {selectedDayEvents.map((event) => (
-                        <div key={event.id} className="flex items-center justify-between p-2 border rounded-md bg-muted/20 backdrop-blur-md">
+                        <div key={event.id} className="flex items-center justify-between p-2 border rounded-md bg-muted backdrop-blur-md"> {/* Removed /20 */}
                           <div>
                             <p className="font-medium text-sm">{event.title}</p>
                             {event.description && <p className="text-xs text-muted-foreground">{event.description}</p>}

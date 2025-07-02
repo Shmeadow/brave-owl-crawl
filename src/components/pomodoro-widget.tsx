@@ -55,7 +55,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth }: 
     <Card
       className={cn(
         "fixed bottom-20 left-1/2 -translate-x-1/2 z-[1001]", // Centered horizontally, higher z-index, adjusted bottom
-        "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg", // Applied consistent glass effect here
+        "bg-card backdrop-blur-xl border-white/20 shadow-lg rounded-lg", // Applied consistent glass effect here, removed /40
         "flex transition-all duration-300 ease-in-out",
         `w-[${widgetWidth}px]`, // Fixed width
         isMinimized

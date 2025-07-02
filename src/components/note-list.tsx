@@ -14,7 +14,7 @@ interface NoteListProps {
 
 export function NoteList({ notes, onToggleStar, onDelete }: NoteListProps) {
   return (
-    <Card className="w-full flex flex-col flex-1 bg-card/40 backdrop-blur-xl border-white/20">
+    <Card className="w-full flex flex-col flex-1 bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
       <CardHeader>
         <CardTitle>Your Notes</CardTitle>
       </CardHeader>

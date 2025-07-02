@@ -20,7 +20,7 @@ export function GoalFocusWidget() {
   return (
     <div className="h-full w-full">
       <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto py-4">
-        <Card className="w-full">
+        <Card className="w-full bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
           <CardHeader>
             <CardTitle>Add New Goal</CardTitle>
           </CardHeader>

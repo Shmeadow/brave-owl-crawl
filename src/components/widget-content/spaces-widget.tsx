@@ -65,7 +65,7 @@ export function SpacesWidget() {
         <h1 className="text-3xl font-bold text-foreground text-center">Explore & Manage Rooms</h1>
 
         {session && (
-          <Card className="w-full bg-card/40 backdrop-blur-xl border-white/20 p-4">
+          <Card className="w-full bg-card backdrop-blur-xl border-white/20 p-4"> {/* Removed /40 */}
             <CardHeader className="pb-4">
               <CardTitle className="text-xl">Create New Room</CardTitle>
             </CardHeader>
@@ -95,7 +95,7 @@ export function SpacesWidget() {
         )}
 
         {session && myRooms.length > 0 && (
-          <Card className="w-full bg-card/40 backdrop-blur-xl border-white/20 p-4">
+          <Card className="w-full bg-card backdrop-blur-xl border-white/20 p-4"> {/* Removed /40 */}
             <CardHeader className="pb-4">
               <CardTitle className="text-xl">My Rooms</CardTitle>
             </CardHeader>
@@ -106,7 +106,7 @@ export function SpacesWidget() {
                     <div
                       key={room.id}
                       className={cn(
-                        "flex items-center justify-between p-3 border rounded-md bg-muted/20 backdrop-blur-md",
+                        "flex items-center justify-between p-3 border rounded-md bg-muted backdrop-blur-md", // Removed /20
                         currentRoomId === room.id && "ring-2 ring-primary"
                       )}
                     >
@@ -156,7 +156,7 @@ export function SpacesWidget() {
         )}
 
         {publicRooms.length > 0 && (
-          <Card className="w-full bg-card/40 backdrop-blur-xl border-white/20 p-4">
+          <Card className="w-full bg-card backdrop-blur-xl border-white/20 p-4"> {/* Removed /40 */}
             <CardHeader className="pb-4">
               <CardTitle className="text-xl">Public Rooms</CardTitle>
             </CardHeader>
@@ -167,7 +167,7 @@ export function SpacesWidget() {
                     <div
                       key={room.id}
                       className={cn(
-                        "flex items-center justify-between p-3 border rounded-md bg-muted/20 backdrop-blur-md",
+                        "flex items-center justify-between p-3 border rounded-md bg-muted backdrop-blur-md", // Removed /20
                         currentRoomId === room.id && "ring-2 ring-primary"
                       )}
                     >

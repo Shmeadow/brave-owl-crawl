@@ -75,7 +75,7 @@ export function YoutubeEmbedModal({ isOpen, onClose }: YoutubeEmbedModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] z-[1001] bg-card/40 backdrop-blur-xl border-white/20">
+      <DialogContent className="sm:max-w-[425px] z-[1001] bg-card backdrop-blur-xl border-white/20">
         <DialogHeader>
           <DialogTitle>Embed YouTube Video</DialogTitle>
           <DialogDescription>

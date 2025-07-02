@@ -28,7 +28,7 @@ export function SoundsWidget() {
       <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto py-4">
         <h1 className="text-3xl font-bold text-foreground text-center">Sounds & Music</h1>
 
-        <Card className="w-full bg-card/40 backdrop-blur-xl border-white/20">
+        <Card className="w-full bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Youtube className="h-6 w-6 text-red-500" /> YouTube Background Player
@@ -55,7 +55,7 @@ export function SoundsWidget() {
           </CardContent>
         </Card>
 
-        <Card className="w-full bg-card/40 backdrop-blur-xl border-white/20">
+        <Card className="w-full bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Link className="h-6 w-6" /> Spotify Embed

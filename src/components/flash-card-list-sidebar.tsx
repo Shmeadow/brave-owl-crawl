@@ -45,7 +45,7 @@ interface SortableFlashCardItemProps {
   onDeleteCard: (cardId: string) => void;
   onUpdateCard: (cardId: string, updatedData: { front: string; back: string }) => void;
   onToggleStar: (cardId: string) => void;
-  onMarkAsLearned: (cardId: string) => void;
+  onMarkAsLearled: (cardId: string) => void;
 }
 
 function SortableFlashCardItem({
@@ -97,8 +97,8 @@ function SortableFlashCardItem({
       style={style}
       className={cn(
         "flex items-center justify-between p-2 border rounded-md cursor-pointer transition-colors",
-        "hover:bg-accent/20 hover:text-accent-foreground backdrop-blur-md", // Adjusted hover for glass
-        index === currentCardIndex && "bg-primary/60 text-primary-foreground hover:bg-primary/50 hover:text-primary-foreground backdrop-blur-md", // Adjusted active for glass
+        "hover:bg-accent hover:text-accent-foreground backdrop-blur-md", // Adjusted hover for glass
+        index === currentCardIndex && "bg-primary text-primary-foreground backdrop-blur-md", // Adjusted active for glass
         isDragging && "ring-2 ring-primary"
       )}
       onClick={() => onSelectCard(index)}
@@ -140,7 +140,7 @@ function SortableFlashCardItem({
           variant="ghost"
           size="icon"
           className={cn("h-6 w-6", index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent")}
-          onClick={(e) => { e.stopPropagation(); onMarkAsLearned(card.id); }}
+          onClick={(e) => { e.stopPropagation(); onMarkAsLearled(card.id); }}
         >
           <CheckCircle className={cn("h-3.5 w-3.5", card.status === 'mastered' && (index === currentCardIndex ? "text-green-300" : "text-green-500"))} fill="currentColor" />
           <span className="sr-only">Mark as Learned</span>
@@ -216,7 +216,7 @@ export function FlashCardListSidebar({
   }
 
   return (
-    <Card className="h-full flex flex-col bg-card/40 backdrop-blur-xl border-white/20">
+    <Card className="h-full flex flex-col bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
       <CardHeader>
         <CardTitle className="text-lg">Your Flashcards</CardTitle>
       </CardHeader>
