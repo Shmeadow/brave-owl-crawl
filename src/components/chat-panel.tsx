@@ -48,7 +48,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
         .limit(50); // Limit to last 50 messages
 
       if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found, which is fine for an empty chat
-        console.error("Error fetching messages:", error);
+        console.error("Error fetching messages from Supabase:", error.message, "Details:", error.details, "Hint:", error.hint); // Enhanced logging
         toast.error("Failed to load chat messages: " + error.message); // Added error.message for more detail
       } else if (data) {
         const formattedMessages = data.map(msg => ({
