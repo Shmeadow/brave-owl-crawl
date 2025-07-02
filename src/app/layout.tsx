@@ -5,8 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { createClient } from '@supabase/supabase-js';
 import { AppWrapper } from "@/app/app-wrapper";
 import { SessionContextProvider } from "@/integrations/supabase/auth";
-import { SidebarProvider } from "@/components/sidebar/sidebar-context";
-import { WidgetProvider } from "@/components/widget/widget-context";
+// import { SidebarProvider } from "@/components/sidebar/sidebar-context"; // Removed
 import { MediaPlayerProvider } from "@/components/media-player-context";
 
 const geistSans = Geist({
@@ -96,13 +95,11 @@ export default async function RootLayout({
           isCozyThemeGloballyEnabled={isCozyThemeGloballyEnabled}
         >
           <SessionContextProvider>
-            <SidebarProvider>
-              <MediaPlayerProvider>
-                <AppWrapper>
-                  {children}
-                </AppWrapper>
-              </MediaPlayerProvider>
-            </SidebarProvider>
+            <MediaPlayerProvider>
+              <AppWrapper>
+                {children}
+              </AppWrapper>
+            </MediaPlayerProvider>
           </SessionContextProvider>
         </ThemeProvider>
       </body>

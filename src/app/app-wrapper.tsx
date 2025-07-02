@@ -59,7 +59,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
 
   return (
     <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
-      <SidebarProvider> {/* SidebarProvider no longer needs toggleWidget prop here */}
+      <SidebarProvider> {/* SidebarProvider is now correctly nested inside WidgetProvider */}
         <AppContent>
           {children}
         </AppContent>
