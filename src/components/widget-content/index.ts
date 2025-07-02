@@ -8,4 +8,4 @@ export * from "./notes-widget";
 export * from "./sounds-widget";
 export * from "./spaces-widget";
 export * from "./tasks-widget";
-export * from "./timer-widget";
+export * from "./pomodoro-timer-widget";

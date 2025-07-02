@@ -8,14 +8,14 @@ import {
   SpacesWidget, 
   SoundsWidget, 
   CalendarWidget, 
-  TimerWidget, 
   TasksWidget, 
   NotesWidget, 
   MediaWidget, 
   FortuneWidget, 
   BreatheWidget, 
   FlashCardsWidget, 
-  GoalFocusWidget 
+  GoalFocusWidget,
+  PomodoroTimerWidget
 } from "@/components/widget-content";
 import { useWidget, Widget } from ".";
 
@@ -24,7 +24,7 @@ const WIDGET_COMPONENTS = {
   "spaces": { icon: LayoutGrid, content: SpacesWidget },
   "sounds": { icon: Volume2, content: SoundsWidget },
   "calendar": { icon: Calendar, content: CalendarWidget },
-  "timer": { icon: Timer, content: TimerWidget },
+  "timer": { icon: Timer, content: PomodoroTimerWidget },
   "tasks": { icon: ListTodo, content: TasksWidget },
   "notes": { icon: NotebookPen, content: NotesWidget },
   "media": { icon: Image, content: MediaWidget },
