@@ -39,18 +39,18 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
       toast.error("Chat unavailable: Supabase client not initialized.");
       return;
     }
-    console.log("Attempting to fetch messages from Supabase URL:", supabase.supabaseUrl); // Added this line
+    console.log("Attempting to fetch messages from Supabase URL:", supabase.supabaseUrl);
     try {
       // Fetch messages without joining profiles initially for better reliability
       const { data, error } = await supabase
         .from('chat_messages')
-        .select('id, user_id, content, created_at') // Removed profiles join
+        .select('id, user_id, content, created_at')
         .order('created_at', { ascending: true })
         .limit(50); // Limit to last 50 messages
 
       if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found, which is fine for an empty chat
-        console.error("Error fetching messages from Supabase:", error.message, "Details:", error.details, "Hint:", error.hint); // Enhanced logging
-        toast.error("Failed to load chat messages: " + error.message); // Added error.message for more detail
+        console.error("Error fetching messages from Supabase:", error.message, "Details:", error.details, "Hint:", error.hint);
+        toast.error("Failed to load chat messages: " + error.message);
       } else if (data) {
         const formattedMessages = data.map(msg => ({
           id: msg.id,
@@ -58,7 +58,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
           content: msg.content,
           created_at: msg.created_at,
           // Use truncated user_id as author if profile is not available or names are null
-          author: profile?.id === msg.user_id ? (profile.first_name || profile.last_name || 'You') : msg.user_id?.substring(0, 8) || 'Guest', // Handle guest author
+          author: profile?.id === msg.user_id ? (profile.first_name || profile.last_name || 'You') : msg.user_id?.substring(0, 8) || 'Guest',
         }));
         setMessages(formattedMessages);
       }
@@ -69,7 +69,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
   };
 
   useEffect(() => {
-    if (authLoading) return; // Wait for auth to load before fetching messages or setting up subscription
+    if (authLoading) return;
 
     fetchMessages();
 
@@ -79,10 +79,8 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
     const subscription = supabase
       .channel('chat_room')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, async (payload) => {
-        const newMsg = payload.new as Message; // Payload won't have profiles directly
+        const newMsg = payload.new as Message;
         
-        // To get the author's name for the new message, we'd ideally fetch the profile.
-        // For simplicity and to avoid re-introducing the original error, we'll use a placeholder.
         const authorName = profile?.id === newMsg.user_id ? (profile.first_name || profile.last_name || 'You') : newMsg.user_id?.substring(0, 8) || 'Guest';
 
         const formattedNewMsg = {
@@ -102,7 +100,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, [supabase, isOpen, session?.user?.id, onNewUnreadMessage, profile, authLoading]); // Added authLoading to dependencies
+  }, [supabase, isOpen, session?.user?.id, onNewUnreadMessage, profile, authLoading]);
 
   useEffect(() => {
     // Scroll to bottom when messages change or chat opens
@@ -115,17 +113,16 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
   }, [messages, isOpen]);
 
   const handleSendMessage = async () => {
-    if (inputMessage.trim() && supabase) { // Removed session?.user check
-      const userId = session?.user?.id || null; // Use null for guests
+    if (inputMessage.trim() && supabase) {
+      const userId = session?.user?.id || null;
       const { error } = await supabase.from('chat_messages').insert({
-        user_id: userId, // This will be null for guests
+        user_id: userId,
         content: inputMessage.trim(),
       });
 
       if (error) {
         console.error("Error sending message:", error);
-        // Inform the user about the RLS limitation for guests
-        if (error.code === '42501') { // PostgreSQL error code for insufficient privilege (RLS)
+        if (error.code === '42501') {
           toast.error("Failed to send message. Guests cannot send messages due to security settings. Please log in.");
         } else {
           toast.error("Failed to send message: " + error.message);
@@ -148,7 +145,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
 
   const handleToggleOpenAndClearUnread = () => {
     onToggleOpen();
-    if (!isOpen) { // If opening the chat
+    if (!isOpen) {
       onClearUnreadMessages();
     }
   };
@@ -177,7 +174,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
 
   return (
     <Card className={cn(
-      "h-[400px] w-80 flex flex-col bg-card/40 backdrop-blur-xl border-white/20", // Applied glass effect here
+      "h-[400px] w-80 flex flex-col bg-card/40 backdrop-blur-xl border-white/20",
       "transition-all duration-300 ease-in-out"
     )}>
       <CardHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
@@ -230,8 +227,8 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
                       className={cn(
                         "max-w-[70%] p-3 rounded-lg",
                         message.user_id === session?.user?.id
-                          ? "bg-primary/60 text-primary-foreground rounded-br-none backdrop-blur-md" // Added backdrop-blur-md
-                          : "bg-muted/20 text-muted-foreground rounded-bl-none backdrop-blur-md" // Added backdrop-blur-md
+                          ? "bg-primary/60 text-primary-foreground rounded-br-none backdrop-blur-md"
+                          : "bg-muted/20 text-muted-foreground rounded-bl-none backdrop-blur-md"
                       )}
                     >
                       {message.user_id !== session?.user?.id && (
