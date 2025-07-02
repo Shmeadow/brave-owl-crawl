@@ -228,7 +228,7 @@ const SimpleAudioPlayer = () => {
           isMaximized={displayMode === 'maximized'}
           className={cn(
             displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : '',
-            displayMode === 'maximized' ? 'w-full flex-grow' : 'w-full'
+            (playerType === 'youtube' || playerType === 'spotify') ? 'w-full flex-grow' : 'w-full' // Make visual players flex-grow
           )}
         />
 

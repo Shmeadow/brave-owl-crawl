@@ -50,7 +50,7 @@ export function PlayerDisplay({
       )}
       {(playerType === 'youtube' && youtubeEmbedUrl) && (
         <div className={cn(
-          "relative w-full mb-1 overflow-hidden", // Added overflow-hidden
+          "relative w-full overflow-hidden", // Removed mb-1
           className,
           aspectRatioClass, // Always apply aspect ratio
           isMaximized ? 'mx-auto' : '' // Center horizontally when maximized
