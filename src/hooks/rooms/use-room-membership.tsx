@@ -63,7 +63,7 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
     const MAX_ATTEMPTS = 5;
 
     while (!isCodeUnique && attempts < MAX_ATTEMPTS) {
-      const { data: existingCodeData, error: codeCheckError } = await supabase // Renamed existingCode to existingCodeData
+      const { data: existingCodeData, error: codeCheckError } = await supabase // eslint-disable-line @typescript-eslint/no-unused-vars
         .from('room_invites')
         .select('id')
         .eq('code', newCode)

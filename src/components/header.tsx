@@ -14,14 +14,15 @@ import { ThemeToggle } from "@/components/theme-toggle";
 
 interface HeaderProps {
   onOpenUpgradeModal: () => void;
-  isChatOpen: boolean;
-  onToggleChat: () => void;
-  onNewUnreadMessage: () => void;
-  onClearUnreadMessages: () => void;
-  unreadChatCount: number;
+  // Removed chat-related props as they are no longer used directly in Header
+  // isChatOpen: boolean;
+  // onToggleChat: () => void;
+  // onNewUnreadMessage: () => void;
+  // onClearUnreadMessages: () => void;
+  // unreadChatCount: number;
 }
 
-export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnreadMessage, onClearUnreadMessages, unreadChatCount }: HeaderProps) {
+export function Header({ onOpenUpgradeModal }: HeaderProps) {
   const { session } = useSupabase(); // Removed profile as it was unused
   const router = useRouter();
   const { currentRoomName } = useCurrentRoom(); // Removed currentRoomId and isCurrentRoomWritable as they were unused

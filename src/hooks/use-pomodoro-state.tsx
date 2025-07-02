@@ -254,7 +254,7 @@ export function usePomodoroState() {
       isEditingTime: false,
       editableTimeString: '',
     }));
-  }, [isLoggedInMode, session, supabase, state.customTimes]); // Removed state.mode from dependencies as it's used in the functional update
+  }, [isLoggedInMode, session, supabase, state.customTimes]);
 
   useEffect(() => {
     if (state.isRunning && state.timeLeft > 0) {
@@ -319,7 +319,7 @@ export function usePomodoroState() {
       }));
       toast.info(`Switched to ${newMode === 'focus' ? 'Focus' : newMode === 'short-break' ? 'Short Break' : 'Long Break'} mode.`);
     }
-  }, [state.mode, state.customTimes]); // Removed state.customTimes from dependencies as it's used in the functional update
+  }, [state.mode]);
 
   const handleTimeDisplayClick = useCallback(() => {
     setState(prevState => ({
@@ -327,7 +327,7 @@ export function usePomodoroState() {
       isEditingTime: true,
       editableTimeString: formatTime(prevState.timeLeft),
     }));
-  }, []); // Removed state.timeLeft from dependencies as it's used in the functional update
+  }, []);
 
   const handleTimeInputBlur = useCallback(() => {
     setState(prevState => {
@@ -374,7 +374,7 @@ export function usePomodoroState() {
         };
       }
     });
-  }, [isLoggedInMode, session, supabase]); // Removed state.customTimes, state.mode from dependencies as they're used in the functional update
+  }, [isLoggedInMode, session, supabase]);
 
   const setCustomTime = useCallback(async (mode: PomodoroMode, newTimeInSeconds: number) => {
     setState(prevState => {
@@ -414,7 +414,7 @@ export function usePomodoroState() {
         timeLeft: newTimeLeft,
       };
     });
-  }, [isLoggedInMode, session, supabase]); // Removed state.customTimes, state.mode, state.timeLeft from dependencies as they're used in the functional update
+  }, [isLoggedInMode, session, supabase]);
 
   return {
     mode: state.mode,

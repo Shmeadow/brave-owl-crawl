@@ -37,7 +37,7 @@ declare global {
     }
     interface PlayerOptions {
       videoId?: string;
-      playerVars?: { [key: string]: any };
+      playerVars?: { [key: string]: unknown }; // Changed from any to unknown
       events?: {
         onReady?: (event: { target: YT.Player }) => void;
         onStateChange?: (event: { data: number; target: YT.Player }) => void;
