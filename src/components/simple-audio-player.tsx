@@ -164,10 +164,10 @@ const SimpleAudioPlayer = () => {
             <p className="text-[0.6rem] text-gray-600 truncate">{audioArtist}</p>
             <button
               onClick={() => setShowUrlInput(prev => !prev)}
-              className="text-[0.55rem] text-blue-600 hover:underline mt-0.5 flex items-center"
+              className="text-xs font-bold text-blue-600 hover:underline mt-0.5 flex items-center" // Increased font size and made bold
               title="Change Music URL"
             >
-              <Link size={9} className="mr-0.5" />
+              <Link size={12} className="mr-0.5" /> {/* Increased icon size */}
               {showUrlInput ? 'Hide URL' : 'Change Music'}
             </button>
           </div>
