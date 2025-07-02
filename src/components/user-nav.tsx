@@ -21,7 +21,7 @@ import { useTheme } from "next-themes"; // Import useTheme
 export function UserNav() {
   const { supabase, session, profile, loading: authLoading } = useSupabase();
   const { isAlwaysOpen, toggleAlwaysOpen } = useSidebarPreference();
-  const { theme, setTheme, themes, mounted } = useTheme(); // Get theme, setTheme, themes, and mounted
+  const { theme, setTheme, themes } = useTheme(); // Removed 'mounted'
   const router = useRouter();
 
   const handleSignOut = async () => {
