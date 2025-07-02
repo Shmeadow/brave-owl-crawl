@@ -415,7 +415,7 @@ const SimpleAudioPlayer = () => {
                 className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
                 title="Minimize Player"
               >
-                <ChevronLeft size={16} />
+                <ChevronRight size={16} /> {/* Changed to ChevronRight */}
               </button>
             </div>
           </div>
@@ -432,17 +432,6 @@ const SimpleAudioPlayer = () => {
           )}
           title="Expand Player"
         >
-          {/* Album Art / Icon */}
-          <div className="flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs w-10 h-10">
-            <PlayerIcon size={18} />
-          </div>
-
-          {/* Track Info (truncated) */}
-          <div className="flex-grow min-w-0 mx-2">
-            <p className="text-sm font-semibold text-foreground truncate leading-tight">{currentTitle}</p>
-            <p className="text-xs text-muted-foreground truncate">{currentArtist}</p>
-          </div>
-
           {/* Playback Controls */}
           <div className="flex items-center space-x-0.5 flex-shrink-0">
             {playerType !== 'spotify' && (
@@ -510,7 +499,7 @@ const SimpleAudioPlayer = () => {
             className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 ml-1 flex-shrink-0"
             title="Expand Player"
           >
-            <ChevronRight size={16} />
+            <ChevronLeft size={16} /> {/* Changed to ChevronLeft */}
           </button>
         </div>
       )}
