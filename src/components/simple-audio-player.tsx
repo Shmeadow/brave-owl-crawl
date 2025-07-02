@@ -69,8 +69,9 @@ const SimpleAudioPlayer = () => {
       setCurrentTitle('Direct Audio');
       setCurrentArtist('Unknown Artist');
     } else {
-      setInputUrl(''); // Clear input if invalid/unsupported
-      setPlayerType(null); // Invalid or unsupported URL
+      // Only set playerType to null, do not clear inputUrl here.
+      // This prevents an unnecessary state update that might cause re-renders.
+      setPlayerType(null);
       setCurrentTitle('No Media Loaded');
       setCurrentArtist('');
     }
@@ -213,7 +214,7 @@ const SimpleAudioPlayer = () => {
   const playerContainerClasses = cn(
     "fixed z-[1000] transition-all duration-300 ease-in-out",
     {
-      'right-4 top-1/2 -translate-y-1/2 w-48 h-16': displayMode === 'minimized', // Minimized (docked) - Changed w-96 to w-48
+      'right-4 top-1/2 -translate-y-1/2 w-48 h-16': displayMode === 'minimized', // Minimized (docked)
       'top-20 right-4 w-80 h-auto': displayMode === 'normal', // Normal (top-right, fixed width)
       'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-4xl w-full h-auto': displayMode === 'maximized', // Maximized (centered, larger)
     }
@@ -415,7 +416,7 @@ const SimpleAudioPlayer = () => {
                 className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
                 title="Minimize Player"
               >
-                <ChevronRight size={16} /> {/* Changed to ChevronRight */}
+                <ChevronRight size={16} />
               </button>
             </div>
           </div>
@@ -428,7 +429,7 @@ const SimpleAudioPlayer = () => {
           className={cn(
             "fixed z-[1000] p-1 rounded-lg shadow-sm flex items-center justify-between", // Horizontal layout
             "bg-card backdrop-blur-xl border-white/20",
-            "right-4 top-1/2 -translate-y-1/2 w-48 h-16" // Docked at middle right - Changed w-96 to w-48
+            "right-4 top-1/2 -translate-y-1/2 w-48 h-16" // Docked at middle right
           )}
           title="Expand Player"
         >
@@ -499,7 +500,7 @@ const SimpleAudioPlayer = () => {
             className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 ml-1 flex-shrink-0"
             title="Expand Player"
           >
-            <ChevronLeft size={16} /> {/* Changed to ChevronLeft */}
+            <ChevronLeft size={16} />
           </button>
         </div>
       )}
