@@ -17,6 +17,8 @@ export function useYouTubePlayer(youtubeEmbedUrl: string | null) {
   const [playerReady, setPlayerReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState(50); // Default volume
+  const [isMuted, setIsMuted] = useState(false); // New state for mute
+  const [lastVolume, setLastVolume] = useState(50); // Store volume before muting
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [videoTitle, setVideoTitle] = useState("Loading video...");
@@ -94,7 +96,7 @@ export function useYouTubePlayer(youtubeEmbedUrl: string | null) {
         showinfo: 0,
         loop: 1,
         playlist: videoId,
-        mute: 0,
+        mute: 0, // Start unmuted, control via setVolume
         enablejsapi: 1,
         origin: window.location.origin,
         widget_referrer: window.location.href,
@@ -206,8 +208,29 @@ export function useYouTubePlayer(youtubeEmbedUrl: string | null) {
     if (playerReady && playerRef.current) {
       playerRef.current.setVolume(vol);
       setVolumeState(vol);
+      if (vol > 0) {
+        setIsMuted(false);
+        setLastVolume(vol); // Update lastVolume only if not muting
+      } else {
+        setIsMuted(true);
+      }
     }
   }, [playerReady]);
+
+  const toggleMute = useCallback(() => {
+    if (playerReady && playerRef.current) {
+      if (isMuted) {
+        playerRef.current.setVolume(lastVolume);
+        setVolumeState(lastVolume);
+        setIsMuted(false);
+      } else {
+        setLastVolume(volume); // Store current volume before muting
+        playerRef.current.setVolume(0);
+        setVolumeState(0);
+        setIsMuted(true);
+      }
+    }
+  }, [isMuted, volume, lastVolume, playerReady]);
 
   const formatTime = useCallback((seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -219,11 +242,13 @@ export function useYouTubePlayer(youtubeEmbedUrl: string | null) {
     playerReady,
     isPlaying,
     volume,
+    isMuted, // Expose isMuted
     currentTime,
     duration,
     videoTitle,
     togglePlayPause,
     setVolume,
+    toggleMute, // Expose toggleMute
     formatTime,
     iframeContainerRef,
   };

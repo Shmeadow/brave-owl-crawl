@@ -89,24 +89,11 @@ export function SoundsWidget() {
             {spotifyEmbedUrl ? (
               <div className="flex flex-col gap-2">
                 <p className="text-sm text-muted-foreground text-center">
-                  A Spotify player is currently embedded.
+                  A Spotify player is currently embedded and can be controlled via the Spotify Player Bar.
                 </p>
                 <Button onClick={handleActivateSpotify} className="w-full" variant="secondary">
                   Activate Spotify Player
                 </Button>
-                <div className="mt-4">
-                  <h3 className="text-md font-semibold mb-2">Currently Embedded:</h3>
-                  <div className="relative w-full" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */ }}>
-                    <iframe
-                      src={spotifyEmbedUrl}
-                      width="100%"
-                      height="100%"
-                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                      loading="lazy"
-                      className="absolute top-0 left-0 w-full h-full rounded-md"
-                    ></iframe>
-                  </div>
-                </div>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center mt-4">

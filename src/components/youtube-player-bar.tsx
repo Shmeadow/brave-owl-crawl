@@ -16,8 +16,10 @@ export function YouTubePlayerBar({ youtubeEmbedUrl }: YouTubePlayerBarProps) {
   const {
     isPlaying,
     volume,
+    isMuted, // Get isMuted state
     togglePlayPause,
     setVolume,
+    toggleMute, // Get toggleMute function
     playerReady,
     currentTime,
     duration,
@@ -71,7 +73,16 @@ export function YouTubePlayerBar({ youtubeEmbedUrl }: YouTubePlayerBarProps) {
             {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
           </Button>
           <div className="flex items-center gap-2 flex-1">
-            {volume === 0 ? <VolumeX className="h-5 w-5 text-muted-foreground" /> : <Volume2 className="h-5 w-5 text-muted-foreground" />}
+            <Button
+              onClick={toggleMute} // Mute/Unmute button
+              disabled={!playerReady}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+            >
+              {isMuted || volume === 0 ? <VolumeX className="h-5 w-5 text-muted-foreground" /> : <Volume2 className="h-5 w-5 text-muted-foreground" />}
+              <span className="sr-only">{isMuted ? "Unmute" : "Mute"}</span>
+            </Button>
             <Slider
               value={[volume]}
               max={100}
