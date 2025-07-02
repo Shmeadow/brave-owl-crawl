@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { UserNav } from "@/components/user-nav";
 import { UpgradeButton } from "@/components/upgrade-button";
 import { useCurrentRoom } from "@/hooks/use-current-room";
+import { toast } from "sonner"; // Import toast
 
 interface HeaderProps {
   onOpenSpotifyModal: () => void;
@@ -26,7 +27,7 @@ export function Header({ onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatMessages, setUnreadChatMessages] = useState(0);
   const router = useRouter();
-  const { currentRoomName } = useCurrentRoom();
+  const { currentRoomName } = useCurrentRoom(); // Keep this if needed elsewhere, but not for the h1 text
 
   useEffect(() => {
     const updateClock = () => {
@@ -90,8 +91,8 @@ export function Header({ onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }
           <Home className="h-6 w-6" />
           <span className="sr-only">Go to My Room</span>
         </Button>
-        <h1 className="text-xl font-semibold hidden sm:block truncate max-w-[150px]">
-          {displayName}'s {currentRoomName}
+        <h1 className="text-xl font-semibold hidden sm:block"> {/* Removed truncate and max-w */}
+          {displayName}'s Room
         </h1>
       </div>
 
@@ -103,7 +104,7 @@ export function Header({ onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }
             <p className="text-4xl font-bold text-foreground leading-none">{formattedTime}</p>
             <p className="text-sm text-muted-foreground leading-none">{formattedDate}</p>
           </div>
-          <div className="w-full max-w-[180px] mt-1">
+          <div className="w-full mt-1"> {/* Removed max-w to match parent width */}
             <Progress value={dailyProgress} className="h-2 rounded-full" />
           </div>
         </div>
