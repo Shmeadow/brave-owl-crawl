@@ -32,6 +32,9 @@ export function PlayerControls({
 }: PlayerControlsProps) {
 
   // Determine if controls should be disabled based on player type and readiness
+  // Spotify embeds are controlled by their own iframe UI.
+  // HTML audio needs a duration > 0 to be seekable.
+  // YouTube player readiness is handled by useYouTubePlayer.
   const isDisabled = !playerIsReady || playerType === 'spotify' || (playerType === 'audio' && totalDuration === 0);
 
   return (
