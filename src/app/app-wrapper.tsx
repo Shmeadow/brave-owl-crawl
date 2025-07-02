@@ -128,7 +128,16 @@ export function AppWrapper({ children }: AppWrapperProps) {
       <div className="flex flex-col flex-1 min-h-screen">
         <Header
           onOpenUpgradeModal={handleOpenUpgradeModal}
-          // dailyProgress={dailyProgress} // Removed
+          isChatOpen={isChatOpen}
+          onToggleChat={() => {
+            setIsChatOpen(!isChatOpen);
+            if (!isChatOpen) {
+              handleClearUnreadMessages();
+            }
+          }}
+          onNewUnreadMessage={handleNewUnreadMessage}
+          onClearUnreadMessages={handleClearUnreadMessages}
+          unreadChatCount={unreadChatCount}
         />
         {/* Sidebar is fixed, so it's outside the main flex flow */}
         <Sidebar />
@@ -155,6 +164,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
       {mounted && (youtubeEmbedUrl || spotifyEmbedUrl) && <MediaPlayerBar />}
       <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
       <Toaster />
+      {/* The main ChatPanel instance, controlled by AppWrapper's state */}
       <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
         <ChatPanel
           isOpen={isChatOpen}

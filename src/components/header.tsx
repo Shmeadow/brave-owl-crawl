@@ -18,23 +18,17 @@ import { ThemeToggle } from "@/components/theme-toggle"; // Import ThemeToggle
 
 interface HeaderProps {
   onOpenUpgradeModal: () => void;
-  // dailyProgress: number; // Removed
+  isChatOpen: boolean;
+  onToggleChat: () => void;
+  onNewUnreadMessage: () => void;
+  onClearUnreadMessages: () => void;
+  unreadChatCount: number;
 }
 
-export function Header({ onOpenUpgradeModal }: HeaderProps) {
+export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnreadMessage, onClearUnreadMessages, unreadChatCount }: HeaderProps) {
   const { session, profile } = useSupabase();
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [unreadChatMessages, setUnreadChatMessages] = useState(0);
   const router = useRouter();
   const { currentRoomName } = useCurrentRoom();
-
-  const handleNewUnreadMessage = () => {
-    setUnreadChatMessages((prev) => prev + 1);
-  };
-
-  const handleClearUnreadMessages = () => {
-    setUnreadChatMessages(0);
-  };
 
   const displayName = profile?.first_name || profile?.last_name || session?.user?.email?.split('@')[0] || "Guest";
 
@@ -81,14 +75,9 @@ export function Header({ onOpenUpgradeModal }: HeaderProps) {
         {session && (
           <ChatPanel
             isOpen={isChatOpen}
-            onToggleOpen={() => {
-              setIsChatOpen(!isChatOpen);
-              if (!isChatOpen) {
-                handleClearUnreadMessages();
-              }
-            }}
-            onNewUnreadMessage={handleNewUnreadMessage}
-            onClearUnreadMessages={handleClearUnreadMessages}
+            onToggleOpen={onToggleChat}
+            onNewUnreadMessage={onNewUnreadMessage}
+            onClearUnreadMessages={onClearUnreadMessages}
             unreadCount={unreadChatCount}
           />
         )}
