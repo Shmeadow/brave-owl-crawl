@@ -4,9 +4,17 @@ import React from "react";
 import { useRooms } from "@/hooks/use-rooms";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
-import { CreateRoomSection, MyRoomsSection, JoinRoomSection, PublicRoomsSection, RoomOwnerControlsSection } from "@/components/spaces-widget";
+import { CreateRoomSection } from "@/components/spaces-widget/create-room-section";
+import { MyRoomsSection } from "@/components/spaces-widget/my-rooms-section";
+import { JoinRoomSection } from "@/components/spaces-widget/join-room-section";
+import { PublicRoomsSection } from "@/components/spaces-widget/public-rooms-section";
+import { RoomOwnerControlsSection } from "@/components/spaces-widget/room-owner-controls-section";
 
-export function SpacesWidget() {
+interface SpacesWidgetProps {
+  isCurrentRoomWritable: boolean;
+}
+
+export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
   const { session, loading: authLoading } = useSupabase();
   const { rooms, loading: roomsLoading } = useRooms();
   const { currentRoomId } = useCurrentRoom();

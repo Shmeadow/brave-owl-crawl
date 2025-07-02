@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FlashCardDeck } from "@/components/flash-card-deck";
 import { FlashCardListSidebar } from "@/components/flash-card-list-sidebar";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { useFlashcards } from "@/hooks/use-flashcards";
+import { useFlashcards, CardData } from "@/hooks/use-flashcards";
 import { useFlashcardNavigation } from "@/hooks/use-flashcard-navigation";
 
 type FilterMode = 'all' | 'starred' | 'learned';

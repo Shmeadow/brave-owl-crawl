@@ -12,7 +12,7 @@ export interface AppSettings {
   secondary_foreground_hsl: string;
   foreground_hsl: string;
   pomodoro_transparency: number;
-  is_cozy_theme_enabled: boolean;
+  is_cozy_theme_enabled: boolean; // New setting
 }
 
 export function useAppSettings() {
@@ -43,13 +43,14 @@ export function useAppSettings() {
   useEffect(() => {
     if (authLoading) return;
 
+    // Check admin status
     const userRole = session?.user?.user_metadata?.role;
     setIsAdmin(userRole === 'admin');
 
     fetchSettings();
   }, [session, authLoading, fetchSettings]);
 
-  const updateSetting = useCallback(async (key: keyof AppSettings, value: AppSettings[keyof AppSettings]) => { // Fixed 'any' type
+  const updateSetting = useCallback(async (key: keyof AppSettings, value: any) => {
     if (!supabase || !isAdmin) {
       toast.error("You do not have permission to update settings.");
       return;
@@ -83,6 +84,6 @@ export function useAppSettings() {
     loading,
     isAdmin,
     updateSetting,
-    fetchSettings,
+    fetchSettings, // Expose fetch for re-fetching if needed
   };
 }

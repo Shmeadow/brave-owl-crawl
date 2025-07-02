@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useId } from "react";
+import React, { useState, useEffect, useRef, useId } from "react";
 import { Button } from "@/components/ui/button";
 import { FlashCard } from "@/components/flash-card";
 import { ArrowLeft, ArrowRight, Star, Trash2, Shuffle, CheckCircle, Edit, RefreshCcw } from "lucide-react";
@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { CardData } from "@/hooks/use-flashcards";
-import { toast } from "sonner";
+import { toast } from "sonner"; // Added toast import
 
 interface FlashCardDeckProps {
   cards: CardData[];

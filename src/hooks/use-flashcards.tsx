@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 export interface CardData {
   id: string;
-  user_id?: string;
+  user_id?: string; // Optional for local storage cards
   front: string;
   back: string;
   starred: boolean;
@@ -24,6 +24,7 @@ export function useFlashcards() {
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
 
+  // Helper to update card interaction (seen_count, last_reviewed_at)
   const updateCardInteraction = useCallback(async (cardId: string) => {
     const cardToUpdate = cards.find(card => card.id === cardId);
     if (!cardToUpdate) return;
@@ -49,6 +50,7 @@ export function useFlashcards() {
         setCards(prevCards => prevCards.map(card => card.id === cardId ? data as CardData : card));
       }
     } else {
+      // Local storage update
       setCards(prevCards => {
         const updated = prevCards.map(card =>
           card.id === cardId
@@ -61,15 +63,18 @@ export function useFlashcards() {
     }
   }, [cards, isLoggedInMode, session, supabase]);
 
+  // Effect to handle initial load and auth state changes
   useEffect(() => {
     if (authLoading) return;
 
     const loadCards = async () => {
       setLoading(true);
       if (session && supabase) {
+        // User is logged in
         setIsLoggedInMode(true);
         console.log("User logged in. Checking for local cards to migrate...");
 
+        // 1. Load local cards (if any)
         const localCardsString = localStorage.getItem(LOCAL_STORAGE_KEY);
         let localCards: CardData[] = [];
         try {
@@ -79,6 +84,7 @@ export function useFlashcards() {
           localCards = [];
         }
 
+        // 2. Fetch user's existing cards from Supabase
         const { data: supabaseCards, error: fetchError } = await supabase
           .from('flashcards')
           .select('*')
@@ -90,11 +96,13 @@ export function useFlashcards() {
           console.error("Error fetching flashcards (Supabase):", fetchError);
           setCards([]);
         } else {
-          const mergedCards = [...(supabaseCards as CardData[])]; // Changed to const
+          let mergedCards = [...(supabaseCards as CardData[])];
 
+          // 3. Migrate local cards to Supabase if they don't already exist
           if (localCards.length > 0) {
             console.log(`Found ${localCards.length} local cards. Attempting migration...`);
             for (const localCard of localCards) {
+              // Check if a similar card (by front/back) already exists in Supabase
               const existsInSupabase = mergedCards.some(
                 sc => sc.front === localCard.front && sc.back === localCard.back
               );
@@ -124,12 +132,14 @@ export function useFlashcards() {
                 }
               }
             }
+            // Clear local storage after migration attempt
             localStorage.removeItem(LOCAL_STORAGE_KEY);
             toast.success("Local flashcards migrated to your account!");
           }
           setCards(mergedCards);
         }
       } else {
+        // User is a guest (not logged in)
         setIsLoggedInMode(false);
         const storedCardsString = localStorage.getItem(LOCAL_STORAGE_KEY);
         let loadedCards: CardData[] = [];
@@ -150,6 +160,7 @@ export function useFlashcards() {
     loadCards();
   }, [session, supabase, authLoading]);
 
+  // Effect to save cards to local storage when in guest mode
   useEffect(() => {
     if (!isLoggedInMode && !loading) {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cards));

@@ -1,17 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Bell, Search, Settings, Loader2 } from "lucide-react";
-// Removed useSupabase as it's not directly used in this component
+import { Progress } from "@/components/ui/progress";
+import { Home, Bell, Search, Settings } from "lucide-react"; // Removed Sun, Moon
+import { useTheme } from "next-themes"; // Still needed for mounted check
+import { ChatPanel } from "@/components/chat-panel";
+import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { UserNav } from "@/components/user-nav";
 import { UpgradeButton } from "@/components/upgrade-button";
 import { useCurrentRoom } from "@/hooks/use-current-room";
-import { ClockDisplay } from "@/components/clock-display";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { toast } from "sonner";
+import { ClockDisplay } from "@/components/clock-display"; // Import ClockDisplay
+import { ThemeToggle } from "@/components/theme-toggle"; // Import ThemeToggle
 
 interface HeaderProps {
   onOpenUpgradeModal: () => void;
@@ -22,31 +25,12 @@ interface HeaderProps {
   unreadChatCount: number;
 }
 
-export function Header({ onOpenUpgradeModal }: HeaderProps) {
+export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnreadMessage, onClearUnreadMessages, unreadChatCount }: HeaderProps) {
+  const { session, profile } = useSupabase();
   const router = useRouter();
-  const { currentRoomName } = useCurrentRoom();
-  const [buildOutput, setBuildOutput] = useState("");
-  const [isBuilding, setIsBuilding] = useState(false);
+  const { currentRoomName, currentRoomId, isCurrentRoomWritable } = useCurrentRoom(); // Destructure currentRoomId here
 
-  const handleRunBuild = () => {
-    setIsBuilding(true);
-    setBuildOutput("🔧 Building... Please wait.");
-    toast.info("Simulating build process...");
-
-    // Simulate build process
-    setTimeout(() => {
-      const success = Math.random() > 0.2; // 80% chance of success
-      if (success) {
-        setBuildOutput("✅ Build completed successfully!");
-        toast.success("Simulated build completed successfully!");
-      } else {
-        setBuildOutput("❌ Build failed. Check your code and try again.");
-        toast.error("Simulated build failed. Check console for details.");
-        console.error("Simulated build error: Something went wrong during compilation.");
-      }
-      setIsBuilding(false);
-    }, 3000); // Simulate a 3-second build time
-  };
+  const displayName = profile?.first_name || profile?.last_name || session?.user?.email?.split('@')[0] || "Guest";
 
   return (
     <header className="sticky top-0 z-[1002] w-full border-b bg-background backdrop-blur-xl flex items-center h-16 px-4 md:px-6">
@@ -79,31 +63,11 @@ export function Header({ onOpenUpgradeModal }: HeaderProps) {
       {/* Right Section: Clock, Progress Bar, and Actions */}
       <div className="flex items-center gap-4 ml-auto">
         {/* Clock and Progress */}
-        <ClockDisplay />
-
-        {/* Simulated Build Button */}
-        <div className="flex flex-col items-center">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRunBuild}
-            disabled={isBuilding}
-            className="flex items-center gap-1"
-          >
-            {isBuilding ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              "Run Build"
-            )}
-          </Button>
-          {buildOutput && (
-            <p className="text-xs text-muted-foreground mt-1">{buildOutput}</p>
-          )}
-        </div>
+        <ClockDisplay /> {/* No dailyProgress prop needed */}
 
         {/* Other action buttons */}
         <UpgradeButton onOpenUpgradeModal={onOpenUpgradeModal} />
-        <ThemeToggle />
+        <ThemeToggle /> {/* Added ThemeToggle here */}
         <Button variant="ghost" size="icon" title="Notifications">
           <Bell className="h-6 w-6" />
           <span className="sr-only">Notifications</span>
@@ -112,6 +76,17 @@ export function Header({ onOpenUpgradeModal }: HeaderProps) {
           <Settings className="h-5 w-5" />
           <span className="sr-only">Settings</span>
         </Button>
+        {session && (
+          <ChatPanel
+            isOpen={isChatOpen}
+            onToggleOpen={onToggleChat}
+            onNewUnreadMessage={onNewUnreadMessage}
+            onClearUnreadMessages={onClearUnreadMessages}
+            unreadCount={unreadChatCount}
+            currentRoomId={currentRoomId} // Pass currentRoomId
+            isCurrentRoomWritable={isCurrentRoomWritable} // Pass isCurrentRoomWritable
+          />
+        )}
         <UserNav />
       </div>
     </header>

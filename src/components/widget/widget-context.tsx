@@ -69,6 +69,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
   const [maxZIndex, setMaxZIndex] = useState(900);
   const [mounted, setMounted] = useState(false);
 
+  // Load state from local storage on mount
   useEffect(() => {
     setMounted(true);
     if (typeof window !== 'undefined') {
@@ -76,7 +77,9 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
         const savedState = localStorage.getItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
         if (savedState) {
           const parsedState: WidgetState[] = JSON.parse(savedState);
+          // Filter out any widgets that might not have a config anymore
           const validWidgets = parsedState.filter(w => initialWidgetConfigs[w.id]);
+          // Re-clamp positions and sizes based on current mainContentArea
           const reClampedWidgets = validWidgets.map(widget => {
             const clampedPos = clampPosition(
               widget.position.x,
@@ -103,11 +106,13 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
         }
       } catch (e) {
         console.error("Failed to parse widget states from local storage:", e);
+        // Fallback to default if parsing fails
         setActiveWidgets([]);
       }
     }
-  }, [initialWidgetConfigs, mainContentArea]);
+  }, [initialWidgetConfigs, mainContentArea]); // Re-run if mainContentArea changes on initial load
 
+  // Save state to local storage whenever activeWidgets changes
   useEffect(() => {
     if (mounted && typeof window !== 'undefined') {
       localStorage.setItem(LOCAL_STORAGE_WIDGET_STATE_KEY, JSON.stringify(activeWidgets));
@@ -115,6 +120,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
   }, [activeWidgets, mounted]);
 
   const recalculatePinnedWidgets = useCallback((currentWidgets: WidgetState[]) => {
+    const pinned = currentWidgets.filter(w => w.isPinned).sort((a, b) => a.id.localeCompare(b.id));
     let currentX = mainContentArea.left + DOCKED_WIDGET_HORIZONTAL_GAP;
 
     return currentWidgets.map(widget => {
@@ -138,7 +144,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       }
       return widget;
     });
-  }, [mainContentArea]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [mainContentArea]);
 
   useEffect(() => {
     setActiveWidgets(prevWidgets => {
@@ -163,8 +169,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
 
   const addWidget = useCallback((id: string, title: string) => {
     if (!activeWidgets.some(widget => widget.id === id)) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const config = initialWidgetConfigs[id]; 
+      const config = initialWidgetConfigs[id];
       if (config) {
         const newMaxZIndex = maxZIndex + 1;
         setMaxZIndex(newMaxZIndex);
@@ -202,7 +207,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
         });
       }
     }
-  }, [activeWidgets, maxZIndex, mainContentArea, initialWidgetConfigs]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeWidgets, initialWidgetConfigs, maxZIndex, mainContentArea]);
 
   const removeWidget = useCallback((id: string) => {
     setActiveWidgets(prev => {
@@ -227,7 +232,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
         return widget;
       })
     );
-  }, [mainContentArea]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [mainContentArea]);
 
   const updateWidgetSize = useCallback((id: string, newSize: { width: number; height: number }) => {
     setActiveWidgets(prev =>
@@ -245,7 +250,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
         return widget;
       })
     );
-  }, [mainContentArea]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [mainContentArea]);
 
   const bringWidgetToFront = useCallback((id: string) => {
     setActiveWidgets(prev => {
@@ -266,12 +271,12 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
               ...widget,
               isMaximized: false,
               isMinimized: true,
-              size: { width: 224, height: 48 },
+              size: { width: 224, height: 48 }, // Use fixed minimized size
               position: clampPosition(
                 widget.normalPosition?.x || initialWidgetConfigs[id].initialPosition.x,
                 widget.normalPosition?.y || initialWidgetConfigs[id].initialPosition.y,
-                224,
-                48,
+                224, // Use fixed minimized size
+                48, // Use fixed minimized size
                 mainContentArea
               ),
             };
@@ -288,12 +293,12 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
               isMinimized: true,
               normalSize: widget.size,
               normalPosition: widget.position,
-              size: { width: 224, height: 48 },
+              size: { width: 224, height: 48 }, // Use fixed minimized size
               position: clampPosition(
                 widget.position.x,
                 widget.position.y,
-                224,
-                48,
+                224, // Use fixed minimized size
+                48, // Use fixed minimized size
                 mainContentArea
               ),
             };
@@ -303,13 +308,14 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       });
       return recalculatePinnedWidgets(updatedWidgets);
     });
-  }, [initialWidgetConfigs, recalculatePinnedWidgets, mainContentArea]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [initialWidgetConfigs, recalculatePinnedWidgets, mainContentArea]);
 
   const maximizeWidget = useCallback((id: string) => {
     setActiveWidgets(prev => {
       const updatedWidgets = prev.map(widget => {
         if (widget.id === id) {
           if (widget.isPinned) {
+            const config = initialWidgetConfigs[id];
             return {
               ...widget,
               isPinned: false,
@@ -346,15 +352,14 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       });
       return recalculatePinnedWidgets(updatedWidgets);
     });
-  }, [initialWidgetConfigs, recalculatePinnedWidgets, mainContentArea]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [initialWidgetConfigs, recalculatePinnedWidgets, mainContentArea]);
 
   const togglePinned = useCallback((id: string) => {
     setActiveWidgets(prev => {
       const updatedWidgets = prev.map(widget => {
         if (widget.id === id) {
           if (widget.isPinned) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const config = initialWidgetConfigs[id]; 
+            const config = initialWidgetConfigs[id];
             return {
               ...widget,
               isPinned: false,
@@ -380,7 +385,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       });
       return recalculatePinnedWidgets(updatedWidgets);
     });
-  }, [initialWidgetConfigs, recalculatePinnedWidgets, mainContentArea]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [initialWidgetConfigs, recalculatePinnedWidgets, mainContentArea]);
 
   const closeWidget = useCallback((id: string) => {
     removeWidget(id);

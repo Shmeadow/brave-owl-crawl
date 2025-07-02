@@ -6,7 +6,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, Trash2 } from "lucide-react"; // Removed Popover, PopoverContent, PopoverTrigger, CalendarIcon, cn
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -21,7 +24,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { format } from "date-fns"; // Moved format import here
 
 interface CalendarEvent {
   id: string;
@@ -84,7 +86,8 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
         console.error("Error fetching events (Supabase):", fetchError);
         setEvents([]);
       } else {
-        const mergedEvents = [...(supabaseEvents as CalendarEvent[])]; // Changed to const
+        let mergedEvents = [...(supabaseEvents as CalendarEvent[])];
+
         if (localEvents.length > 0) {
           for (const localEvent of localEvents) {
             const existsInSupabase = mergedEvents.some(

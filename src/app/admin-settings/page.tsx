@@ -10,7 +10,7 @@ import { useAppSettings } from "@/hooks/use-app-settings";
 import { toast } from "sonner";
 
 export default function AdminSettingsPage() {
-  const { loading: authLoading } = useSupabase(); // Removed 'session' as it was unused
+  const { session, loading: authLoading } = useSupabase();
   const { settings, loading: settingsLoading, isAdmin, updateSetting } = useAppSettings();
   const router = useRouter();
 
@@ -43,7 +43,7 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto h-full">
-      <Card className="w-full bg-card backdrop-blur-xl border-white/20">
+      <Card className="w-full bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
         <CardHeader>
           <CardTitle className="text-foreground">Admin Settings</CardTitle>
         </CardHeader>
@@ -59,8 +59,8 @@ export default function AdminSettingsPage() {
             />
           </div>
           <p className="text-sm text-muted-foreground">
-            When enabled, the &quot;Cozy&quot; theme will be available in the theme selector.
-            When disabled, the &quot;Cozy&quot; theme will be hidden.
+            When enabled, the "Cozy" theme will be available in the theme selector.
+            When disabled, the "Cozy" theme will be hidden.
           </p>
         </CardContent>
       </Card>

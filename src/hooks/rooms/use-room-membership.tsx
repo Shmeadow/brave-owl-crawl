@@ -14,7 +14,7 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
   const { supabase, session } = useSupabase();
 
   const generateRandomCode = () => {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
+    return Math.random().toString(36).substring(2, 8).toUpperCase(); // 6 alphanumeric characters
   };
 
   const handleGenerateInviteCode = useCallback(async (roomId: string) => {
@@ -63,7 +63,7 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
     const MAX_ATTEMPTS = 5;
 
     while (!isCodeUnique && attempts < MAX_ATTEMPTS) {
-      const { data: existingCodeData, error: codeCheckError } = await supabase // eslint-disable-line @typescript-eslint/no-unused-vars
+      const { data: existingCode, error: codeCheckError } = await supabase
         .from('room_invites')
         .select('id')
         .eq('code', newCode)
@@ -131,7 +131,7 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
       return;
     }
 
-    const { data: existingMembership } = await supabase // Removed membershipError
+    const { data: existingMembership, error: membershipError } = await supabase
       .from('room_members')
       .select('id')
       .eq('room_id', invite.room_id)
@@ -200,7 +200,7 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
       return;
     }
 
-    const { data: existingMembership } = await supabase // Removed membershipError
+    const { data: existingMembership, error: membershipError } = await supabase
       .from('room_members')
       .select('id')
       .eq('room_id', roomId)

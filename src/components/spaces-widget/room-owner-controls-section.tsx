@@ -18,18 +18,19 @@ interface RoomOwnerControlsSectionProps {
 }
 
 export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: RoomOwnerControlsSectionProps) {
-  const { supabase, session } = useSupabase();
+  const { supabase, session, profile } = useSupabase();
   const {
     handleToggleGuestWriteAccess,
     handleSetRoomPassword,
     handleKickUser,
-    fetchRooms,
+    fetchRooms, // To re-fetch members after kick
   } = useRooms();
 
   const [setPasswordInput, setSetPasswordInput] = useState("");
   const [selectedUserToKick, setSelectedUserToKick] = useState<string | null>(null);
   const [roomMembers, setRoomMembers] = useState<RoomMember[]>([]);
 
+  // Fetch room members when currentRoom changes and user is owner
   useEffect(() => {
     const fetchRoomMembers = async () => {
       if (!supabase || !currentRoom.id || !isOwnerOfCurrentRoom) {
@@ -81,7 +82,7 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
       toast.error("You must be the owner of the current room to remove its password.");
       return;
     }
-    await handleSetRoomPassword(currentRoom.id, undefined);
+    await handleSetRoomPassword(currentRoom.id, undefined); // Pass undefined to remove password
     setSetPasswordInput("");
   };
 
@@ -112,7 +113,7 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
           <Switch
             id="allow-guest-write"
             checked={currentRoom.allow_guest_write}
-            onCheckedChange={() => handleToggleGuestWriteAccess(currentRoom.id, currentRoom.allow_guest_write)}
+            onCheckedChange={(checked) => handleToggleGuestWriteAccess(currentRoom.id, currentRoom.allow_guest_write)}
           />
         </div>
         <p className="text-sm text-muted-foreground">
@@ -139,7 +140,7 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          Set a password for this room. Users will need this to join if it&apos;s private.
+          Set a password for this room. Users will need this to join if it's private.
         </p>
 
         {/* 3. Kick Users */}

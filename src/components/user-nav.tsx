@@ -10,18 +10,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useSupabase } from "@/integrations/supabase/auth";
+import { useSupabase, UserProfile } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
-import { useTheme } from "next-themes";
+import { useTheme } from "next-themes"; // Import useTheme
 
 export function UserNav() {
-  const { supabase, session, profile } = useSupabase();
+  const { supabase, session, profile, loading: authLoading } = useSupabase();
   const { isAlwaysOpen, toggleAlwaysOpen } = useSidebarPreference();
-  const { } = useTheme(); // Removed themes as it was unused
+  const { theme, setTheme, themes } = useTheme(); // Removed 'mounted'
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -75,6 +75,7 @@ export function UserNav() {
           Account
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        {/* Theme options removed from here */}
         <DropdownMenuItem className="p-0">
           <div className="flex items-center justify-between px-2 py-1.5 w-full">
             <Label htmlFor="sidebar-toggle" className="cursor-pointer text-sm font-normal">

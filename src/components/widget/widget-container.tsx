@@ -4,19 +4,17 @@ import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Wind, BookOpen, Goal } from "lucide-react";
 
 // Import all widget content components
-import { 
-  SpacesWidget, 
-  SoundsWidget, 
-  CalendarWidget, 
-  TasksWidget, 
-  NotesWidget, 
-  MediaWidget, 
-  FortuneWidget, 
-  BreatheWidget, 
-  FlashCardsWidget, 
-  GoalFocusWidget,
-  PomodoroTimerWidget
-} from "@/components/widget-content";
+import { SpacesWidget } from "@/components/widget-content/spaces-widget";
+import { SoundsWidget } from "@/components/widget-content/sounds-widget";
+import { CalendarWidget } from "@/components/widget-content/calendar-widget";
+import { TimerWidget } from "@/components/widget-content/timer-widget";
+import { TasksWidget } from "@/components/widget-content/tasks-widget";
+import { NotesWidget } from "@/components/widget-content/notes-widget";
+import { MediaWidget } from "@/components/widget-content/media-widget";
+import { FortuneWidget } from "@/components/widget-content/fortune-widget";
+import { BreatheWidget } from "@/components/widget-content/breathe-widget";
+import { FlashCardsWidget } from "@/components/widget-content/flash-cards-widget";
+import { GoalFocusWidget } from "@/components/widget-content/goal-focus-widget";
 import { useWidget } from "./widget-context";
 import { Widget } from "./widget";
 
@@ -25,7 +23,7 @@ const WIDGET_COMPONENTS = {
   "spaces": { icon: LayoutGrid, content: SpacesWidget },
   "sounds": { icon: Volume2, content: SoundsWidget },
   "calendar": { icon: Calendar, content: CalendarWidget },
-  "timer": { icon: Timer, content: PomodoroTimerWidget },
+  "timer": { icon: Timer, content: TimerWidget },
   "tasks": { icon: ListTodo, content: TasksWidget },
   "notes": { icon: NotebookPen, content: NotesWidget },
   "media": { icon: Image, content: MediaWidget },
@@ -37,7 +35,7 @@ const WIDGET_COMPONENTS = {
 
 interface WidgetContainerProps {
   isCurrentRoomWritable: boolean;
-  mainContentArea: {
+  mainContentArea: { // Add this prop
     left: number;
     top: number;
     width: number;
@@ -107,7 +105,7 @@ export function WidgetContainer({ isCurrentRoomWritable, mainContentArea }: Widg
               onPin={togglePinned}
               onClose={closeWidget}
               isCurrentRoomWritable={isCurrentRoomWritable}
-              mainContentArea={mainContentArea}
+              mainContentArea={mainContentArea} // Pass mainContentArea
             />
           );
         })}

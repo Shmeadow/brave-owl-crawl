@@ -22,6 +22,27 @@ export const metadata: Metadata = {
   description: "Your all-in-one productivity tool.",
 };
 
+// Define initial configurations for all widgets here to pass to WidgetProvider
+const WIDGET_CONFIGS = {
+  "spaces": { initialPosition: { x: 150, y: 100 }, initialWidth: 600, initialHeight: 700 },
+  "sounds": { initialPosition: { x: 800, y: 150 }, initialWidth: 500, initialHeight: 600 },
+  "calendar": { initialPosition: { x: 200, y: 200 }, initialWidth: 800, initialHeight: 700 },
+  "timer": { initialPosition: { x: 900, y: 250 }, initialWidth: 400, initialHeight: 400 },
+  "tasks": { initialPosition: { x: 250, y: 300 }, initialWidth: 500, initialHeight: 600 },
+  "notes": { initialPosition: { x: 700, y: 350 }, initialWidth: 500, initialHeight: 600 },
+  "media": { initialPosition: { x: 300, y: 400 }, initialWidth: 600, initialHeight: 500 },
+  "fortune": { initialPosition: { x: 850, y: 450 }, initialWidth: 400, initialHeight: 300 },
+  "breathe": { initialPosition: { x: 350, y: 500 }, initialWidth: 400, initialHeight: 300 },
+  "flash-cards": { initialPosition: { x: 500, y: 100 }, initialWidth: 900, initialHeight: 700 },
+  "goal-focus": { initialPosition: { x: 400, y: 550 }, initialWidth: 500, initialHeight: 600 },
+};
+
+// Constants for layout dimensions (needed for mainContentArea calculation)
+const HEADER_HEIGHT = 64; // px
+const SIDEBAR_WIDTH = 60; // px
+const CHAT_PANEL_WIDTH_OPEN = 320; // px
+const CHAT_PANEL_WIDTH_CLOSED = 56; // px
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -35,7 +56,7 @@ export default async function RootLayout({
   // Log the environment variables to help diagnose
   console.log('Server-side Supabase URL:', supabaseUrl ? 'Loaded' : 'Undefined');
   console.log('Server-side Supabase Anon Key:', supabaseAnonKey ? 'Loaded' : 'Undefined');
-  console.log('Attempting to initialize server-side Supabase client with URL:', supabaseUrl, 'and Anon Key (first 5 chars):', supabaseAnonKey?.substring(0, 5) + '...');
+  console.log('Attempting to initialize server-side Supabase client with URL:', supabaseUrl, 'and Anon Key (first 5 chars):', supabaseAnonKey?.substring(0, 5) + '...'); // Corrected substring
 
   if (supabaseUrl && supabaseAnonKey) {
     try {
@@ -46,7 +67,7 @@ export default async function RootLayout({
         .single();
 
       if (error) {
-        console.error("Error fetching server-side app settings:", error.message || error);
+        console.error("Error fetching server-side app settings:", error.message || error); // Log error message
       } else if (data) {
         isCozyThemeGloballyEnabled = data.is_cozy_theme_enabled;
       }
@@ -56,6 +77,9 @@ export default async function RootLayout({
   } else {
     console.warn('Supabase environment variables not set for server-side fetching. NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is missing.');
   }
+
+  // Note: mainContentArea cannot be calculated here on the server side as it depends on window dimensions.
+  // It will be calculated client-side in AppWrapper.
 
   return (
     <html lang="en" suppressHydrationWarning>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
-import { CardData } from "./use-flashcards";
+import { CardData } from "./use-flashcards"; // Import CardData from the new hook
 
 interface UseFlashcardNavigationProps {
   filteredCards: CardData[];
@@ -13,6 +13,7 @@ export function useFlashcardNavigation({ filteredCards, updateCardInteraction }:
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
 
+  // Adjust currentCardIndex if it goes out of bounds after filtering
   useEffect(() => {
     if (filteredCards.length > 0) {
       if (currentCardIndex >= filteredCards.length) {
@@ -21,8 +22,8 @@ export function useFlashcardNavigation({ filteredCards, updateCardInteraction }:
     } else {
       setCurrentCardIndex(0);
     }
-    setIsFlipped(false);
-  }, [filteredCards.length, currentCardIndex]); // Added currentCardIndex to dependencies
+    setIsFlipped(false); // Always unflip when filter or card set changes
+  }, [filteredCards.length]); // currentCardIndex is NOT a dependency here.
 
   const handleFlip = useCallback(() => {
     setIsFlipped(!isFlipped);
@@ -37,7 +38,7 @@ export function useFlashcardNavigation({ filteredCards, updateCardInteraction }:
       if (filteredCards.length === 0) return;
       const nextIndex = (currentCardIndex + 1) % filteredCards.length;
       setCurrentCardIndex(nextIndex);
-      updateCardInteraction(filteredCards[nextIndex].id);
+      updateCardInteraction(filteredCards[nextIndex].id); // Update for the *new* current card
       toast.info("Next card!");
     }, 100);
   }, [currentCardIndex, filteredCards, updateCardInteraction]);
@@ -48,7 +49,7 @@ export function useFlashcardNavigation({ filteredCards, updateCardInteraction }:
       if (filteredCards.length === 0) return;
       const prevIndex = currentCardIndex === 0 ? filteredCards.length - 1 : currentCardIndex - 1;
       setCurrentCardIndex(prevIndex);
-      updateCardInteraction(filteredCards[prevIndex].id);
+      updateCardInteraction(filteredCards[prevIndex].id); // Update for the *new* current card
       toast.info("Previous card!");
     }, 100);
   }, [currentCardIndex, filteredCards, updateCardInteraction]);
@@ -65,7 +66,7 @@ export function useFlashcardNavigation({ filteredCards, updateCardInteraction }:
     handleNext,
     handlePrevious,
     handleSelectCard,
-    setCurrentCardIndex,
-    setIsFlipped,
+    setCurrentCardIndex, // Expose if needed for external resets
+    setIsFlipped, // Expose if needed for external resets
   };
 }

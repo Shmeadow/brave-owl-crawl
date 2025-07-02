@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Star, CheckCircle, Edit, Trash2, GripVertical } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { EditFlashCardForm } from "@/components/edit-flash-card-form";
 import { toast } from "sonner";
 import {
@@ -47,7 +47,7 @@ interface SortableFlashCardItemProps {
   onDeleteCard: (cardId: string) => void;
   onUpdateCard: (cardId: string, updatedData: { front: string; back: string }) => void;
   onToggleStar: (cardId: string) => void;
-  onMarkAsLearned: (cardId: string) => void; // Fixed typo here
+  onMarkAsLearned: (cardId: string) => void;
   isCurrentRoomWritable: boolean;
 }
 
@@ -59,7 +59,7 @@ function SortableFlashCardItem({
   onDeleteCard,
   onUpdateCard,
   onToggleStar,
-  onMarkAsLearned, // Fixed typo here
+  onMarkAsLearned,
   isCurrentRoomWritable,
 }: SortableFlashCardItemProps) {
   const {
@@ -69,7 +69,7 @@ function SortableFlashCardItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: card.id, disabled: !isCurrentRoomWritable });
+  } = useSortable({ id: card.id, disabled: !isCurrentRoomWritable }); // Disable sorting if not writable
 
   const style = {
     transform: CSS.Transform.toString(transform),

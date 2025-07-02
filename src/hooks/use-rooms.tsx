@@ -3,19 +3,19 @@
 import { useRoomFetching } from "./rooms/use-room-fetching";
 import { useRoomManagement } from "./rooms/use-room-management";
 import { useRoomMembership } from "./rooms/use-room-membership";
-import type { RoomData, RoomInvite, RoomMember } from "./rooms/types";
+import { RoomData, RoomInvite, RoomMember } from "./rooms/types"; // Re-export types
 
-export type { RoomData, RoomInvite, RoomMember };
+export type { RoomData, RoomInvite, RoomMember }; // Re-export for external use
 
 export function useRooms() {
-  const { rooms, setRooms, loading, fetchRooms } = useRoomFetching();
+  const { rooms, loading, fetchRooms } = useRoomFetching();
   const {
     handleCreateRoom,
     handleToggleRoomPublicStatus,
     handleToggleGuestWriteAccess,
     handleSetRoomPassword,
     handleDeleteRoom,
-  } = useRoomManagement({ setRooms, fetchRooms });
+  } = useRoomManagement({ setRooms: (newRooms) => {}, fetchRooms }); // Pass a dummy setRooms, as fetchRooms will update the state in useRoomFetching
   const {
     handleGenerateInviteCode,
     handleJoinRoomByCode,
@@ -37,6 +37,6 @@ export function useRooms() {
     handleJoinRoomByPassword,
     handleLeaveRoom,
     handleKickUser,
-    fetchRooms,
+    fetchRooms, // Expose fetchRooms for manual refresh if needed
   };
 }

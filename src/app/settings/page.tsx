@@ -2,10 +2,10 @@
 
 import React from "react";
 import { useCurrentRoom } from "@/hooks/use-current-room";
-import { useRooms } from "@/hooks/use-rooms";
 import { useSupabase } from "@/integrations/supabase/auth";
+import { useRooms } from "@/hooks/use-rooms";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RoomOwnerControlsSection } from "@/components/spaces-widget";
+import { RoomOwnerControlsSection } from "@/components/spaces-widget/room-owner-controls-section";
 
 export default function SettingsPage() {
   const { session, loading: authLoading } = useSupabase();
@@ -48,7 +48,7 @@ export default function SettingsPage() {
               <CardTitle className="text-foreground">Room Settings</CardTitle>
             </CardHeader>
             <CardContent className="text-muted-foreground">
-              You are currently in &quot;{currentRoomName}&quot;. Room-specific settings can only be managed by the room&apos;s creator.
+              You are currently in "{currentRoomName}". Room-specific settings can only be managed by the room's creator.
             </CardContent>
           </Card>
         )
@@ -58,7 +58,7 @@ export default function SettingsPage() {
             <CardTitle className="text-foreground">Room Settings</CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground">
-            Select a room in the &quot;Spaces&quot; widget to view and manage its settings (if you are the owner).
+            Select a room in the "Spaces" widget to view and manage its settings (if you are the owner).
           </CardContent>
         </Card>
       )}

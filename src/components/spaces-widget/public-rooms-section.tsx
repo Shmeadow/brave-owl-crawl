@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LogIn } from "lucide-react";
-import { useCurrentRoom } from "@/hooks/use-current-room"; // Removed useRooms as it was unused
+import { useRooms, RoomData } from "@/hooks/use-rooms";
+import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ export function PublicRoomsSection({ publicRooms }: PublicRoomsSectionProps) {
 
   const handleEnterRoom = (room: RoomData) => {
     if (!session && !room.is_public && !room.password_hash) {
+      // This check is mostly for consistency, public rooms shouldn't have password_hash
       toast.error("You must be logged in to enter a private room.");
       return;
     }

@@ -1,8 +1,8 @@
 "use client";
 
 import React from 'react';
-import { getYouTubeEmbedUrl } from '@/lib/utils';
-import { cn } from '@/lib/utils';
+import { getYouTubeEmbedUrl, getSpotifyEmbedUrl } from '@/lib/utils';
+import { cn } from '@/lib/utils'; // Import cn for conditional classNames
 
 interface PlayerDisplayProps {
   playerType: 'audio' | 'youtube' | 'spotify' | null;
@@ -12,8 +12,8 @@ interface PlayerDisplayProps {
   onLoadedMetadata: () => void;
   onTimeUpdate: () => void;
   onEnded: () => void;
-  className?: string;
-  // isMaximized prop was not used in the component's logic
+  className?: string; // New prop for conditional styling
+  isMaximized: boolean; // New prop
 }
 
 export function PlayerDisplay({
@@ -24,10 +24,13 @@ export function PlayerDisplay({
   onLoadedMetadata,
   onTimeUpdate,
   onEnded,
-  className,
+  className, // Destructure new prop
+  isMaximized, // Destructure new prop
 }: PlayerDisplayProps) {
   const youtubeEmbedUrl = playerType === 'youtube' ? getYouTubeEmbedUrl(inputUrl) : null;
+  // Spotify embed is removed, so no spotifyEmbedUrl needed here
 
+  // Determine the aspect ratio class based on playerType
   const aspectRatioClass = playerType === 'youtube' ? 'aspect-video' : playerType === 'spotify' ? 'aspect-square' : '';
 
   return (
@@ -40,7 +43,7 @@ export function PlayerDisplay({
           onTimeUpdate={onTimeUpdate}
           onEnded={onEnded}
           preload="metadata"
-          className={cn(className, 'w-full h-full')}
+          className={cn(className, 'w-full h-full')} // Audio tag should fill its container
         >
           Your browser does not support the audio element.
         </audio>
@@ -49,7 +52,7 @@ export function PlayerDisplay({
         <div className={cn(
           "relative w-full overflow-hidden",
           className,
-          aspectRatioClass
+          aspectRatioClass // Always apply aspect ratio
         )}>
           <iframe
             ref={youtubeIframeRef}
@@ -62,6 +65,7 @@ export function PlayerDisplay({
           ></iframe>
         </div>
       )}
+      {/* Spotify embed removed from here. Its functionality will be handled by the SDK. */}
     </>
   );
 }

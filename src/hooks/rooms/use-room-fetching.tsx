@@ -32,7 +32,7 @@ export function useRoomFetching() {
     } else {
       allRooms = publicRooms.map(room => ({
         ...room,
-        is_member: session?.user?.id ? room.room_members.some((m: { user_id: string }) => m.user_id === session.user.id) : false,
+        is_member: session?.user?.id ? room.room_members.some((m: any) => m.user_id === session.user.id) : false,
       })) as RoomData[];
     }
 
@@ -105,5 +105,5 @@ export function useRoomFetching() {
     fetchRooms();
   }, [fetchRooms]);
 
-  return { rooms, setRooms, loading, fetchRooms };
+  return { rooms, loading, fetchRooms };
 }
