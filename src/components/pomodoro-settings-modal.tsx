@@ -16,8 +16,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { PomodoroMode } from "@/hooks/use-pomodoro-state";
-import { DialogContent } from "@/components/ui/dialog";
-import { useCurrentRoom } from "@/hooks/use-current-room"; // Import useCurrentRoom
+// Removed DialogContent import as it's no longer needed here
+import { useCurrentRoom } from "@/hooks/use-current-room";
 
 const formSchema = z.object({
   focusMinutes: z.coerce.number().min(1, { message: "Focus time must be at least 1 minute." }).max(120, { message: "Focus time cannot exceed 120 minutes." }),
@@ -35,7 +35,7 @@ interface PomodoroSettingsModalProps {
 }
 
 export function PomodoroSettingsModal({ initialTimes, onSave }: PomodoroSettingsModalProps) {
-  const { isCurrentRoomWritable } = useCurrentRoom(); // Get writability status
+  const { isCurrentRoomWritable } = useCurrentRoom();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -57,51 +57,49 @@ export function PomodoroSettingsModal({ initialTimes, onSave }: PomodoroSettings
   }
 
   return (
-    <DialogContent className="sm:max-w-[425px] z-[1001] bg-card backdrop-blur-xl border-white/20">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="focusMinutes"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Focus Time (minutes)</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} disabled={!isCurrentRoomWritable} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="shortBreakMinutes"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Short Break (minutes)</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} disabled={!isCurrentRoomWritable} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="longBreakMinutes"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Long Break (minutes)</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} disabled={!isCurrentRoomWritable} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="submit" className="w-full" disabled={!isCurrentRoomWritable}>Save Settings</Button>
-        </form>
-      </Form>
-    </DialogContent>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="focusMinutes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Focus Time (minutes)</FormLabel>
+              <FormControl>
+                <Input type="number" {...field} disabled={!isCurrentRoomWritable} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="shortBreakMinutes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Short Break (minutes)</FormLabel>
+              <FormControl>
+                <Input type="number" {...field} disabled={!isCurrentRoomWritable} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="longBreakMinutes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Long Break (minutes)</FormLabel>
+              <FormControl>
+                <Input type="number" {...field} disabled={!isCurrentRoomWritable} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" className="w-full" disabled={!isCurrentRoomWritable}>Save Settings</Button>
+      </form>
+    </Form>
   );
 }
