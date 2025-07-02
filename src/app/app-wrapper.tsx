@@ -25,41 +25,31 @@ interface AppWrapperProps {
 }
 
 export function AppWrapper({ children }: AppWrapperProps) {
-  // State for mainContentArea is now managed within AppContent
-  // We still need to calculate it here to pass to WidgetProvider
-  const [mainContentArea, setMainContentArea] = useState({
-    left: 0,
-    top: 0,
-    width: 0,
-    height: 0,
+  // Constants for initial layout dimensions
+  const HEADER_HEIGHT = 64;
+  const SIDEBAR_WIDTH_CLOSED = 60;
+  const CHAT_PANEL_WIDTH_CLOSED = 56; // Assuming chat is closed by default for initial calculation
+
+  // Use useRef to create a stable object for WidgetProvider's initial mainContentArea
+  const mainContentAreaForWidgets = useRef({
+    left: SIDEBAR_WIDTH_CLOSED,
+    top: HEADER_HEIGHT,
+    width: 0, // Will be calculated once on mount
+    height: 0, // Will be calculated once on mount
   });
 
-  // This useEffect is still needed here to provide mainContentArea to WidgetProvider
-  // The actual calculation logic will be duplicated in AppContent for its internal use
-  // This is a trade-off to ensure correct context nesting.
+  // Calculate initial width/height once on mount for the ref
   useEffect(() => {
-    const HEADER_HEIGHT = 64;
-    const SIDEBAR_WIDTH_CLOSED = 60;
-    const CHAT_PANEL_WIDTH_CLOSED = 56; // Assuming chat is closed by default for initial calculation
-    
-    const updateMainContentAreaForProvider = () => {
-      setMainContentArea({
-        left: SIDEBAR_WIDTH_CLOSED, // Use closed width for initial provider setup
-        top: HEADER_HEIGHT,
-        width: window.innerWidth - SIDEBAR_WIDTH_CLOSED - CHAT_PANEL_WIDTH_CLOSED,
-        height: window.innerHeight - HEADER_HEIGHT,
-      });
-    };
-
-    updateMainContentAreaForProvider();
-    window.addEventListener('resize', updateMainContentAreaForProvider);
-    return () => window.removeEventListener('resize', updateMainContentAreaForProvider);
-  }, []);
+    if (typeof window !== 'undefined') {
+      mainContentAreaForWidgets.current.width = window.innerWidth - SIDEBAR_WIDTH_CLOSED - CHAT_PANEL_WIDTH_CLOSED;
+      mainContentAreaForWidgets.current.height = window.innerHeight - HEADER_HEIGHT;
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount
 
 
   return (
-    <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
-      <SidebarProvider> {/* SidebarProvider is now correctly nested inside WidgetProvider */}
+    <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentAreaForWidgets.current}>
+      <SidebarProvider>
         <AppContent>
           {children}
         </AppContent>
