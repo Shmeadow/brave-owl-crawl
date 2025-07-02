@@ -259,28 +259,6 @@ const SimpleAudioPlayer = () => {
             handleVolumeChange={handleVolumeChange}
           />
 
-          <div className="flex items-center space-x-0.5 ml-1 flex-shrink-0">
-            <button
-              onClick={(e) => { e.stopPropagation(); toggleMute(); }}
-              className="p-0.5 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300"
-              aria-label={currentIsMuted ? "Unmute" : "Mute"}
-              title={currentIsMuted ? "Unmute" : "Mute"}
-              disabled={!playerIsReady || playerType === 'spotify'}
-            >
-              {currentIsMuted || currentVolume === 0 ? <VolumeX size={10} /> : <Volume2 size={10} />}
-            </button>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={currentVolume}
-              onChange={handleVolumeChange}
-              className="w-16 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
-              disabled={!playerIsReady || playerType === 'spotify'}
-            />
-          </div>
-
           <button
             onClick={(e) => { e.stopPropagation(); setDisplayMode('normal'); }}
             className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 ml-1 flex-shrink-0"
