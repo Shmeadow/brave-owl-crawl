@@ -46,7 +46,8 @@ export function ClockDisplay({ dailyProgress }: ClockDisplayProps) {
         <div id="clock" className="text-2xl font-bold leading-none text-foreground">{currentTime}</div>
         <div id="date" className="text-sm leading-none">{currentDate}</div>
       </div>
-      <div className="w-full max-w-[100px] mt-1">
+      {/* Removed max-w-[100px] to allow it to match the width of the clock/date line */}
+      <div className="w-full mt-1">
         <Progress value={dailyProgress} className="h-1.5 [&>*]:transition-all [&>*]:duration-1000 [&>*]:ease-linear [&>*]:bg-gradient-to-r [&>*]:from-day-start [&>*]:to-day-end" />
       </div>
     </div>
