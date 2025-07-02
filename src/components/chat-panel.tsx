@@ -39,7 +39,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
       toast.error("Chat unavailable: Supabase client not initialized.");
       return;
     }
-    console.log("Attempting to fetch messages from Supabase URL:", supabase.supabaseUrl);
+    // console.log("Attempting to fetch messages from Supabase URL:", supabase.supabaseUrl); // Removed this line
     try {
       // Fetch messages without joining profiles initially for better reliability
       const { data, error } = await supabase
