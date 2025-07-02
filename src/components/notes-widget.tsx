@@ -5,9 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddNoteForm } from "@/components/add-note-form";
 import { NoteList } from "@/components/note-list";
 import { useNotes } from "@/hooks/use-notes";
+import { useCurrentRoom } from "@/hooks/use-current-room";
 
 export function NotesWidget() {
   const { notes, loading, isLoggedInMode, handleAddNote, handleDeleteNote, handleToggleStar } = useNotes();
+  const { isCurrentRoomWritable } = useCurrentRoom();
 
   if (loading) {
     return (
@@ -20,12 +22,12 @@ export function NotesWidget() {
   return (
     <div className="h-full w-full">
       <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto py-4">
-        <Card className="w-full bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
+        <Card className="w-full bg-card backdrop-blur-xl border-white/20">
           <CardHeader>
             <CardTitle>Add New Note</CardTitle>
           </CardHeader>
           <CardContent>
-            <AddNoteForm onAddNote={handleAddNote} />
+            <AddNoteForm onAddNote={handleAddNote} isCurrentRoomWritable={isCurrentRoomWritable} />
           </CardContent>
         </Card>
 
@@ -33,6 +35,7 @@ export function NotesWidget() {
           notes={notes}
           onToggleStar={handleToggleStar}
           onDelete={handleDeleteNote}
+          isCurrentRoomWritable={isCurrentRoomWritable}
         />
 
         {!isLoggedInMode && (
