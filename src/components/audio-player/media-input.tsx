@@ -15,7 +15,7 @@ export function MediaInput({ inputUrl, setInputUrl, showUrlInput, setShowUrlInpu
   return (
     <>
       <button
-        onClick={() => setShowUrlInput(prev => !prev)}
+        onClick={() => setShowUrlInput((prev: boolean) => !prev)}
         className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
         title="Change Media URL"
       >
