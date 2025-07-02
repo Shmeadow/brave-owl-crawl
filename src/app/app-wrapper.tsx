@@ -148,7 +148,6 @@ export function AppWrapper({ children }: AppWrapperProps) {
         <main
           className={cn(
             "flex flex-col flex-1 w-full h-[calc(100vh-${HEADER_HEIGHT}px)] overflow-auto transition-all duration-300 ease-in-out",
-            "bg-background backdrop-blur-xl",
             "items-center justify-center" // Added to center content
           )}
           style={mounted ? { marginLeft: `${calculatedSidebarWidth}px`, marginRight: `${calculatedChatPanelWidth}px` } : {}}
