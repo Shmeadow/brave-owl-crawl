@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect, useRef } from "react";
 import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
@@ -16,16 +15,15 @@ import { WidgetContainer } from "@/components/widget/widget-container";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { MediaPlayerBar } from "@/components/media-player-bar";
 import { useMediaPlayer } from "@/components/media-player-context";
-import { useCurrentRoom } from "@/hooks/use-current-room"; // Import useCurrentRoom
-import { cn } from "@/lib/utils"; // Import cn for conditional classes
+import { useCurrentRoom } from "@/hooks/use-current-room";
+import { cn } from "@/lib/utils";
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
-const CHAT_PANEL_WIDTH_OPEN = 320; // px
-const CHAT_PANEL_WIDTH_CLOSED = 56; // px (w-14)
-const HEADER_HEIGHT = 64; // px (h-14 + py-2*2 = 56 + 8 = 64)
-const SIDEBAR_WIDTH = 60; // px
+const CHAT_PANEL_WIDTH_OPEN = 320;
+const CHAT_PANEL_WIDTH_CLOSED = 56;
+const HEADER_HEIGHT = 64;
+const SIDEBAR_WIDTH = 60;
 
-// Define initial configurations for all widgets here to pass to WidgetProvider
 const WIDGET_CONFIGS = {
   "spaces": { initialPosition: { x: 150, y: 100 }, initialWidth: 600, initialHeight: 700 },
   "sounds": { initialPosition: { x: 800, y: 150 }, initialWidth: 500, initialHeight: 600 },
@@ -49,18 +47,14 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const { isSidebarOpen } = useSidebar();
   const { isAlwaysOpen } = useSidebarPreference();
   const { youtubeEmbedUrl, spotifyEmbedUrl } = useMediaPlayer();
-  const { currentRoomId } = useCurrentRoom(); // Get currentRoomId
+  const { currentRoomId } = useCurrentRoom();
 
-  // Initialize with a consistent default, then update from localStorage in useEffect
   const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(true);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [mounted, setMounted] = useState(false);
-  // dailyProgress state removed from here
 
-  // State to hold the dimensions of the main content area
-  // Initialize with fixed defaults, then update based on window in useEffect
   const [mainContentArea, setMainContentArea] = useState({
     left: 0,
     top: 0,
@@ -70,7 +64,6 @@ export function AppWrapper({ children }: AppWrapperProps) {
 
   useEffect(() => {
     setMounted(true);
-    // Read from localStorage only after component mounts on client
     if (typeof window !== 'undefined') {
       const savedMinimized = localStorage.getItem(LOCAL_STORAGE_POMODORO_MINIMIZED_KEY);
       setIsPomodoroWidgetMinimized(savedMinimized === 'false' ? false : true);
@@ -83,9 +76,6 @@ export function AppWrapper({ children }: AppWrapperProps) {
     }
   }, [isPomodoroWidgetMinimized, mounted]);
 
-  // dailyProgress calculation removed from here
-
-  // Calculate main content area dimensions dynamically only after component mounts
   useEffect(() => {
     const updateMainContentArea = () => {
       const sidebarCurrentWidth = (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH : 0;
@@ -99,12 +89,12 @@ export function AppWrapper({ children }: AppWrapperProps) {
       });
     };
 
-    if (mounted) { // Only run on client after mount
+    if (mounted) {
       updateMainContentArea();
       window.addEventListener('resize', updateMainContentArea);
       return () => window.removeEventListener('resize', updateMainContentArea);
     }
-  }, [isSidebarOpen, isChatOpen, isAlwaysOpen, mounted]); // Added mounted to dependencies
+  }, [isSidebarOpen, isChatOpen, isAlwaysOpen, mounted]);
 
   const shouldShowPomodoro = pathname !== '/account' && pathname !== '/admin-settings';
 
@@ -120,13 +110,11 @@ export function AppWrapper({ children }: AppWrapperProps) {
     setUnreadChatCount(0);
   };
 
-  // Calculate these values conditionally based on `mounted`
   const calculatedSidebarWidth = mounted && (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH : 0;
   const calculatedChatPanelWidth = mounted && isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
 
   return (
     <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
-      {/* New wrapper div for main layout flow */}
       <div className="flex flex-col flex-1 min-h-screen">
         <Header
           onOpenUpgradeModal={handleOpenUpgradeModal}
@@ -141,12 +129,11 @@ export function AppWrapper({ children }: AppWrapperProps) {
           onClearUnreadMessages={handleClearUnreadMessages}
           unreadChatCount={unreadChatCount}
         />
-        {/* Sidebar is fixed, so it's outside the main flex flow */}
         <Sidebar />
         <main
           className={cn(
-            "flex flex-col flex-1 w-full overflow-auto transition-all duration-300 ease-in-out", // Removed h-[calc(...)]
-            "items-center justify-center" // Added to center content
+            "flex flex-col flex-1 w-full overflow-auto transition-all duration-300 ease-in-out",
+            "items-center justify-center"
           )}
           style={mounted ? { marginLeft: `${calculatedSidebarWidth}px`, marginRight: `${calculatedChatPanelWidth}px` } : {}}
         >
@@ -154,7 +141,6 @@ export function AppWrapper({ children }: AppWrapperProps) {
         </main>
       </div>
 
-      {/* Fixed/Absolute elements outside the main flex flow */}
       <GoalReminderBar />
       {mounted && shouldShowPomodoro && (
         <PomodoroWidget
@@ -165,7 +151,6 @@ export function AppWrapper({ children }: AppWrapperProps) {
       )}
       {mounted && (youtubeEmbedUrl || spotifyEmbedUrl) && <MediaPlayerBar />}
       <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
-      {/* The main ChatPanel instance, controlled by AppWrapper's state */}
       <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
         <ChatPanel
           isOpen={isChatOpen}
@@ -178,7 +163,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
           onNewUnreadMessage={handleNewUnreadMessage}
           onClearUnreadMessages={handleClearUnreadMessages}
           unreadCount={unreadChatCount}
-          currentRoomId={currentRoomId} {/* Pass currentRoomId */}
+          currentRoomId={currentRoomId}
         />
       </div>
       <Toaster />

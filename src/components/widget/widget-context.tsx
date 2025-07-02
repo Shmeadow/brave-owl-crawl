@@ -1,5 +1,4 @@
 "use client";
-
 import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from "react";
 
 interface WidgetConfig {
@@ -17,10 +16,10 @@ interface WidgetState {
   isMinimized: boolean;
   isMaximized: boolean;
   isPinned: boolean;
-  previousPosition?: { x: number; y: number }; // Stores position before pinning
-  previousSize?: { width: number; height: number }; // Stores size before pinning
-  normalSize?: { width: number; number }; // Stores size when not minimized/maximized
-  normalPosition?: { x: number; y: number }; // Stores position when not minimized/maximized
+  previousPosition?: { x: number; y: number };
+  previousSize?: { width: number; height: number };
+  normalSize?: { width: number; number };
+  normalPosition?: { x: number; y: number };
 }
 
 interface WidgetContextType {
@@ -35,7 +34,7 @@ interface WidgetContextType {
   togglePinned: (id: string) => void;
   closeWidget: (id: string) => void;
   toggleWidget: (id: string, title: string) => void;
-  topmostZIndex: number; // Expose topmost Z-index
+  topmostZIndex: number;
 }
 
 const WidgetContext = createContext<WidgetContextType | undefined>(undefined);
@@ -43,7 +42,7 @@ const WidgetContext = createContext<WidgetContextType | undefined>(undefined);
 interface WidgetProviderProps {
   children: React.ReactNode;
   initialWidgetConfigs: { [key: string]: WidgetConfig };
-  mainContentArea: { // Now received as a prop
+  mainContentArea: {
     left: number;
     top: number;
     width: number;
@@ -51,16 +50,14 @@ interface WidgetProviderProps {
   };
 }
 
-// Constants for pinned widget positioning
-const DOCKED_WIDGET_WIDTH = 192; // w-48
-const DOCKED_WIDGET_HEIGHT = 48; // h-12 (to fit text better)
-const DOCKED_WIDGET_HORIZONTAL_GAP = 4; // Gap between horizontally stacked widgets
-const BOTTOM_DOCK_OFFSET = 16; // Corresponds to 'bottom-4' in Tailwind
+const DOCKED_WIDGET_WIDTH = 192;
+const DOCKED_WIDGET_HEIGHT = 48;
+const DOCKED_WIDGET_HORIZONTAL_GAP = 4;
+const BOTTOM_DOCK_OFFSET = 16;
 
-const MINIMIZED_WIDGET_WIDTH = 192; // w-48
-const MINIMIZED_WIDGET_HEIGHT = 48; // h-12 (to fit text better)
+const MINIMIZED_WIDGET_WIDTH = 192;
+const MINIMIZED_WIDGET_HEIGHT = 48;
 
-// Helper to clamp widget position within bounds
 export const clampPosition = (x: number, y: number, width: number, height: number, bounds: { left: number; top: number; width: number; height: number }) => {
   const maxX = bounds.left + bounds.width - width;
   const maxY = bounds.top + bounds.height - height;
@@ -71,12 +68,11 @@ export const clampPosition = (x: number, y: number, width: number, height: numbe
 
 export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea }: WidgetProviderProps) {
   const [activeWidgets, setActiveWidgets] = useState<WidgetState[]>([]);
-  const [maxZIndex, setMaxZIndex] = useState(900); // Start maxZIndex lower than Pomodoro (1001)
+  const [maxZIndex, setMaxZIndex] = useState(900);
 
-  // Adjust recalculatePinnedWidgets to accept mainContentArea as argument
   const recalculatePinnedWidgets = useCallback((currentWidgets: WidgetState[]) => {
-    const pinned = currentWidgets.filter(w => w.isPinned).sort((a, b) => a.id.localeCompare(b.id)); // Sort to maintain consistent order
-    let currentX = mainContentArea.left + DOCKED_WIDGET_HORIZONTAL_GAP; // Start from left edge of content area
+    const pinned = currentWidgets.filter(w => w.isPinned).sort((a, b) => a.id.localeCompare(b.id));
+    let currentX = mainContentArea.left + DOCKED_WIDGET_HORIZONTAL_GAP;
 
     return currentWidgets.map(widget => {
       if (widget.isPinned) {
@@ -84,7 +80,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
           x: currentX,
           y: mainContentArea.top + mainContentArea.height - DOCKED_WIDGET_HEIGHT - BOTTOM_DOCK_OFFSET,
         };
-        currentX += DOCKED_WIDGET_WIDTH + DOCKED_WIDGET_HORIZONTAL_GAP; // Increment for next widget
+        currentX += DOCKED_WIDGET_WIDTH + DOCKED_WIDGET_HORIZONTAL_GAP;
 
         return {
           ...widget,
@@ -93,19 +89,18 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
             width: DOCKED_WIDGET_WIDTH,
             height: DOCKED_WIDGET_HEIGHT,
           },
-          isMinimized: true, // Always minimized when pinned
-          isMaximized: false, // Cannot be maximized when pinned
+          isMinimized: true,
+          isMaximized: false,
         };
       }
       return widget;
     });
-  }, [mainContentArea]); // Dependency on mainContentArea
+  }, [mainContentArea]);
 
-  // Effect to re-clamp floating widget positions when mainContentArea changes
   useEffect(() => {
     setActiveWidgets(prevWidgets => {
       const updated = prevWidgets.map(widget => {
-        if (!widget.isPinned && !widget.isMaximized) { // Only re-clamp floating, non-maximized widgets
+        if (!widget.isPinned && !widget.isMaximized) {
           const clampedPos = clampPosition(
             widget.position.x,
             widget.position.y,
@@ -113,16 +108,15 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
             widget.size.height,
             mainContentArea
           );
-          // If position changed due to clamping, update it
           if (clampedPos.x !== widget.position.x || clampedPos.y !== widget.position.y) {
             return { ...widget, position: clampedPos };
           }
         }
         return widget;
       });
-      return recalculatePinnedWidgets(updated); // Also re-calculate pinned widgets
+      return recalculatePinnedWidgets(updated);
     });
-  }, [mainContentArea, recalculatePinnedWidgets]); // Dependency on mainContentArea and recalculatePinnedWidgets
+  }, [mainContentArea, recalculatePinnedWidgets]);
 
   const addWidget = useCallback((id: string, title: string) => {
     if (!activeWidgets.some(widget => widget.id === id)) {
@@ -131,9 +125,8 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
         const newMaxZIndex = maxZIndex + 1;
         setMaxZIndex(newMaxZIndex);
 
-        // Calculate initial position, clamped within mainContentArea
-        const offsetAmount = 20; // pixels for stacking
-        const offsetIndex = activeWidgets.length % 5; // Cycle through 5 different offsets
+        const offsetAmount = 20;
+        const offsetIndex = activeWidgets.length % 5;
         const initialX = mainContentArea.left + offsetIndex * offsetAmount;
         const initialY = mainContentArea.top + offsetIndex * offsetAmount;
 
@@ -223,35 +216,34 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
   const minimizeWidget = useCallback((id: string) => {
     setActiveWidgets(prev => {
       const updatedWidgets = prev.map(widget => {
-        if (widget.id === id && !widget.isPinned) { // Pinned widgets are already minimized and handled by recalculatePinnedWidgets
-          if (widget.isMaximized) { // If currently maximized, go to minimized state
+        if (widget.id === id && !widget.isPinned) {
+          if (widget.isMaximized) {
             return {
               ...widget,
               isMaximized: false,
-              isMinimized: true, // Go to minimized state
-              // Keep normalSize/Position as they were before maximizing
+              isMinimized: true,
               size: { width: MINIMIZED_WIDGET_WIDTH, height: MINIMIZED_WIDGET_HEIGHT },
               position: clampPosition(
-                widget.normalPosition?.x || initialWidgetConfigs[id].initialPosition.x, // Use normal position as base for clamping
+                widget.normalPosition?.x || initialWidgetConfigs[id].initialPosition.x,
                 widget.normalPosition?.y || initialWidgetConfigs[id].initialPosition.y,
                 MINIMIZED_WIDGET_WIDTH,
                 MINIMIZED_WIDGET_HEIGHT,
                 mainContentArea
               ),
             };
-          } else if (widget.isMinimized) { // If currently minimized, unminimize to normal state
+          } else if (widget.isMinimized) {
             return {
               ...widget,
               isMinimized: false,
               position: widget.normalPosition || initialWidgetConfigs[id].initialPosition,
               size: widget.normalSize || { width: initialWidgetConfigs[id].initialWidth, height: initialWidgetConfigs[id].initialHeight },
             };
-          } else { // If currently normal, minimize it
+          } else {
             return {
               ...widget,
               isMinimized: true,
-              normalSize: widget.size, // Store current size as normal
-              normalPosition: widget.position, // Store current position as normal
+              normalSize: widget.size,
+              normalPosition: widget.position,
               size: { width: MINIMIZED_WIDGET_WIDTH, height: MINIMIZED_WIDGET_HEIGHT },
               position: clampPosition(
                 widget.position.x,
@@ -273,36 +265,35 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
     setActiveWidgets(prev => {
       const updatedWidgets = prev.map(widget => {
         if (widget.id === id) {
-          if (widget.isPinned) { // If it's pinned, unpin it first, then maximize
+          if (widget.isPinned) {
             const config = initialWidgetConfigs[id];
             return {
               ...widget,
               isPinned: false,
-              isMinimized: false, // Unminimize when unpinned
-              isMaximized: true, // Then maximize
-              // Restore to the state it was in *before* it was pinned, then maximize from there
-              normalPosition: widget.previousPosition!, // Use previousPosition (last normal state before pinning)
-              normalSize: widget.previousSize!, // Use previousSize (last normal state before pinning)
+              isMinimized: false,
+              isMaximized: true,
+              normalPosition: widget.previousPosition!,
+              normalSize: widget.previousSize!,
               position: { x: mainContentArea.left, y: mainContentArea.top },
               size: { width: mainContentArea.width, height: mainContentArea.height },
               previousPosition: undefined,
               previousSize: undefined,
             };
-          } else if (widget.isMaximized) { // If already maximized, unmaximize
+          } else if (widget.isMaximized) {
             return {
               ...widget,
               isMaximized: false,
               isMinimized: false,
-              position: widget.normalPosition!, // Use normalPosition
-              size: widget.normalSize!, // Use normalSize
+              position: widget.normalPosition!,
+              size: widget.normalSize!,
             };
-          } else { // If normal or minimized, maximize
+          } else {
             return {
               ...widget,
               isMaximized: true,
               isMinimized: false,
-              normalSize: widget.size, // Store current size as normal
-              normalPosition: widget.position, // Store current position as normal
+              normalSize: widget.size,
+              normalPosition: widget.position,
               size: { width: mainContentArea.width, height: mainContentArea.height },
               position: { x: mainContentArea.left, y: mainContentArea.top },
             };
@@ -318,28 +309,26 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
     setActiveWidgets(prev => {
       const updatedWidgets = prev.map(widget => {
         if (widget.id === id) {
-          if (widget.isPinned) { // Unpinning
+          if (widget.isPinned) {
             const config = initialWidgetConfigs[id];
             return {
               ...widget,
               isPinned: false,
-              isMinimized: false, // Unminimize when unpinned
+              isMinimized: false,
               isMaximized: false,
-              // Restore to the state it was in *before* it was pinned
-              position: widget.previousPosition!, // Use previousPosition
-              size: widget.previousSize!, // Use previousSize
-              previousPosition: undefined, // Clear previous state
-              previousSize: undefined, // Clear previous state
+              position: widget.previousPosition!,
+              size: widget.previousSize!,
+              previousPosition: undefined,
+              previousSize: undefined,
             };
-          } else { // Pinning
-            // Store the *current normal* state before pinning
+          } else {
             return {
               ...widget,
               isPinned: true,
-              isMinimized: true, // Pinned widgets are always visually minimized
-              isMaximized: false, // Cannot be maximized when pinned
-              previousPosition: widget.normalPosition!, // Store the normal position
-              previousSize: widget.normalSize!, // Store the normal size
+              isMinimized: true,
+              isMaximized: false,
+              previousPosition: widget.normalPosition!,
+              previousSize: widget.normalSize!,
             };
           }
         }
@@ -361,7 +350,6 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
     }
   }, [activeWidgets, addWidget, closeWidget]);
 
-  // Calculate the topmost Z-index among visible, non-minimized, non-maximized, non-pinned widgets
   const topmostZIndex = useMemo(() => {
     const visibleWidgets = activeWidgets.filter(w => !w.isMinimized && !w.isMaximized && !w.isPinned);
     if (visibleWidgets.length === 0) return 0;
@@ -381,7 +369,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       togglePinned,
       closeWidget,
       toggleWidget,
-      topmostZIndex, // Include topmostZIndex in context
+      topmostZIndex,
     }),
     [
       activeWidgets,
