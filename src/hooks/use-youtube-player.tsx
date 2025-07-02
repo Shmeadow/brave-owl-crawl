@@ -26,6 +26,8 @@ interface UseYouTubePlayerResult {
 
 export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefObject<HTMLIFrameElement>): UseYouTubePlayerResult {
   const playerRef = useRef<any>(null); // YT.Player instance
+  const timeUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null); // Correctly initialized useRef
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState(50); // Default volume 0-100
   const [isMuted, setIsMuted] = useState(false); // New: Mute state
