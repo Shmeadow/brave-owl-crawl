@@ -28,7 +28,7 @@ export function PlayerDisplay({
   isMaximized, // Destructure new prop
 }: PlayerDisplayProps) {
   const youtubeEmbedUrl = playerType === 'youtube' ? getYouTubeEmbedUrl(inputUrl) : null;
-  const spotifyEmbedUrl = playerType === 'spotify' ? getSpotifyEmbedUrl(inputUrl) : null;
+  // Spotify embed is removed, so no spotifyEmbedUrl needed here
 
   // Determine the aspect ratio class based on playerType
   const aspectRatioClass = playerType === 'youtube' ? 'aspect-video' : playerType === 'spotify' ? 'aspect-square' : '';
@@ -66,25 +66,7 @@ export function PlayerDisplay({
           ></iframe>
         </div>
       )}
-      {(playerType === 'spotify' && spotifyEmbedUrl) && (
-        <div className={cn(
-          "relative w-full mb-1 overflow-hidden", // Added overflow-hidden
-          className,
-          aspectRatioClass, // Always apply aspect ratio
-          isMaximized ? 'mx-auto' : '' // Center horizontally when maximized
-        )}>
-          <iframe
-            src={spotifyEmbedUrl}
-            width="100%"
-            height="100%"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-            className="rounded-lg"
-            style={{ backgroundColor: 'transparent' }}
-            title="Spotify Embed"
-          ></iframe>
-        </div>
-      )}
+      {/* Spotify embed removed from here. Its functionality will be handled by the SDK. */}
     </>
   );
 }

@@ -4,7 +4,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Music, ListMusic, Youtube, VolumeX, Volume2, ChevronLeft } from 'lucide-react';
 import { useYouTubePlayer } from '@/hooks/use-youtube-player';
 import { useHtmlAudioPlayer } from '@/hooks/use-html-audio-player';
+import { useSpotifyPlayer } from '@/hooks/use-spotify-player'; // Import the new Spotify hook
 import { cn, getYouTubeEmbedUrl } from '@/lib/utils';
+import { useSupabase } from '@/integrations/supabase/auth'; // To get session for Spotify token
 
 // Import new modular components
 import { PlayerDisplay } from './audio-player/player-display';
@@ -27,6 +29,7 @@ const MAXIMIZED_PLAYER_TOP_POSITION = HEADER_HEIGHT + 40; // Moved down by 40px
 
 
 const SimpleAudioPlayer = () => {
+  const { session } = useSupabase(); // Get session to access access_token for Spotify
   const [stagedInputUrl, setStagedInputUrl] = useState('');
   const [committedMediaUrl, setCommittedMediaUrl] = useState('');
   const [playerType, setPlayerType] = useState<'audio' | 'youtube' | 'spotify' | null>(null);
@@ -75,6 +78,24 @@ const SimpleAudioPlayer = () => {
     youtubeDuration,
   } = useYouTubePlayer(youtubeEmbedUrl, youtubeIframeRef);
 
+  // Spotify Player Hook
+  const {
+    playerReady: spotifyPlayerReady,
+    isPlaying: spotifyIsPlaying,
+    volume: spotifyVolume,
+    isMuted: spotifyIsMuted,
+    currentTrack: spotifyCurrentTrack,
+    spotifyCurrentTime,
+    spotifyDuration,
+    togglePlayPause: spotifyTogglePlayPause,
+    setVolume: spotifySetVolume,
+    toggleMute: spotifyToggleMute,
+    seekTo: spotifySeekTo,
+    connectToSpotify,
+    disconnectFromSpotify,
+    playTrack: spotifyPlayTrack, // Expose playTrack for direct control
+  } = useSpotifyPlayer(session?.access_token || null); // Pass Supabase session token to Spotify hook
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY, displayMode);
@@ -88,8 +109,13 @@ const SimpleAudioPlayer = () => {
       setCurrentArtist('Unknown Artist');
     } else if (committedMediaUrl.includes('open.spotify.com')) {
       setPlayerType('spotify');
-      setCurrentTitle('Spotify Media');
-      setCurrentArtist('Unknown Artist');
+      // For Spotify, title/artist will come from spotifyCurrentTrack
+      setCurrentTitle(spotifyCurrentTrack?.name || 'Spotify Media');
+      setCurrentArtist(spotifyCurrentTrack?.artists.map(a => a.name).join(', ') || 'Unknown Artist');
+      // Attempt to play the Spotify URI directly
+      if (spotifyPlayerReady && spotifyCurrentTrack?.uri !== committedMediaUrl) {
+        spotifyPlayTrack(committedMediaUrl);
+      }
     } else if (committedMediaUrl.match(/\.(mp3|wav|ogg|aac|flac)$/i)) {
       setPlayerType('audio');
       setCurrentTitle('Direct Audio');
@@ -99,7 +125,7 @@ const SimpleAudioPlayer = () => {
       setCurrentTitle('No Media Loaded');
       setCurrentArtist('');
     }
-  }, [committedMediaUrl]);
+  }, [committedMediaUrl, spotifyCurrentTrack, spotifyPlayerReady, spotifyPlayTrack]);
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -112,6 +138,8 @@ const SimpleAudioPlayer = () => {
       htmlAudioTogglePlayPause();
     } else if (playerType === 'youtube') {
       youtubeTogglePlayPause();
+    } else if (playerType === 'spotify') {
+      spotifyTogglePlayPause();
     }
   };
 
@@ -121,6 +149,8 @@ const SimpleAudioPlayer = () => {
       htmlAudioSetVolume(newVolume);
     } else if (playerType === 'youtube') {
       youtubeSetVolume(newVolume * 100);
+    } else if (playerType === 'spotify') {
+      spotifySetVolume(newVolume);
     }
   };
 
@@ -129,6 +159,8 @@ const SimpleAudioPlayer = () => {
       htmlAudioToggleMute();
     } else if (playerType === 'youtube') {
       youtubeToggleMute();
+    } else if (playerType === 'spotify') {
+      spotifyToggleMute();
     }
   };
 
@@ -138,6 +170,8 @@ const SimpleAudioPlayer = () => {
       htmlAudioSeekTo(newTime);
     } else if (playerType === 'youtube' && youtubePlayerReady) {
       youtubeSeekTo(newTime);
+    } else if (playerType === 'spotify' && spotifyPlayerReady) {
+      spotifySeekTo(newTime);
     }
   };
 
@@ -146,6 +180,8 @@ const SimpleAudioPlayer = () => {
       htmlAudioSkipForward();
     } else if (playerType === 'youtube' && youtubePlayerReady) {
       youtubeSeekTo(youtubeCurrentTime + 10);
+    } else if (playerType === 'spotify' && spotifyPlayerReady) {
+      spotifySeekTo(spotifyCurrentTime + 10);
     }
   };
 
@@ -154,6 +190,8 @@ const SimpleAudioPlayer = () => {
       htmlAudioSkipBackward();
     } else if (playerType === 'youtube' && youtubePlayerReady) {
       youtubeSeekTo(youtubeCurrentTime - 10);
+    } else if (playerType === 'spotify' && spotifyPlayerReady) {
+      spotifySeekTo(spotifyCurrentTime - 10);
     }
   };
 
@@ -162,25 +200,28 @@ const SimpleAudioPlayer = () => {
     setShowUrlInput(false);
   };
 
-  const currentPlaybackTime = playerType === 'youtube' ? youtubeCurrentTime : audioCurrentTime;
-  const totalDuration = playerType === 'youtube' ? youtubeDuration : audioDuration;
-  const currentVolume = playerType === 'youtube' ? youtubeVolume / 100 : audioVolume;
-  const currentIsPlaying = playerType === 'youtube' ? youtubeIsPlaying : audioIsPlaying;
-  const playerIsReady = playerType === 'youtube' ? youtubePlayerReady : true;
-  const currentIsMuted = playerType === 'youtube' ? youtubeIsMuted : audioIsMuted;
+  // Determine current player states based on active playerType
+  const currentPlaybackTime = playerType === 'youtube' ? youtubeCurrentTime : (playerType === 'spotify' ? spotifyCurrentTime : audioCurrentTime);
+  const totalDuration = playerType === 'youtube' ? youtubeDuration : (playerType === 'spotify' ? spotifyDuration : audioDuration);
+  const currentVolume = playerType === 'youtube' ? youtubeVolume / 100 : (playerType === 'spotify' ? spotifyVolume : audioVolume);
+  const currentIsPlaying = playerType === 'youtube' ? youtubeIsPlaying : (playerType === 'spotify' ? spotifyIsPlaying : audioIsPlaying);
+  const playerIsReady = playerType === 'youtube' ? youtubePlayerReady : (playerType === 'spotify' ? spotifyPlayerReady : true);
+  const currentIsMuted = playerType === 'youtube' ? youtubeIsMuted : (playerType === 'spotify' ? spotifyIsMuted : audioIsMuted);
 
-  // New logic for canPlayPause and canSeek
-  const canPlayPause = playerType !== 'spotify' && playerIsReady;
-  const canSeek = playerType !== 'spotify' && playerIsReady && totalDuration > 0;
+  const canPlayPause = playerIsReady; // Now all types can be controlled if ready
+  const canSeek = playerIsReady && totalDuration > 0;
 
   const PlayerIcon = playerType === 'youtube' ? Youtube : playerType === 'spotify' ? ListMusic : Music;
+
+  // Placeholder for dynamic color tone (will be implemented in a future step)
+  const spotifyAccentColor = spotifyCurrentTrack ? 'hsl(var(--ws-accent))' : 'hsl(var(--ws-accent))'; // Default or derived from album art
 
   return (
     <div className={cn(
       "fixed z-[1000] transition-all duration-300 ease-in-out",
       displayMode === 'normal' && 'top-20 right-4 w-80',
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-16',
-      displayMode === 'maximized' && 'left-1/2 -translate-x-1/2 w-full max-w-3xl flex flex-col items-center justify-center' // Added items-center justify-center
+      displayMode === 'maximized' && 'left-1/2 -translate-x-1/2 w-full max-w-3xl flex flex-col items-center justify-center'
     )}
     style={displayMode === 'maximized' ? { top: `${MAXIMIZED_PLAYER_TOP_POSITION}px`, bottom: `${MAXIMIZED_PLAYER_BOTTOM_POSITION}px` } : {}}
     >
@@ -188,7 +229,7 @@ const SimpleAudioPlayer = () => {
       <div className={cn(
         "bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full h-full",
         displayMode === 'normal' && 'p-1',
-        displayMode === 'maximized' && 'p-4 items-center justify-center', // Added items-center justify-center here too
+        displayMode === 'maximized' && 'p-4 items-center justify-center',
         displayMode === 'minimized' && 'hidden'
       )}>
         {/* PlayerDisplay is now inside and will fill available space */}
@@ -203,21 +244,26 @@ const SimpleAudioPlayer = () => {
           isMaximized={displayMode === 'maximized'}
           className={cn(
             displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : '',
-            displayMode === 'maximized' ? 'w-full flex-grow' : 'w-full' // Removed fixed height here
+            displayMode === 'maximized' ? 'w-full flex-grow' : 'w-full'
           )}
         />
 
         {/* Main Player Row: Album Art, Track Info, Controls */}
-        <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full"> {/* Added w-full */}
-          {/* Album Art Placeholder */}
-          <div className="flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs w-12 h-12">
-            <PlayerIcon size={24} />
+        <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
+          {/* Album Art / Player Icon */}
+          <div className="flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs w-12 h-12"
+               style={playerType === 'spotify' && spotifyCurrentTrack?.album.images[0]?.url ? { backgroundImage: `url(${spotifyCurrentTrack.album.images[0].url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+            {!spotifyCurrentTrack?.album.images[0]?.url && <PlayerIcon size={24} />}
           </div>
 
           {/* Track Info and URL Input Toggle */}
           <div className="flex-grow min-w-0">
-            <p className="text-sm font-semibold text-foreground truncate leading-tight">{currentTitle}</p>
-            <p className="text-xs text-muted-foreground truncate">{currentArtist}</p>
+            <p className="text-sm font-semibold text-foreground truncate leading-tight">
+              {playerType === 'spotify' ? (spotifyCurrentTrack?.name || 'Spotify Media') : currentTitle}
+            </p>
+            <p className="text-xs text-muted-foreground truncate">
+              {playerType === 'spotify' ? (spotifyCurrentTrack?.artists.map(a => a.name).join(', ') || 'Unknown Artist') : currentArtist}
+            </p>
             <MediaInput
               inputUrl={stagedInputUrl}
               setInputUrl={setStagedInputUrl}
@@ -251,6 +297,15 @@ const SimpleAudioPlayer = () => {
           handleProgressBarChange={handleProgressBarChange}
           formatTime={formatTime}
         />
+
+        {playerType === 'spotify' && !spotifyPlayerReady && (
+          <div className="text-center text-sm text-muted-foreground mt-2">
+            <p>Connect to Spotify to enable playback.</p>
+            <button onClick={connectToSpotify} className="text-primary hover:underline mt-1">
+              Connect to Spotify
+            </button>
+          </div>
+        )}
 
         <PlayerModeButtons displayMode={displayMode} setDisplayMode={setDisplayMode} />
       </div>
