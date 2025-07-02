@@ -140,7 +140,7 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          Set a password for this room. Users will need this to join if it's private.
+          Set a password for this room. Users will need this to join if it&apos;s private.
         </p>
 
         {/* 3. Kick Users */}

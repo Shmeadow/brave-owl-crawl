@@ -230,7 +230,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
           <ScrollArea className="flex-1 pr-4" ref={scrollAreaRef}>
             <div className="space-y-4">
               {!currentRoomId ? (
-                <p className="text-center text-muted-foreground text-sm">Please select a room in the 'Spaces' widget to start chatting.</p>
+                <p className="text-center text-muted-foreground text-sm">Please select a room in the &apos;Spaces&apos; widget to start chatting.</p>
               ) : messages.length === 0 ? (
                 <p className="text-center text-muted-foreground text-sm">No messages yet. Start the conversation!</p>
               ) : (

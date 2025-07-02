@@ -28,5 +28,6 @@
     "react/jsx-first-prop-new-line": "off",
     "react/self-closing-comp": "off",
     "react/jsx-closing-tag-location": "off"
+    'react/jsx-no-unescaped-entities': 'off',
   }
 }
