@@ -3,11 +3,11 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { createClient } from '@supabase/supabase-js';
-import { AppWrapper } from "@/components/app-wrapper";
+import { AppWrapper } from "@/app/app-wrapper"; // Corrected import path
 import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { SidebarProvider } from "@/components/sidebar/sidebar-context";
 import { WidgetProvider } from "@/components/widget/widget-context";
-import { MediaPlayerProvider } from "@/components/media-player-context"; // Import MediaPlayerProvider
+import { MediaPlayerProvider } from "@/components/media-player-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -97,8 +97,7 @@ export default async function RootLayout({
         >
           <SessionContextProvider>
             <SidebarProvider>
-              <MediaPlayerProvider> {/* Wrap with MediaPlayerProvider */}
-                {/* WidgetProvider will be rendered inside AppWrapper, receiving mainContentArea from AppWrapper */}
+              <MediaPlayerProvider>
                 <AppWrapper>
                   {children}
                 </AppWrapper>
