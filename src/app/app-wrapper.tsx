@@ -10,7 +10,7 @@ import { Header } from "@/components/header";
 import { useSidebar } from "@/components/sidebar/sidebar-context";
 import { Sidebar } from "@/components/sidebar/sidebar"; // Import the refactored Sidebar
 import { ChatPanel } from "@/components/chat-panel";
-import { WidgetProvider } from "@/components/widget/widget-context";
+import { WidgetProvider, useWidget } from "@/components/widget/widget-context"; // Import useWidget
 import { WidgetContainer } from "@/components/widget/widget-container";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { MediaPlayerBar } from "@/components/media-player-bar";
@@ -111,9 +111,12 @@ export function AppWrapper({ children }: AppWrapperProps) {
     setUnreadChatCount(0);
   };
 
+  // Get toggleWidget from useWidget hook
+  const { toggleWidget } = useWidget();
+
   return (
     <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
-      <SidebarProvider> {/* Moved SidebarProvider inside WidgetProvider */}
+      <SidebarProvider toggleWidget={toggleWidget}> {/* Pass toggleWidget as a prop */}
         <div className="flex flex-col flex-1 min-h-screen">
           <Header
             onOpenUpgradeModal={handleOpenUpgradeModal}
