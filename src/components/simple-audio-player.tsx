@@ -121,7 +121,7 @@ const SimpleAudioPlayer = () => {
     if (playerType === 'audio') {
       htmlAudioToggleMute();
     } else if (playerType === 'youtube') {
-      youtubeToggleMute(); // Use the new direct toggleMute from the hook
+      youtubeToggleMute(); // Directly call the hook's toggleMute
     }
   };
 
@@ -164,89 +164,82 @@ const SimpleAudioPlayer = () => {
   const PlayerIcon = playerType === 'youtube' ? Youtube : playerType === 'spotify' ? ListMusic : Music;
 
   const playerContainerClasses = cn(
-    "fixed z-[1000] transition-all duration-300 ease-in-out",
+    "fixed z-[1000] p-1 rounded-lg shadow-sm flex flex-col transition-all duration-300 ease-in-out",
+    "bg-card backdrop-blur-xl border-white/20",
     {
       'right-4 top-1/2 -translate-y-1/2 w-48 h-16': displayMode === 'minimized',
       'top-20 right-4 w-80 h-auto': displayMode === 'normal',
-      'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-4xl w-full h-auto': displayMode === 'maximized',
+      // Adjusted maximized classes for better sizing
+      'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] h-[90vh] max-w-screen-lg max-h-screen-lg': displayMode === 'maximized',
     }
   );
 
   return (
-    <>
-      {/* Player Content (normal/maximized) */}
-      {displayMode !== 'minimized' && (
-        <div className={playerContainerClasses}>
-          <div className="bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex flex-col w-full h-full">
-            <PlayerDisplay
-              playerType={playerType}
-              inputUrl={inputUrl}
-              iframeId={iframeId}
-              audioRef={audioRef}
-              // Pass HTML audio event handlers
-              onLoadedMetadata={htmlAudioOnLoadedMetadata}
-              onTimeUpdate={htmlAudioOnTimeUpdate}
-              onEnded={htmlAudioOnEnded}
-            />
+    <div className={playerContainerClasses} onClick={displayMode === 'minimized' ? () => setDisplayMode('normal') : undefined}>
+      {/* PlayerDisplay is now always rendered, its visibility controlled by parent div */}
+      <div className={cn(
+        "flex-grow flex flex-col",
+        displayMode === 'minimized' ? 'hidden' : 'block' // Hide content when minimized
+      )}>
+        <PlayerDisplay
+          playerType={playerType}
+          inputUrl={inputUrl}
+          iframeId={iframeId}
+          audioRef={audioRef}
+          onLoadedMetadata={htmlAudioOnLoadedMetadata}
+          onTimeUpdate={htmlAudioOnTimeUpdate}
+          onEnded={htmlAudioOnEnded}
+        />
 
-            {/* Main Player Row: Album Art, Track Info, Controls */}
-            <div className="flex items-center justify-between space-x-1.5 mb-1">
-              {/* Album Art Placeholder */}
-              <div className="flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs w-12 h-12">
-                <PlayerIcon size={24} />
-              </div>
-
-              {/* Track Info and URL Input Toggle */}
-              <div className="flex-grow min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate leading-tight">{currentTitle}</p>
-                <p className="text-xs text-muted-foreground truncate">{currentArtist}</p>
-                <MediaInput
-                  inputUrl={inputUrl}
-                  setInputUrl={setInputUrl}
-                  showUrlInput={showUrlInput}
-                  setShowUrlInput={setShowUrlInput}
-                  onLoadMedia={loadNewMedia}
-                />
-              </div>
-
-              <PlayerControls
-                playerType={playerType}
-                playerIsReady={playerIsReady}
-                currentIsPlaying={currentIsPlaying}
-                togglePlayPause={togglePlayPause}
-                skipBackward={skipBackward}
-                skipForward={skipForward}
-                currentVolume={currentVolume}
-                currentIsMuted={currentIsMuted}
-                toggleMute={toggleMute}
-                handleVolumeChange={handleVolumeChange}
-              />
-            </div>
-
-            <ProgressBar
-              playerType={playerType}
-              playerIsReady={playerIsReady}
-              currentPlaybackTime={currentPlaybackTime}
-              totalDuration={totalDuration}
-              handleProgressBarChange={handleProgressBarChange}
-              formatTime={formatTime}
-            />
-
-            <PlayerModeButtons displayMode={displayMode} setDisplayMode={setDisplayMode} />
+        {/* Main Player Row: Album Art, Track Info, Controls */}
+        <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0">
+          {/* Album Art Placeholder */}
+          <div className="flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs w-12 h-12">
+            <PlayerIcon size={24} />
           </div>
-        </div>
-      )}
 
-      {/* Minimized Player Content (only visible when displayMode is 'minimized') */}
+          {/* Track Info and URL Input Toggle */}
+          <div className="flex-grow min-w-0">
+            <p className="text-sm font-semibold text-foreground truncate leading-tight">{currentTitle}</p>
+            <p className="text-xs text-muted-foreground truncate">{currentArtist}</p>
+            <MediaInput
+              inputUrl={inputUrl}
+              setInputUrl={setInputUrl}
+              showUrlInput={showUrlInput}
+              setShowUrlInput={setShowUrlInput}
+              onLoadMedia={loadNewMedia}
+            />
+          </div>
+
+          <PlayerControls
+            playerType={playerType}
+            playerIsReady={playerIsReady}
+            currentIsPlaying={currentIsPlaying}
+            togglePlayPause={togglePlayPause}
+            skipBackward={skipBackward}
+            skipForward={skipForward}
+            currentVolume={currentVolume}
+            currentIsMuted={currentIsMuted}
+            toggleMute={toggleMute}
+            handleVolumeChange={handleVolumeChange}
+          />
+        </div>
+
+        <ProgressBar
+          playerType={playerType}
+          playerIsReady={playerIsReady}
+          currentPlaybackTime={currentPlaybackTime}
+          totalDuration={totalDuration}
+          handleProgressBarChange={handleProgressBarChange}
+          formatTime={formatTime}
+        />
+
+        <PlayerModeButtons displayMode={displayMode} setDisplayMode={setDisplayMode} />
+      </div>
+
+      {/* Minimized view controls (only visible when displayMode is 'minimized') */}
       {displayMode === 'minimized' && (
-        <div
-          className={cn(
-            "fixed z-[1000] p-1 rounded-lg shadow-sm flex items-center justify-between",
-            "bg-card backdrop-blur-xl border-white/20",
-            "right-4 top-1/2 -translate-y-1/2 w-48 h-16"
-          )}
-          title="Expand Player"
-        >
+        <div className="flex items-center justify-between w-full h-full">
           <PlayerControls
             playerType={playerType}
             playerIsReady={playerIsReady}
@@ -269,7 +262,7 @@ const SimpleAudioPlayer = () => {
           </button>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
