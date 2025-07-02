@@ -54,6 +54,7 @@ export function Sidebar() {
       setIsSidebarOpen(true); // Force open if preference is true
       document.removeEventListener('mousemove', handleMouseMove); // Remove hover listener
     } else {
+      setIsSidebarOpen(false); // Explicitly close the sidebar when "always open" is turned off
       document.addEventListener('mousemove', handleMouseMove); // Add hover listener
     }
 
