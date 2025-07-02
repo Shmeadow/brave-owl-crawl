@@ -15,6 +15,16 @@ import { PlayerModeButtons } from './audio-player/player-mode-buttons';
 
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 
+// Constants for layout dimensions (should match AppWrapper and PomodoroWidget)
+const HEADER_HEIGHT = 64; // px
+const POMODORO_WIDGET_HEIGHT_EST = 200; // px, estimated height when expanded
+const POMODORO_WIDGET_BOTTOM_OFFSET = 20; // px, from PomodoroWidget's fixed bottom-20
+const PLAYER_POMODORO_BUFFER = 20; // px
+
+const MAXIMIZED_PLAYER_BOTTOM_OFFSET = POMODORO_WIDGET_BOTTOM_OFFSET + POMODORO_WIDGET_HEIGHT_EST + PLAYER_POMODORO_BUFFER;
+const MAXIMIZED_PLAYER_TOP_OFFSET = HEADER_HEIGHT;
+
+
 const SimpleAudioPlayer = () => {
   const [stagedInputUrl, setStagedInputUrl] = useState('');
   const [committedMediaUrl, setCommittedMediaUrl] = useState('');
@@ -168,7 +178,7 @@ const SimpleAudioPlayer = () => {
     <div className={cn(
       "fixed z-[1000] transition-all duration-300 ease-in-out",
       displayMode === 'normal' && 'top-20 right-4 w-80 h-auto',
-      displayMode === 'maximized' && 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-4xl w-full h-auto',
+      displayMode === 'maximized' && `left-1/2 -translate-x-1/2 w-full max-w-4xl top-[${MAXIMIZED_PLAYER_TOP_OFFSET}px] bottom-[${MAXIMIZED_PLAYER_BOTTOM_OFFSET}px]`,
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-16',
     )}>
       {/* PlayerDisplay is always mounted, but its visual container might be hidden */}
@@ -219,8 +229,8 @@ const SimpleAudioPlayer = () => {
             currentIsMuted={currentIsMuted}
             toggleMute={toggleMute}
             handleVolumeChange={handleVolumeChange}
-            canPlayPause={canPlayPause} // Pass new prop
-            canSeek={canSeek}           // Pass new prop
+            canPlayPause={canPlayPause}
+            canSeek={canSeek}
           />
         </div>
 
@@ -256,8 +266,8 @@ const SimpleAudioPlayer = () => {
             currentIsMuted={currentIsMuted}
             toggleMute={toggleMute}
             handleVolumeChange={handleVolumeChange}
-            canPlayPause={canPlayPause} // Pass new prop
-            canSeek={canSeek}           // Pass new prop
+            canPlayPause={canPlayPause}
+            canSeek={canSeek}
           />
 
           <button
