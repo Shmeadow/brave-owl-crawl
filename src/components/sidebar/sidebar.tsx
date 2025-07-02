@@ -4,12 +4,12 @@ import React, { useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useDroppable } from "@dnd-kit/core";
 import { Widget } from "@/components/widget/widget";
-import { useWidgets } from "@/hooks/use-widgets";
+import { useWidget } from "@/components/widget/widget-context"; // Corrected import
 import { useCurrentRoom } from "@/hooks/use-current-room";
 
 export function Sidebar() {
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const { widgets, updateWidgetPosition, updateWidgetSize, bringWidgetToFront, minimizeWidget, maximizeWidget, pinWidget, closeWidget } = useWidgets();
+  const { activeWidgets: widgets, updateWidgetPosition, updateWidgetSize, bringWidgetToFront, minimizeWidget, maximizeWidget, togglePinned: pinWidget, closeWidget } = useWidget(); // Corrected hook usage
   const { currentRoom } = useCurrentRoom();
 
   const { setNodeRef } = useDroppable({
