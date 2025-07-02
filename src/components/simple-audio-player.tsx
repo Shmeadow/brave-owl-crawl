@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Music, ListMusic, Youtube, VolumeX, Volume2, ChevronLeft } from 'lucide-react'; // Keep only the icons used directly here
+import { Music, ListMusic, Youtube, VolumeX, Volume2, ChevronLeft } from 'lucide-react';
 import { useYouTubePlayer } from '@/hooks/use-youtube-player';
 import { useHtmlAudioPlayer } from '@/hooks/use-html-audio-player';
-import { cn, getYouTubeEmbedUrl } from '@/lib/utils'; // Import getYouTubeEmbedUrl
+import { cn, getYouTubeEmbedUrl } from '@/lib/utils';
 
 // Import new modular components
 import { PlayerDisplay } from './audio-player/player-display';
@@ -16,8 +16,8 @@ import { PlayerModeButtons } from './audio-player/player-mode-buttons';
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 
 const SimpleAudioPlayer = () => {
-  const [stagedInputUrl, setStagedInputUrl] = useState(''); // New: URL as typed by user
-  const [committedMediaUrl, setCommittedMediaUrl] = useState(''); // New: URL actually used by player
+  const [stagedInputUrl, setStagedInputUrl] = useState('');
+  const [committedMediaUrl, setCommittedMediaUrl] = useState('');
   const [playerType, setPlayerType] = useState<'audio' | 'youtube' | 'spotify' | null>(null);
   const [currentTitle, setCurrentTitle] = useState('No Media Loaded');
   const [currentArtist, setCurrentArtist] = useState('');
@@ -30,9 +30,8 @@ const SimpleAudioPlayer = () => {
     return 'normal';
   });
 
-  const youtubeIframeRef = useRef<HTMLIFrameElement>(null); // New ref for YouTube iframe
+  const youtubeIframeRef = useRef<HTMLIFrameElement>(null);
 
-  // Use new HTML Audio Player hook
   const {
     audioRef,
     audioIsPlaying,
@@ -49,10 +48,9 @@ const SimpleAudioPlayer = () => {
     onLoadedMetadata: htmlAudioOnLoadedMetadata,
     onTimeUpdate: htmlAudioOnTimeUpdate,
     onEnded: htmlAudioOnEnded,
-  } = useHtmlAudioPlayer(playerType === 'audio' ? committedMediaUrl : null); // Use committedMediaUrl
+  } = useHtmlAudioPlayer(playerType === 'audio' ? committedMediaUrl : null);
 
-  // Use YouTube Player hook - pass the converted embed URL and the iframe ref
-  const youtubeEmbedUrl = playerType === 'youtube' ? getYouTubeEmbedUrl(committedMediaUrl) : null; // Use committedMediaUrl
+  const youtubeEmbedUrl = playerType === 'youtube' ? getYouTubeEmbedUrl(committedMediaUrl) : null;
   const {
     isPlaying: youtubeIsPlaying,
     volume: youtubeVolume,
@@ -64,16 +62,14 @@ const SimpleAudioPlayer = () => {
     playerReady: youtubePlayerReady,
     youtubeCurrentTime,
     youtubeDuration,
-  } = useYouTubePlayer(youtubeEmbedUrl, youtubeIframeRef); // Pass youtubeIframeRef
+  } = useYouTubePlayer(youtubeEmbedUrl, youtubeIframeRef);
 
-  // Effect to save display mode to local storage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY, displayMode);
     }
   }, [displayMode]);
 
-  // Determine player type and set initial title/artist when committedMediaUrl changes
   useEffect(() => {
     if (committedMediaUrl.includes('youtube.com') || committedMediaUrl.includes('youtu.be')) {
       setPlayerType('youtube');
@@ -92,9 +88,8 @@ const SimpleAudioPlayer = () => {
       setCurrentTitle('No Media Loaded');
       setCurrentArtist('');
     }
-  }, [committedMediaUrl]); // Depend on committedMediaUrl
+  }, [committedMediaUrl]);
 
-  // Common functions for all players
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
@@ -107,7 +102,6 @@ const SimpleAudioPlayer = () => {
     } else if (playerType === 'youtube') {
       youtubeTogglePlayPause();
     }
-    // Spotify embed has its own controls, no programmatic toggle here
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,7 +109,7 @@ const SimpleAudioPlayer = () => {
     if (playerType === 'audio') {
       htmlAudioSetVolume(newVolume);
     } else if (playerType === 'youtube') {
-      youtubeSetVolume(newVolume * 100); // YouTube API uses 0-100
+      youtubeSetVolume(newVolume * 100);
     }
   };
 
@@ -153,7 +147,7 @@ const SimpleAudioPlayer = () => {
   };
 
   const loadNewMedia = () => {
-    setCommittedMediaUrl(stagedInputUrl); // Commit the staged URL
+    setCommittedMediaUrl(stagedInputUrl);
     setShowUrlInput(false);
   };
 
@@ -162,93 +156,89 @@ const SimpleAudioPlayer = () => {
   const currentVolume = playerType === 'youtube' ? youtubeVolume / 100 : audioVolume;
   const currentIsPlaying = playerType === 'youtube' ? youtubeIsPlaying : audioIsPlaying;
   const currentIsMuted = playerType === 'youtube' ? youtubeIsMuted : audioIsMuted;
-  const playerIsReady = playerType === 'youtube' ? youtubePlayerReady : true; // HTML audio is always ready, Spotify embed is also "ready" once loaded
+  const playerIsReady = playerType === 'youtube' ? youtubePlayerReady : true;
 
   const PlayerIcon = playerType === 'youtube' ? Youtube : playerType === 'spotify' ? ListMusic : Music;
 
-  const playerContainerClasses = cn(
-    "fixed z-[1000] transition-all duration-300 ease-in-out",
-    {
-      'right-4 top-1/2 -translate-y-1/2 w-48 h-16': displayMode === 'minimized',
-      'top-20 right-4 w-80 h-auto': displayMode === 'normal',
-      'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-4xl w-full h-auto': displayMode === 'maximized',
-    }
-  );
-
   return (
-    <>
-      {/* Player Content (normal/maximized) */}
-      {displayMode !== 'minimized' && (
-        <div className={playerContainerClasses}>
-          <div className="bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex flex-col w-full h-full">
-            <PlayerDisplay
-              playerType={playerType}
-              inputUrl={committedMediaUrl} // Pass committedMediaUrl
-              audioRef={audioRef}
-              youtubeIframeRef={youtubeIframeRef} // Pass the ref here
-              onLoadedMetadata={htmlAudioOnLoadedMetadata}
-              onTimeUpdate={htmlAudioOnTimeUpdate}
-              onEnded={htmlAudioOnEnded}
-            />
+    <div className={cn(
+      "fixed z-[1000] transition-all duration-300 ease-in-out",
+      displayMode === 'normal' && 'top-20 right-4 w-80 h-auto',
+      displayMode === 'maximized' && 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-4xl w-full h-auto',
+      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-16',
+    )}>
+      {/* PlayerDisplay is always mounted, but its visual container might be hidden */}
+      <PlayerDisplay
+        playerType={playerType}
+        inputUrl={committedMediaUrl}
+        audioRef={audioRef}
+        youtubeIframeRef={youtubeIframeRef}
+        onLoadedMetadata={htmlAudioOnLoadedMetadata}
+        onTimeUpdate={htmlAudioOnTimeUpdate}
+        onEnded={htmlAudioOnEnded}
+        className={displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : ''}
+      />
 
-            {/* Main Player Row: Album Art, Track Info, Controls */}
-            <div className="flex items-center justify-between space-x-1.5 mb-1">
-              {/* Album Art Placeholder */}
-              <div className="flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs w-12 h-12">
-                <PlayerIcon size={24} />
-              </div>
-
-              {/* Track Info and URL Input Toggle */}
-              <div className="flex-grow min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate leading-tight">{currentTitle}</p>
-                <p className="text-xs text-muted-foreground truncate">{currentArtist}</p>
-                <MediaInput
-                  inputUrl={stagedInputUrl} // Use stagedInputUrl for the input field
-                  setInputUrl={setStagedInputUrl} // Update stagedInputUrl
-                  showUrlInput={showUrlInput}
-                  setShowUrlInput={setShowUrlInput}
-                  onLoadMedia={loadNewMedia}
-                />
-              </div>
-
-              <PlayerControls
-                playerType={playerType}
-                playerIsReady={playerIsReady}
-                currentIsPlaying={currentIsPlaying}
-                togglePlayPause={togglePlayPause}
-                skipBackward={skipBackward}
-                skipForward={skipForward}
-                currentVolume={currentVolume}
-                currentIsMuted={currentIsMuted}
-                toggleMute={toggleMute}
-                handleVolumeChange={handleVolumeChange}
-                totalDuration={totalDuration}
-              />
-            </div>
-
-            <ProgressBar
-              playerType={playerType}
-              playerIsReady={playerIsReady}
-              currentPlaybackTime={currentPlaybackTime}
-              totalDuration={totalDuration}
-              handleProgressBarChange={handleProgressBarChange}
-              formatTime={formatTime}
-            />
-
-            <PlayerModeButtons displayMode={displayMode} setDisplayMode={setDisplayMode} />
+      {/* Normal/Maximized Player UI */}
+      <div className={cn(
+        "bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex flex-col w-full h-full",
+        displayMode === 'minimized' && 'hidden'
+      )}>
+        {/* Main Player Row: Album Art, Track Info, Controls */}
+        <div className="flex items-center justify-between space-x-1.5 mb-1">
+          {/* Album Art Placeholder */}
+          <div className="flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs w-12 h-12">
+            <PlayerIcon size={24} />
           </div>
+
+          {/* Track Info and URL Input Toggle */}
+          <div className="flex-grow min-w-0">
+            <p className="text-sm font-semibold text-foreground truncate leading-tight">{currentTitle}</p>
+            <p className="text-xs text-muted-foreground truncate">{currentArtist}</p>
+            <MediaInput
+              inputUrl={stagedInputUrl}
+              setInputUrl={setStagedInputUrl}
+              showUrlInput={showUrlInput}
+              setShowUrlInput={setShowUrlInput}
+              onLoadMedia={loadNewMedia}
+            />
+          </div>
+
+          <PlayerControls
+            playerType={playerType}
+            playerIsReady={playerIsReady}
+            currentIsPlaying={currentIsPlaying}
+            togglePlayPause={togglePlayPause}
+            skipBackward={skipBackward}
+            skipForward={skipForward}
+            currentVolume={currentVolume}
+            currentIsMuted={currentIsMuted}
+            toggleMute={toggleMute}
+            handleVolumeChange={handleVolumeChange}
+            totalDuration={totalDuration}
+          />
         </div>
-      )}
+
+        <ProgressBar
+          playerType={playerType}
+          playerIsReady={playerIsReady}
+          currentPlaybackTime={currentPlaybackTime}
+          totalDuration={totalDuration}
+          handleProgressBarChange={handleProgressBarChange}
+          formatTime={formatTime}
+        />
+
+        <PlayerModeButtons displayMode={displayMode} setDisplayMode={setDisplayMode} />
+      </div>
 
       {/* Minimized Player Content (only visible when displayMode is 'minimized') */}
       {displayMode === 'minimized' && (
         <div
           className={cn(
-            "fixed z-[1000] p-1 rounded-lg shadow-sm flex items-center justify-between",
-            "bg-card backdrop-blur-xl border-white/20",
-            "right-4 top-1/2 -translate-y-1/2 w-48 h-16"
+            "bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex items-center justify-between w-full h-full"
           )}
           title="Expand Player"
+          onClick={(e) => { e.stopPropagation(); setDisplayMode('normal'); }}
         >
           <PlayerControls
             playerType={playerType}
@@ -273,7 +263,7 @@ const SimpleAudioPlayer = () => {
           </button>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

@@ -2,26 +2,28 @@
 
 import React from 'react';
 import { getYouTubeEmbedUrl, getSpotifyEmbedUrl } from '@/lib/utils';
+import { cn } from '@/lib/utils'; // Import cn for conditional classNames
 
 interface PlayerDisplayProps {
   playerType: 'audio' | 'youtube' | 'spotify' | null;
   inputUrl: string;
   audioRef: React.RefObject<HTMLAudioElement>;
-  youtubeIframeRef: React.RefObject<HTMLIFrameElement>; // New prop for YouTube iframe ref
-  // New props for HTML audio event handlers
+  youtubeIframeRef: React.RefObject<HTMLIFrameElement>;
   onLoadedMetadata: () => void;
   onTimeUpdate: () => void;
   onEnded: () => void;
+  className?: string; // New prop for conditional styling
 }
 
 export function PlayerDisplay({
   playerType,
   inputUrl,
   audioRef,
-  youtubeIframeRef, // Destructure new prop
+  youtubeIframeRef,
   onLoadedMetadata,
   onTimeUpdate,
   onEnded,
+  className, // Destructure new prop
 }: PlayerDisplayProps) {
   const youtubeEmbedUrl = playerType === 'youtube' ? getYouTubeEmbedUrl(inputUrl) : null;
   const spotifyEmbedUrl = playerType === 'spotify' ? getSpotifyEmbedUrl(inputUrl) : null;
@@ -36,14 +38,15 @@ export function PlayerDisplay({
           onTimeUpdate={onTimeUpdate}
           onEnded={onEnded}
           preload="metadata"
+          className={className} // Apply className here
         >
           Your browser does not support the audio element.
         </audio>
       )}
       {playerType === 'youtube' && youtubeEmbedUrl && (
-        <div className="relative w-full aspect-video mb-1">
+        <div className={cn("relative w-full aspect-video mb-1", className)}> {/* Apply className here */}
           <iframe
-            ref={youtubeIframeRef} // Pass the ref here
+            ref={youtubeIframeRef}
             className="absolute top-0 left-0 w-full h-full rounded-lg"
             src={youtubeEmbedUrl}
             frameBorder="0"
@@ -54,7 +57,7 @@ export function PlayerDisplay({
         </div>
       )}
       {playerType === 'spotify' && spotifyEmbedUrl && (
-        <div className="relative w-full aspect-square mb-1">
+        <div className={cn("relative w-full aspect-square mb-1", className)}> {/* Apply className here */}
           <iframe
             src={spotifyEmbedUrl}
             width="100%"
