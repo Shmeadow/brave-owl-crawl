@@ -3,11 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Volume2, VolumeX, Settings, Music, Link, Youtube } from "lucide-react";
+import { Settings, Link, Youtube } from "lucide-react";
 import { SpotifyEmbedModal } from "@/components/spotify-embed-modal";
 import { YoutubeEmbedModal } from "@/components/youtube-embed-modal";
-import { Slider } from "@/components/ui/slider";
-import { useYouTubePlayer } from "@/hooks/use-youtube-player"; // Import the new hook
 
 const LOCAL_STORAGE_SPOTIFY_EMBED_KEY = 'spotify_embed_url';
 const LOCAL_STORAGE_YOUTUBE_EMBED_KEY = 'youtube_embed_url';
@@ -16,17 +14,7 @@ export function SoundsWidget() {
   const [isSpotifyModalOpen, setIsSpotifyModalOpen] = useState(false);
   const [isYoutubeModalOpen, setIsYoutubeModalOpen] = useState(false);
   const [spotifyEmbedUrl, setSpotifyEmbedUrl] = useState<string | null>(null);
-  const [youtubeEmbedUrl, setYoutubeEmbedUrl] = useState<string | null>(null);
-
-  // Use the new YouTube player hook
-  const {
-    isPlaying,
-    volume,
-    togglePlayPause,
-    setVolume,
-    playerReady,
-    iframeId,
-  } = useYouTubePlayer(youtubeEmbedUrl);
+  const [youtubeEmbedUrl, setYoutubeEmbedUrl] = useState<string | null>(null); // Keep this state to show current URL
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -42,7 +30,7 @@ export function SoundsWidget() {
 
   const handleYoutubeModalClose = () => {
     setIsYoutubeModalOpen(false);
-    setYoutubeEmbedUrl(localStorage.getItem(LOCAL_STORAGE_YOUTUBE_EMBED_KEY));
+    setYoutubeEmbedUrl(localStorage.getItem(LOCAL_STORAGE_YOUTUBE_EMBED_KEY)); // Update state after modal closes
   };
 
   return (
@@ -66,42 +54,9 @@ export function SoundsWidget() {
             </Button>
 
             {youtubeEmbedUrl ? (
-              <div className="mt-4 flex flex-col gap-4">
-                <h3 className="text-md font-semibold mb-2">Currently Embedded:</h3>
-                <div className="relative w-full rounded-md overflow-hidden" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */ }}>
-                  <iframe
-                    id={iframeId} // Assign the ID from the hook
-                    src={youtubeEmbedUrl}
-                    width="100%"
-                    height="100%"
-                    allow="autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                    loading="lazy"
-                    className="absolute top-0 left-0 w-full h-full"
-                    title="YouTube Background Player"
-                  ></iframe>
-                </div>
-                <div className="flex items-center justify-center gap-4 mt-2">
-                  <Button
-                    onClick={togglePlayPause}
-                    disabled={!playerReady}
-                    size="icon"
-                  >
-                    {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-                  </Button>
-                  <div className="flex items-center gap-2 w-full max-w-[200px]">
-                    {volume === 0 ? <VolumeX className="h-5 w-5 text-muted-foreground" /> : <Volume2 className="h-5 w-5 text-muted-foreground" />}
-                    <Slider
-                      value={[volume]}
-                      max={100}
-                      step={1}
-                      onValueChange={([val]) => setVolume(val)}
-                      disabled={!playerReady}
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-              </div>
+              <p className="text-sm text-muted-foreground text-center mt-4">
+                A YouTube video is currently embedded and playing in the background bar.
+              </p>
             ) : (
               <p className="text-sm text-muted-foreground text-center mt-4">
                 No YouTube video embedded. Click "Manage YouTube Embed" to add one.

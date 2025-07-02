@@ -15,8 +15,10 @@ import { ChatPanel } from "@/components/chat-panel";
 import { WidgetProvider } from "@/components/widget/widget-context"; // Still imported here
 import { WidgetContainer } from "@/components/widget/widget-container";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
+import { YouTubePlayerBar } from "@/components/youtube-player-bar"; // Import the new component
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
+const LOCAL_STORAGE_YOUTUBE_EMBED_KEY = 'youtube_embed_url'; // Import key for YouTube URL
 const CHAT_PANEL_WIDTH_OPEN = 320; // px
 const CHAT_PANEL_WIDTH_CLOSED = 56; // px (w-14)
 const HEADER_HEIGHT = 64; // px (h-14 + py-2*2 = 56 + 8 = 64)
@@ -53,6 +55,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [dailyProgress, setDailyProgress] = useState(0);
+  const [youtubeEmbedUrl, setYoutubeEmbedUrl] = useState<string | null>(null); // State for YouTube URL
 
   // State to hold the dimensions of the main content area
   const [mainContentArea, setMainContentArea] = useState({
@@ -67,6 +70,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
     if (typeof window !== 'undefined') {
       const savedMinimized = localStorage.getItem(LOCAL_STORAGE_POMODORO_MINIMIZED_KEY);
       setIsPomodoroWidgetMinimized(savedMinimized === 'false' ? false : true);
+      setYoutubeEmbedUrl(localStorage.getItem(LOCAL_STORAGE_YOUTUBE_EMBED_KEY)); // Load YouTube URL
     }
   }, []);
 
@@ -156,6 +160,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
             chatPanelWidth={chatPanelCurrentWidth}
           />
         )}
+        {mounted && <YouTubePlayerBar youtubeEmbedUrl={youtubeEmbedUrl} />} {/* Render the new YouTube player bar */}
         {/* SpotifyEmbedModal is now managed by SoundsWidget */}
         <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModal(false)} />
         <Toaster />
