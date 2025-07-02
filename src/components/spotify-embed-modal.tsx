@@ -26,10 +26,27 @@ import {
 
 const LOCAL_STORAGE_SPOTIFY_EMBED_KEY = 'spotify_embed_url';
 
+// Helper function to convert a regular Spotify URL to an embed URL
+const convertToEmbedUrl = (url: string): string | null => {
+  const regex = /open\.spotify\.com\/(track|playlist|album)\/([a-zA-Z0-9]+)/;
+  const match = url.match(regex);
+  if (match && match[1] && match[2]) {
+    return `https://open.spotify.com/embed/${match[1]}/${match[2]}`;
+  }
+  // If it's already an embed URL, return it as is
+  if (url.includes("spotify.com/embed/")) {
+    return url;
+  }
+  return null; // Not a valid Spotify URL or embed URL
+};
+
 const spotifyUrlSchema = z.object({
-  url: z.string().url({ message: "Invalid URL format." }).refine(
-    (url) => url.includes("spotify.com/embed/"),
-    { message: "URL must be a Spotify embed URL (e.g., from Spotify's 'Embed track' option)." }
+  url: z.string().min(1, { message: "URL cannot be empty." }).refine(
+    (url) => {
+      // Allow both regular Spotify URLs and embed URLs
+      return url.includes("open.spotify.com/") && (url.includes("/track/") || url.includes("/playlist/") || url.includes("/album/"));
+    },
+    { message: "Please enter a valid Spotify track, playlist, or album URL." }
   ),
 });
 
@@ -56,14 +73,19 @@ export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
         form.setValue("url", savedUrl);
       }
     }
-  }, []);
+  }, [isOpen]);
 
   const onSubmit = (values: z.infer<typeof spotifyUrlSchema>) => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem(LOCAL_STORAGE_SPOTIFY_EMBED_KEY, values.url);
-      setEmbedUrl(values.url);
-      toast.success("Spotify embed URL saved!");
-      onClose();
+      const convertedUrl = convertToEmbedUrl(values.url);
+      if (convertedUrl) {
+        localStorage.setItem(LOCAL_STORAGE_SPOTIFY_EMBED_KEY, convertedUrl);
+        setEmbedUrl(convertedUrl);
+        toast.success("Spotify embed URL saved!");
+        onClose();
+      } else {
+        toast.error("Could not convert URL to Spotify embed format. Please check the URL.");
+      }
     }
   };
 
@@ -78,11 +100,11 @@ export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] z-[1001] bg-card/40 backdrop-blur-xl border-white/20"> {/* Applied glass effect here */}
+      <DialogContent className="sm:max-w-[425px] z-[1001] bg-card/40 backdrop-blur-xl border-white/20">
         <DialogHeader>
           <DialogTitle>Embed Spotify Player</DialogTitle>
           <DialogDescription>
-            Paste a Spotify embed URL (e.g., from Spotify's "Embed track" option) to display it in your app.
+            Paste a Spotify track, playlist, or album URL. It will be converted to an embeddable player.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -92,9 +114,9 @@ export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
               name="url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Spotify Embed URL</FormLabel>
+                  <FormLabel>Spotify URL</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://open.spotify.com/embed/track/..." {...field} />
+                    <Input placeholder="e.g., https://open.spotify.com/track/..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -113,7 +135,7 @@ export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
 
         {embedUrl && (
           <div className="mt-4">
-            <h3 className="text-md font-semibold mb-2">Current Embed:</h3>
+            <h3 className="text-md font-semibold mb-2">Currently Embedded:</h3>
             <div className="relative w-full" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */ }}>
               <iframe
                 src={embedUrl}

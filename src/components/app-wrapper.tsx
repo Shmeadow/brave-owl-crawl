@@ -12,7 +12,6 @@ import { SpotifyEmbedModal } from "@/components/spotify-embed-modal";
 import { useSidebar } from "@/components/sidebar/sidebar-context"; // Now valid
 import { Sidebar } from "@/components/sidebar/sidebar";
 import { ChatPanel } from "@/components/chat-panel";
-import { LofiAudioPlayer } from "@/components/lofi-audio-player";
 import { WidgetProvider } from "@/components/widget/widget-context"; // Still imported here
 import { WidgetContainer } from "@/components/widget/widget-container";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
@@ -129,7 +128,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
   };
 
   const handleClearUnreadMessages = () => {
-    setUnreadChatCount(0);
+    setUnreadChatMessages(0);
   };
 
   const chatPanelCurrentWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
@@ -161,12 +160,12 @@ export function AppWrapper({ children }: AppWrapperProps) {
         {/* SpotifyEmbedModal is now managed by SoundsWidget */}
         <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModal(false)} />
         <Toaster />
-        <LofiAudioPlayer />
+        {/* LofiAudioPlayer removed as audio element is now in MusicPlayerBar */}
         {/* Fixed Chat Panel */}
         <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
           <ChatPanel
             isOpen={isChatOpen}
-            onToggleOpen={() => setIsChatOpen(prev => !prev)}
+            onToggleOpen={handleToggleOpenAndClearUnread}
             onNewUnreadMessage={handleNewUnreadMessage}
             onClearUnreadMessages={handleClearUnreadMessages}
             unreadCount={unreadChatCount}

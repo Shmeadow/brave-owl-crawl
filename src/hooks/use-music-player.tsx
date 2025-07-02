@@ -10,47 +10,92 @@ interface MusicPlayerState {
   currentTrack: {
     currentTime: number;
     duration: number;
+    index: number;
+    total: number;
+    name: string;
   } | null;
   togglePlayPause: () => void;
   setVolume: (newVolume: number) => void;
   toggleMute: () => void;
+  playNextTrack: () => void;
+  playPreviousTrack: () => void;
 }
+
+// Define your Lofi Chill playlist here
+const LOFI_PLAYLIST = [
+  { src: "/lofi-chill-1.mp3", name: "Lofi Chill Track 1" },
+  { src: "/lofi-chill-2.mp3", name: "Lofi Chill Track 2" },
+  { src: "/lofi-chill-3.mp3", name: "Lofi Chill Track 3" },
+  // Add more tracks here if you have them in your public folder
+];
+
+const LOCAL_STORAGE_AUDIO_PLAYING_KEY = 'lofi_audio_playing';
+const LOCAL_STORAGE_AUDIO_TRACK_INDEX_KEY = 'lofi_audio_track_index';
 
 export function useMusicPlayer(): MusicPlayerState {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState(50); // Default volume 50%
   const [isMuted, setIsMuted] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState<{ currentTime: number; duration: number } | null>(null);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [currentTrackInfo, setCurrentTrackInfo] = useState<{ currentTime: number; duration: number; index: number; total: number; name: string } | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   // Initialize audioRef and set up event listeners
   useEffect(() => {
-    const audioEl = document.getElementById("lofi-audio-player") as HTMLAudioElement;
-    if (audioEl) {
-      audioRef.current = audioEl;
+    setMounted(true);
+    if (typeof window !== 'undefined') {
+      const savedPlayingState = localStorage.getItem(LOCAL_STORAGE_AUDIO_PLAYING_KEY);
+      const savedTrackIndex = localStorage.getItem(LOCAL_STORAGE_AUDIO_TRACK_INDEX_KEY);
+      
+      const initialTrackIndex = savedTrackIndex ? parseInt(savedTrackIndex, 10) : 0;
+      setCurrentTrackIndex(initialTrackIndex);
+
+      // Create audio element if it doesn't exist (it's now managed by MusicPlayerBar)
+      if (!audioRef.current) {
+        audioRef.current = document.createElement('audio');
+        audioRef.current.id = "lofi-audio-player";
+        audioRef.current.loop = true;
+        document.body.appendChild(audioRef.current); // Append to body or a specific container
+      }
+
+      const audioEl = audioRef.current;
+      audioEl.src = LOFI_PLAYLIST[initialTrackIndex]?.src || '';
 
       const handlePlay = () => setIsPlaying(true);
       const handlePause = () => setIsPlaying(false);
       const handleVolumeChange = () => {
-        if (audioRef.current) {
-          setVolumeState(audioRef.current.volume * 100);
-          setIsMuted(audioRef.current.muted);
+        if (audioEl) {
+          setVolumeState(audioEl.volume * 100);
+          setIsMuted(audioEl.muted);
         }
       };
       const handleTimeUpdate = () => {
-        if (audioRef.current) {
-          setCurrentTrack({
-            currentTime: audioRef.current.currentTime,
-            duration: audioRef.current.duration,
+        if (audioEl) {
+          setCurrentTrackInfo({
+            currentTime: audioEl.currentTime,
+            duration: audioEl.duration,
+            index: currentTrackIndex,
+            total: LOFI_PLAYLIST.length,
+            name: LOFI_PLAYLIST[currentTrackIndex]?.name || 'Unknown',
           });
         }
       };
       const handleLoadedMetadata = () => {
-        if (audioRef.current) {
-          setCurrentTrack({
-            currentTime: audioRef.current.currentTime,
-            duration: audioRef.current.duration,
+        if (audioEl) {
+          setCurrentTrackInfo({
+            currentTime: audioEl.currentTime,
+            duration: audioEl.duration,
+            index: currentTrackIndex,
+            total: LOFI_PLAYLIST.length,
+            name: LOFI_PLAYLIST[currentTrackIndex]?.name || 'Unknown',
           });
+        }
+      };
+      const handleEnded = () => {
+        // If not looping, go to next track
+        if (!audioEl.loop) {
+          playNextTrack();
         }
       };
 
@@ -59,11 +104,22 @@ export function useMusicPlayer(): MusicPlayerState {
       audioEl.addEventListener("volumechange", handleVolumeChange);
       audioEl.addEventListener("timeupdate", handleTimeUpdate);
       audioEl.addEventListener("loadedmetadata", handleLoadedMetadata);
+      audioEl.addEventListener("ended", handleEnded);
 
       // Set initial volume and mute state from audio element
       setVolumeState(audioEl.volume * 100);
       setIsMuted(audioEl.muted);
       setIsPlaying(!audioEl.paused);
+
+      // Attempt to play if it was playing before, but handle autoplay policy
+      if (savedPlayingState === 'true') {
+        audioEl.play().then(() => {
+          setIsPlaying(true);
+        }).catch(error => {
+          console.warn("Autoplay prevented:", error);
+          setIsPlaying(false);
+        });
+      }
 
       return () => {
         audioEl.removeEventListener("play", handlePlay);
@@ -71,17 +127,27 @@ export function useMusicPlayer(): MusicPlayerState {
         audioEl.removeEventListener("volumechange", handleVolumeChange);
         audioEl.removeEventListener("timeupdate", handleTimeUpdate);
         audioEl.removeEventListener("loadedmetadata", handleLoadedMetadata);
+        audioEl.removeEventListener("ended", handleEnded);
+        // Do not remove audioEl from DOM here, as it's managed by MusicPlayerBar
       };
     }
-  }, []);
+  }, [currentTrackIndex, mounted]); // Re-run effect when track index changes
 
-  // Update audio element volume when state changes
+  // Update audio element volume and mute when state changes
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume / 100;
       audioRef.current.muted = isMuted;
     }
   }, [volume, isMuted]);
+
+  // Persist playing state and track index to local storage
+  useEffect(() => {
+    if (mounted && typeof window !== 'undefined') {
+      localStorage.setItem(LOCAL_STORAGE_AUDIO_PLAYING_KEY, String(isPlaying));
+      localStorage.setItem(LOCAL_STORAGE_AUDIO_TRACK_INDEX_KEY, String(currentTrackIndex));
+    }
+  }, [isPlaying, currentTrackIndex, mounted]);
 
   const togglePlayPause = useCallback(() => {
     if (audioRef.current) {
@@ -121,13 +187,43 @@ export function useMusicPlayer(): MusicPlayerState {
     }
   }, []);
 
+  const playNextTrack = useCallback(() => {
+    if (LOFI_PLAYLIST.length === 0) return;
+    const nextIndex = (currentTrackIndex + 1) % LOFI_PLAYLIST.length;
+    setCurrentTrackIndex(nextIndex);
+    if (audioRef.current) {
+      audioRef.current.src = LOFI_PLAYLIST[nextIndex].src;
+      audioRef.current.load(); // Load the new source
+      if (isPlaying) {
+        audioRef.current.play();
+      }
+    }
+    toast.info(`Playing next track: ${LOFI_PLAYLIST[nextIndex].name}`);
+  }, [currentTrackIndex, isPlaying]);
+
+  const playPreviousTrack = useCallback(() => {
+    if (LOFI_PLAYLIST.length === 0) return;
+    const prevIndex = (currentTrackIndex - 1 + LOFI_PLAYLIST.length) % LOFI_PLAYLIST.length;
+    setCurrentTrackIndex(prevIndex);
+    if (audioRef.current) {
+      audioRef.current.src = LOFI_PLAYLIST[prevIndex].src;
+      audioRef.current.load(); // Load the new source
+      if (isPlaying) {
+        audioRef.current.play();
+      }
+    }
+    toast.info(`Playing previous track: ${LOFI_PLAYLIST[prevIndex].name}`);
+  }, [currentTrackIndex, isPlaying]);
+
   return {
     isPlaying,
     volume,
     isMuted,
-    currentTrack,
+    currentTrack: currentTrackInfo,
     togglePlayPause,
     setVolume,
     toggleMute,
+    playNextTrack,
+    playPreviousTrack,
   };
 }

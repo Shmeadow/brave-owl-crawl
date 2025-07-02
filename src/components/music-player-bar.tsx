@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
-import { Play, Pause, VolumeX, Volume2, Pin, PinOff, Music } from "lucide-react";
+import { Play, Pause, VolumeX, Volume2, Pin, PinOff, Music, SkipForward, SkipBack } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMusicPlayer } from "@/hooks/use-music-player";
 
@@ -20,6 +20,8 @@ export function MusicPlayerBar() {
     togglePlayPause,
     setVolume,
     toggleMute,
+    playNextTrack,
+    playPreviousTrack,
   } = useMusicPlayer();
 
   const [isPinned, setIsPinned] = useState<boolean>(() => {
@@ -93,7 +95,10 @@ export function MusicPlayerBar() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Music className="h-5 w-5 text-primary" />
-                <span className="font-semibold text-sm">Lofi Chill</span>
+                <span className="font-semibold text-sm">
+                  {currentTrack?.name || "Lofi Chill"}
+                  {currentTrack && currentTrack.total > 1 && ` (${currentTrack.index + 1}/${currentTrack.total})`}
+                </span>
               </div>
               <div className="flex gap-1">
                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={togglePin}>
@@ -121,10 +126,18 @@ export function MusicPlayerBar() {
               />
             </div>
 
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>{formatTime(currentTrack?.currentTime || 0)}</span>
+            <div className="flex items-center justify-between gap-2">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={playPreviousTrack}>
+                <SkipBack className="h-4 w-4" />
+                <span className="sr-only">Previous Track</span>
+              </Button>
+              <span className="text-xs text-muted-foreground">{formatTime(currentTrack?.currentTime || 0)}</span>
               <Progress value={progressValue} className="flex-1 h-1.5" />
-              <span>{formatTime(currentTrack?.duration || 0)}</span>
+              <span className="text-xs text-muted-foreground">{formatTime(currentTrack?.duration || 0)}</span>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={playNextTrack}>
+                <SkipForward className="h-4 w-4" />
+                <span className="sr-only">Next Track</span>
+              </Button>
             </div>
           </CardContent>
         ) : (

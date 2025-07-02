@@ -11,11 +11,14 @@ import { Slider } from "@/components/ui/slider";
 const LOCAL_STORAGE_SPOTIFY_EMBED_KEY = 'spotify_embed_url';
 
 export function SoundsWidget() {
+  // Lofi audio controls are now handled by MusicPlayerBar, so we don't need them here.
+  // We still use useMusicPlayer to get the current state for display purposes if needed,
+  // but the direct control buttons are removed from this widget.
   const {
     isPlaying,
     volume,
     isMuted,
-    togglePlayPause,
+    togglePlayPause, // Still available if we wanted to add buttons here, but we won't for simplicity
     setVolume,
     toggleMute,
   } = useMusicPlayer();
@@ -47,29 +50,10 @@ export function SoundsWidget() {
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <span className="font-medium">Background Music</span>
-              <div className="flex gap-2">
-                <Button onClick={togglePlayPause} size="icon">
-                  {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-                  <span className="sr-only">{isPlaying ? "Pause Lofi" : "Play Lofi"}</span>
-                </Button>
-                <Button onClick={toggleMute} size="icon">
-                  {isMuted || volume === 0 ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-                  <span className="sr-only">{isMuted ? "Unmute Lofi" : "Mute Lofi"}</span>
-                </Button>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Volume:</span>
-              <Slider
-                value={[volume]}
-                max={100}
-                step={1}
-                onValueChange={(val) => setVolume(val[0])}
-                className="flex-1"
-              />
-            </div>
+            <p className="text-sm text-muted-foreground">
+              Control the site-wide Lofi Chill background music using the player bar at the bottom right of your screen.
+            </p>
+            {/* Removed direct play/pause/volume controls from here as they are in MusicPlayerBar */}
           </CardContent>
         </Card>
 
@@ -81,7 +65,8 @@ export function SoundsWidget() {
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <p className="text-sm text-muted-foreground">
-              Embed your favorite Spotify playlists or tracks directly into your space.
+              Embed your favorite Spotify playlists, tracks, or albums directly into your space.
+              Paste a standard Spotify URL, and it will be converted for embedding.
             </p>
             <Button onClick={() => setIsSpotifyModalOpen(true)} className="w-full">
               <Settings className="mr-2 h-4 w-4" /> Manage Spotify Embed
