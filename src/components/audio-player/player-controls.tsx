@@ -14,7 +14,8 @@ interface PlayerControlsProps {
   currentIsMuted: boolean;
   toggleMute: () => void;
   handleVolumeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  totalDuration: number; // Add totalDuration to props
+  canPlayPause: boolean; // New prop
+  canSeek: boolean;      // New prop
 }
 
 export function PlayerControls({
@@ -28,14 +29,12 @@ export function PlayerControls({
   currentIsMuted,
   toggleMute,
   handleVolumeChange,
-  totalDuration, // Destructure new prop
+  canPlayPause, // Destructure new prop
+  canSeek,      // Destructure new prop
 }: PlayerControlsProps) {
 
-  // Determine if controls should be disabled based on player type and readiness
-  // Spotify embeds are controlled by their own iframe UI.
-  // HTML audio needs a duration > 0 to be seekable.
-  // YouTube player readiness is handled by useYouTubePlayer.
-  const isDisabled = !playerIsReady || playerType === 'spotify' || (playerType === 'audio' && totalDuration === 0);
+  // Volume control should be disabled if player is not ready or it's a Spotify embed
+  const isVolumeControlDisabled = !playerIsReady || playerType === 'spotify';
 
   return (
     <div className="flex items-center space-x-0.5 flex-shrink-0">
@@ -46,7 +45,7 @@ export function PlayerControls({
             className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
             aria-label="Skip backward 10 seconds"
             title="Skip Backward"
-            disabled={isDisabled} // Use isDisabled
+            disabled={!canSeek} // Use canSeek
           >
             <Rewind size={12} />
           </button>
@@ -55,7 +54,7 @@ export function PlayerControls({
             className="p-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105"
             aria-label={currentIsPlaying ? "Pause" : "Play"}
             title={currentIsPlaying ? "Pause" : "Play"}
-            disabled={isDisabled} // Use isDisabled
+            disabled={!canPlayPause} // Use canPlayPause
           >
             {currentIsPlaying ? <Pause size={14} /> : <Play size={14} />}
           </button>
@@ -64,7 +63,7 @@ export function PlayerControls({
             className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
             aria-label="Skip forward 10 seconds"
             title="Skip Forward"
-            disabled={isDisabled} // Use isDisabled
+            disabled={!canSeek} // Use canSeek
           >
             <FastForward size={12} />
           </button>
@@ -78,7 +77,7 @@ export function PlayerControls({
           className="p-0.5 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300"
           aria-label={currentIsMuted ? "Unmute" : "Mute"}
           title={currentIsMuted ? "Unmute" : "Mute"}
-          disabled={isDisabled} // Use isDisabled
+          disabled={isVolumeControlDisabled} // Use isVolumeControlDisabled
         >
           {currentIsMuted || currentVolume === 0 ? <VolumeX size={10} /> : <Volume2 size={10} />}
         </button>
@@ -90,7 +89,7 @@ export function PlayerControls({
           value={currentVolume}
           onChange={handleVolumeChange}
           className="w-8 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
-          disabled={isDisabled} // Use isDisabled
+          disabled={isVolumeControlDisabled} // Use isVolumeControlDisabled
         />
       </div>
     </div>

@@ -155,8 +155,12 @@ const SimpleAudioPlayer = () => {
   const totalDuration = playerType === 'youtube' ? youtubeDuration : audioDuration;
   const currentVolume = playerType === 'youtube' ? youtubeVolume / 100 : audioVolume;
   const currentIsPlaying = playerType === 'youtube' ? youtubeIsPlaying : audioIsPlaying;
-  const currentIsMuted = playerType === 'youtube' ? youtubeIsMuted : audioIsMuted;
   const playerIsReady = playerType === 'youtube' ? youtubePlayerReady : true;
+  const currentIsMuted = playerType === 'youtube' ? youtubeIsMuted : audioIsMuted;
+
+  // New logic for canPlayPause and canSeek
+  const canPlayPause = playerType !== 'spotify' && playerIsReady;
+  const canSeek = playerType !== 'spotify' && playerIsReady && totalDuration > 0;
 
   const PlayerIcon = playerType === 'youtube' ? Youtube : playerType === 'spotify' ? ListMusic : Music;
 
@@ -215,7 +219,8 @@ const SimpleAudioPlayer = () => {
             currentIsMuted={currentIsMuted}
             toggleMute={toggleMute}
             handleVolumeChange={handleVolumeChange}
-            totalDuration={totalDuration}
+            canPlayPause={canPlayPause} // Pass new prop
+            canSeek={canSeek}           // Pass new prop
           />
         </div>
 
@@ -251,7 +256,8 @@ const SimpleAudioPlayer = () => {
             currentIsMuted={currentIsMuted}
             toggleMute={toggleMute}
             handleVolumeChange={handleVolumeChange}
-            totalDuration={totalDuration}
+            canPlayPause={canPlayPause} // Pass new prop
+            canSeek={canSeek}           // Pass new prop
           />
 
           <button
