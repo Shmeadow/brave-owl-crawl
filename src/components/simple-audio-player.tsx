@@ -213,7 +213,7 @@ const SimpleAudioPlayer = () => {
   const playerContainerClasses = cn(
     "fixed z-[1000] transition-all duration-300 ease-in-out",
     {
-      'left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-96 h-16': displayMode === 'minimized', // Minimized (docked)
+      'right-4 top-1/2 -translate-y-1/2 w-96 h-16': displayMode === 'minimized', // Minimized (docked)
       'top-20 right-4 w-80 h-auto': displayMode === 'normal', // Normal (top-right, fixed width)
       'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-4xl w-full h-auto': displayMode === 'maximized', // Maximized (centered, larger)
     }
@@ -428,7 +428,7 @@ const SimpleAudioPlayer = () => {
           className={cn(
             "fixed z-[1000] p-1 rounded-lg shadow-sm flex items-center justify-between", // Horizontal layout
             "bg-card backdrop-blur-xl border-white/20",
-            "left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-96 h-16" // Centered
+            "right-4 top-1/2 -translate-y-1/2 w-96 h-16" // Docked at middle right
           )}
           title="Expand Player"
         >
