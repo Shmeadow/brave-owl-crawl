@@ -23,7 +23,7 @@ interface HeaderProps {
 }
 
 export function Header({ onOpenUpgradeModal }: HeaderProps) {
-  const { session } = useSupabase(); // Removed profile as it was unused
+  const { } = useSupabase(); // Removed session and profile as they were unused
   const router = useRouter();
   const { currentRoomName } = useCurrentRoom(); // Removed currentRoomId and isCurrentRoomWritable as they were unused
 

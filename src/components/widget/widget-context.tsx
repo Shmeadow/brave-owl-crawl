@@ -163,7 +163,8 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
 
   const addWidget = useCallback((id: string, title: string) => {
     if (!activeWidgets.some(widget => widget.id === id)) {
-      const config = initialWidgetConfigs[id]; // eslint-disable-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const config = initialWidgetConfigs[id]; 
       if (config) {
         const newMaxZIndex = maxZIndex + 1;
         setMaxZIndex(newMaxZIndex);
@@ -302,7 +303,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       });
       return recalculatePinnedWidgets(updatedWidgets);
     });
-  }, [initialWidgetConfigs, recalculatePinnedWidgets, mainContentArea]);
+  }, [initialWidgetConfigs, recalculatePinnedWidgets, mainContentArea]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const maximizeWidget = useCallback((id: string) => {
     setActiveWidgets(prev => {
@@ -345,14 +346,15 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       });
       return recalculatePinnedWidgets(updatedWidgets);
     });
-  }, [initialWidgetConfigs, recalculatePinnedWidgets, mainContentArea]);
+  }, [initialWidgetConfigs, recalculatePinnedWidgets, mainContentArea]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const togglePinned = useCallback((id: string) => {
     setActiveWidgets(prev => {
       const updatedWidgets = prev.map(widget => {
         if (widget.id === id) {
           if (widget.isPinned) {
-            // const config = initialWidgetConfigs[id]; // This variable is not used
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const config = initialWidgetConfigs[id]; 
             return {
               ...widget,
               isPinned: false,
@@ -378,7 +380,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       });
       return recalculatePinnedWidgets(updatedWidgets);
     });
-  }, [initialWidgetConfigs, recalculatePinnedWidgets, mainContentArea]);
+  }, [initialWidgetConfigs, recalculatePinnedWidgets, mainContentArea]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const closeWidget = useCallback((id: string) => {
     removeWidget(id);
