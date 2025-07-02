@@ -20,7 +20,7 @@ interface WidgetProps {
   position: { x: number; y: number };
   size: { width: number; height: number };
   zIndex: number;
-  onPositionChange: (newPosition: { x: number; y: number }) => void;
+  // onPositionChange: (newPosition: { x: number; y: number }) => void; // Removed this prop
   onSizeChange: (newSize: { width: number; height: number }) => void;
   onBringToFront: () => void;
   onMinimize: (id: string) => void;
@@ -41,7 +41,7 @@ export function Widget({
   position,
   size,
   zIndex,
-  onPositionChange, // This will be handled by onDragEnd in parent
+  // onPositionChange, // This will be handled by onDragEnd in parent
   onSizeChange,
   onBringToFront,
   onMinimize,
