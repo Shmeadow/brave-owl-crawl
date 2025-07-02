@@ -75,21 +75,7 @@ export function UserNav() {
           Account
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        {mounted && ( // Only render theme options on client side after mounted
-          <>
-            <DropdownMenuLabel className="font-normal px-2 py-1.5">Theme</DropdownMenuLabel>
-            {themes.map((t) => (
-              <DropdownMenuItem
-                key={t}
-                onClick={() => setTheme(t)}
-                className={theme === t ? "bg-accent text-accent-foreground" : ""}
-              >
-                {t.charAt(0).toUpperCase() + t.slice(1)}
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
-          </>
-        )}
+        {/* Theme options removed from here */}
         <DropdownMenuItem className="p-0">
           <div className="flex items-center justify-between px-2 py-1.5 w-full">
             <Label htmlFor="sidebar-toggle" className="cursor-pointer text-sm font-normal">

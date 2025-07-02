@@ -14,6 +14,7 @@ import { UpgradeButton } from "@/components/upgrade-button";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { toast } from "sonner";
 import { ClockDisplay } from "@/components/clock-display"; // Import ClockDisplay
+import { ThemeToggle } from "@/components/theme-toggle"; // Import ThemeToggle
 
 interface HeaderProps {
   onOpenUpgradeModal: () => void;
@@ -72,7 +73,7 @@ export function Header({ onOpenUpgradeModal, dailyProgress }: HeaderProps) {
 
         {/* Other action buttons */}
         <UpgradeButton onOpenUpgradeModal={onOpenUpgradeModal} />
-        {/* ThemeToggle removed from here */}
+        <ThemeToggle /> {/* Added ThemeToggle here */}
         <Button variant="ghost" size="icon" title="Notifications">
           <Bell className="h-6 w-6" />
           <span className="sr-only">Notifications</span>
