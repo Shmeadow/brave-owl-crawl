@@ -17,6 +17,17 @@ import { PlayerModeButtons } from './audio-player/player-mode-buttons';
 
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 
+// Constants for layout dimensions (should match AppWrapper and PomodoroWidget)
+const HEADER_HEIGHT = 64; // px
+const POMODORO_WIDGET_HEIGHT_EST = 200; // px, estimated height when expanded
+const POMODORO_WIDGET_BOTTOM_OFFSET = 20; // px, from PomodoroWidget's fixed bottom-20
+const PLAYER_POMODORO_BUFFER = 20; // px
+
+// Calculate the exact bottom position for the player
+const MAXIMIZED_PLAYER_BOTTOM_POSITION = POMODORO_WIDGET_BOTTOM_OFFSET + POMODORO_WIDGET_HEIGHT_EST + PLAYER_POMODORO_BUFFER + 20; // Added 20px buffer
+const MAXIMIZED_PLAYER_TOP_POSITION = HEADER_HEIGHT + 40; // Moved down by 40px
+
+
 const SimpleAudioPlayer = () => {
   const { session } = useSupabase(); // Get session to access access_token for Spotify
   const [stagedInputUrl, setStagedInputUrl] = useState('');
@@ -194,15 +205,9 @@ const SimpleAudioPlayer = () => {
       "fixed z-[1000] transition-all duration-300 ease-in-out",
       displayMode === 'normal' && 'top-20 right-4 w-80',
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-16',
-      // Maximize to fill the main content area, respecting header, sidebar, chat, and pomodoro widget
-      displayMode === 'maximized' && 'inset-0 flex flex-col items-center justify-center',
+      displayMode === 'maximized' && 'left-1/2 -translate-x-1/2 w-full max-w-3xl flex flex-col items-center justify-center'
     )}
-    style={displayMode === 'maximized' ? {
-      paddingTop: `var(--header-height)`,
-      paddingBottom: `calc(var(--pomodoro-widget-height-est) + var(--pomodoro-widget-bottom-offset) + var(--player-pomodoro-buffer))`,
-      paddingLeft: `var(--sidebar-width)`,
-      paddingRight: `var(--chat-width)`,
-    } : {}}
+    style={displayMode === 'maximized' ? { top: `${MAXIMIZED_PLAYER_TOP_POSITION}px`, bottom: `${MAXIMIZED_PLAYER_BOTTOM_POSITION}px` } : {}}
     >
       {/* Normal/Maximized Player UI */}
       <div className={cn(
@@ -223,9 +228,7 @@ const SimpleAudioPlayer = () => {
           isMaximized={displayMode === 'maximized'}
           className={cn(
             displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : '',
-            // For maximized, it should take full width and height of its parent (the Card)
-            // The aspect-video will then correctly size the iframe within this.
-            displayMode === 'maximized' ? 'w-full h-full' : 'w-full'
+            (playerType === 'youtube' || playerType === 'spotify') ? 'w-full flex-grow' : 'w-full' // Make visual players flex-grow
           )}
         />
 

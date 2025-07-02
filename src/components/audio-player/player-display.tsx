@@ -31,7 +31,7 @@ export function PlayerDisplay({
   // Spotify embed is removed, so no spotifyEmbedUrl needed here
 
   // Determine the aspect ratio class based on playerType
-  const aspectRatioClass = playerType === 'youtube' ? 'aspect-video' : '';
+  const aspectRatioClass = playerType === 'youtube' ? 'aspect-video' : playerType === 'spotify' ? 'aspect-square' : '';
 
   return (
     <>
@@ -50,14 +50,14 @@ export function PlayerDisplay({
       )}
       {(playerType === 'youtube' && youtubeEmbedUrl) && (
         <div className={cn(
-          "relative w-full",
-          className, // This will pass w-full h-full from SimpleAudioPlayer
-          aspectRatioClass, // This is 'aspect-video'
-          isMaximized ? 'mx-auto' : ''
+          "relative w-full overflow-hidden", // Removed mb-1
+          className,
+          aspectRatioClass, // Always apply aspect ratio
+          isMaximized ? 'mx-auto' : '' // Center horizontally when maximized
         )}>
           <iframe
             ref={youtubeIframeRef}
-            className="absolute top-0 left-0 w-full h-full rounded-lg" // This iframe will fill its parent div
+            className="absolute top-0 left-0 w-full h-full rounded-lg"
             src={youtubeEmbedUrl}
             frameBorder="0"
             allow="autoplay; encrypted-media"

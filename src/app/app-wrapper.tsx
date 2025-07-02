@@ -123,18 +123,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
 
   return (
     <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}> {/* Pass state */}
-      <div
-        className="flex flex-col flex-1 min-h-screen"
-        style={{
-          '--sidebar-width': `${sidebarCurrentWidth}px`,
-          '--chat-width': `${chatPanelCurrentWidth}px`,
-          '--header-height': `${HEADER_HEIGHT}px`,
-          // These are estimates for the player to position itself relative to the pomodoro widget
-          '--pomodoro-widget-height-est': `${POMODORO_WIDGET_HEIGHT_EST}px`,
-          '--pomodoro-widget-bottom-offset': `${POMODORO_WIDGET_BOTTOM_OFFSET}px`,
-          '--player-pomodoro-buffer': `${PLAYER_POMODORO_BUFFER}px`,
-        } as React.CSSProperties} // Cast to React.CSSProperties for custom properties
-      >
+      <div className="flex flex-col flex-1 min-h-screen">
         <Header
           onOpenUpgradeModal={handleOpenUpgradeModal}
           isChatOpen={isChatOpen}
@@ -152,11 +141,11 @@ export function AppWrapper({ children }: AppWrapperProps) {
         <main
           className={cn(
             "flex flex-col flex-1 w-full overflow-auto transition-all duration-300 ease-in-out",
-            `ml-[var(--sidebar-width)]`, // Dynamic left margin
-            `mr-[var(--chat-width)]`,    // Dynamic right margin
-            `pt-[var(--header-height)]`, // Dynamic top padding
+            `ml-[${sidebarCurrentWidth}px]`, // Dynamic left margin
+            `mr-[${chatPanelCurrentWidth}px]`, // Dynamic right margin
             "items-center justify-center"
           )}
+          style={{ paddingTop: HEADER_HEIGHT }}
         >
           {children}
         </main>
@@ -171,7 +160,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
         />
       )}
       {mounted && <SimpleAudioPlayer />}
-      <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModal(false)} />
+      <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
       <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
         <ChatPanel
           isOpen={isChatOpen}
