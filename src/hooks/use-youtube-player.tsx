@@ -54,7 +54,7 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
     
     // Try to play immediately if not already playing (might be blocked by browser)
     if (event.target.getPlayerState() !== window.YT.PlayerState.PLAYING) {
-      event.target.playVideo().catch((e: any) => console.warn("Autoplay blocked or error playing video:", e));
+      event.target.playVideo(); // Removed .catch()
     }
 
     clearTimeUpdateInterval();
@@ -112,12 +112,12 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
           // Same video, just ensure state is correct (e.g., if it was paused externally)
           console.log("YouTube player exists, same video. Ensuring state.");
           if (playerRef.current.getPlayerState() !== window.YT.PlayerState.PLAYING) {
-            playerRef.current.playVideo().catch((e: any) => console.warn("Autoplay blocked on same video:", e));
+            playerRef.current.playVideo(); // Removed .catch()
           }
         } else {
           // Different video, load new video
           console.log("YouTube player exists, loading new video:", newVideoId);
-          playerRef.current.loadVideoById(newVideoId);
+          playerRef.current.loadVideoById(newVideoId); // Removed .catch()
           playerRef.current.setVolume(volume);
           playerRef.current.unMute();
           setIsMuted(false);
@@ -205,7 +205,7 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
       if (isPlaying) {
         playerRef.current.pauseVideo();
       } else {
-        playerRef.current.playVideo().catch((e: any) => console.warn("Manual play blocked or error:", e));
+        playerRef.current.playVideo(); // Removed .catch()
       }
     }
   }, [isPlaying, playerReady]);
