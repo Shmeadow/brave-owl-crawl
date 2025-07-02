@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { CardData } from "@/hooks/use-flashcards";
+import { toast } from "sonner"; // Added toast import
 
 interface FlashCardDeckProps {
   cards: CardData[];
