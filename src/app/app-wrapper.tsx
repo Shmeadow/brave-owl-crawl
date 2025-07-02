@@ -158,7 +158,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
         />
       </div>
       <Toaster />
-      <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} />
+      <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentAreaForWidgets.current} />
     </WidgetProvider>
   );
 }

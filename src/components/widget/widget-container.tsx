@@ -35,9 +35,15 @@ const WIDGET_COMPONENTS = {
 
 interface WidgetContainerProps {
   isCurrentRoomWritable: boolean;
+  mainContentArea: { // Add this prop
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  };
 }
 
-export function WidgetContainer({ isCurrentRoomWritable }: WidgetContainerProps) {
+export function WidgetContainer({ isCurrentRoomWritable, mainContentArea }: WidgetContainerProps) {
   const {
     activeWidgets,
     updateWidgetPosition,
@@ -99,6 +105,7 @@ export function WidgetContainer({ isCurrentRoomWritable }: WidgetContainerProps)
               onPin={togglePinned}
               onClose={closeWidget}
               isCurrentRoomWritable={isCurrentRoomWritable}
+              mainContentArea={mainContentArea} // Pass mainContentArea
             />
           );
         })}

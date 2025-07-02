@@ -27,7 +27,19 @@ interface WidgetProps {
   onPin: (id: string) => void;
   onClose: (id: string) => void;
   isCurrentRoomWritable: boolean;
+  mainContentArea: { // Add this prop
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  };
 }
+
+// Constants for widget dimensions (should match WidgetProvider)
+const DOCKED_WIDGET_WIDTH = 192;
+const DOCKED_WIDGET_HEIGHT = 48;
+const MINIMIZED_WIDGET_WIDTH = 224; // Assuming this from PomodoroWidget
+const MINIMIZED_WIDGET_HEIGHT = 48;
 
 export function Widget({
   id,
@@ -39,7 +51,7 @@ export function Widget({
   isPinned,
   isTopmost,
   position,
-  size,
+  size, // This size will be passed to ResizableBox
   zIndex,
   onSizeChange,
   onBringToFront,
@@ -48,6 +60,7 @@ export function Widget({
   onPin,
   onClose,
   isCurrentRoomWritable,
+  mainContentArea, // Destructure new prop
 }: WidgetProps) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: `widget-${id}`,
@@ -63,128 +76,127 @@ export function Widget({
   const isResizable = !isMaximized && !isVisuallyMinimized;
   const isDraggable = !isMaximized && !isPinned;
 
-  const renderWidgetContent = () => {
-    return (
-      <CardContent className="flex-grow p-0 overflow-y-auto"> {/* Changed to overflow-y-auto */}
-        <Content isCurrentRoomWritable={isCurrentRoomWritable} />
-      </CardContent>
-    );
-  };
+  // Determine actual width/height for ResizableBox based on state
+  let actualWidth = size.width;
+  let actualHeight = size.height;
+
+  if (isMaximized) {
+    actualWidth = mainContentArea.width;
+    actualHeight = mainContentArea.height;
+  } else if (isPinned) {
+    actualWidth = DOCKED_WIDGET_WIDTH;
+    actualHeight = DOCKED_WIDGET_HEIGHT;
+  } else if (isMinimized) {
+    actualWidth = MINIMIZED_WIDGET_WIDTH;
+    actualHeight = MINIMIZED_WIDGET_HEIGHT;
+  }
 
   return (
-    <Card
-      ref={setNodeRef}
+    <ResizableBox
+      ref={setNodeRef} // Apply draggable ref to ResizableBox
+      width={actualWidth} // Pass calculated width
+      height={actualHeight} // Pass calculated height
+      onResizeStop={(e, direction, ref, d) => {
+        if (isResizable) {
+          // Use ref.offsetWidth and ref.offsetHeight to get the actual new size
+          onSizeChange({ width: ref.offsetWidth, height: ref.offsetHeight });
+        }
+      }}
+      minConstraints={[200, 150]}
+      maxConstraints={[mainContentArea.width, mainContentArea.height]} // Use mainContentArea for maxConstraints
       className={cn(
-        "absolute bg-card border-white/20 shadow-lg rounded-lg flex flex-col", // Removed overflow-hidden here
+        "absolute bg-card border-white/20 shadow-lg rounded-lg flex flex-col",
         "transition-all duration-300 ease-in-out",
         isTopmost ? "backdrop-blur-2xl" : "backdrop-blur-xl",
-        // Removed: isMaximized ? "inset-0 w-full h-full" : "", // This was causing it to go under the header
-        isPinned ? "w-[192px] h-[48px]" : "",
-        isMinimized && !isPinned ? "w-56 h-12" : "",
-        
         isResizable ? "resize" : "",
         isMinimized && !isPinned ? "cursor-pointer" : "",
         "pointer-events-auto"
       )}
       style={{
-        left: position.x, // Always use position.x
-        top: position.y,  // Always use position.y
-        width: size.width, // Always use size.width
-        height: size.height, // Always use size.height
+        left: position.x,
+        top: position.y,
         zIndex: zIndex,
         ...currentTransformStyle
       }}
+      handles={isResizable ? ["se"] : []} // Only show SE handle if resizable
       onClick={isMinimized && !isPinned ? () => onMinimize(id) : undefined}
       onMouseDown={onBringToFront}
     >
-      <CardHeader
-        className={cn(
-          "flex flex-row items-center justify-between space-y-0",
-          isVisuallyMinimized ? "p-2 h-12" : "pb-2"
-        )}
-      >
-        {isVisuallyMinimized ? (
-          <>
-            <div 
-              className={cn("flex items-center gap-2 flex-1 min-w-0", isDraggable && "cursor-grab")}
-              {...(isDraggable && { ...listeners, ...attributes })}
-            >
-              <Icon className="h-6 w-6 text-primary" />
-              <CardTitle className="text-sm font-medium leading-none truncate">{title}</CardTitle>
-            </div>
-            <div className="flex gap-1">
-              {isPinned ? (
-                <>
-                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
-                    <Maximize className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title="Unpin">
-                    <PinOff className="h-4 w-4" />
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
-                    <Maximize className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title="Pin">
-                    <Pin className="h-4 w-4" />
-                  </Button>
-                </>
-              )}
-              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onClose(id); }} title="Close">
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div 
-              className={cn("flex-1 min-w-0", isDraggable && "cursor-grab")}
-              {...(isDraggable && { ...listeners, ...attributes })}
-            >
-              <CardTitle className="text-lg font-medium leading-none">
-                {title}
-              </CardTitle>
-            </div>
-            <div className="flex gap-1">
-              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMinimize(id); }} title="Minimize">
-                <Minimize className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
-                <Maximize className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title="Pin">
-                <Pin className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onClose(id); }} title="Close">
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </>
-        )}
-      </CardHeader>
-
-      {!isVisuallyMinimized && (
-        <ResizableBox
-          width={size.width}
-          height={size.height}
-          onResizeStop={(e, direction, ref, d) => {
-            if (isResizable) {
-              onSizeChange({ width: size.width + d.width, height: size.height + d.height });
-            }
-          }}
-          minConstraints={[200, 150]}
-          maxConstraints={[window.innerWidth, window.innerHeight]}
+      <Card className="w-full h-full flex flex-col overflow-hidden"> {/* Card fills ResizableBox */}
+        <CardHeader
           className={cn(
-            "flex-grow flex flex-col overflow-auto", // Changed overflow-hidden to overflow-auto
-            isMaximized ? "w-full h-full" : ""
+            "flex flex-row items-center justify-between space-y-0",
+            isVisuallyMinimized ? "p-2 h-12" : "pb-2"
           )}
-          handle={null}
         >
-          {renderWidgetContent()}
-        </ResizableBox>
-      )}
-    </Card>
+          {isVisuallyMinimized ? (
+            <>
+              <div 
+                className={cn("flex items-center gap-2 flex-1 min-w-0", isDraggable && "cursor-grab")}
+                {...(isDraggable && { ...listeners, ...attributes })}
+              >
+                <Icon className="h-6 w-6 text-primary" />
+                <CardTitle className="text-sm font-medium leading-none truncate">{title}</CardTitle>
+              </div>
+              <div className="flex gap-1">
+                {isPinned ? (
+                  <>
+                    <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
+                      <Maximize className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title="Unpin">
+                      <PinOff className="h-4 w-4" />
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
+                      <Maximize className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title="Pin">
+                      <Pin className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
+                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onClose(id); }} title="Close">
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div 
+                className={cn("flex-1 min-w-0", isDraggable && "cursor-grab")}
+                {...(isDraggable && { ...listeners, ...attributes })}
+              >
+                <CardTitle className="text-lg font-medium leading-none">
+                  {title}
+                </CardTitle>
+              </div>
+              <div className="flex gap-1">
+                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMinimize(id); }} title="Minimize">
+                  <Minimize className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
+                  <Maximize className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title="Pin">
+                  <Pin className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onClose(id); }} title="Close">
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </>
+          )}
+        </CardHeader>
+
+        {!isVisuallyMinimized && (
+          <CardContent className="flex-grow p-0 overflow-y-auto">
+            <Content isCurrentRoomWritable={isCurrentRoomWritable} />
+          </CardContent>
+        )}
+      </Card>
+    </ResizableBox>
   );
 }
