@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Menu, Sun, Moon, Settings, Bell, MessageSquare } from "lucide-react";
+import { Home, Sun, Moon, Settings, Bell, MessageSquare, Search } from "lucide-react"; // Added Home and Search icons
 import { useTheme } from "next-themes";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Sidebar } from "@/components/sidebar/sidebar";
@@ -44,8 +44,8 @@ export function Header({ isSidebarOpen, toggleSidebar }: HeaderProps) {
   const formattedTime = currentTime.toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit', // Added seconds
-    hour12: profile?.time_format_24h === false, // Use 12-hour format if time_format_24h is false
+    second: '2-digit',
+    hour12: profile?.time_format_24h === false,
   });
   const formattedDate = currentTime.toLocaleDateString([], {
     weekday: "short",
@@ -68,7 +68,7 @@ export function Header({ isSidebarOpen, toggleSidebar }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md flex items-center h-16 px-4 md:px-6">
-      {/* Left Section: Sidebar Toggle */}
+      {/* Left Section: Sidebar Toggle / Home Button */}
       <div className="flex items-center gap-2">
         <Sheet open={isSidebarOpen} onOpenChange={toggleSidebar}>
           <SheetTrigger asChild>
@@ -77,24 +77,24 @@ export function Header({ isSidebarOpen, toggleSidebar }: HeaderProps) {
               size="icon"
               className="lg:hidden"
               onClick={toggleSidebar}
-              title="Toggle Sidebar"
+              title="Toggle Sidebar / Home"
             >
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Toggle Sidebar</span>
+              <Home className="h-6 w-6" /> {/* Changed icon to Home */}
+              <span className="sr-only">Toggle Sidebar / Home</span>
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-64">
             <Sidebar />
           </SheetContent>
         </Sheet>
-        <h1 className="text-xl font-semibold hidden sm:block">Productivity Hub</h1>
+        <h1 className="text-xl font-semibold hidden sm:block">User's Room</h1> {/* Renamed title */}
       </div>
 
       {/* Center Section: Clock and Progress Bar */}
       <div className="flex flex-col items-center gap-1 flex-grow max-w-xs mx-auto w-full">
         <div className="flex justify-between items-baseline w-full">
-          <p className="text-4xl font-bold text-foreground leading-none">{formattedTime}</p> {/* Increased font size */}
-          <p className="text-base text-muted-foreground">{formattedDate}</p> {/* Increased font size */}
+          <p className="text-4xl font-bold text-foreground leading-none">{formattedTime}</p>
+          <p className="text-base text-muted-foreground">{formattedDate}</p>
         </div>
         {/* Progress Bar */}
         <div className="w-full">
@@ -104,6 +104,10 @@ export function Header({ isSidebarOpen, toggleSidebar }: HeaderProps) {
 
       {/* Right Section: Actions */}
       <div className="flex items-center gap-2 ml-auto">
+        <Button variant="ghost" size="icon" title="Search Rooms"> {/* Added Search Button */}
+          <Search className="h-6 w-6" />
+          <span className="sr-only">Search Rooms</span>
+        </Button>
         <Button variant="ghost" size="icon" onClick={toggleTheme} title="Toggle Theme">
           {theme === "dark" ? (
             <Sun className="h-6 w-6" />
