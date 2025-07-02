@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { createClient } from '@supabase/supabase-js';
-import { AppWrapper } from "@/app/app-wrapper"; // Corrected import path
+import { AppWrapper } from "@/app/app-wrapper";
 import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { SidebarProvider } from "@/components/sidebar/sidebar-context";
 import { WidgetProvider } from "@/components/widget/widget-context";
@@ -86,7 +86,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
         <ThemeProvider
           attribute="class"

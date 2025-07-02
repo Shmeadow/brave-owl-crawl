@@ -138,49 +138,53 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const calculatedChatPanelWidth = mounted && isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
 
   return (
-    <>
-      <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
+    <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
+      {/* New wrapper div for main layout flow */}
+      <div className="flex flex-col flex-1 min-h-screen">
         <Header
           onOpenUpgradeModal={handleOpenUpgradeModal}
           dailyProgress={dailyProgress}
         />
+        {/* Sidebar is fixed, so it's outside the main flex flow */}
         <Sidebar />
         <main
           className={cn(
-            "flex flex-col flex-1 w-full h-[calc(100vh-${HEADER_HEIGHT}px)] overflow-auto transition-all duration-300 ease-in-out",
+            "flex flex-col flex-1 w-full overflow-auto transition-all duration-300 ease-in-out", // Removed h-[calc(...)]
             "items-center justify-center" // Added to center content
           )}
           style={mounted ? { marginLeft: `${calculatedSidebarWidth}px`, marginRight: `${calculatedChatPanelWidth}px` } : {}}
         >
           {children}
         </main>
-        <GoalReminderBar />
-        {mounted && shouldShowPomodoro && (
-          <PomodoroWidget
-            isMinimized={isPomodoroWidgetMinimized}
-            setIsMinimized={setIsPomodoroWidgetMinimized}
-            chatPanelWidth={calculatedChatPanelWidth}
-          />
-        )}
-        {mounted && (youtubeEmbedUrl || spotifyEmbedUrl) && <MediaPlayerBar />}
-        <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
-        <Toaster />
-        <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
-          <ChatPanel
-            isOpen={isChatOpen}
-            onToggleOpen={() => {
-              setIsChatOpen(!isChatOpen);
-              if (!isChatOpen) {
-                handleClearUnreadMessages();
-              }
-            }}
-            onNewUnreadMessage={handleNewUnreadMessage}
-            onClearUnreadMessages={handleClearUnreadMessages}
-            unreadCount={unreadChatCount}
-          />
-        </div>
-        <WidgetContainer />
-      </WidgetProvider>
-    </>
+      </div>
+
+      {/* Fixed/Absolute elements outside the main flex flow */}
+      <GoalReminderBar />
+      {mounted && shouldShowPomodoro && (
+        <PomodoroWidget
+          isMinimized={isPomodoroWidgetMinimized}
+          setIsMinimized={setIsPomodoroWidgetMinimized}
+          chatPanelWidth={calculatedChatPanelWidth}
+        />
+      )}
+      {mounted && (youtubeEmbedUrl || spotifyEmbedUrl) && <MediaPlayerBar />}
+      <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
+      <Toaster />
+      <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
+        <ChatPanel
+          isOpen={isChatOpen}
+          onToggleOpen={() => {
+            setIsChatOpen(!isChatOpen);
+            if (!isChatOpen) {
+              handleClearUnreadMessages();
+            }
+          }}
+          onNewUnreadMessage={handleNewUnreadMessage}
+          onClearUnreadMessages={handleClearUnreadMessages}
+          unreadCount={unreadChatCount}
+        />
+      </div>
+      <WidgetContainer />
+    </WidgetProvider>
   );
 }
