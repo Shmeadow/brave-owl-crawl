@@ -205,6 +205,8 @@ const SimpleAudioPlayer = () => {
   const currentIsMuted = playerType === 'youtube' ? youtubeVolume === 0 : audioIsMuted;
   const playerIsReady = playerType === 'youtube' ? youtubePlayerReady : true; // HTML audio is always ready, Spotify embed is also "ready" once loaded
 
+  const spotifyEmbedUrl = playerType === 'spotify' ? getSpotifyEmbedUrl(inputUrl) : null;
+
   const PlayerIcon = playerType === 'youtube' ? Youtube : playerType === 'spotify' ? ListMusic : Music;
 
   // Determine player container classes based on displayMode
@@ -212,8 +214,8 @@ const SimpleAudioPlayer = () => {
     "fixed z-[1000] transition-all duration-300 ease-in-out",
     {
       'right-4 top-1/2 -translate-y-1/2 w-12 h-12': displayMode === 'minimized', // Minimized (docked)
-      'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-xl w-full h-auto p-4': displayMode === 'normal', // Normal (centered, medium)
-      'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-4xl w-full h-auto p-4': displayMode === 'maximized', // Maximized (centered, larger)
+      'top-16 right-4 w-96 h-auto': displayMode === 'normal', // Normal (top-right, fixed width)
+      'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-4xl w-full h-auto': displayMode === 'maximized', // Maximized (centered, larger)
     }
   );
 
@@ -417,7 +419,7 @@ const SimpleAudioPlayer = () => {
                   className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
                   title="Shrink Player"
                 >
-                  <Minimize size={16} />
+                  <ChevronLeft size={16} /> {/* Changed to ChevronLeft */}
                 </button>
               )}
             </div>
