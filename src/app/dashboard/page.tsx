@@ -13,7 +13,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col items-center justify-center h-full w-full p-4 md:p-8">
-      <Card className="w-full max-w-2xl bg-card backdrop-blur-xl border-white/20 p-6 text-center"> {/* Removed /40 */}
+      <Card className="w-full max-w-2xl bg-card backdrop-blur-2xl border-white/20 p-6 text-center"> {/* Changed backdrop-blur-xl to backdrop-blur-2xl */}
         <CardContent>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
             Welcome to {currentRoomName}!

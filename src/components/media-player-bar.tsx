@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Pause, Volume2, VolumeX, Youtube, Music, X, Minus, ChevronLeft } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Youtube, Music, Minus, ChevronLeft } from "lucide-react"; // Removed X icon
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { useYouTubePlayer } from "@/hooks/use-youtube-player";
@@ -44,6 +44,8 @@ export function MediaPlayerBar() {
     return null;
   }
 
+  // The handleClearEmbed function is no longer directly triggered from the bar's 'X' button.
+  // It remains available in the SoundsWidget for managing embeds.
   const handleClearEmbed = () => {
     if (activePlayer === 'youtube') {
       setYoutubeEmbedUrl(null);
@@ -86,6 +88,7 @@ export function MediaPlayerBar() {
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-md font-semibold text-foreground">Media Player</h3>
             <div className="flex gap-1">
+              {/* Added a dedicated "Remove Current Embed" button */}
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleClearEmbed} title="Remove Current Embed">
                 <X className="h-4 w-4" />
                 <span className="sr-only">Remove Current Embed</span>
