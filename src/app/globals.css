@@ -76,6 +76,11 @@
 
     --day-start: 210 80% 70%; /* Light blue for day */
     --day-end: 220 60% 30%; /* Darker blue for night */
+
+    /* WonderSpace Audio Player Variables */
+    --ws-accent: 175 40% 62%; /* #76c7c0 */
+    --ws-bg-semi: 0 0% 0% / 0.5; /* rgba(0,0,0,0.5) */
+    --ws-fg: 0 0% 93.3%; /* #eee */
   }
   .dark {
 
@@ -131,6 +136,11 @@
 
     --day-start: 210 80% 70%; /* Light blue for day */
     --day-end: 220 60% 30%; /* Darker blue for night */
+
+    /* WonderSpace Audio Player Variables (Dark Mode Adjustments if needed, or keep consistent) */
+    --ws-accent: 175 40% 62%;
+    --ws-bg-semi: 0 0% 0% / 0.5;
+    --ws-fg: 0 0% 93.3%;
   }
 
   /* New Cozy Theme */
@@ -208,70 +218,139 @@
   .backface-hidden {
     backface-visibility: hidden;
   }
-}
 
-/* react-resizable styles */
-.react-resizable {
-  position: relative;
-}
-.react-resizable-handle {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  background-repeat: no-repeat;
-  background-origin: content-box;
-  box-sizing: border-box;
-  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2IDYwIj48cGF0aCBkPSJNMjIgNDEuNzQyVjIuMjU4YzAtMS4yNDItMS4wMTYtMi4yNTgtMi4yNTgtMi4yNThIMi4yNThDMTAxNiAwIDAgMS4wMTYgMCAyLjI1OHYxOS40ODRjMCAxLjI0MiAxLjAxNiAyLjI1OCAyLjI1OCAyLjI1OGgxNy40ODRjMS4yNDIgMCAyLjI1OC0xLjAxNiAyLjI1OC0yLjI1OHoiIGZpbGw9IiMwMDAiLz48L3N2Zz4='); /* Example: a simple diagonal line */
-  background-size: 10px 10px;
-  background-position: bottom right;
-  padding: 0 3px 3px 0;
-  opacity: 0.5;
-  transition: opacity 0.2s ease-in-out;
-}
-.react-resizable-handle:hover {
-  opacity: 1;
-}
-.react-resizable-handle-sw {
-  bottom: 0;
-  left: 0;
-  cursor: sw-resize;
-}
-.react-resizable-handle-se {
-  bottom: 0;
-  right: 0;
-  cursor: se-resize;
-}
-.react-resizable-handle-nw {
-  top: 0;
-  left: 0;
-  cursor: nw-resize;
-}
-.react-resizable-handle-ne {
-  top: 0;
-  right: 0;
-  cursor: ne-resize;
-}
-.react-resizable-handle-w,
-.react-resizable-handle-e {
-  top: 50%;
-  margin-top: -10px;
-  cursor: ew-resize;
-}
-.react-resizable-handle-w {
-  left: 0;
-}
-.react-resizable-handle-e {
-  right: 0;
-}
-.react-resizable-handle-n,
-.react-resizable-handle-s {
-  left: 50%;
-  margin-left: -10px;
-  cursor: ns-resize;
-}
-.react-resizable-handle-n {
-  top: 0;
-}
-.react-resizable-handle-s {
-  bottom: 0;
+  /* WonderSpace Audio Player Styles */
+  .audio-player {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: .6rem 1rem;
+    background: hsl(var(--ws-bg-semi));
+    backdrop-filter: blur(8px);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    font-family: var(--font-geist-sans); /* Using app's default font */
+    color: hsl(var(--ws-fg));
+  }
+
+  .player-cover img {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    object-fit: cover;
+    filter: brightness(0.9);
+  }
+
+  .track-info {
+    display: flex;
+    flex-direction: column;
+  }
+  .track-title { font-size: .95rem; font-weight: 600; }
+  .track-artist { font-size: .8rem; opacity: .7; }
+
+  .btn {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: transform .2s, color .2s;
+    color: hsl(var(--ws-fg)); /* Default button color */
+  }
+  .btn:hover {
+    transform: scale(1.1);
+    color: hsl(var(--ws-accent));
+  }
+  .btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--ws-accent)); /* Subtle drop-shadow on focus */
+  }
+
+  .progress-container {
+    display: flex; align-items: center; gap: .4rem;
+    flex: 1;
+  }
+  .current-time, .duration {
+    font-size: .75rem; width: 34px; text-align: center;
+  }
+  .progress {
+    flex: 1;
+    -webkit-appearance: none; appearance: none;
+    height: 4px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  /* Progress bar fill */
+  .progress::-webkit-slider-runnable-track {
+    background: linear-gradient(to right, hsl(var(--ws-accent)) var(--progress-fill, 0%), rgba(255,255,255,0.3) var(--progress-fill, 0%));
+    border-radius: 2px;
+  }
+  .progress::-moz-range-track {
+    background: linear-gradient(to right, hsl(var(--ws-accent)) var(--progress-fill, 0%), rgba(255,255,255,0.3) var(--progress-fill, 0%));
+    border-radius: 2px;
+  }
+  .progress::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px; height: 12px;
+    background: hsl(var(--ws-accent));
+    border-radius: 50%;
+    margin-top: -4px; /* Adjust to center thumb on track */
+    transition: transform .2s;
+  }
+  .progress::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
+  .progress::-moz-range-thumb {
+    width: 12px; height: 12px;
+    background: hsl(var(--ws-accent));
+    border-radius: 50%;
+    border: none; /* Remove default border */
+    transition: transform .2s;
+  }
+  .progress::-moz-range-thumb:hover {
+    transform: scale(1.2);
+  }
+
+  .volume-container {
+    display: flex; align-items: center; gap: .4rem;
+  }
+  .volume {
+    width: 70px;
+    -webkit-appearance: none; appearance: none;
+    height: 4px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  /* Volume slider fill */
+  .volume::-webkit-slider-runnable-track {
+    background: linear-gradient(to right, hsl(var(--ws-accent)) var(--volume-fill, 60%), rgba(255,255,255,0.3) var(--volume-fill, 60%));
+    border-radius: 2px;
+  }
+  .volume::-moz-range-track {
+    background: linear-gradient(to right, hsl(var(--ws-accent)) var(--volume-fill, 60%), rgba(255,255,255,0.3) var(--volume-fill, 60%));
+    border-radius: 2px;
+  }
+  .volume::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px; height: 12px;
+    background: hsl(var(--ws-accent));
+    border-radius: 50%;
+    margin-top: -4px; /* Adjust to center thumb on track */
+    transition: transform .2s;
+  }
+  .volume::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
+  .volume::-moz-range-thumb {
+    width: 12px; height: 12px;
+    background: hsl(var(--ws-accent));
+    border-radius: 50%;
+    border: none; /* Remove default border */
+    transition: transform .2s;
+  }
+  .volume::-moz-range-thumb:hover {
+    transform: scale(1.2);
+  }
 }
