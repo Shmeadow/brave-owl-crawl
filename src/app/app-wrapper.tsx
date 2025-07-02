@@ -52,21 +52,41 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [mounted, setMounted] = useState(false);
 
-  // Use useRef to create a stable object for WidgetProvider's initial mainContentArea
-  const mainContentAreaForWidgets = useRef({
+  // Use state for mainContentArea to ensure it updates on resize
+  const [mainContentArea, setMainContentArea] = useState({
     left: SIDEBAR_WIDTH,
     top: HEADER_HEIGHT,
-    width: 0, // Will be calculated once on mount
-    height: 0, // Will be calculated once on mount
+    width: 0,
+    height: 0,
   });
 
-  // Calculate initial width/height once on mount for the ref
+  // Calculate and update mainContentArea on mount and window resize
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      mainContentAreaForWidgets.current.width = window.innerWidth - SIDEBAR_WIDTH - CHAT_PANEL_WIDTH_CLOSED;
-      mainContentAreaForWidgets.current.height = window.innerHeight - HEADER_HEIGHT;
-    }
-  }, []); // Empty dependency array ensures this runs only once on mount
+    const calculateMainContentArea = () => {
+      if (typeof window !== 'undefined') {
+        const chatWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
+        const sidebarWidth = (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH : 0; // Dynamic sidebar width
+
+        setMainContentArea({
+          left: sidebarWidth,
+          top: HEADER_HEIGHT,
+          width: window.innerWidth - sidebarWidth - chatWidth,
+          height: window.innerHeight - HEADER_HEIGHT,
+        });
+      }
+    };
+
+    // Initial calculation
+    calculateMainContentArea();
+
+    // Add resize listener
+    window.addEventListener('resize', calculateMainContentArea);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', calculateMainContentArea);
+    };
+  }, [isChatOpen, isAlwaysOpen, isSidebarOpen]); // Dependencies for recalculation
 
   useEffect(() => {
     setMounted(true);
@@ -102,7 +122,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const chatPanelCurrentWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
 
   return (
-    <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentAreaForWidgets.current}>
+    <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}> {/* Pass state */}
       <div className="flex flex-col flex-1 min-h-screen">
         <Header
           onOpenUpgradeModal={handleOpenUpgradeModal}
@@ -139,7 +159,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
           chatPanelWidth={chatPanelCurrentWidth}
         />
       )}
-      {mounted && <SimpleAudioPlayer />} {/* Render the new SimpleAudioPlayer */}
+      {mounted && <SimpleAudioPlayer />}
       <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
       <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
         <ChatPanel
@@ -158,7 +178,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
         />
       </div>
       <Toaster />
-      <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentAreaForWidgets.current} />
+      <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} /> {/* Pass state */}
     </WidgetProvider>
   );
 }

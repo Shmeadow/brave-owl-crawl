@@ -50,7 +50,7 @@ export function PlayerDisplay({
       )}
       {(playerType === 'youtube' && youtubeEmbedUrl) && (
         <div className={cn(
-          "relative w-full mb-1",
+          "relative w-full mb-1 overflow-hidden", // Added overflow-hidden
           className,
           aspectRatioClass, // Always apply aspect ratio
           isMaximized ? 'mx-auto' : '' // Center horizontally when maximized
@@ -68,7 +68,7 @@ export function PlayerDisplay({
       )}
       {(playerType === 'spotify' && spotifyEmbedUrl) && (
         <div className={cn(
-          "relative w-full mb-1",
+          "relative w-full mb-1 overflow-hidden", // Added overflow-hidden
           className,
           aspectRatioClass, // Always apply aspect ratio
           isMaximized ? 'mx-auto' : '' // Center horizontally when maximized

@@ -203,7 +203,7 @@ const SimpleAudioPlayer = () => {
           isMaximized={displayMode === 'maximized'}
           className={cn(
             displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : '',
-            displayMode === 'maximized' ? 'w-full' : '' // Ensure it takes full width of its container when maximized
+            displayMode === 'maximized' ? 'w-full flex-grow' : 'h-40' // Added h-40 for normal mode, flex-grow for maximized
           )}
         />
 

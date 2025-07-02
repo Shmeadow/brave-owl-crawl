@@ -97,7 +97,7 @@ export function Widget({
       width={actualWidth} // Pass calculated width
       height={actualHeight} // Pass calculated height
       onResizeStop={(e, direction, ref, d) => {
-        if (isResizable) {
+        if (isResizable && ref) { // Add ref check
           // Use ref.offsetWidth and ref.offsetHeight to get the actual new size
           onSizeChange({ width: ref.offsetWidth, height: ref.offsetHeight });
         }
