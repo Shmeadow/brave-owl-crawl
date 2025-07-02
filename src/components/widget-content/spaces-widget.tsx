@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { PlusCircle, Lock, Unlock, Trash2, LogIn, Share2, LogOut, KeyRound, UserMinus, Users } from "lucide-react";
-import { useRooms, RoomData, RoomMember } from "@/hooks/use-rooms";
+import { useRooms, RoomData, RoomMember } from "@/hooks/use-rooms"; // Import from the main hook
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
@@ -39,25 +39,26 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
     loading: roomsLoading,
     handleCreateRoom,
     handleToggleRoomPublicStatus,
-    handleToggleGuestWriteAccess, // New
-    handleSetRoomPassword, // New
-    handleKickUser, // New
+    handleToggleGuestWriteAccess,
+    handleSetRoomPassword,
+    handleKickUser,
     handleGenerateInviteCode,
     handleJoinRoomByCode,
-    handleJoinRoomByPassword, // New
+    handleJoinRoomByPassword,
     handleLeaveRoom,
-    fetchRooms, // Re-fetch after actions
+    handleDeleteRoom, // Now available from useRooms
+    fetchRooms,
   } = useRooms();
   const { currentRoomId, currentRoomName, setCurrentRoom } = useCurrentRoom();
 
   const [newRoomName, setNewRoomName] = useState("");
   const [isNewRoomPublic, setIsNewRoomPublic] = useState(false);
   const [inviteCodeInput, setInviteCodeInput] = useState("");
-  const [joinPasswordInput, setJoinPasswordInput] = useState(""); // New
-  const [setPasswordInput, setSetPasswordInput] = useState(""); // New
+  const [joinPasswordInput, setJoinPasswordInput] = useState("");
+  const [setPasswordInput, setSetPasswordInput] = useState("");
   const [generatedInviteCodes, setGeneratedInviteCodes] = useState<{ [roomId: string]: string | null }>({});
-  const [selectedUserToKick, setSelectedUserToKick] = useState<string | null>(null); // New
-  const [roomMembers, setRoomMembers] = useState<RoomMember[]>([]); // New state for members
+  const [selectedUserToKick, setSelectedUserToKick] = useState<string | null>(null);
+  const [roomMembers, setRoomMembers] = useState<RoomMember[]>([]);
 
   const currentRoom = rooms.find(room => room.id === currentRoomId);
   const isOwnerOfCurrentRoom = currentRoom && session?.user?.id === currentRoom.creator_id;
@@ -94,7 +95,7 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
     };
 
     fetchRoomMembers();
-  }, [supabase, currentRoomId, isOwnerOfCurrentRoom, fetchRooms]); // Added fetchRooms to dependencies to re-fetch members after kick
+  }, [supabase, currentRoomId, isOwnerOfCurrentRoom, fetchRooms]);
 
   const handleCreateNewRoom = async () => {
     if (!session) {
@@ -111,7 +112,7 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
   };
 
   const handleEnterRoom = (room: RoomData) => {
-    if (!session && !room.is_public && !room.password_hash) { // Guests can't enter private rooms without password
+    if (!session && !room.is_public && !room.password_hash) {
       toast.error("You must be logged in to enter a private room.");
       return;
     }
@@ -173,7 +174,7 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
       toast.error("You must be the owner of the current room to remove its password.");
       return;
     }
-    await handleSetRoomPassword(currentRoomId, undefined); // Pass undefined to remove password
+    await handleSetRoomPassword(currentRoomId, undefined);
     setSetPasswordInput("");
   };
 
