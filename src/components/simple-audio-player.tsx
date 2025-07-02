@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Music, ListMusic, Youtube, VolumeX, Volume2, ChevronLeft } from 'lucide-react'; // Keep only the icons used directly here
 import { useYouTubePlayer } from '@/hooks/use-youtube-player';
 import { useHtmlAudioPlayer } from '@/hooks/use-html-audio-player';
-import { cn } from '@/lib/utils';
+import { cn, getYouTubeEmbedUrl } from '@/lib/utils'; // Import getYouTubeEmbedUrl
 
 // Import new modular components
 import { PlayerDisplay } from './audio-player/player-display';
@@ -48,8 +48,8 @@ const SimpleAudioPlayer = () => {
     onEnded: htmlAudioOnEnded,
   } = useHtmlAudioPlayer(playerType === 'audio' ? inputUrl : null);
 
-  // Use YouTube Player hook
-  const youtubeEmbedUrl = playerType === 'youtube' ? inputUrl : null; // Pass raw inputUrl to hook, it will derive embed URL
+  // Use YouTube Player hook - pass the converted embed URL
+  const youtubeEmbedUrl = playerType === 'youtube' ? getYouTubeEmbedUrl(inputUrl) : null;
   const {
     isPlaying: youtubeIsPlaying,
     volume: youtubeVolume,
@@ -60,7 +60,7 @@ const SimpleAudioPlayer = () => {
     iframeId,
     youtubeCurrentTime,
     youtubeDuration,
-  } = useYouTubePlayer(youtubeEmbedUrl);
+  } = useYouTubePlayer(youtubeEmbedUrl); // Pass the converted URL here
 
   // Effect to save display mode to local storage
   useEffect(() => {
