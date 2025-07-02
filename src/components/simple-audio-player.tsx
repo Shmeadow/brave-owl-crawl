@@ -33,8 +33,6 @@ const SimpleAudioPlayer = () => {
   const [stagedInputUrl, setStagedInputUrl] = useState('');
   const [committedMediaUrl, setCommittedMediaUrl] = useState('');
   const [playerType, setPlayerType] = useState<'audio' | 'youtube' | 'spotify' | null>(null);
-  const [currentTitle, setCurrentTitle] = useState('No Media Loaded');
-  const [currentArtist, setCurrentArtist] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [displayMode, setDisplayMode] = useState<'normal' | 'maximized' | 'minimized'>(() => {
     if (typeof window !== 'undefined') {
@@ -105,25 +103,16 @@ const SimpleAudioPlayer = () => {
   useEffect(() => {
     if (committedMediaUrl.includes('youtube.com') || committedMediaUrl.includes('youtu.be')) {
       setPlayerType('youtube');
-      setCurrentTitle('YouTube Video');
-      setCurrentArtist('Unknown Artist');
     } else if (committedMediaUrl.includes('open.spotify.com')) {
       setPlayerType('spotify');
-      // For Spotify, title/artist will come from spotifyCurrentTrack
-      setCurrentTitle(spotifyCurrentTrack?.name || 'Spotify Media');
-      setCurrentArtist(spotifyCurrentTrack?.artists.map(a => a.name).join(', ') || 'Unknown Artist');
       // Attempt to play the Spotify URI directly
       if (spotifyPlayerReady && spotifyCurrentTrack?.uri !== committedMediaUrl) {
         spotifyPlayTrack(committedMediaUrl);
       }
     } else if (committedMediaUrl.match(/\.(mp3|wav|ogg|aac|flac)$/i)) {
       setPlayerType('audio');
-      setCurrentTitle('Direct Audio');
-      setCurrentArtist('Unknown Artist');
     } else {
       setPlayerType(null);
-      setCurrentTitle('No Media Loaded');
-      setCurrentArtist('');
     }
   }, [committedMediaUrl, spotifyCurrentTrack, spotifyPlayerReady, spotifyPlayTrack]);
 
@@ -213,9 +202,6 @@ const SimpleAudioPlayer = () => {
 
   const PlayerIcon = playerType === 'youtube' ? Youtube : playerType === 'spotify' ? ListMusic : Music;
 
-  // Placeholder for dynamic color tone (will be implemented in a future step)
-  const spotifyAccentColor = spotifyCurrentTrack ? 'hsl(var(--ws-accent))' : 'hsl(var(--ws-accent))'; // Default or derived from album art
-
   return (
     <div className={cn(
       "fixed z-[1000] transition-all duration-300 ease-in-out",
@@ -256,14 +242,8 @@ const SimpleAudioPlayer = () => {
             {!spotifyCurrentTrack?.album.images[0]?.url && <PlayerIcon size={24} />}
           </div>
 
-          {/* Track Info and URL Input Toggle */}
+          {/* URL Input Toggle */}
           <div className="flex-grow min-w-0">
-            <p className="text-sm font-semibold text-foreground truncate leading-tight">
-              {playerType === 'spotify' ? (spotifyCurrentTrack?.name || 'Spotify Media') : currentTitle}
-            </p>
-            <p className="text-xs text-muted-foreground truncate">
-              {playerType === 'spotify' ? (spotifyCurrentTrack?.artists.map(a => a.name).join(', ') || 'Unknown Artist') : currentArtist}
-            </p>
             <MediaInput
               inputUrl={stagedInputUrl}
               setInputUrl={setStagedInputUrl}
