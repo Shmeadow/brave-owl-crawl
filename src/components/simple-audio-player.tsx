@@ -214,26 +214,14 @@ const SimpleAudioPlayer = () => {
     "fixed z-[1000] transition-all duration-300 ease-in-out",
     {
       'right-4 top-1/2 -translate-y-1/2 w-12 h-12': displayMode === 'minimized', // Minimized (docked)
-      'top-16 right-4 w-96 h-auto': displayMode === 'normal', // Normal (top-right, fixed width)
+      'top-20 right-4 w-80 h-auto': displayMode === 'normal', // Normal (top-right, fixed width)
       'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-4xl w-full h-auto': displayMode === 'maximized', // Maximized (centered, larger)
     }
   );
 
   return (
     <>
-      {/* Main Toggle Button (outside player) */}
-      <button
-        onClick={() => setDisplayMode(prev => prev === 'minimized' ? 'normal' : 'minimized')}
-        className={cn(
-          "fixed z-[1000] p-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-md",
-          "right-4 top-1/2 -translate-y-1/2" // Positioned on the right side, middle
-        )}
-        title={displayMode === 'minimized' ? "Expand Player" : "Minimize Player"}
-      >
-        {displayMode === 'minimized' ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-      </button>
-
-      {/* Player Content */}
+      {/* Player Content (normal/maximized) */}
       {displayMode !== 'minimized' && (
         <div className={playerContainerClasses}>
           <div className="bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex flex-col w-full h-full">
@@ -402,8 +390,8 @@ const SimpleAudioPlayer = () => {
               </div>
             )}
 
-            {/* Maximize/Minimize Internal Button */}
-            <div className="flex justify-end mt-2">
+            {/* Maximize/Minimize/Dock Internal Buttons */}
+            <div className="flex justify-end mt-2 gap-1">
               {displayMode === 'normal' && (
                 <button
                   onClick={() => setDisplayMode('maximized')}
@@ -419,9 +407,16 @@ const SimpleAudioPlayer = () => {
                   className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
                   title="Shrink Player"
                 >
-                  <ChevronLeft size={16} /> {/* Changed to ChevronLeft */}
+                  <Minimize size={16} />
                 </button>
               )}
+              <button
+                onClick={() => setDisplayMode('minimized')}
+                className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
+                title="Minimize Player"
+              >
+                <ChevronLeft size={16} />
+              </button>
             </div>
           </div>
         </div>
@@ -429,10 +424,15 @@ const SimpleAudioPlayer = () => {
 
       {/* Minimized Player Content (only visible when displayMode is 'minimized') */}
       {displayMode === 'minimized' && (
-        <div className={cn(
-          "bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex flex-col items-center justify-center",
-          "w-full h-full" // Takes full size of its fixed parent container
-        )}>
+        <div
+          onClick={() => setDisplayMode('normal')}
+          className={cn(
+            "fixed z-[1000] p-1 rounded-lg shadow-sm flex flex-col items-center justify-center cursor-pointer",
+            "bg-card backdrop-blur-xl border-white/20",
+            "right-4 top-1/2 -translate-y-1/2 w-12 h-12" // Minimized (docked)
+          )}
+          title="Expand Player"
+        >
           {/* Album Art Placeholder */}
           <div className="flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs w-10 h-10 mb-1">
             <PlayerIcon size={18} />
