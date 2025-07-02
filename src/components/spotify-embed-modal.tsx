@@ -23,14 +23,17 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
-const LOCAL_STORAGE_SPOTIFY_EMBED_KEY = 'spotify_embed_url';
+import { useMediaPlayer } from '@/components/media-player-context'; // Import useMediaPlayer
 
 // Helper function to convert a regular Spotify URL to an embed URL
 const convertToEmbedUrl = (url: string): string | null => {
   const regex = /open\.spotify\.com\/(track|playlist|album)\/([a-zA-Z0-9]+)/;
   const match = url.match(regex);
   if (match && match[1] && match[2]) {
+    // For playlists and albums, the embed URL is slightly different
+    if (match[1] === 'playlist' || match[1] === 'album') {
+      return `https://open.spotify.com/embed/${match[1]}/${match[2]}?utm_source=generator`;
+    }
     return `https://open.spotify.com/embed/${match[1]}/${match[2]}`;
   }
   // If it's already an embed URL, return it as is
@@ -43,7 +46,6 @@ const convertToEmbedUrl = (url: string): string | null => {
 const spotifyUrlSchema = z.object({
   url: z.string().min(1, { message: "URL cannot be empty." }).refine(
     (url) => {
-      // Allow both regular Spotify URLs and embed URLs
       return url.includes("open.spotify.com/") && (url.includes("/track/") || url.includes("/playlist/") || url.includes("/album/"));
     },
     { message: "Please enter a valid Spotify track, playlist, or album URL." }
@@ -56,46 +58,37 @@ interface SpotifyEmbedModalProps {
 }
 
 export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
-  const [embedUrl, setEmbedUrl] = useState<string | null>(null);
+  const { spotifyEmbedUrl, setSpotifyEmbedUrl, setActivePlayer } = useMediaPlayer(); // Use context
 
   const form = useForm<z.infer<typeof spotifyUrlSchema>>({
     resolver: zodResolver(spotifyUrlSchema),
     defaultValues: {
-      url: "",
+      url: spotifyEmbedUrl || "", // Initialize with current context value
     },
   });
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedUrl = localStorage.getItem(LOCAL_STORAGE_SPOTIFY_EMBED_KEY);
-      if (savedUrl) {
-        setEmbedUrl(savedUrl);
-        form.setValue("url", savedUrl);
-      }
-    }
-  }, [isOpen]);
+    // Update form default if context URL changes externally
+    form.reset({ url: spotifyEmbedUrl || "" });
+  }, [spotifyEmbedUrl, form]);
 
   const onSubmit = (values: z.infer<typeof spotifyUrlSchema>) => {
-    if (typeof window !== 'undefined') {
-      const convertedUrl = convertToEmbedUrl(values.url);
-      if (convertedUrl) {
-        localStorage.setItem(LOCAL_STORAGE_SPOTIFY_EMBED_KEY, convertedUrl);
-        setEmbedUrl(convertedUrl);
-        toast.success("Spotify embed URL saved!");
-        onClose();
-      } else {
-        toast.error("Could not convert URL to Spotify embed format. Please check the URL.");
-      }
+    const convertedUrl = convertToEmbedUrl(values.url);
+    if (convertedUrl) {
+      setSpotifyEmbedUrl(convertedUrl); // Update context
+      setActivePlayer('spotify'); // Set Spotify as the active player
+      toast.success("Spotify embed URL saved and activated!");
+      onClose();
+    } else {
+      toast.error("Could not convert URL to Spotify embed format. Please check the URL.");
     }
   };
 
   const handleRemoveEmbed = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(LOCAL_STORAGE_SPOTIFY_EMBED_KEY);
-      setEmbedUrl(null);
-      form.reset({ url: "" });
-      toast.info("Spotify embed removed.");
-    }
+    setSpotifyEmbedUrl(null); // Clear URL in context
+    setActivePlayer(null); // No player active
+    form.reset({ url: "" });
+    toast.info("Spotify embed removed.");
   };
 
   return (
@@ -105,6 +98,8 @@ export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
           <DialogTitle>Embed Spotify Player</DialogTitle>
           <DialogDescription>
             Paste a Spotify track, playlist, or album URL. It will be converted to an embeddable player.
+            <br />
+            <span className="text-yellow-400 font-semibold">Note: External play/pause/volume controls are not available for Spotify embeds. Please use the controls within the embedded player.</span>
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -116,14 +111,14 @@ export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
                 <FormItem>
                   <FormLabel>Spotify URL</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., https://open.spotify.com/track/..." {...field} />
+                    <Input placeholder="e.g., https://open.spotify.com/playlist/..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <div className="flex justify-end gap-2">
-              {embedUrl && (
+              {spotifyEmbedUrl && (
                 <Button type="button" variant="outline" onClick={handleRemoveEmbed}>
                   Remove Embed
                 </Button>
@@ -133,12 +128,12 @@ export function SpotifyEmbedModal({ isOpen, onClose }: SpotifyEmbedModalProps) {
           </form>
         </Form>
 
-        {embedUrl && (
+        {spotifyEmbedUrl && (
           <div className="mt-4">
             <h3 className="text-md font-semibold mb-2">Currently Embedded:</h3>
             <div className="relative w-full" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */ }}>
               <iframe
-                src={embedUrl}
+                src={spotifyEmbedUrl}
                 width="100%"
                 height="100%"
                 allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"

@@ -23,14 +23,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { getYouTubeEmbedUrl } from "@/lib/utils"; // Import the new utility
-
-const LOCAL_STORAGE_YOUTUBE_EMBED_KEY = 'youtube_embed_url';
+import { getYouTubeEmbedUrl } from "@/lib/utils";
+import { useMediaPlayer } from '@/components/media-player-context'; // Import useMediaPlayer
 
 const youtubeUrlSchema = z.object({
   url: z.string().min(1, { message: "URL cannot be empty." }).refine(
     (url) => {
-      // Basic check for YouTube domain
       return url.includes("youtube.com/") || url.includes("youtu.be/");
     },
     { message: "Please enter a valid YouTube video URL." }
@@ -43,46 +41,36 @@ interface YoutubeEmbedModalProps {
 }
 
 export function YoutubeEmbedModal({ isOpen, onClose }: YoutubeEmbedModalProps) {
-  const [embedUrl, setEmbedUrl] = useState<string | null>(null);
-
+  const { youtubeEmbedUrl, setYoutubeEmbedUrl, setActivePlayer } = useMediaPlayer(); // Use context
   const form = useForm<z.infer<typeof youtubeUrlSchema>>({
     resolver: zodResolver(youtubeUrlSchema),
     defaultValues: {
-      url: "",
+      url: youtubeEmbedUrl || "", // Initialize with current context value
     },
   });
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedUrl = localStorage.getItem(LOCAL_STORAGE_YOUTUBE_EMBED_KEY);
-      if (savedUrl) {
-        setEmbedUrl(savedUrl);
-        form.setValue("url", savedUrl);
-      }
-    }
-  }, [isOpen, form]);
+    // Update form default if context URL changes externally
+    form.reset({ url: youtubeEmbedUrl || "" });
+  }, [youtubeEmbedUrl, form]);
 
   const onSubmit = (values: z.infer<typeof youtubeUrlSchema>) => {
-    if (typeof window !== 'undefined') {
-      const convertedUrl = getYouTubeEmbedUrl(values.url);
-      if (convertedUrl) {
-        localStorage.setItem(LOCAL_STORAGE_YOUTUBE_EMBED_KEY, convertedUrl);
-        setEmbedUrl(convertedUrl);
-        toast.success("YouTube embed URL saved!");
-        onClose();
-      } else {
-        toast.error("Could not convert URL to YouTube embed format. Please check the URL.");
-      }
+    const convertedUrl = getYouTubeEmbedUrl(values.url);
+    if (convertedUrl) {
+      setYoutubeEmbedUrl(convertedUrl); // Update context
+      setActivePlayer('youtube'); // Set YouTube as the active player
+      toast.success("YouTube embed URL saved and activated!");
+      onClose();
+    } else {
+      toast.error("Could not convert URL to YouTube embed format. Please check the URL.");
     }
   };
 
   const handleRemoveEmbed = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(LOCAL_STORAGE_YOUTUBE_EMBED_KEY);
-      setEmbedUrl(null);
-      form.reset({ url: "" });
-      toast.info("YouTube embed removed.");
-    }
+    setYoutubeEmbedUrl(null); // Clear URL in context
+    setActivePlayer(null); // No player active
+    form.reset({ url: "" });
+    toast.info("YouTube embed removed.");
   };
 
   return (
@@ -110,7 +98,7 @@ export function YoutubeEmbedModal({ isOpen, onClose }: YoutubeEmbedModalProps) {
               )}
             />
             <div className="flex justify-end gap-2">
-              {embedUrl && (
+              {youtubeEmbedUrl && (
                 <Button type="button" variant="outline" onClick={handleRemoveEmbed}>
                   Remove Embed
                 </Button>
@@ -120,12 +108,12 @@ export function YoutubeEmbedModal({ isOpen, onClose }: YoutubeEmbedModalProps) {
           </form>
         </Form>
 
-        {embedUrl && (
+        {youtubeEmbedUrl && (
           <div className="mt-4">
             <h3 className="text-md font-semibold mb-2">Currently Embedded:</h3>
             <div className="relative w-full" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */ }}>
               <iframe
-                src={embedUrl}
+                src={youtubeEmbedUrl}
                 width="100%"
                 height="100%"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

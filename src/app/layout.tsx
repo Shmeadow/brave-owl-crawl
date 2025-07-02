@@ -4,9 +4,10 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { createClient } from '@supabase/supabase-js';
 import { AppWrapper } from "@/components/app-wrapper";
-import { SessionContextProvider } from "@/integrations/supabase/auth"; // Import here
-import { SidebarProvider } from "@/components/sidebar/sidebar-context"; // Import here
-import { WidgetProvider } from "@/components/widget/widget-context"; // Import here
+import { SessionContextProvider } from "@/integrations/supabase/auth";
+import { SidebarProvider } from "@/components/sidebar/sidebar-context";
+import { WidgetProvider } from "@/components/widget/widget-context";
+import { MediaPlayerProvider } from "@/components/media-player-context"; // Import MediaPlayerProvider
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -96,10 +97,12 @@ export default async function RootLayout({
         >
           <SessionContextProvider>
             <SidebarProvider>
-              {/* WidgetProvider will be rendered inside AppWrapper, receiving mainContentArea from AppWrapper */}
-              <AppWrapper>
-                {children}
-              </AppWrapper>
+              <MediaPlayerProvider> {/* Wrap with MediaPlayerProvider */}
+                {/* WidgetProvider will be rendered inside AppWrapper, receiving mainContentArea from AppWrapper */}
+                <AppWrapper>
+                  {children}
+                </AppWrapper>
+              </MediaPlayerProvider>
             </SidebarProvider>
           </SessionContextProvider>
         </ThemeProvider>

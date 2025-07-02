@@ -6,31 +6,33 @@ import { Button } from "@/components/ui/button";
 import { Settings, Link, Youtube } from "lucide-react";
 import { SpotifyEmbedModal } from "@/components/spotify-embed-modal";
 import { YoutubeEmbedModal } from "@/components/youtube-embed-modal";
-
-const LOCAL_STORAGE_SPOTIFY_EMBED_KEY = 'spotify_embed_url';
-const LOCAL_STORAGE_YOUTUBE_EMBED_KEY = 'youtube_embed_url';
+import { useMediaPlayer } from '@/components/media-player-context'; // Import useMediaPlayer
 
 export function SoundsWidget() {
+  const { youtubeEmbedUrl, spotifyEmbedUrl, setYoutubeEmbedUrl, setSpotifyEmbedUrl, setActivePlayer } = useMediaPlayer();
   const [isSpotifyModalOpen, setIsSpotifyModalOpen] = useState(false);
   const [isYoutubeModalOpen, setIsYoutubeModalOpen] = useState(false);
-  const [spotifyEmbedUrl, setSpotifyEmbedUrl] = useState<string | null>(null);
-  const [youtubeEmbedUrl, setYoutubeEmbedUrl] = useState<string | null>(null); // Keep this state to show current URL
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setSpotifyEmbedUrl(localStorage.getItem(LOCAL_STORAGE_SPOTIFY_EMBED_KEY));
-      setYoutubeEmbedUrl(localStorage.getItem(LOCAL_STORAGE_YOUTUBE_EMBED_KEY));
-    }
-  }, [isSpotifyModalOpen, isYoutubeModalOpen]); // Re-check when either modal closes
 
   const handleSpotifyModalClose = () => {
     setIsSpotifyModalOpen(false);
-    setSpotifyEmbedUrl(localStorage.getItem(LOCAL_STORAGE_SPOTIFY_EMBED_KEY));
+    // The context's setSpotifyEmbedUrl already updates local storage
   };
 
   const handleYoutubeModalClose = () => {
     setIsYoutubeModalOpen(false);
-    setYoutubeEmbedUrl(localStorage.getItem(LOCAL_STORAGE_YOUTUBE_EMBED_KEY)); // Update state after modal closes
+    // The context's setYoutubeEmbedUrl already updates local storage
+  };
+
+  const handleActivateSpotify = () => {
+    if (spotifyEmbedUrl) {
+      setActivePlayer('spotify');
+    }
+  };
+
+  const handleActivateYoutube = () => {
+    if (youtubeEmbedUrl) {
+      setActivePlayer('youtube');
+    }
   };
 
   return (
@@ -54,9 +56,14 @@ export function SoundsWidget() {
             </Button>
 
             {youtubeEmbedUrl ? (
-              <p className="text-sm text-muted-foreground text-center mt-4">
-                A YouTube video is currently embedded and playing in the background bar.
-              </p>
+              <div className="flex flex-col gap-2">
+                <p className="text-sm text-muted-foreground text-center">
+                  A YouTube video is currently embedded and playing in the background bar.
+                </p>
+                <Button onClick={handleActivateYoutube} className="w-full" variant="secondary">
+                  Activate YouTube Player
+                </Button>
+              </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center mt-4">
                 No YouTube video embedded. Click "Manage YouTube Embed" to add one.
@@ -80,17 +87,25 @@ export function SoundsWidget() {
               <Settings className="mr-2 h-4 w-4" /> Manage Spotify Embed
             </Button>
             {spotifyEmbedUrl ? (
-              <div className="mt-4">
-                <h3 className="text-md font-semibold mb-2">Currently Embedded:</h3>
-                <div className="relative w-full" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */ }}>
-                  <iframe
-                    src={spotifyEmbedUrl}
-                    width="100%"
-                    height="100%"
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                    className="absolute top-0 left-0 w-full h-full rounded-md"
-                  ></iframe>
+              <div className="flex flex-col gap-2">
+                <p className="text-sm text-muted-foreground text-center">
+                  A Spotify player is currently embedded.
+                </p>
+                <Button onClick={handleActivateSpotify} className="w-full" variant="secondary">
+                  Activate Spotify Player
+                </Button>
+                <div className="mt-4">
+                  <h3 className="text-md font-semibold mb-2">Currently Embedded:</h3>
+                  <div className="relative w-full" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */ }}>
+                    <iframe
+                      src={spotifyEmbedUrl}
+                      width="100%"
+                      height="100%"
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                      className="absolute top-0 left-0 w-full h-full rounded-md"
+                    ></iframe>
+                  </div>
                 </div>
               </div>
             ) : (
