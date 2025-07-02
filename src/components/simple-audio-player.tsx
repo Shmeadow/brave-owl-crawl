@@ -16,9 +16,11 @@ const SimpleAudioPlayer = () => {
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [displayMode, setDisplayMode] = useState<'docked' | 'maximized'>(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY) === 'maximized' ? 'maximized' : 'docked';
+      const savedMode = localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY);
+      // If saved mode is 'docked', use 'docked'. Otherwise, default to 'maximized'.
+      return savedMode === 'docked' ? 'docked' : 'maximized';
     }
-    return 'docked';
+    return 'maximized'; // Default for server-side render or initial client load
   });
 
   // State for HTML Audio Player
@@ -281,11 +283,11 @@ const SimpleAudioPlayer = () => {
             "flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs",
             displayMode === 'docked' ? 'w-10 h-10 mb-1' : 'w-12 h-12'
           )}>
-            <PlayerIcon size={displayMode === 'docked' ? 18 : 24} />
+            <PlayerIcon size={isDocked ? 18 : 24} />
           </div>
 
           {/* Track Info and URL Input Toggle */}
-          {displayMode !== 'docked' && (
+          {!isDocked && (
             <div className="flex-grow min-w-0">
               <p className="text-sm font-semibold text-foreground truncate leading-tight">{currentTitle}</p>
               <p className="text-xs text-muted-foreground truncate">{currentArtist}</p>
@@ -303,7 +305,7 @@ const SimpleAudioPlayer = () => {
           {/* Playback Controls and Volume */}
           <div className={cn(
             "flex items-center space-x-0.5 flex-shrink-0",
-            displayMode === 'docked' ? 'flex-col space-y-1' : ''
+            isDocked ? 'flex-col space-y-1' : ''
           )}>
             {playerType !== 'spotify' && ( // Spotify has its own controls
               <>
@@ -314,7 +316,7 @@ const SimpleAudioPlayer = () => {
                   title="Skip Backward"
                   disabled={!playerIsReady || playerType === 'spotify'}
                 >
-                  <Rewind size={displayMode === 'docked' ? 10 : 12} />
+                  <Rewind size={isDocked ? 10 : 12} />
                 </button>
                 <button
                   onClick={togglePlayPause}
@@ -323,7 +325,7 @@ const SimpleAudioPlayer = () => {
                   title={currentIsPlaying ? "Pause" : "Play"}
                   disabled={!playerIsReady || playerType === 'spotify'}
                 >
-                  {currentIsPlaying ? <Pause size={displayMode === 'docked' ? 12 : 14} /> : <Play size={displayMode === 'docked' ? 12 : 14} />}
+                  {currentIsPlaying ? <Pause size={isDocked ? 12 : 14} /> : <Play size={isDocked ? 12 : 14} />}
                 </button>
                 <button
                   onClick={skipForward}
@@ -332,13 +334,13 @@ const SimpleAudioPlayer = () => {
                   title="Skip Forward"
                   disabled={!playerIsReady || playerType === 'spotify'}
                 >
-                  <FastForward size={displayMode === 'docked' ? 10 : 12} />
+                  <FastForward size={isDocked ? 10 : 12} />
                 </button>
               </>
             )}
 
             {/* Volume Control */}
-            {displayMode !== 'docked' && (
+            {!isDocked && (
               <div className="flex items-center space-x-0.5 ml-1">
                 <button
                   onClick={toggleMute}
@@ -368,7 +370,7 @@ const SimpleAudioPlayer = () => {
         </div>
 
         {/* Progress Bar and Time */}
-        {displayMode !== 'docked' && (
+        {!isDocked && (
           <div className="flex items-center space-x-1 mb-1">
             <span className="text-xs text-muted-foreground w-8 text-right">{formatTime(currentPlaybackTime)}</span>
             <input
@@ -388,7 +390,7 @@ const SimpleAudioPlayer = () => {
         )}
 
         {/* URL Input Section */}
-        {showUrlInput && displayMode !== 'docked' && (
+        {showUrlInput && !isDocked && (
           <div className="mt-1 p-1 bg-muted rounded-lg border border-border">
             <label htmlFor="media-url" className="block text-xs font-medium text-muted-foreground mb-0.5">
               Embed URL:
