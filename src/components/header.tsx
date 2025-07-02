@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Bell, Search, Settings } from "lucide-react";
+import { Home, Bell, Search, Settings, Loader2 } from "lucide-react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -11,24 +11,42 @@ import { UpgradeButton } from "@/components/upgrade-button";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { ClockDisplay } from "@/components/clock-display";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { toast } from "sonner";
 
 interface HeaderProps {
   onOpenUpgradeModal: () => void;
-  // Removed chat-related props as they are no longer used directly in Header
-  // isChatOpen: boolean;
-  // onToggleChat: () => void;
-  // onNewUnreadMessage: () => void;
-  // onClearUnreadMessages: () => void;
-  // unreadChatCount: number;
+  isChatOpen: boolean;
+  onToggleChat: () => void;
+  onNewUnreadMessage: () => void;
+  onClearUnreadMessages: () => void;
+  unreadChatCount: number;
 }
 
 export function Header({ onOpenUpgradeModal }: HeaderProps) {
-  const { } = useSupabase(); // Removed session and profile as they were unused
   const router = useRouter();
-  const { currentRoomName } = useCurrentRoom(); // Removed currentRoomId and isCurrentRoomWritable as they were unused
+  const { currentRoomName } = useCurrentRoom();
+  const [buildOutput, setBuildOutput] = useState("");
+  const [isBuilding, setIsBuilding] = useState(false);
 
-  // displayName was not used in this component's JSX
-  // const displayName = profile?.first_name || profile?.last_name || session?.user?.email?.split('@')[0] || "Guest";
+  const handleRunBuild = () => {
+    setIsBuilding(true);
+    setBuildOutput("🔧 Building... Please wait.");
+    toast.info("Simulating build process...");
+
+    // Simulate build process
+    setTimeout(() => {
+      const success = Math.random() > 0.2; // 80% chance of success
+      if (success) {
+        setBuildOutput("✅ Build completed successfully!");
+        toast.success("Simulated build completed successfully!");
+      } else {
+        setBuildOutput("❌ Build failed. Check your code and try again.");
+        toast.error("Simulated build failed. Check console for details.");
+        console.error("Simulated build error: Something went wrong during compilation.");
+      }
+      setIsBuilding(false);
+    }, 3000); // Simulate a 3-second build time
+  };
 
   return (
     <header className="sticky top-0 z-[1002] w-full border-b bg-background backdrop-blur-xl flex items-center h-16 px-4 md:px-6">
@@ -63,6 +81,21 @@ export function Header({ onOpenUpgradeModal }: HeaderProps) {
         {/* Clock and Progress */}
         <ClockDisplay />
 
+        {/* Simulated Build Button */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRunBuild}
+          disabled={isBuilding}
+          className="flex items-center gap-1"
+        >
+          {isBuilding ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            "Run Build"
+          )}
+        </Button>
+
         {/* Other action buttons */}
         <UpgradeButton onOpenUpgradeModal={onOpenUpgradeModal} />
         <ThemeToggle />
@@ -74,7 +107,6 @@ export function Header({ onOpenUpgradeModal }: HeaderProps) {
           <Settings className="h-5 w-5" />
           <span className="sr-only">Settings</span>
         </Button>
-        {/* ChatPanel is rendered in AppWrapper, removed from here to avoid duplication */}
         <UserNav />
       </div>
     </header>
