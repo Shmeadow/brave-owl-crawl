@@ -19,12 +19,12 @@ interface UseYouTubePlayerResult {
   toggleMute: () => void; // New: Expose toggleMute
   seekTo: (seconds: number) => void;
   playerReady: boolean;
-  iframeId: string; // ID to assign to the iframe
+  iframeId: string; // ID to assign to the iframe (still used for internal YT API)
   youtubeCurrentTime: number; // Exposed current time
   youtubeDuration: number; // Exposed duration
 }
 
-export function useYouTubePlayer(embedUrl: string | null): UseYouTubePlayerResult {
+export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefObject<HTMLIFrameElement>): UseYouTubePlayerResult {
   const playerRef = useRef<any>(null); // YT.Player instance
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState(50); // Default volume 0-100
@@ -33,8 +33,7 @@ export function useYouTubePlayer(embedUrl: string | null): UseYouTubePlayerResul
   const [playerReady, setPlayerReady] = useState(false);
   const [youtubeCurrentTime, setYoutubeCurrentTime] = useState(0);
   const [youtubeDuration, setYoutubeDuration] = useState(0);
-  const iframeId = useRef(`youtube-player-${Math.random().toString(36).substring(2, 9)}`).current;
-  const timeUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const iframeId = useRef(`youtube-player-${Math.random().toString(36).substring(2, 9)}`).current; // Keep unique ID for YT API
 
   const clearTimeUpdateInterval = useCallback(() => {
     if (timeUpdateIntervalRef.current) {
@@ -44,7 +43,7 @@ export function useYouTubePlayer(embedUrl: string | null): UseYouTubePlayerResul
   }, []);
 
   useEffect(() => {
-    if (!embedUrl) {
+    if (!embedUrl || !iframeRef.current) { // Ensure embedUrl and iframeRef.current are available
       if (playerRef.current) {
         playerRef.current.destroy();
         playerRef.current = null;
@@ -108,11 +107,12 @@ export function useYouTubePlayer(embedUrl: string | null): UseYouTubePlayerResul
     };
 
     const createPlayer = () => {
-      if (window.YT && window.YT.Player && document.getElementById(iframeId)) {
+      // Use iframeRef.current directly
+      if (window.YT && window.YT.Player && iframeRef.current) {
         if (playerRef.current) {
           playerRef.current.destroy(); // Destroy existing player if any
         }
-        playerRef.current = new window.YT.Player(iframeId, {
+        playerRef.current = new window.YT.Player(iframeRef.current, { // Pass the DOM element
           videoId: videoId,
           playerVars: {
             autoplay: 1, // Autoplay on load
@@ -154,7 +154,7 @@ export function useYouTubePlayer(embedUrl: string | null): UseYouTubePlayerResul
         delete window.onYouTubeIframeAPIReady;
       }
     };
-  }, [embedUrl, iframeId, clearTimeUpdateInterval]); // Removed 'volume' from dependencies
+  }, [embedUrl, iframeRef.current, clearTimeUpdateInterval]); // Depend on iframeRef.current
 
   const togglePlayPause = useCallback(() => {
     if (playerReady && playerRef.current) {

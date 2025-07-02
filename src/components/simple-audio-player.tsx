@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Music, ListMusic, Youtube, VolumeX, Volume2, ChevronLeft } from 'lucide-react'; // Keep only the icons used directly here
 import { useYouTubePlayer } from '@/hooks/use-youtube-player';
 import { useHtmlAudioPlayer } from '@/hooks/use-html-audio-player';
@@ -30,6 +30,8 @@ const SimpleAudioPlayer = () => {
     return 'normal';
   });
 
+  const youtubeIframeRef = useRef<HTMLIFrameElement>(null); // New ref for YouTube iframe
+
   // Use new HTML Audio Player hook
   const {
     audioRef,
@@ -49,7 +51,7 @@ const SimpleAudioPlayer = () => {
     onEnded: htmlAudioOnEnded,
   } = useHtmlAudioPlayer(playerType === 'audio' ? committedMediaUrl : null); // Use committedMediaUrl
 
-  // Use YouTube Player hook - pass the converted embed URL
+  // Use YouTube Player hook - pass the converted embed URL and the iframe ref
   const youtubeEmbedUrl = playerType === 'youtube' ? getYouTubeEmbedUrl(committedMediaUrl) : null; // Use committedMediaUrl
   const {
     isPlaying: youtubeIsPlaying,
@@ -63,7 +65,7 @@ const SimpleAudioPlayer = () => {
     iframeId,
     youtubeCurrentTime,
     youtubeDuration,
-  } = useYouTubePlayer(youtubeEmbedUrl);
+  } = useYouTubePlayer(youtubeEmbedUrl, youtubeIframeRef); // Pass youtubeIframeRef
 
   // Effect to save display mode to local storage
   useEffect(() => {
@@ -185,6 +187,7 @@ const SimpleAudioPlayer = () => {
               inputUrl={committedMediaUrl} // Pass committedMediaUrl
               iframeId={iframeId}
               audioRef={audioRef}
+              youtubeIframeRef={youtubeIframeRef} // Pass the ref here
               onLoadedMetadata={htmlAudioOnLoadedMetadata}
               onTimeUpdate={htmlAudioOnTimeUpdate}
               onEnded={htmlAudioOnEnded}

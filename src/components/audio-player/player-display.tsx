@@ -8,6 +8,7 @@ interface PlayerDisplayProps {
   inputUrl: string;
   iframeId: string;
   audioRef: React.RefObject<HTMLAudioElement>;
+  youtubeIframeRef: React.RefObject<HTMLIFrameElement>; // New prop for YouTube iframe ref
   // New props for HTML audio event handlers
   onLoadedMetadata: () => void;
   onTimeUpdate: () => void;
@@ -19,7 +20,8 @@ export function PlayerDisplay({
   inputUrl,
   iframeId,
   audioRef,
-  onLoadedMetadata, // Destructure new props
+  youtubeIframeRef, // Destructure new prop
+  onLoadedMetadata,
   onTimeUpdate,
   onEnded,
 }: PlayerDisplayProps) {
@@ -32,9 +34,9 @@ export function PlayerDisplay({
         <audio
           ref={audioRef}
           src={inputUrl}
-          onLoadedMetadata={onLoadedMetadata} // Pass the handler
-          onTimeUpdate={onTimeUpdate}       // Pass the handler
-          onEnded={onEnded}                 // Pass the handler
+          onLoadedMetadata={onLoadedMetadata}
+          onTimeUpdate={onTimeUpdate}
+          onEnded={onEnded}
           preload="metadata"
         >
           Your browser does not support the audio element.
@@ -44,6 +46,7 @@ export function PlayerDisplay({
         <div className="relative w-full aspect-video mb-1">
           <iframe
             id={iframeId}
+            ref={youtubeIframeRef} // Pass the ref here
             className="absolute top-0 left-0 w-full h-full rounded-lg"
             src={youtubeEmbedUrl}
             frameBorder="0"
