@@ -13,6 +13,7 @@ interface MusicPlayerState {
     index: number;
     total: number;
     name: string;
+    bgColor: string; // Added bgColor here
   } | null;
   togglePlayPause: () => void;
   setVolume: (newVolume: number) => void;
@@ -21,11 +22,11 @@ interface MusicPlayerState {
   playPreviousTrack: () => void;
 }
 
-// Define your Lofi Chill playlist here
+// Define your Lofi Chill playlist here with a bgColor for each track
 const LOFI_PLAYLIST = [
-  { src: "/lofi-chill-1.mp3", name: "Lofi Chill Track 1" },
-  { src: "/lofi-chill-2.mp3", name: "Lofi Chill Track 2" },
-  { src: "/lofi-chill-3.mp3", name: "Lofi Chill Track 3" },
+  { src: "/lofi-chill-1.mp3", name: "Lofi Chill Track 1", bgColor: "rgba(100, 149, 237, 0.2)" }, // Subtle blue
+  { src: "/lofi-chill-2.mp3", name: "Lofi Chill Track 2", bgColor: "rgba(144, 238, 144, 0.2)" }, // Subtle green
+  { src: "/lofi-chill-3.mp3", name: "Lofi Chill Track 3", bgColor: "rgba(255, 165, 0, 0.2)" }, // Subtle orange
   // Add more tracks here if you have them in your public folder
 ];
 
@@ -38,7 +39,7 @@ export function useMusicPlayer(): MusicPlayerState {
   const [volume, setVolumeState] = useState(50); // Default volume 50%
   const [isMuted, setIsMuted] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [currentTrackInfo, setCurrentTrackInfo] = useState<{ currentTime: number; duration: number; index: number; total: number; name: string } | null>(null);
+  const [currentTrackInfo, setCurrentTrackInfo] = useState<{ currentTime: number; duration: number; index: number; total: number; name: string; bgColor: string } | null>(null);
   const [mounted, setMounted] = useState(false);
 
   // Initialize audioRef and set up event listeners
@@ -78,6 +79,7 @@ export function useMusicPlayer(): MusicPlayerState {
             index: currentTrackIndex,
             total: LOFI_PLAYLIST.length,
             name: LOFI_PLAYLIST[currentTrackIndex]?.name || 'Unknown',
+            bgColor: LOFI_PLAYLIST[currentTrackIndex]?.bgColor || 'transparent',
           });
         }
       };
@@ -89,6 +91,7 @@ export function useMusicPlayer(): MusicPlayerState {
             index: currentTrackIndex,
             total: LOFI_PLAYLIST.length,
             name: LOFI_PLAYLIST[currentTrackIndex]?.name || 'Unknown',
+            bgColor: LOFI_PLAYLIST[currentTrackIndex]?.bgColor || 'transparent',
           });
         }
       };

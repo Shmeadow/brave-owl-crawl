@@ -37,7 +37,7 @@ export function MusicPlayerBar() {
   return (
     <div
       className={cn(
-        "fixed top-16 right-4 z-30 transition-all duration-300 ease-in-out", // Positioned top-right, below header
+        "fixed top-24 right-4 z-30 transition-all duration-300 ease-in-out", // Positioned top-right, below header, slightly lower
         "w-64" // Always full width
       )}
     >
@@ -46,6 +46,7 @@ export function MusicPlayerBar() {
           "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg flex flex-col overflow-hidden",
           "h-auto p-3" // Always full height and padding
         )}
+        style={{ backgroundColor: currentTrack?.bgColor || undefined }} // Apply the track's background color
       >
         <CardContent className="flex flex-col gap-2 p-0">
           <div className="flex items-center justify-between">
