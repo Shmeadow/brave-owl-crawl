@@ -2,9 +2,10 @@
 
 import React, { useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { SidebarItem, useSidebar } from ".";
-import { useWidget } from "@/components/widget";
-import { useSidebarPreference } from "@/hooks";
+import { SidebarItem } from "./sidebar-item";
+import { useSidebar } from "./sidebar-context";
+import { useWidget } from "@/components/widget/widget-context";
+import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Wind, BookOpen, Goal, ChevronLeft, ChevronRight } from "lucide-react";
 
 const SIDEBAR_WIDTH = 60; // px

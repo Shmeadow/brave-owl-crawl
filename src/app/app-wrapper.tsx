@@ -2,12 +2,15 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { Header } from "@/components/header";
-import { Sidebar, useSidebar } from "@/components/sidebar";
-import { WidgetProvider, WidgetContainer } from "@/components/widget";
+import { Sidebar } from "@/components/sidebar/sidebar";
+import { useSidebar } from "@/components/sidebar/sidebar-context";
+import { WidgetProvider } from "@/components/widget/widget-context";
+import { WidgetContainer } from "@/components/widget/widget-container";
 import { Toaster } from "@/components/ui/sonner";
 import { UpgradeModal } from "@/components/upgrade-modal";
 import { ChatPanel } from "@/components/chat-panel";
-import { useCurrentRoom, useSidebarPreference } from "@/hooks";
+import { useCurrentRoom } from "@/hooks/use-current-room";
+import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { SimpleAudioPlayer } from "@/components/simple-audio-player";
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
 import { cn } from "@/lib/utils";

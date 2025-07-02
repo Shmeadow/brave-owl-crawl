@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { createClient } from '@supabase/supabase-js';
 import { AppWrapper } from "@/app/app-wrapper";
 import { SessionContextProvider } from "@/integrations/supabase/auth";
-import { SidebarProvider } from "@/components/sidebar";
+import { SidebarProvider } from "@/components/sidebar/sidebar-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
