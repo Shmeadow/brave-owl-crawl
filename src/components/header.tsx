@@ -102,7 +102,7 @@ export function Header({ onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }
           <p className="text-sm text-muted-foreground leading-none">{formattedDate}</p>
         </div>
         {/* Progress Bar */}
-        <div className="w-full mt-1">
+        <div className="w-full max-w-[150px] mt-1"> {/* Added max-w-[150px] */}
           <Progress value={dailyProgress} className="h-2 rounded-full" /> {/* Taller height */}
         </div>
       </div>
