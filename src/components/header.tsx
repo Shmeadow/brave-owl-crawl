@@ -82,19 +82,24 @@ export function Header({ onOpenUpgradeModal }: HeaderProps) {
         <ClockDisplay />
 
         {/* Simulated Build Button */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRunBuild}
-          disabled={isBuilding}
-          className="flex items-center gap-1"
-        >
-          {isBuilding ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            "Run Build"
+        <div className="flex flex-col items-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRunBuild}
+            disabled={isBuilding}
+            className="flex items-center gap-1"
+          >
+            {isBuilding ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              "Run Build"
+            )}
+          </Button>
+          {buildOutput && (
+            <p className="text-xs text-muted-foreground mt-1">{buildOutput}</p>
           )}
-        </Button>
+        </div>
 
         {/* Other action buttons */}
         <UpgradeButton onOpenUpgradeModal={onOpenUpgradeModal} />
