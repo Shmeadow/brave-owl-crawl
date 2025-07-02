@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Menu, Sun, Moon, Settings, Bell, MessageSquare } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Sidebar } from "@/components/sidebar/sidebar"; // Corrected import path
+import { Sidebar } from "@/components/sidebar/sidebar";
 import { ChatPanel } from "@/components/chat-panel";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
@@ -44,6 +44,7 @@ export function Header({ isSidebarOpen, toggleSidebar }: HeaderProps) {
   const formattedTime = currentTime.toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
+    second: '2-digit', // Added seconds
     hour12: profile?.time_format_24h === false, // Use 12-hour format if time_format_24h is false
   });
   const formattedDate = currentTime.toLocaleDateString([], {
@@ -92,8 +93,8 @@ export function Header({ isSidebarOpen, toggleSidebar }: HeaderProps) {
       {/* Center Section: Clock and Progress Bar */}
       <div className="flex flex-col items-center gap-1 flex-grow max-w-xs mx-auto w-full">
         <div className="flex justify-between items-baseline w-full">
-          <p className="text-3xl font-bold text-foreground leading-none">{formattedTime}</p>
-          <p className="text-sm text-muted-foreground">{formattedDate}</p>
+          <p className="text-4xl font-bold text-foreground leading-none">{formattedTime}</p> {/* Increased font size */}
+          <p className="text-base text-muted-foreground">{formattedDate}</p> {/* Increased font size */}
         </div>
         {/* Progress Bar */}
         <div className="w-full">
