@@ -65,7 +65,7 @@ export function Widget({
 
   const renderWidgetContent = () => {
     return (
-      <CardContent className="flex-grow p-0 overflow-y-auto min-h-0"> {/* Added min-h-0 */}
+      <CardContent className="flex-grow p-0 overflow-y-auto"> {/* Changed to overflow-y-auto */}
         <Content isCurrentRoomWritable={isCurrentRoomWritable} />
       </CardContent>
     );
@@ -75,9 +75,10 @@ export function Widget({
     <Card
       ref={setNodeRef}
       className={cn(
-        "absolute bg-card border-white/20 shadow-lg rounded-lg flex flex-col",
+        "absolute bg-card border-white/20 shadow-lg rounded-lg flex flex-col", // Removed overflow-hidden here
         "transition-all duration-300 ease-in-out",
         isTopmost ? "backdrop-blur-2xl" : "backdrop-blur-xl",
+        // Removed: isMaximized ? "inset-0 w-full h-full" : "", // This was causing it to go under the header
         isPinned ? "w-[192px] h-[48px]" : "",
         isMinimized && !isPinned ? "w-56 h-12" : "",
         
@@ -86,10 +87,10 @@ export function Widget({
         "pointer-events-auto"
       )}
       style={{
-        left: position.x,
-        top: position.y,
-        width: size.width,
-        height: size.height,
+        left: position.x, // Always use position.x
+        top: position.y,  // Always use position.y
+        width: size.width, // Always use size.width
+        height: size.height, // Always use size.height
         zIndex: zIndex,
         ...currentTransformStyle
       }}
@@ -176,7 +177,7 @@ export function Widget({
           minConstraints={[200, 150]}
           maxConstraints={[window.innerWidth, window.innerHeight]}
           className={cn(
-            "flex-grow flex flex-col overflow-auto",
+            "flex-grow flex flex-col overflow-auto", // Changed overflow-hidden to overflow-auto
             isMaximized ? "w-full h-full" : ""
           )}
           handle={null}
