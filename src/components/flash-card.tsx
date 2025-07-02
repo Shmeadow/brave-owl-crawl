@@ -16,9 +16,10 @@ export function FlashCard({ front, back, isFlipped, onClick }: FlashCardProps) {
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!cardRef.current) return;
+    const currentCardElement = cardRef.current; // Capture the current value of the ref
+    if (!currentCardElement) return; // Ensure the element exists
 
-    const { left, top, width, height } = cardRef.current.getBoundingClientRect();
+    const { left, top, width, height } = currentCardElement.getBoundingClientRect();
     const centerX = left + width / 2;
     const centerY = top + height / 2;
 
