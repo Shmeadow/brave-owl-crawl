@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
@@ -20,34 +20,43 @@ export function Sidebar() {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleMouseEnter = () => {
-    if (isAlwaysOpen) return; // Do nothing if always open
+  // Ref to hold the latest isSidebarOpen state for event listeners
+  const isSidebarOpenRef = useRef(isSidebarOpen);
+  useEffect(() => {
+    isSidebarOpenRef.current = isSidebarOpen;
+  }, [isSidebarOpen]);
+
+  const handleMouseEnter = useCallback(() => {
+    if (isAlwaysOpen) return;
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
     setIsSidebarOpen(true);
-  };
+  }, [isAlwaysOpen, setIsSidebarOpen]);
 
-  const handleMouseLeave = () => {
-    if (isAlwaysOpen) return; // Do nothing if always open
+  const handleMouseLeave = useCallback(() => {
+    if (isAlwaysOpen) return;
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
     timeoutRef.current = setTimeout(() => {
       setIsSidebarOpen(false);
     }, UNDOCK_DELAY);
-  };
+  }, [isAlwaysOpen, setIsSidebarOpen]);
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (isAlwaysOpen) return; // Do nothing if always open
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (isAlwaysOpen) return; // If always open, mouse events don't control it
 
-    if (e.clientX < HOT_ZONE_WIDTH && !isSidebarOpen) {
+    // Check if mouse is in the hot zone and sidebar is currently closed
+    if (e.clientX < HOT_ZONE_WIDTH && !isSidebarOpenRef.current) {
       handleMouseEnter();
-    } else if (e.clientX >= SIDEBAR_WIDTH && isSidebarOpen && !sidebarRef.current?.contains(e.target as Node)) {
+    } 
+    // Check if mouse is outside the sidebar area and sidebar is currently open
+    else if (e.clientX >= SIDEBAR_WIDTH && isSidebarOpenRef.current && !sidebarRef.current?.contains(e.target as Node)) {
       handleMouseLeave();
     }
-  };
+  }, [isAlwaysOpen, handleMouseEnter, handleMouseLeave]); // Dependencies for handleMouseMove
 
   useEffect(() => {
     if (isAlwaysOpen) {
@@ -64,7 +73,7 @@ export function Sidebar() {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [isAlwaysOpen, isSidebarOpen]); // Re-run effect if preference or hover state changes
+  }, [isAlwaysOpen, handleMouseMove, setIsSidebarOpen]); // Re-run effect if preference or handleMouseMove changes
 
   const navItems = [
     { id: "spaces", label: "Spaces", icon: LayoutGrid },

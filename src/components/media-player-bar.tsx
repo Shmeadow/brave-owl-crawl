@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Pause, Volume2, VolumeX, Youtube, Music, Minus, ChevronLeft, X } from "lucide-react"; // Added X icon
+import { Play, Pause, Volume2, VolumeX, Youtube, Music, Minus, ChevronLeft } from "lucide-react"; // Removed X icon
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { useYouTubePlayer } from "@/hooks/use-youtube-player";
@@ -15,8 +15,8 @@ export function MediaPlayerBar() {
     activePlayer,
     youtubeEmbedUrl,
     spotifyEmbedUrl,
-    setYoutubeEmbedUrl,
-    setSpotifyEmbedUrl,
+    setYoutubeEmbedUrl, // Keep this for internal logic if needed, but not exposed via button
+    setSpotifyEmbedUrl, // Keep this for internal logic if needed, but not exposed via button
     setActivePlayer,
   } = useMediaPlayer();
 
@@ -46,17 +46,7 @@ export function MediaPlayerBar() {
 
   // The handleClearEmbed function is no longer directly triggered from the bar's 'X' button.
   // It remains available in the SoundsWidget for managing embeds.
-  const handleClearEmbed = () => {
-    if (activePlayer === 'youtube') {
-      setYoutubeEmbedUrl(null);
-      toast.info("YouTube embed removed.");
-    } else if (activePlayer === 'spotify') {
-      setSpotifyEmbedUrl(null);
-      toast.info("Spotify embed removed.");
-    }
-    setActivePlayer(null);
-    setIsMinimized(false); // Ensure it's not minimized if content is cleared
-  };
+  // Removed handleClearEmbed function as it's no longer needed here.
 
   const handleToggleMinimize = () => {
     setIsMinimized(!isMinimized);
@@ -88,11 +78,7 @@ export function MediaPlayerBar() {
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-md font-semibold text-foreground">Media Player</h3>
             <div className="flex gap-1">
-              {/* Added a dedicated "Remove Current Embed" button */}
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleClearEmbed} title="Remove Current Embed">
-                <X className="h-4 w-4" />
-                <span className="sr-only">Remove Current Embed</span>
-              </Button>
+              {/* Removed the "Remove Current Embed" button */}
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleToggleMinimize} title="Minimize Media Player">
                 <Minus className="h-4 w-4" />
                 <span className="sr-only">Minimize Media Player</span>
