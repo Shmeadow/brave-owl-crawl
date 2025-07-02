@@ -1,95 +1,72 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Slider } from "@/components/ui/slider";
-import { Progress } from "@/components/ui/progress";
-import { Play, Pause, VolumeX, Volume2, Music, SkipForward, SkipBack } from "lucide-react";
+import { Youtube, Music } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useMusicPlayer } from "@/hooks/use-music-player";
+
+const LOCAL_STORAGE_YOUTUBE_EMBED_KEY = 'youtube_embed_url';
 
 export function MusicPlayerBar() {
-  const {
-    isPlaying,
-    volume,
-    isMuted,
-    currentTrack,
-    togglePlayPause,
-    setVolume,
-    toggleMute,
-    playNextTrack,
-    playPreviousTrack,
-  } = useMusicPlayer();
+  const [youtubeEmbedUrl, setYoutubeEmbedUrl] = useState<string | null>(null);
 
-  // The bar will always be "full" now, no compact state or pinning
-  const progressValue = currentTrack && currentTrack.duration > 0
-    ? (currentTrack.currentTime / currentTrack.duration) * 100
-    : 0;
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setYoutubeEmbedUrl(localStorage.getItem(LOCAL_STORAGE_YOUTUBE_EMBED_KEY));
+    }
+  }, []);
 
-  const formatTime = (seconds: number) => {
-    if (isNaN(seconds) || seconds < 0) return "00:00";
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
-  };
+  if (!youtubeEmbedUrl) {
+    return (
+      <div
+        className={cn(
+          "fixed top-24 right-4 z-30 transition-all duration-300 ease-in-out",
+          "w-64"
+        )}
+      >
+        <Card className="bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg flex flex-col overflow-hidden h-auto p-3">
+          <CardContent className="flex flex-col gap-2 p-0 items-center justify-center text-center h-full min-h-[100px]">
+            <Music className="h-8 w-8 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">No YouTube video embedded.</p>
+            <p className="text-xs text-muted-foreground">Go to Sounds widget to add one.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div
       className={cn(
-        "fixed top-24 right-4 z-30 transition-all duration-300 ease-in-out", // Positioned top-right, below header, slightly lower
-        "w-64" // Always full width
+        "fixed top-24 right-4 z-30 transition-all duration-300 ease-in-out",
+        "w-64"
       )}
     >
       <Card
         className={cn(
           "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg flex flex-col overflow-hidden",
-          "h-auto p-3" // Always full height and padding
+          "h-auto p-3"
         )}
-        style={{ backgroundColor: currentTrack?.bgColor || undefined }} // Apply the track's background color
       >
         <CardContent className="flex flex-col gap-2 p-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Music className="h-5 w-5 text-primary" />
-              <span className="font-semibold text-sm">
-                {currentTrack?.name || "Lofi Chill"}
-                {currentTrack && currentTrack.total > 1 && ` (${currentTrack.index + 1}/${currentTrack.total})`}
-              </span>
-            </div>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={togglePlayPause}>
-              {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-              <span className="sr-only">{isPlaying ? "Pause" : "Play"}</span>
-            </Button>
+          <div className="flex items-center gap-2 justify-center">
+            <Youtube className="h-6 w-6 text-red-500" />
+            <span className="font-semibold text-sm">YouTube Player</span>
           </div>
-
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={toggleMute}>
-              {isMuted || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-              <span className="sr-only">{isMuted ? "Unmute" : "Mute"}</span>
-            </Button>
-            <Slider
-              value={[volume]}
-              max={100}
-              step={1}
-              onValueChange={(val) => setVolume(val[0])}
-              className="flex-1"
-            />
+          <div className="relative w-full" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */ }}>
+            <iframe
+              src={youtubeEmbedUrl}
+              width="100%"
+              height="100%"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              loading="lazy"
+              className="absolute top-0 left-0 w-full h-full rounded-md"
+            ></iframe>
           </div>
-
-          <div className="flex items-center justify-between gap-2">
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={playPreviousTrack}>
-              <SkipBack className="h-4 w-4" />
-              <span className="sr-only">Previous Track</span>
-            </Button>
-            <span className="text-xs text-muted-foreground">{formatTime(currentTrack?.currentTime || 0)}</span>
-            <Progress value={progressValue} className="flex-1 h-1.5" />
-            <span className="text-xs text-muted-foreground">{formatTime(currentTrack?.duration || 0)}</span>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={playNextTrack}>
-              <SkipForward className="h-4 w-4" />
-              <span className="sr-only">Next Track</span>
-            </Button>
-          </div>
+          <p className="text-xs text-muted-foreground text-center mt-2">
+            Controls are within the YouTube player.
+          </p>
         </CardContent>
       </Card>
     </div>
