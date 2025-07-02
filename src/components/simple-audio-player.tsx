@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Music, ListMusic, Youtube } from 'lucide-react';
+import { Music, ListMusic, Youtube } from 'lucide-react'; // Keep only the icons used directly here
 import { useYouTubePlayer } from '@/hooks/use-youtube-player';
-import { useHtmlAudioPlayer } from '@/hooks/use-html-audio-player'; // New hook
+import { useHtmlAudioPlayer } from '@/hooks/use-html-audio-player';
 import { cn } from '@/lib/utils';
 
 // Import new modular components

@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Link } from 'lucide-react';
+import { Link } from 'lucide-react'; // Added missing import
 
 interface MediaInputProps {
   inputUrl: string;

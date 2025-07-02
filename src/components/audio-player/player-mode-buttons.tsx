@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Maximize, Minimize, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Maximize, Minimize, ChevronRight, ChevronLeft } from 'lucide-react'; // Added missing imports
 
 interface PlayerModeButtonsProps {
   displayMode: 'normal' | 'maximized' | 'minimized';
