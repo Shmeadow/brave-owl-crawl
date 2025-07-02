@@ -11,7 +11,7 @@ import { useSidebar } from "@/components/sidebar/sidebar-context";
 import { Sidebar } from "@/components/sidebar/sidebar";
 import { ChatPanel } from "@/components/chat-panel";
 import { WidgetProvider } from "@/components/widget/widget-context";
-import { WidgetContainer } => "@/components/widget/widget-container";
+import { WidgetContainer } from "@/components/widget/widget-container";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { MediaPlayerBar } from "@/components/media-player-bar";
 import { useMediaPlayer } from "@/components/media-player-context";
