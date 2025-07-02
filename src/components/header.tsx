@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Home, Sun, Moon, Settings, Bell, MessageSquare, Search } from "lucide-react"; // Added Home and Search icons
+import { Home, Sun, Moon, Settings, Bell, MessageSquare, Search } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Sidebar } from "@/components/sidebar/sidebar";
@@ -17,7 +17,7 @@ interface HeaderProps {
 }
 
 export function Header({ isSidebarOpen, toggleSidebar }: HeaderProps) {
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState<Date | null>(null); // Initialize as null
   const [progress, setProgress] = useState(0);
   const { theme, setTheme } = useTheme();
   const { session, profile } = useSupabase();
@@ -25,7 +25,8 @@ export function Header({ isSidebarOpen, toggleSidebar }: HeaderProps) {
   const [unreadChatMessages, setUnreadChatMessages] = useState(0);
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    // This effect runs only on the client after hydration
+    const updateClock = () => {
       const now = new Date();
       setCurrentTime(now);
 
@@ -36,22 +37,26 @@ export function Header({ isSidebarOpen, toggleSidebar }: HeaderProps) {
       const elapsedMilliseconds = now.getTime() - startOfDay.getTime();
       const dailyProgress = (elapsedMilliseconds / totalMillisecondsInDay) * 100;
       setProgress(dailyProgress);
-    }, 1000); // Update every second
+    };
+
+    updateClock(); // Initial call to set time and progress
+    const timer = setInterval(updateClock, 1000); // Update every second
 
     return () => clearInterval(timer);
-  }, []);
+  }, []); // Empty dependency array ensures this runs once on mount
 
-  const formattedTime = currentTime.toLocaleTimeString([], {
+  const formattedTime = currentTime?.toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
     hour12: profile?.time_format_24h === false,
-  });
-  const formattedDate = currentTime.toLocaleDateString([], {
+  }) || '--:--:--'; // Placeholder until time is set
+  
+  const formattedDate = currentTime?.toLocaleDateString([], {
     weekday: "short",
     month: "short",
     day: "numeric",
-  });
+  }) || '--- --'; // Placeholder until date is set
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -79,7 +84,7 @@ export function Header({ isSidebarOpen, toggleSidebar }: HeaderProps) {
               onClick={toggleSidebar}
               title="Toggle Sidebar / Home"
             >
-              <Home className="h-6 w-6" /> {/* Changed icon to Home */}
+              <Home className="h-6 w-6" />
               <span className="sr-only">Toggle Sidebar / Home</span>
             </Button>
           </SheetTrigger>
@@ -87,7 +92,7 @@ export function Header({ isSidebarOpen, toggleSidebar }: HeaderProps) {
             <Sidebar />
           </SheetContent>
         </Sheet>
-        <h1 className="text-xl font-semibold hidden sm:block">User's Room</h1> {/* Renamed title */}
+        <h1 className="text-xl font-semibold hidden sm:block">User's Room</h1>
       </div>
 
       {/* Center Section: Clock and Progress Bar */}
@@ -104,7 +109,7 @@ export function Header({ isSidebarOpen, toggleSidebar }: HeaderProps) {
 
       {/* Right Section: Actions */}
       <div className="flex items-center gap-2 ml-auto">
-        <Button variant="ghost" size="icon" title="Search Rooms"> {/* Added Search Button */}
+        <Button variant="ghost" size="icon" title="Search Rooms">
           <Search className="h-6 w-6" />
           <span className="sr-only">Search Rooms</span>
         </Button>
