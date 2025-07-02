@@ -67,7 +67,7 @@ export default async function RootLayout({
           disableTransitionOnChange
           isCozyThemeGloballyEnabled={isCozyThemeGloballyEnabled}
         >
-          <AppWrapper> {/* Wrap children and other client components */}
+          <AppWrapper>
             {children}
           </AppWrapper>
         </ThemeProvider>
