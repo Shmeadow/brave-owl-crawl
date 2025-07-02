@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, Volume2, VolumeX, FastForward, Rewind, Music, Link, ChevronLeft, ChevronRight, ListMusic, Youtube } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, FastForward, Rewind, Music, Link, ChevronLeft, ChevronRight, Maximize, Minimize, ListMusic, Youtube } from 'lucide-react';
 import { useYouTubePlayer } from '@/hooks/use-youtube-player';
 import { getYouTubeEmbedUrl, getSpotifyEmbedUrl } from '@/lib/utils'; // Import utility functions
 import { cn } from '@/lib/utils';
@@ -14,13 +14,14 @@ const SimpleAudioPlayer = () => {
   const [currentTitle, setCurrentTitle] = useState('No Media Loaded');
   const [currentArtist, setCurrentArtist] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
-  const [displayMode, setDisplayMode] = useState<'docked' | 'maximized'>(() => {
+  const [displayMode, setDisplayMode] = useState<'normal' | 'maximized' | 'minimized'>(() => {
     if (typeof window !== 'undefined') {
       const savedMode = localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY);
-      // If saved mode is 'docked', use 'docked'. Otherwise, default to 'maximized'.
-      return savedMode === 'docked' ? 'docked' : 'maximized';
+      // Default to 'normal' if no saved mode, or if saved mode is 'maximized' (which was the old default)
+      // If saved mode is 'minimized', use 'minimized'.
+      return savedMode === 'minimized' ? 'minimized' : 'normal';
     }
-    return 'maximized'; // Default for server-side render or initial client load
+    return 'normal'; // Default for server-side render or initial client load
   });
 
   // State for HTML Audio Player
@@ -39,7 +40,7 @@ const SimpleAudioPlayer = () => {
     volume: youtubeVolume,
     togglePlayPause: youtubeTogglePlayPause,
     setVolume: youtubeSetVolume,
-    seekTo: youtubeSeekTo, // Use the exposed seekTo
+    seekTo: youtubeSeekTo,
     playerReady: youtubePlayerReady,
     iframeId,
     youtubeCurrentTime,
@@ -204,216 +205,251 @@ const SimpleAudioPlayer = () => {
   const currentIsMuted = playerType === 'youtube' ? youtubeVolume === 0 : audioIsMuted;
   const playerIsReady = playerType === 'youtube' ? youtubePlayerReady : true; // HTML audio is always ready, Spotify embed is also "ready" once loaded
 
-  const toggleDisplayMode = () => {
-    setDisplayMode(prev => {
-      const newMode = prev === 'docked' ? 'maximized' : 'docked';
-      return newMode;
-    });
-  };
-
-  const spotifyEmbedUrl = playerType === 'spotify' ? getSpotifyEmbedUrl(inputUrl) : null;
-
   const PlayerIcon = playerType === 'youtube' ? Youtube : playerType === 'spotify' ? ListMusic : Music;
 
+  // Determine player container classes based on displayMode
+  const playerContainerClasses = cn(
+    "fixed z-[1000] transition-all duration-300 ease-in-out",
+    {
+      'right-4 top-1/2 -translate-y-1/2 w-12 h-12': displayMode === 'minimized', // Minimized (docked)
+      'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-xl w-full h-auto p-4': displayMode === 'normal', // Normal (centered, medium)
+      'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-4xl w-full h-auto p-4': displayMode === 'maximized', // Maximized (centered, larger)
+    }
+  );
+
   return (
-    <div className={cn(
-      "fixed z-[1000] transition-all duration-300 ease-in-out",
-      displayMode === 'docked' ? 'right-4 top-20 w-12' : 'inset-0 flex items-center justify-center p-4'
-    )}>
-      <div className={cn(
-        "bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex flex-col",
-        displayMode === 'docked' ? 'w-full' : 'max-w-2xl w-full h-auto'
-      )}>
-        {/* Dock/Undock Button */}
-        <button
-          onClick={toggleDisplayMode}
-          className="absolute -left-8 top-1/2 -translate-y-1/2 p-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-md"
-          title={displayMode === 'docked' ? "Maximize Player" : "Dock Player"}
-        >
-          {displayMode === 'docked' ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
-        </button>
-
-        {/* Conditional Audio/YouTube/Spotify Player */}
-        {playerType === 'audio' && (
-          <audio
-            ref={audioRef}
-            src={inputUrl}
-            onLoadedMetadata={onLoadedMetadata}
-            onTimeUpdate={onTimeUpdate}
-            onEnded={onEnded}
-            preload="metadata"
-          >
-            Your browser does not support the audio element.
-          </audio>
+    <>
+      {/* Main Toggle Button (outside player) */}
+      <button
+        onClick={() => setDisplayMode(prev => prev === 'minimized' ? 'normal' : 'minimized')}
+        className={cn(
+          "fixed z-[1000] p-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-md",
+          "right-4 top-1/2 -translate-y-1/2" // Positioned on the right side, middle
         )}
-        {playerType === 'youtube' && youtubeEmbedUrl && (
-          <div className={cn("relative w-full aspect-video", displayMode === 'docked' ? 'hidden' : 'mb-1')}>
-            <iframe
-              id={iframeId}
-              className="absolute top-0 left-0 w-full h-full rounded-lg"
-              src={youtubeEmbedUrl}
-              frameBorder="0"
-              allow="autoplay; encrypted-media"
-              allowFullScreen
-              title="YouTube video player"
-            ></iframe>
-          </div>
-        )}
-        {playerType === 'spotify' && spotifyEmbedUrl && (
-          <div className={cn("relative w-full aspect-square", displayMode === 'docked' ? 'hidden' : 'mb-1')}>
-            <iframe
-              src={spotifyEmbedUrl}
-              width="100%"
-              height="100%"
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              loading="lazy"
-              className="rounded-lg"
-              style={{ backgroundColor: 'transparent' }} // Attempt to make background transparent
-              title="Spotify Embed"
-            ></iframe>
-          </div>
-        )}
+        title={displayMode === 'minimized' ? "Expand Player" : "Minimize Player"}
+      >
+        {displayMode === 'minimized' ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+      </button>
 
-        {/* Main Player Row: Album Art, Track Info, Controls */}
-        <div className={cn(
-          "flex items-center justify-between space-x-1.5",
-          displayMode === 'docked' ? 'flex-col' : 'mb-1'
-        )}>
-          {/* Album Art Placeholder */}
-          <div className={cn(
-            "flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs",
-            displayMode === 'docked' ? 'w-10 h-10 mb-1' : 'w-12 h-12'
-          )}>
-            <PlayerIcon size={displayMode === 'docked' ? 18 : 24} />
-          </div>
-
-          {/* Track Info and URL Input Toggle */}
-          {displayMode !== 'docked' && (
-            <div className="flex-grow min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate leading-tight">{currentTitle}</p>
-              <p className="text-xs text-muted-foreground truncate">{currentArtist}</p>
-              <button
-                onClick={() => setShowUrlInput(prev => !prev)}
-                className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
-                title="Change Media URL"
+      {/* Player Content */}
+      {displayMode !== 'minimized' && (
+        <div className={playerContainerClasses}>
+          <div className="bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex flex-col w-full h-full">
+            {/* Conditional Audio/YouTube/Spotify Player */}
+            {playerType === 'audio' && (
+              <audio
+                ref={audioRef}
+                src={inputUrl}
+                onLoadedMetadata={onLoadedMetadata}
+                onTimeUpdate={onTimeUpdate}
+                onEnded={onEnded}
+                preload="metadata"
               >
-                <Link size={12} className="mr-0.5" />
-                {showUrlInput ? 'Hide URL' : 'Embed URL'}
-              </button>
-            </div>
-          )}
-
-          {/* Playback Controls and Volume */}
-          <div className={cn(
-            "flex items-center space-x-0.5 flex-shrink-0",
-            displayMode === 'docked' ? 'flex-col space-y-1' : ''
-          )}>
-            {playerType !== 'spotify' && ( // Spotify has its own controls
-              <>
-                <button
-                  onClick={skipBackward}
-                  className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
-                  aria-label="Skip backward 10 seconds"
-                  title="Skip Backward"
-                  disabled={!playerIsReady || playerType === 'spotify'}
-                >
-                  <Rewind size={displayMode === 'docked' ? 10 : 12} />
-                </button>
-                <button
-                  onClick={togglePlayPause}
-                  className="p-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105"
-                  aria-label={currentIsPlaying ? "Pause" : "Play"}
-                  title={currentIsPlaying ? "Pause" : "Play"}
-                  disabled={!playerIsReady || playerType === 'spotify'}
-                >
-                  {currentIsPlaying ? <Pause size={displayMode === 'docked' ? 12 : 14} /> : <Play size={displayMode === 'docked' ? 12 : 14} />}
-                </button>
-                <button
-                  onClick={skipForward}
-                  className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
-                  aria-label="Skip forward 10 seconds"
-                  title="Skip Forward"
-                  disabled={!playerIsReady || playerType === 'spotify'}
-                >
-                  <FastForward size={displayMode === 'docked' ? 10 : 12} />
-                </button>
-              </>
+                Your browser does not support the audio element.
+              </audio>
             )}
-
-            {/* Volume Control */}
-            {displayMode !== 'docked' && (
-              <div className="flex items-center space-x-0.5 ml-1">
-                <button
-                  onClick={toggleMute}
-                  className="p-0.5 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300"
-                  aria-label={currentIsMuted ? "Unmute" : "Mute"}
-                  title={currentIsMuted ? "Unmute" : "Mute"}
-                  disabled={!playerIsReady || playerType === 'spotify'}
-                >
-                  {currentIsMuted || currentVolume === 0 ? <VolumeX size={10} /> : <Volume2 size={10} />}
-                </button>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value={currentVolume}
-                  onChange={handleVolumeChange}
-                  className="w-8 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
-                  style={{
-                    background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${currentVolume * 100}%, hsl(var(--muted)) ${currentVolume * 100}%, hsl(var(--muted)) 100%)`
-                  }}
-                  disabled={!playerIsReady || playerType === 'spotify'}
-                />
+            {playerType === 'youtube' && youtubeEmbedUrl && (
+              <div className="relative w-full aspect-video mb-1">
+                <iframe
+                  id={iframeId}
+                  className="absolute top-0 left-0 w-full h-full rounded-lg"
+                  src={youtubeEmbedUrl}
+                  frameBorder="0"
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                  title="YouTube video player"
+                ></iframe>
               </div>
             )}
+            {playerType === 'spotify' && spotifyEmbedUrl && (
+              <div className="relative w-full aspect-square mb-1">
+                <iframe
+                  src={spotifyEmbedUrl}
+                  width="100%"
+                  height="100%"
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  loading="lazy"
+                  className="rounded-lg"
+                  style={{ backgroundColor: 'transparent' }}
+                  title="Spotify Embed"
+                ></iframe>
+              </div>
+            )}
+
+            {/* Main Player Row: Album Art, Track Info, Controls */}
+            <div className="flex items-center justify-between space-x-1.5 mb-1">
+              {/* Album Art Placeholder */}
+              <div className="flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs w-12 h-12">
+                <PlayerIcon size={24} />
+              </div>
+
+              {/* Track Info and URL Input Toggle */}
+              <div className="flex-grow min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate leading-tight">{currentTitle}</p>
+                <p className="text-xs text-muted-foreground truncate">{currentArtist}</p>
+                <button
+                  onClick={() => setShowUrlInput(prev => !prev)}
+                  className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
+                  title="Change Media URL"
+                >
+                  <Link size={12} className="mr-0.5" />
+                  {showUrlInput ? 'Hide URL' : 'Embed URL'}
+                </button>
+              </div>
+
+              {/* Playback Controls and Volume */}
+              <div className="flex items-center space-x-0.5 flex-shrink-0">
+                {playerType !== 'spotify' && (
+                  <>
+                    <button
+                      onClick={skipBackward}
+                      className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
+                      aria-label="Skip backward 10 seconds"
+                      title="Skip Backward"
+                      disabled={!playerIsReady || playerType === 'spotify'}
+                    >
+                      <Rewind size={12} />
+                    </button>
+                    <button
+                      onClick={togglePlayPause}
+                      className="p-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105"
+                      aria-label={currentIsPlaying ? "Pause" : "Play"}
+                      title={currentIsPlaying ? "Pause" : "Play"}
+                      disabled={!playerIsReady || playerType === 'spotify'}
+                    >
+                      {currentIsPlaying ? <Pause size={14} /> : <Play size={14} />}
+                    </button>
+                    <button
+                      onClick={skipForward}
+                      className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
+                      aria-label="Skip forward 10 seconds"
+                      title="Skip Forward"
+                      disabled={!playerIsReady || playerType === 'spotify'}
+                    >
+                      <FastForward size={12} />
+                    </button>
+                  </>
+                )}
+
+                {/* Volume Control */}
+                <div className="flex items-center space-x-0.5 ml-1">
+                  <button
+                    onClick={toggleMute}
+                    className="p-0.5 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300"
+                    aria-label={currentIsMuted ? "Unmute" : "Mute"}
+                    title={currentIsMuted ? "Unmute" : "Mute"}
+                    disabled={!playerIsReady || playerType === 'spotify'}
+                  >
+                    {currentIsMuted || currentVolume === 0 ? <VolumeX size={10} /> : <Volume2 size={10} />}
+                  </button>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={currentVolume}
+                    onChange={handleVolumeChange}
+                    className="w-8 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
+                    style={{
+                      background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${currentVolume * 100}%, hsl(var(--muted)) ${currentVolume * 100}%, hsl(var(--muted)) 100%)`
+                    }}
+                    disabled={!playerIsReady || playerType === 'spotify'}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Progress Bar and Time */}
+            <div className="flex items-center space-x-1 mb-1">
+              <span className="text-xs text-muted-foreground w-8 text-right">{formatTime(currentPlaybackTime)}</span>
+              <input
+                type="range"
+                min="0"
+                max={totalDuration || 0}
+                value={currentPlaybackTime}
+                onChange={handleProgressBarChange}
+                className="w-full h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
+                style={{
+                  background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${(currentPlaybackTime / totalDuration) * 100}%, hsl(var(--muted)) ${(currentPlaybackTime / totalDuration) * 100}%, hsl(var(--muted)) 100%)`
+                }}
+                disabled={!playerIsReady || totalDuration === 0 || playerType === 'spotify'}
+              />
+              <span className="text-xs text-muted-foreground w-8 text-left">{formatTime(totalDuration)}</span>
+            </div>
+
+            {/* URL Input Section */}
+            {showUrlInput && (
+              <div className="mt-1 p-1 bg-muted rounded-lg border border-border">
+                <label htmlFor="media-url" className="block text-xs font-medium text-muted-foreground mb-0.5">
+                  Embed URL:
+                </label>
+                <input
+                  type="text"
+                  id="media-url"
+                  value={inputUrl}
+                  onChange={(e) => setInputUrl(e.target.value)}
+                  placeholder="e.g., YouTube or Spotify link"
+                  className="w-full p-0.5 text-xs border border-border rounded-md focus:ring-primary focus:border-primary mb-1 bg-background text-foreground placeholder-muted-foreground"
+                />
+                <button
+                  onClick={loadNewMedia}
+                  className="w-full bg-primary text-primary-foreground text-xs py-0.5 px-1 rounded-md hover:bg-primary/90 transition duration-300 shadow-xs"
+                >
+                  Load Media
+                </button>
+              </div>
+            )}
+
+            {/* Maximize/Minimize Internal Button */}
+            <div className="flex justify-end mt-2">
+              {displayMode === 'normal' && (
+                <button
+                  onClick={() => setDisplayMode('maximized')}
+                  className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
+                  title="Maximize Player"
+                >
+                  <Maximize size={16} />
+                </button>
+              )}
+              {displayMode === 'maximized' && (
+                <button
+                  onClick={() => setDisplayMode('normal')}
+                  className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
+                  title="Shrink Player"
+                >
+                  <Minimize size={16} />
+                </button>
+              )}
+            </div>
           </div>
         </div>
+      )}
 
-        {/* Progress Bar and Time */}
-        {displayMode !== 'docked' && (
-          <div className="flex items-center space-x-1 mb-1">
-            <span className="text-xs text-muted-foreground w-8 text-right">{formatTime(currentPlaybackTime)}</span>
-            <input
-              type="range"
-              min="0"
-              max={totalDuration || 0}
-              value={currentPlaybackTime}
-              onChange={handleProgressBarChange}
-              className="w-full h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
-              style={{
-                background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${(currentPlaybackTime / totalDuration) * 100}%, hsl(var(--muted)) ${(currentPlaybackTime / totalDuration) * 100}%, hsl(var(--muted)) 100%)`
-              }}
-              disabled={!playerIsReady || totalDuration === 0 || playerType === 'spotify'}
-            />
-            <span className="text-xs text-muted-foreground w-8 text-left">{formatTime(totalDuration)}</span>
+      {/* Minimized Player Content (only visible when displayMode is 'minimized') */}
+      {displayMode === 'minimized' && (
+        <div className={cn(
+          "bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex flex-col items-center justify-center",
+          "w-full h-full" // Takes full size of its fixed parent container
+        )}>
+          {/* Album Art Placeholder */}
+          <div className="flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs w-10 h-10 mb-1">
+            <PlayerIcon size={18} />
           </div>
-        )}
-
-        {/* URL Input Section */}
-        {showUrlInput && displayMode !== 'docked' && (
-          <div className="mt-1 p-1 bg-muted rounded-lg border border-border">
-            <label htmlFor="media-url" className="block text-xs font-medium text-muted-foreground mb-0.5">
-              Embed URL:
-            </label>
-            <input
-              type="text"
-              id="media-url"
-              value={inputUrl}
-              onChange={(e) => setInputUrl(e.target.value)}
-              placeholder="e.g., YouTube or Spotify link"
-              className="w-full p-0.5 text-xs border border-border rounded-md focus:ring-primary focus:border-primary mb-1 bg-background text-foreground placeholder-muted-foreground"
-            />
-            <button
-              onClick={loadNewMedia}
-              className="w-full bg-primary text-primary-foreground text-xs py-0.5 px-1 rounded-md hover:bg-primary/90 transition duration-300 shadow-xs"
-            >
-              Load Media
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
+          <p className="text-xs font-semibold text-foreground truncate leading-tight w-full text-center">
+            {currentTitle.length > 10 ? currentTitle.substring(0, 8) + '...' : currentTitle}
+          </p>
+          <button
+            onClick={togglePlayPause}
+            className="p-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105 mt-1"
+            aria-label={currentIsPlaying ? "Pause" : "Play"}
+            title={currentIsPlaying ? "Pause" : "Play"}
+            disabled={!playerIsReady || playerType === 'spotify'}
+          >
+            {currentIsPlaying ? <Pause size={12} /> : <Play size={12} />}
+          </button>
+        </div>
+      )}
+    </>
   );
 };
 
