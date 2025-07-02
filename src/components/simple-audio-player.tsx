@@ -200,8 +200,6 @@ const SimpleAudioPlayer = () => {
   const canPlayPause = playerIsReady; // Now all types can be controlled if ready
   const canSeek = playerIsReady && totalDuration > 0;
 
-  const PlayerIcon = playerType === 'youtube' ? Youtube : playerType === 'spotify' ? ListMusic : Music;
-
   return (
     <div className={cn(
       "fixed z-[1000] transition-all duration-300 ease-in-out",
@@ -234,14 +232,8 @@ const SimpleAudioPlayer = () => {
           )}
         />
 
-        {/* Main Player Row: Album Art, Track Info, Controls */}
+        {/* Main Player Row: URL Input Toggle and Controls */}
         <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
-          {/* Album Art / Player Icon */}
-          <div className="flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs w-12 h-12"
-               style={playerType === 'spotify' && spotifyCurrentTrack?.album.images[0]?.url ? { backgroundImage: `url(${spotifyCurrentTrack.album.images[0].url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
-            {!spotifyCurrentTrack?.album.images[0]?.url && <PlayerIcon size={24} />}
-          </div>
-
           {/* URL Input Toggle */}
           <div className="flex-grow min-w-0">
             <MediaInput
