@@ -244,10 +244,19 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
 
   const toggleMute = useCallback(() => {
     if (playerReady && playerRef.current) {
-      playerRef.current.setVolume(isMuted ? (volume > 0 ? volume : 0.5) : 0).then(() => {
-        setIsMuted(!isMuted);
-        setVolumeState(isMuted ? (volume > 0 ? volume : 0.5) : 0);
-      }).catch((e: Error) => console.error("Error toggling mute:", e));
+      if (isMuted) {
+        const restoreVolume = prevVolumeRef.current > 0 ? prevVolumeRef.current : 0.5;
+        playerRef.current.setVolume(restoreVolume).then(() => {
+          setIsMuted(false);
+          setVolumeState(restoreVolume);
+        }).catch((e: Error) => console.error("Error toggling mute:", e));
+      } else {
+        prevVolumeRef.current = volume;
+        playerRef.current.setVolume(0).then(() => {
+          setIsMuted(true);
+          setVolumeState(0);
+        }).catch((e: Error) => console.error("Error toggling mute:", e));
+      }
     }
   }, [playerReady, isMuted, volume]);
 
