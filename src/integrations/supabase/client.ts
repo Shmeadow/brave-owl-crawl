@@ -10,7 +10,7 @@ if (supabaseUrl && supabaseAnonKey) {
   try {
     console.log('Attempting to initialize Supabase client with URL:', supabaseUrl, 'and Anon Key (first 5 chars):', supabaseAnonKey.substring(0, 5) + '...');
     supabase = createClient(supabaseUrl, supabaseAnonKey);
-    console.log('Supabase client initialized successfully.');
+    console.log('Supabase client initialized successfully. Full URL used:', supabaseUrl); // Log the full URL
   } catch (e) {
     console.error('Error initializing Supabase client:', e);
     if (typeof window !== 'undefined') { // Only show toast in browser
