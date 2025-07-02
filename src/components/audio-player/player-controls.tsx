@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Play, Pause, Volume2, VolumeX, FastForward, Rewind } from 'lucide-react'; // Added missing imports
+import { Play, Pause, Volume2, VolumeX, FastForward, Rewind } from 'lucide-react'; // Ensure these are imported
 
 interface PlayerControlsProps {
   playerType: 'audio' | 'youtube' | 'spotify' | null;
