@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useId } from "react";
+import React, { useState, useId } from "react";
 import { Button } from "@/components/ui/button";
 import { FlashCard } from "@/components/flash-card";
 import { ArrowLeft, ArrowRight, Star, Trash2, Shuffle, CheckCircle, Edit, RefreshCcw } from "lucide-react";
