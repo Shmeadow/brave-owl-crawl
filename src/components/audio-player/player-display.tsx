@@ -50,10 +50,9 @@ export function PlayerDisplay({
       )}
       {(playerType === 'youtube' && youtubeEmbedUrl) && (
         <div className={cn(
-          "relative w-full overflow-hidden", // Removed mb-1
+          "relative w-full overflow-hidden",
           className,
-          aspectRatioClass, // Always apply aspect ratio
-          isMaximized ? 'mx-auto' : '' // Center horizontally when maximized
+          aspectRatioClass // Always apply aspect ratio
         )}>
           <iframe
             ref={youtubeIframeRef}
