@@ -5,15 +5,15 @@
 @layer base {
   :root {
 
-    --background: 0 0% 100% / 0.9; /* Added transparency */
+    --background: 0 0% 100% / 0.2; /* Increased transparency */
 
     --foreground: 0 0% 3.9%;
 
-    --card: 0 0% 100% / 0.8; /* Added transparency */
+    --card: 0 0% 100% / 0.3; /* Increased transparency */
 
     --card-foreground: 0 0% 3.9%;
 
-    --popover: 0 0% 100% / 0.9; /* Added transparency */
+    --popover: 0 0% 100% / 0.3; /* Increased transparency */
 
     --popover-foreground: 0 0% 3.9%;
 
@@ -25,7 +25,7 @@
 
     --secondary-foreground: 0 0% 9%;
 
-    --muted: 0 0% 96.1% / 0.8; /* Added transparency */
+    --muted: 0 0% 96.1% / 0.4; /* Increased transparency */
 
     --muted-foreground: 0 0% 45.1%;
 
@@ -39,7 +39,7 @@
 
     --border: 0 0% 89.8%;
 
-    --input: 0 0% 89.8%;
+    --input: 0 0% 89.8% / 0.5; /* Added transparency */
 
     --ring: 0 0% 3.9%;
 
@@ -56,7 +56,7 @@
     --radius: 0.5rem
   ;
 
-    --sidebar-background: 0 0% 98% / 0.8; /* Added transparency */
+    --sidebar-background: 0 0% 98% / 0.3; /* Increased transparency */
 
     --sidebar-foreground: 240 5.3% 26.1%;
 
@@ -84,15 +84,15 @@
   }
   .dark {
 
-    --background: 0 0% 3.9% / 0.9; /* Added transparency */
+    --background: 0 0% 3.9% / 0.2; /* Increased transparency */
 
     --foreground: 0 0% 98%;
 
-    --card: 0 0% 3.9% / 0.8; /* Added transparency */
+    --card: 0 0% 3.9% / 0.3; /* Increased transparency */
 
     --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 3.9% / 0.9; /* Added transparency */
+    --popover: 0 0% 3.9% / 0.3; /* Increased transparency */
 
     --popover-foreground: 0 0% 98%;
 
@@ -104,7 +104,7 @@
 
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 14.9% / 0.8; /* Added transparency */
+    --muted: 0 0% 14.9% / 0.4; /* Increased transparency */
 
     --muted-foreground: 0 0% 63.9%;
 
@@ -118,7 +118,7 @@
 
     --border: 0 0% 14.9%;
 
-    --input: 0 0% 14.9%;
+    --input: 0 0% 14.9% / 0.5; /* Added transparency */
 
     --ring: 0 0% 83.1%;
 
@@ -151,26 +151,24 @@
     background-repeat: no-repeat; /* Prevent tiling */
     background-attachment: fixed; /* Keep background fixed on scroll */
 
-    --background: 240 50% 10% / 0.3; /* Deep indigo/night sky with more transparency */
+    --background: 240 50% 10% / 0.2; /* Increased transparency */
     --foreground: 0 0% 90%; /* Light text */
-    --card: 220 20% 20% / 0.6; /* Muted blue-gray for house walls, more transparent for card base */
-    --card-foreground: 0 0% 90%;
-    --popover: 220 20% 20% / 0.7; /* Slightly less transparent for popovers */
-    --popover-foreground: 0 0% 90%;
+    --card: 220 20% 20% / 0.3; /* Increased transparency */
+    --popover: 220 20% 20% / 0.3; /* Increased transparency */
     --primary: 40 80% 60%; /* Warm orange/gold from lights */
     --primary-foreground: 240 50% 10%; /* Dark text on primary */
     --secondary: 160 30% 25%; /* Deep teal/green from foliage */
     --secondary-foreground: 0 0% 90%;
-    --muted: 220 15% 30%; /* Slightly lighter blue-gray */
+    --muted: 220 15% 30% / 0.4; /* Increased transparency */
     --muted-foreground: 0 0% 70%; /* Muted light gray */
     --accent: 280 60% 40%; /* Muted purple/pink from clouds/reflections */
     --accent-foreground: 0 0% 90%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 220 15% 35%;
-    --input: 220 15% 35%;
+    --input: 220 15% 35% / 0.5; /* Added transparency */
     --ring: 40 80% 60%;
-    --sidebar-background: 220 25% 15% / 0.6; /* Slightly darker than card for sidebar with more transparency */
+    --sidebar-background: 220 25% 15% / 0.3; /* Increased transparency */
     --sidebar-foreground: 0 0% 90%;
     --sidebar-primary: 40 80% 60%;
     --sidebar-primary-foreground: 240 50% 10%;
