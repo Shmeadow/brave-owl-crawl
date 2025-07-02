@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Home, Bell, Search } from "lucide-react"; // Removed Sun, Moon
+import { Home, Bell, Search, Settings } from "lucide-react"; // Removed Sun, Moon
 import { useTheme } from "next-themes"; // Still needed for mounted check
 import { ChatPanel } from "@/components/chat-panel";
 import { useSupabase } from "@/integrations/supabase/auth";
@@ -71,6 +71,10 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
         <Button variant="ghost" size="icon" title="Notifications">
           <Bell className="h-6 w-6" />
           <span className="sr-only">Notifications</span>
+        </Button>
+        <Button variant="ghost" size="icon" onClick={() => router.push('/settings')} title="Settings">
+          <Settings className="h-5 w-5" />
+          <span className="sr-only">Settings</span>
         </Button>
         {session && (
           <ChatPanel
