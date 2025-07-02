@@ -8,7 +8,7 @@ import { UpgradeModal } from "@/components/upgrade-modal";
 import { usePathname } from "next/navigation";
 import { Header } from "@/components/header";
 import { useSidebar } from "@/components/sidebar/sidebar-context";
-import { Sidebar } from "@/components/sidebar/sidebar";
+import { Sidebar } from "@/components/sidebar/sidebar"; // Import the refactored Sidebar
 import { ChatPanel } from "@/components/chat-panel";
 import { WidgetProvider } from "@/components/widget/widget-context";
 import { WidgetContainer } from "@/components/widget/widget-container";
@@ -22,7 +22,8 @@ const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
 const CHAT_PANEL_WIDTH_OPEN = 320;
 const CHAT_PANEL_WIDTH_CLOSED = 56;
 const HEADER_HEIGHT = 64;
-const SIDEBAR_WIDTH = 60;
+const SIDEBAR_WIDTH_CLOSED = 60; // Corrected constant
+const SIDEBAR_WIDTH_OPEN = 200; // New constant for open sidebar width
 
 const WIDGET_CONFIGS = {
   "spaces": { initialPosition: { x: 150, y: 100 }, initialWidth: 600, initialHeight: 700 },
@@ -78,7 +79,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
 
   useEffect(() => {
     const updateMainContentArea = () => {
-      const sidebarCurrentWidth = (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH : 0;
+      const sidebarCurrentWidth = (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH_OPEN : SIDEBAR_WIDTH_CLOSED; // Corrected logic
       const chatPanelWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
       
       setMainContentArea({
@@ -126,13 +127,18 @@ export function AppWrapper({ children }: AppWrapperProps) {
           onClearUnreadMessages={handleClearUnreadMessages}
           unreadChatCount={unreadChatCount}
         />
-        <Sidebar />
+        <Sidebar /> {/* The refactored navigation sidebar */}
         <main
           className={cn(
             "flex flex-col flex-1 w-full overflow-auto transition-all duration-300 ease-in-out",
             "items-center justify-center"
           )}
-          // Removed marginLeft and marginRight to prevent content shifting
+          style={{
+            marginLeft: mainContentArea.left,
+            width: mainContentArea.width,
+            height: mainContentArea.height,
+            marginTop: mainContentArea.top,
+          }}
         >
           {children}
         </main>
@@ -165,7 +171,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
         />
       </div>
       <Toaster />
-      <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} />
+      <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} /> {/* This is where draggable widgets are rendered */}
     </WidgetProvider>
   );
 }
