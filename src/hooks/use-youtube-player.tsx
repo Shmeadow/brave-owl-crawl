@@ -42,16 +42,125 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
     }
   }, []);
 
-  useEffect(() => {
-    // This effect handles player creation/update and destruction
-    let currentVideoId: string | null = null;
-    const videoIdMatch = embedUrl?.match(/\/embed\/([\w-]+)/);
-    if (videoIdMatch) {
-      currentVideoId = videoIdMatch[1];
+  const onPlayerReady = useCallback((event: any) => {
+    console.log("YouTube Player Ready:", event.target);
+    setPlayerReady(true);
+    event.target.setVolume(volume);
+    setIsPlaying(event.target.getPlayerState() === window.YT.PlayerState.PLAYING);
+    setIsMuted(event.target.isMuted());
+    setYoutubeDuration(event.target.getDuration());
+    setYoutubeCurrentTime(event.target.getCurrentTime());
+    
+    // Try to play immediately if not already playing (might be blocked by browser)
+    if (event.target.getPlayerState() !== window.YT.PlayerState.PLAYING) {
+      event.target.playVideo().catch((e: any) => console.warn("Autoplay blocked or error playing video:", e));
     }
 
-    // If no embedUrl or iframe is not in DOM, clean up player and reset states
-    if (!currentVideoId || !iframeRef.current) {
+    clearTimeUpdateInterval();
+    timeUpdateIntervalRef.current = setInterval(() => {
+      if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
+        setYoutubeCurrentTime(playerRef.current.getCurrentTime());
+      }
+    }, 1000);
+  }, [volume, clearTimeUpdateInterval]);
+
+  const onPlayerStateChange = useCallback((event: any) => {
+    if (window.YT) {
+      setIsPlaying(event.data === window.YT.PlayerState.PLAYING);
+      if (event.data === window.YT.PlayerState.PLAYING) {
+        clearTimeUpdateInterval();
+        timeUpdateIntervalRef.current = setInterval(() => {
+          if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
+            setYoutubeCurrentTime(playerRef.current.getCurrentTime());
+          }
+        }, 1000);
+      } else {
+        clearTimeUpdateInterval();
+        if (event.data === window.YT.PlayerState.ENDED) {
+          setYoutubeCurrentTime(0);
+        }
+      }
+    }
+  }, [clearTimeUpdateInterval]);
+
+  // Effect for cleanup when embedUrl changes or component unmounts
+  useEffect(() => {
+    return () => {
+      console.log("YouTube Player Cleanup Effect: Destroying player and clearing interval.");
+      if (playerRef.current) {
+        playerRef.current.destroy();
+        playerRef.current = null;
+      }
+      clearTimeUpdateInterval();
+      setPlayerReady(false);
+      setIsPlaying(false);
+      setYoutubeCurrentTime(0);
+      setYoutubeDuration(0);
+      // Ensure global callback is cleaned if it was set by this instance
+      if (typeof window !== 'undefined' && window.onYouTubeIframeAPIReady === initializeYouTubePlayer) {
+        delete window.onYouTubeIframeAPIReady;
+      }
+    };
+  }, [embedUrl, clearTimeUpdateInterval]); // Only re-run cleanup when embedUrl changes
+
+  // Effect for player initialization/loading when embedUrl or iframeRef.current changes
+  const initializeYouTubePlayer = useCallback(() => {
+    const videoIdMatch = embedUrl?.match(/\/embed\/([\w-]+)/);
+    const currentVideoId = videoIdMatch ? videoIdMatch[1] : null;
+
+    if (!currentVideoId || !iframeRef.current || !window.YT || !window.YT.Player) {
+      console.log("YouTube API or iframe not ready for player creation/update.");
+      return;
+    }
+
+    if (playerRef.current) {
+      console.log("YouTube player exists, loading new video:", currentVideoId);
+      playerRef.current.loadVideoById(currentVideoId);
+      playerRef.current.setVolume(volume);
+      playerRef.current.unMute();
+      setIsMuted(false);
+      playerRef.current.playVideo().catch((e: any) => console.warn("Autoplay blocked on loadVideoById:", e));
+    } else {
+      console.log("Creating new YouTube player for video:", currentVideoId);
+      playerRef.current = new window.YT.Player(iframeRef.current, {
+        videoId: currentVideoId,
+        playerVars: {
+          autoplay: 1,
+          loop: 1,
+          playlist: currentVideoId,
+          controls: 0,
+          modestbranding: 1,
+          rel: 0,
+          disablekb: 1,
+          fs: 0,
+          iv_load_policy: 3,
+          enablejsapi: 1,
+          origin: window.location.origin,
+        },
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange,
+        },
+      });
+    }
+  }, [embedUrl, iframeRef.current, onPlayerReady, onPlayerStateChange, volume]);
+
+  useEffect(() => {
+    const videoIdMatch = embedUrl?.match(/\/embed\/([\w-]+)/);
+    const currentVideoId = videoIdMatch ? videoIdMatch[1] : null;
+
+    if (currentVideoId && iframeRef.current) {
+      if (window.YT && window.YT.Player) {
+        initializeYouTubePlayer();
+      } else {
+        // If API not ready, set a global callback.
+        // This needs to be careful not to overwrite other callbacks.
+        // For simplicity, assuming this is the primary YT player.
+        window.onYouTubeIframeAPIReady = initializeYouTubePlayer;
+      }
+    } else {
+      // If no valid embedUrl or iframeRef.current is null, ensure player is destroyed
+      console.log("No valid embedUrl or iframeRef.current is null. Ensuring player is destroyed.");
       if (playerRef.current) {
         playerRef.current.destroy();
         playerRef.current = null;
@@ -61,115 +170,15 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
       setYoutubeCurrentTime(0);
       setYoutubeDuration(0);
       clearTimeUpdateInterval();
-      return;
     }
-
-    // Load YouTube IFrame API script if not already loaded
-    if (typeof window !== 'undefined' && !window.YT) {
-      const tag = document.createElement('script');
-      tag.src = "https://www.youtube.com/iframe_api";
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-    }
-
-    const onPlayerReady = (event: any) => {
-      setPlayerReady(true);
-      event.target.setVolume(volume);
-      setIsPlaying(event.target.getPlayerState() === window.YT.PlayerState.PLAYING);
-      setIsMuted(event.target.isMuted());
-      setYoutubeDuration(event.target.getDuration());
-      setYoutubeCurrentTime(event.target.getCurrentTime());
-      
-      if (event.target.getPlayerState() === window.YT.PlayerState.PLAYING) {
-        clearTimeUpdateInterval();
-        timeUpdateIntervalRef.current = setInterval(() => {
-          setYoutubeCurrentTime(event.target.getCurrentTime());
-        }, 1000);
-      }
-    };
-
-    const onPlayerStateChange = (event: any) => {
-      if (window.YT) {
-        setIsPlaying(event.data === window.YT.PlayerState.PLAYING);
-        if (event.data === window.YT.PlayerState.PLAYING) {
-          clearTimeUpdateInterval();
-          timeUpdateIntervalRef.current = setInterval(() => {
-            setYoutubeCurrentTime(event.target.getCurrentTime());
-          }, 1000);
-        } else {
-          clearTimeUpdateInterval();
-          if (event.data === window.YT.PlayerState.ENDED) {
-            setYoutubeCurrentTime(0);
-          }
-        }
-      }
-    };
-
-    const initializeOrLoadVideo = () => {
-      if (!currentVideoId || !iframeRef.current || !window.YT || !window.YT.Player) {
-        return; // Not ready to create or update player
-      }
-
-      if (playerRef.current) {
-        // Player already exists, load new video
-        playerRef.current.loadVideoById(currentVideoId);
-        playerRef.current.setVolume(volume); // Ensure volume is maintained
-        playerRef.current.unMute(); // Ensure it's unmuted if it was muted
-        setIsMuted(false);
-        setIsPlaying(true); // Assume play on load
-      } else {
-        // Create new player
-        playerRef.current = new window.YT.Player(iframeRef.current, {
-          videoId: currentVideoId,
-          playerVars: {
-            autoplay: 1,
-            loop: 1,
-            playlist: currentVideoId,
-            controls: 0,
-            modestbranding: 1,
-            rel: 0,
-            disablekb: 1,
-            fs: 0,
-            iv_load_policy: 3,
-            enablejsapi: 1,
-            origin: window.location.origin,
-          },
-          events: {
-            'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange,
-          },
-        });
-      }
-    };
-
-    // If API is already ready, try to create/update player immediately
-    if (window.YT && window.YT.Player) {
-      initializeOrLoadVideo();
-    } else {
-      // If API not ready, set a global callback
-      window.onYouTubeIframeAPIReady = initializeOrLoadVideo;
-    }
-
-    // Cleanup function for this effect
-    return () => {
-      if (playerRef.current) {
-        playerRef.current.destroy();
-        playerRef.current = null;
-      }
-      clearTimeUpdateInterval();
-      // Clear global callback if it was set by this instance
-      if (typeof window !== 'undefined' && window.onYouTubeIframeAPIReady === initializeOrLoadVideo) {
-        delete window.onYouTubeIframeAPIReady;
-      }
-    };
-  }, [embedUrl, iframeRef.current, volume, clearTimeUpdateInterval]); // Dependencies
+  }, [embedUrl, iframeRef.current, initializeYouTubePlayer, clearTimeUpdateInterval]); // Dependencies for this effect
 
   const togglePlayPause = useCallback(() => {
     if (playerReady && playerRef.current) {
       if (isPlaying) {
         playerRef.current.pauseVideo();
       } else {
-        playerRef.current.playVideo();
+        player.current.playVideo().catch((e: any) => console.warn("Manual play blocked or error:", e));
       }
     }
   }, [isPlaying, playerReady]);
