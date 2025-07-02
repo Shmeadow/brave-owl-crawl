@@ -59,7 +59,7 @@ function SortableFlashCardItem({
   onDeleteCard,
   onUpdateCard,
   onToggleStar,
-  onMarkAsLearned,
+  onMarkAsLearLearned,
   isCurrentRoomWritable,
 }: SortableFlashCardItemProps) {
   const {
@@ -69,7 +69,7 @@ function SortableFlashCardItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: card.id, disabled: !isCurrentRoomWritable }); // Disable sorting if not writable
+  } = useSortable({ id: card.id, disabled: !isCurrentRoomWritable });
 
   const style = {
     transform: CSS.Transform.toString(transform),

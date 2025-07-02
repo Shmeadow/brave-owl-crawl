@@ -1,6 +1,3 @@
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-
 export default function HomePage() {
   return (
     <div className="p-4 md:p-8">

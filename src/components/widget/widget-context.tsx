@@ -69,7 +69,6 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
   const [maxZIndex, setMaxZIndex] = useState(900);
   const [mounted, setMounted] = useState(false);
 
-  // Load state from local storage on mount
   useEffect(() => {
     setMounted(true);
     if (typeof window !== 'undefined') {
@@ -77,9 +76,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
         const savedState = localStorage.getItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
         if (savedState) {
           const parsedState: WidgetState[] = JSON.parse(savedState);
-          // Filter out any widgets that might not have a config anymore
           const validWidgets = parsedState.filter(w => initialWidgetConfigs[w.id]);
-          // Re-clamp positions and sizes based on current mainContentArea
           const reClampedWidgets = validWidgets.map(widget => {
             const clampedPos = clampPosition(
               widget.position.x,
@@ -106,13 +103,11 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
         }
       } catch (e) {
         console.error("Failed to parse widget states from local storage:", e);
-        // Fallback to default if parsing fails
         setActiveWidgets([]);
       }
     }
-  }, [initialWidgetConfigs, mainContentArea]); // Re-run if mainContentArea changes on initial load
+  }, [initialWidgetConfigs, mainContentArea]);
 
-  // Save state to local storage whenever activeWidgets changes
   useEffect(() => {
     if (mounted && typeof window !== 'undefined') {
       localStorage.setItem(LOCAL_STORAGE_WIDGET_STATE_KEY, JSON.stringify(activeWidgets));
@@ -120,7 +115,8 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
   }, [activeWidgets, mounted]);
 
   const recalculatePinnedWidgets = useCallback((currentWidgets: WidgetState[]) => {
-    const pinned = currentWidgets.filter(w => w.isPinned).sort((a, b) => a.id.localeCompare(b.id));
+    // 'pinned' variable was not used
+    // const pinned = currentWidgets.filter(w => w.isPinned).sort((a, b) => a.id.localeCompare(b.id));
     let currentX = mainContentArea.left + DOCKED_WIDGET_HORIZONTAL_GAP;
 
     return currentWidgets.map(widget => {
@@ -271,12 +267,12 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
               ...widget,
               isMaximized: false,
               isMinimized: true,
-              size: { width: 224, height: 48 }, // Use fixed minimized size
+              size: { width: 224, height: 48 },
               position: clampPosition(
                 widget.normalPosition?.x || initialWidgetConfigs[id].initialPosition.x,
                 widget.normalPosition?.y || initialWidgetConfigs[id].initialPosition.y,
-                224, // Use fixed minimized size
-                48, // Use fixed minimized size
+                224,
+                48,
                 mainContentArea
               ),
             };
@@ -293,12 +289,12 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
               isMinimized: true,
               normalSize: widget.size,
               normalPosition: widget.position,
-              size: { width: 224, height: 48 }, // Use fixed minimized size
+              size: { width: 224, height: 48 },
               position: clampPosition(
                 widget.position.x,
                 widget.position.y,
-                224, // Use fixed minimized size
-                48, // Use fixed minimized size
+                224,
+                48,
                 mainContentArea
               ),
             };
@@ -315,7 +311,8 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       const updatedWidgets = prev.map(widget => {
         if (widget.id === id) {
           if (widget.isPinned) {
-            const config = initialWidgetConfigs[id];
+            // 'config' variable was not used
+            // const config = initialWidgetConfigs[id];
             return {
               ...widget,
               isPinned: false,

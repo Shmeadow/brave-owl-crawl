@@ -3,11 +3,51 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 
-// Declare global Spotify object for TypeScript
 declare global {
   interface Window {
     onSpotifyWebPlaybackSDKReady?: () => void;
-    Spotify: any; // Spotify Web Playback SDK object
+    Spotify: {
+      Player: new (options: {
+        name: string;
+        getOAuthToken: (cb: (token: string) => void) => void;
+        volume: number;
+      }) => Spotify.Player;
+      // Add other Spotify types if needed
+    };
+  }
+  namespace Spotify {
+    interface Player {
+      addListener: (event: string, callback: (data: any) => void) => void;
+      connect: () => Promise<boolean>;
+      disconnect: () => void;
+      togglePlay: () => Promise<void>;
+      setVolume: (volume: number) => Promise<void>;
+      isMuted: () => boolean;
+      mute: () => Promise<void>;
+      unMute: () => Promise<void>;
+      seek: (position_ms: number) => Promise<void>;
+      getCurrentState: () => Promise<PlaybackState | null>;
+      play: (options?: PlayOptions) => Promise<void>;
+      // Add other methods as needed
+    }
+
+    interface PlaybackState {
+      paused: boolean;
+      position: number;
+      duration: number;
+      track_window: {
+        current_track: SpotifyTrack;
+        // Add other track window properties if needed
+      };
+      // Add other state properties if needed
+    }
+
+    interface PlayOptions {
+      uris?: string[];
+      context_uri?: string;
+      offset?: { position?: number; uri?: string };
+      position_ms?: number;
+    }
   }
 }
 
@@ -43,11 +83,11 @@ interface UseSpotifyPlayerResult {
 }
 
 export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerResult {
-  const playerRef = useRef<any>(null); // Spotify.Player instance
+  const playerRef = useRef<Spotify.Player | null>(null); // Fixed 'any' type
   const deviceIdRef = useRef<string | null>(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolumeState] = useState(0.5); // 0-1 range
+  const [volume, setVolumeState] = useState(0.5);
   const [isMuted, setIsMuted] = useState(false);
   const [currentTrack, setCurrentTrack] = useState<SpotifyTrack | null>(null);
   const [spotifyCurrentTime, setSpotifyCurrentTime] = useState(0);
@@ -61,7 +101,7 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
     }
   }, []);
 
-  const updatePlaybackState = useCallback((state: any) => {
+  const updatePlaybackState = useCallback((state: Spotify.PlaybackState | null) => { // Fixed 'any' type
     if (!state) {
       setIsPlaying(false);
       setCurrentTrack(null);
@@ -73,13 +113,13 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
 
     setIsPlaying(!state.paused);
     setCurrentTrack(state.track_window.current_track);
-    setSpotifyCurrentTime(state.position / 1000); // Convert ms to seconds
-    setSpotifyDuration(state.duration / 1000); // Convert ms to seconds
+    setSpotifyCurrentTime(state.position / 1000);
+    setSpotifyDuration(state.duration / 1000);
 
     if (!state.paused && !intervalRef.current) {
       intervalRef.current = setInterval(() => {
         if (playerRef.current) {
-          playerRef.current.getCurrentState().then((s: any) => {
+          playerRef.current.getCurrentState().then((s: Spotify.PlaybackState | null) => { // Fixed 'any' type
             if (s) setSpotifyCurrentTime(s.position / 1000);
           });
         }
@@ -111,39 +151,31 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
       volume: volume,
     });
 
-    // Ready
     player.addListener('ready', ({ device_id }: { device_id: string }) => {
       console.log('Ready with Device ID', device_id);
       deviceIdRef.current = device_id;
       setPlayerReady(true);
       toast.success("Connected to Spotify!");
-      // Optionally transfer playback to this device immediately
-      // transferPlayback(device_id);
     });
 
-    // Not Ready
     player.addListener('not_ready', ({ device_id }: { device_id: string }) => {
       console.log('Device ID has gone offline', device_id);
       setPlayerReady(false);
       toast.error("Spotify device went offline.");
     });
 
-    // Player State Changed
     player.addListener('player_state_changed', updatePlaybackState);
 
-    // Account Error
     player.addListener('account_error', ({ message }: { message: string }) => {
       console.error('Account error:', message);
       toast.error(`Spotify Account Error: ${message}`);
     });
 
-    // Playback Error
     player.addListener('playback_error', ({ message }: { message: string }) => {
       console.error('Playback error:', message);
       toast.error(`Spotify Playback Error: ${message}`);
     });
 
-    // Autoplay Failed
     player.addListener('autoplay_failed', () => {
       console.warn('Autoplay is not allowed by the browser.');
       toast.info("Autoplay blocked. Please click play manually.");
@@ -167,7 +199,6 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
     }
   }, [clearTimeUpdateInterval]);
 
-  // Load Spotify Web Playback SDK script
   useEffect(() => {
     if (typeof window !== 'undefined' && !document.getElementById('spotify-web-playback-sdk')) {
       const script = document.createElement('script');
@@ -178,12 +209,10 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
 
       window.onSpotifyWebPlaybackSDKReady = () => {
         console.log("Spotify Web Playback SDK is ready!");
-        // The connectToSpotify function will be called manually by the user
       };
     }
   }, []);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       disconnectFromSpotify();
@@ -192,7 +221,7 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
 
   const togglePlayPause = useCallback(() => {
     if (playerReady && playerRef.current) {
-      playerRef.current.togglePlay().catch((e: any) => console.error("Error toggling play/pause:", e));
+      playerRef.current.togglePlay().catch((e: Error) => console.error("Error toggling play/pause:", e)); // Fixed 'any' type
     } else {
       toast.error("Spotify player not ready. Please connect first.");
     }
@@ -203,7 +232,7 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
       playerRef.current.setVolume(vol).then(() => {
         setVolumeState(vol);
         setIsMuted(vol === 0);
-      }).catch((e: any) => console.error("Error setting volume:", e));
+      }).catch((e: Error) => console.error("Error setting volume:", e)); // Fixed 'any' type
     }
   }, [playerReady]);
 
@@ -212,13 +241,13 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
       playerRef.current.setVolume(isMuted ? (volume > 0 ? volume : 0.5) : 0).then(() => {
         setIsMuted(!isMuted);
         setVolumeState(isMuted ? (volume > 0 ? volume : 0.5) : 0);
-      }).catch((e: any) => console.error("Error toggling mute:", e));
+      }).catch((e: Error) => console.error("Error toggling mute:", e)); // Fixed 'any' type
     }
   }, [playerReady, isMuted, volume]);
 
   const seekTo = useCallback((seconds: number) => {
     if (playerReady && playerRef.current) {
-      playerRef.current.seek(seconds * 1000).catch((e: any) => console.error("Error seeking:", e));
+      playerRef.current.seek(seconds * 1000).catch((e: Error) => console.error("Error seeking:", e)); // Fixed 'any' type
     }
   }, [playerReady]);
 
@@ -236,7 +265,7 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
         },
         body: JSON.stringify({
           device_ids: [deviceId],
-          play: true, // Start playback on the new device
+          play: true,
         }),
       });
       console.log("Playback transferred to new device:", deviceId);

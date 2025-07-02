@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useEffect, useRef, useCallback } from "react"; // Removed useState
 import { cn } from "@/lib/utils";
 import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
@@ -15,7 +15,7 @@ const HEADER_HEIGHT_REM = 4; // 4rem = 64px
 
 export function Sidebar() {
   const { activePanel, setActivePanel, isSidebarOpen, setIsSidebarOpen } = useSidebar();
-  const { isAlwaysOpen, toggleAlwaysOpen, mounted } = useSidebarPreference(); // Get mounted state
+  const { isAlwaysOpen, toggleAlwaysOpen, mounted } = useSidebarPreference();
   const { toggleWidget } = useWidget();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -87,11 +87,10 @@ export function Sidebar() {
   ];
 
   const handleSidebarItemClick = (id: string, label: string) => {
-    setActivePanel(id as any);
+    setActivePanel(id as Parameters<typeof setActivePanel>[0]); // Explicitly cast to ActivePanel
     toggleWidget(id, label);
   };
 
-  // Ensure actualSidebarOpen is consistent on server (always false initially)
   const actualSidebarOpen = mounted ? (isAlwaysOpen || isSidebarOpen) : false;
 
   return (
@@ -118,7 +117,6 @@ export function Sidebar() {
       </div>
       <div className="mt-auto pt-4">
         <SidebarItem
-          // Conditionally render icon and label based on mounted state
           icon={mounted && isAlwaysOpen ? ChevronLeft : ChevronRight}
           label={mounted && isAlwaysOpen ? "Undock Sidebar" : "Dock Sidebar"}
           isActive={false}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
-import { useSupabase } from "@/integrations/supabase/auth"; // Import useSupabase
+import { useSupabase } from "@/integrations/supabase/auth";
 
 export type PomodoroMode = 'focus' | 'short-break' | 'long-break';
 
@@ -19,19 +19,6 @@ interface PomodoroState {
   editableTimeString: string;
 }
 
-// Define an interface for the structure of the saved state in local storage
-interface SavedPomodoroState {
-  mode: PomodoroMode;
-  timeLeft: number;
-  isRunning: boolean;
-  customTimes?: { // customTimes might be optional if not always present in old saved states
-    'focus'?: number;
-    'short-break'?: number;
-    'long-break'?: number;
-  };
-}
-
-// Define interface for Supabase data
 interface SupabasePomodoroSettings {
   id: string;
   user_id: string;
@@ -43,15 +30,14 @@ interface SupabasePomodoroSettings {
 }
 
 const DEFAULT_TIMES = {
-  'focus': 25 * 60, // 25 minutes
-  'short-break': 5 * 60, // 5 minutes
-  'long-break': 15 * 60, // 15 minutes
+  'focus': 25 * 60,
+  'short-break': 5 * 60,
+  'long-break': 15 * 60,
 };
 
-const LOCAL_STORAGE_KEY = 'pomodoro_state';
-const LOCAL_STORAGE_CUSTOM_TIMES_KEY = 'pomodoro_custom_times'; // Separate key for custom times
+// LOCAL_STORAGE_KEY was not used
+const LOCAL_STORAGE_CUSTOM_TIMES_KEY = 'pomodoro_custom_times';
 
-// Helper to convert seconds to HH:MM:SS format
 export const formatTime = (totalSeconds: number) => {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -62,23 +48,21 @@ export const formatTime = (totalSeconds: number) => {
     .join(":");
 };
 
-// Helper to convert HH:MM:SS string to seconds
 export const parseTimeToSeconds = (timeString: string): number => {
   const parts = timeString.split(':').map(Number);
   if (parts.length === 3) {
     return parts[0] * 3600 + parts[1] * 60 + parts[2];
-  } else if (parts.length === 2) { // MM:SS format
+  } else if (parts.length === 2) {
     return parts[0] * 60 + parts[1];
-  } else if (parts.length === 1) { // SS format (if user just types seconds)
+  } else if (parts.length === 1) {
     return parts[0];
   }
-  return 0; // Invalid format
+  return 0;
 };
 
 export function usePomodoroState() {
   const { supabase, session, loading: authLoading } = useSupabase();
   const [state, setState] = useState<PomodoroState>(() => {
-    // Initial state for SSR, will be hydrated on client
     return {
       mode: 'focus',
       timeLeft: DEFAULT_TIMES.focus,
@@ -90,11 +74,10 @@ export function usePomodoroState() {
   });
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
-  const settingsIdRef = useRef<string | null>(null); // To store the Supabase settings ID
+  const settingsIdRef = useRef<string | null>(null);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Effect to handle initial load and auth state changes
   useEffect(() => {
     if (authLoading) return;
 
@@ -104,19 +87,17 @@ export function usePomodoroState() {
         setIsLoggedInMode(true);
         console.log("User logged in. Checking for local pomodoro settings to migrate...");
 
-        // 1. Fetch user's existing settings from Supabase
         const { data: supabaseSettings, error: fetchError } = await supabase
           .from('pomodoro_settings')
           .select('*')
           .eq('user_id', session.user.id)
           .single();
 
-        if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 means no rows found
+        if (fetchError && fetchError.code !== 'PGRST116') {
           toast.error("Error fetching pomodoro settings: " + fetchError.message);
           console.error("Error fetching pomodoro settings (Supabase):", fetchError);
           setState(prevState => ({ ...prevState, customTimes: DEFAULT_TIMES, timeLeft: DEFAULT_TIMES.focus }));
         } else if (supabaseSettings) {
-          // Settings found in Supabase
           settingsIdRef.current = supabaseSettings.id;
           setState(prevState => ({
             ...prevState,
@@ -131,7 +112,6 @@ export function usePomodoroState() {
           }));
           console.log("Loaded pomodoro settings from Supabase.");
         } else {
-          // No settings in Supabase, check local storage for migration
           const localCustomTimesString = localStorage.getItem(LOCAL_STORAGE_CUSTOM_TIMES_KEY);
           let localCustomTimes: typeof DEFAULT_TIMES = DEFAULT_TIMES;
           try {
@@ -171,11 +151,10 @@ export function usePomodoroState() {
                           prevState.mode === 'short-break' ? newSupabaseSettings.short_break_time :
                           newSupabaseSettings.long_break_time,
               }));
-              localStorage.removeItem(LOCAL_STORAGE_CUSTOM_TIMES_KEY); // Clear local storage after migration
+              localStorage.removeItem(LOCAL_STORAGE_CUSTOM_TIMES_KEY);
               toast.success("Local pomodoro settings migrated to your account!");
             }
           } else {
-            // No settings in Supabase and no local settings, insert defaults
             const { data: newSupabaseSettings, error: insertError } = await supabase
               .from('pomodoro_settings')
               .insert({
@@ -206,7 +185,6 @@ export function usePomodoroState() {
           }
         }
       } else {
-        // User is a guest (not logged in)
         setIsLoggedInMode(false);
         const storedCustomTimesString = localStorage.getItem(LOCAL_STORAGE_CUSTOM_TIMES_KEY);
         let loadedCustomTimes: typeof DEFAULT_TIMES = DEFAULT_TIMES;
@@ -233,7 +211,6 @@ export function usePomodoroState() {
     loadPomodoroSettings();
   }, [session, supabase, authLoading]);
 
-  // Effect to save custom times to local storage when in guest mode
   useEffect(() => {
     if (!isLoggedInMode && !loading) {
       localStorage.setItem(LOCAL_STORAGE_CUSTOM_TIMES_KEY, JSON.stringify(state.customTimes));
@@ -252,7 +229,6 @@ export function usePomodoroState() {
     const newTimeLeft = state.customTimes[newMode];
 
     if (isLoggedInMode && session && supabase && settingsIdRef.current) {
-      // Update Supabase if logged in
       const updateData: Partial<SupabasePomodoroSettings> = {
         focus_time: state.customTimes.focus,
         short_break_time: state.customTimes['short-break'],
@@ -274,11 +250,11 @@ export function usePomodoroState() {
       ...prevState,
       mode: newMode,
       timeLeft: newTimeLeft,
-      isRunning: shouldStopRunning ? false : prevState.isRunning, // Only stop if explicitly told
+      isRunning: shouldStopRunning ? false : prevState.isRunning,
       isEditingTime: false,
       editableTimeString: '',
     }));
-  }, [isLoggedInMode, session, supabase, state.customTimes]);
+  }, [isLoggedInMode, session, supabase, state.customTimes, state.mode]); // Added state.mode to dependencies
 
   useEffect(() => {
     if (state.isRunning && state.timeLeft > 0) {
@@ -301,8 +277,8 @@ export function usePomodoroState() {
         return {
           ...prevState,
           mode: nextMode,
-          timeLeft: prevState.customTimes[nextMode], // Set to default time for next mode
-          isRunning: false, // Crucial: Stop running, user must manually start next session
+          timeLeft: prevState.customTimes[nextMode],
+          isRunning: false,
           isEditingTime: false,
           editableTimeString: '',
         };
@@ -328,7 +304,7 @@ export function usePomodoroState() {
   }, [getCurrentModeTime]);
 
   const handleReset = useCallback(() => {
-    resetTimer(state.mode, true); // Always stop running on explicit reset
+    resetTimer(state.mode, true);
     toast.warning("Timer reset.");
   }, [state.mode, resetTimer]);
 
@@ -343,7 +319,7 @@ export function usePomodoroState() {
       }));
       toast.info(`Switched to ${newMode === 'focus' ? 'Focus' : newMode === 'short-break' ? 'Short Break' : 'Long Break'} mode.`);
     }
-  }, [state.mode]);
+  }, [state.mode, state.customTimes]); // Added state.customTimes to dependencies
 
   const handleTimeDisplayClick = useCallback(() => {
     setState(prevState => ({
@@ -359,7 +335,6 @@ export function usePomodoroState() {
       if (!isNaN(newTime) && newTime >= 0) {
         const updatedCustomTimes = { ...prevState.customTimes, [prevState.mode]: newTime };
 
-        // Save to Supabase if logged in
         if (isLoggedInMode && session && supabase && settingsIdRef.current) {
           const updateData: Partial<SupabasePomodoroSettings> = {
             focus_time: updatedCustomTimes.focus,
@@ -380,7 +355,6 @@ export function usePomodoroState() {
               }
             });
         } else if (!isLoggedInMode) {
-          // Save to local storage if guest
           localStorage.setItem(LOCAL_STORAGE_CUSTOM_TIMES_KEY, JSON.stringify(updatedCustomTimes));
           toast.success("Timer time updated and saved locally!");
         }
@@ -395,28 +369,25 @@ export function usePomodoroState() {
         toast.error("Invalid time format. Please use HH:MM:SS.");
         return {
           ...prevState,
-          timeLeft: prevState.customTimes[prevState.mode], // Revert to current mode's default if invalid
+          timeLeft: prevState.customTimes[prevState.mode],
           isEditingTime: false,
         };
       }
     });
-  }, [isLoggedInMode, session, supabase]);
+  }, [isLoggedInMode, session, supabase, state.customTimes, state.mode]); // Added state.customTimes, state.mode to dependencies
 
   const setEditableTimeString = useCallback((value: string) => {
     setState(prevState => ({ ...prevState, editableTimeString: value }));
   }, []);
 
-  // New function to update custom times from settings modal
   const setCustomTime = useCallback(async (mode: PomodoroMode, newTimeInSeconds: number) => {
     setState(prevState => {
       const updatedCustomTimes = {
         ...prevState.customTimes,
         [mode]: newTimeInSeconds,
       };
-      // If the current mode's time is being updated, also update timeLeft
       const newTimeLeft = prevState.mode === mode ? newTimeInSeconds : prevState.timeLeft;
 
-      // Save to Supabase if logged in
       if (isLoggedInMode && session && supabase && settingsIdRef.current) {
         const updateData: Partial<SupabasePomodoroSettings> = {
           focus_time: updatedCustomTimes.focus,
@@ -437,7 +408,6 @@ export function usePomodoroState() {
             }
           });
       } else if (!isLoggedInMode) {
-        // Save to local storage if guest
         localStorage.setItem(LOCAL_STORAGE_CUSTOM_TIMES_KEY, JSON.stringify(updatedCustomTimes));
         toast.success("Pomodoro settings saved locally!");
       }
@@ -448,7 +418,7 @@ export function usePomodoroState() {
         timeLeft: newTimeLeft,
       };
     });
-  }, [isLoggedInMode, session, supabase]);
+  }, [isLoggedInMode, session, supabase, state.customTimes, state.mode, state.timeLeft]); // Added state.customTimes, state.mode, state.timeLeft to dependencies
 
   return {
     mode: state.mode,
@@ -463,6 +433,6 @@ export function usePomodoroState() {
     handleSwitchMode,
     handleTimeDisplayClick,
     handleTimeInputBlur,
-    setCustomTime, // Expose the new function
+    setCustomTime,
   };
 }

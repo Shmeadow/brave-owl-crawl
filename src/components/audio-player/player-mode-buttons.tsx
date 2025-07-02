@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Maximize, Minimize, ChevronRight, ChevronLeft } from 'lucide-react'; // Added missing imports
+import { Maximize, Minimize, ChevronRight } from 'lucide-react'; // Removed ChevronLeft as it was unused
 
 interface PlayerModeButtonsProps {
   displayMode: 'normal' | 'maximized' | 'minimized';

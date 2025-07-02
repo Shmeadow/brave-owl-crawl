@@ -3,7 +3,6 @@
 import { TimeTracker } from "@/components/time-tracker";
 import { useSupabase } from "@/integrations/supabase/auth";
 import React from "react";
-import { useCurrentRoom } from "@/hooks/use-current-room"; // Import useCurrentRoom
 
 interface TimerWidgetProps {
   isCurrentRoomWritable: boolean;

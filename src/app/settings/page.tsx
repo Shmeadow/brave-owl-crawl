@@ -48,7 +48,7 @@ export default function SettingsPage() {
               <CardTitle className="text-foreground">Room Settings</CardTitle>
             </CardHeader>
             <CardContent className="text-muted-foreground">
-              You are currently in "{currentRoomName}". Room-specific settings can only be managed by the room's creator.
+              You are currently in &quot;{currentRoomName}&quot;. Room-specific settings can only be managed by the room&apos;s creator.
             </CardContent>
           </Card>
         )
@@ -58,7 +58,7 @@ export default function SettingsPage() {
             <CardTitle className="text-foreground">Room Settings</CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground">
-            Select a room in the "Spaces" widget to view and manage its settings (if you are the owner).
+            Select a room in the &quot;Spaces&quot; widget to view and manage its settings (if you are the owner).
           </CardContent>
         </Card>
       )}

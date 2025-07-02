@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
 import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { Toaster } from "@/components/ui/sonner";
@@ -14,7 +14,7 @@ import { WidgetContainer } from "@/components/widget/widget-container";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { cn } from "@/lib/utils";
-import { SimpleAudioPlayer } from "@/components/simple-audio-player"; // Import the new player
+import { SimpleAudioPlayer } from "@/components/simple-audio-player";
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
 const CHAT_PANEL_WIDTH_OPEN = 320;
@@ -46,13 +46,12 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const { isAlwaysOpen } = useSidebarPreference();
   const { currentRoomId, isCurrentRoomWritable } = useCurrentRoom();
 
-  const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState<boolean>(true); // Default to true for SSR
+  const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState<boolean>(true);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [mounted, setMounted] = useState(false);
 
-  // Use state for mainContentArea to ensure it updates on resize
   const [mainContentArea, setMainContentArea] = useState({
     left: SIDEBAR_WIDTH,
     top: HEADER_HEIGHT,
@@ -60,14 +59,12 @@ export function AppWrapper({ children }: AppWrapperProps) {
     height: 0,
   });
 
-  // Calculate and update mainContentArea on mount and window resize
   useEffect(() => {
     const calculateMainContentArea = () => {
       if (typeof window !== 'undefined') {
         const chatWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
-        const sidebarWidth = (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH : 0; // Dynamic sidebar width
+        const sidebarWidth = (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH : 0;
 
-        // Ensure dimensions are at least 1 to prevent issues with libraries
         const newWidth = Math.max(1, window.innerWidth - sidebarWidth - chatWidth);
         const newHeight = Math.max(1, window.innerHeight - HEADER_HEIGHT);
 
@@ -80,23 +77,20 @@ export function AppWrapper({ children }: AppWrapperProps) {
       }
     };
 
-    // Initial calculation
     calculateMainContentArea();
 
-    // Add resize listener
     window.addEventListener('resize', calculateMainContentArea);
 
-    // Cleanup
     return () => {
       window.removeEventListener('resize', calculateMainContentArea);
     };
-  }, [isChatOpen, isAlwaysOpen, isSidebarOpen]); // Dependencies for recalculation
+  }, [isChatOpen, isAlwaysOpen, isSidebarOpen]);
 
   useEffect(() => {
     setMounted(true);
     if (typeof window !== 'undefined') {
       const savedMinimized = localStorage.getItem(LOCAL_STORAGE_POMODORO_MINIMIZED_KEY);
-      if (savedMinimized !== null) { // Only update if a value was actually saved
+      if (savedMinimized !== null) {
         setIsPomodoroWidgetMinimized(savedMinimized === 'false' ? false : true);
       }
     }
@@ -126,7 +120,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const chatPanelCurrentWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
 
   return (
-    <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}> {/* Pass state */}
+    <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
       <div className="flex flex-col flex-1 min-h-screen">
         <Header
           onOpenUpgradeModal={handleOpenUpgradeModal}
@@ -145,8 +139,8 @@ export function AppWrapper({ children }: AppWrapperProps) {
         <main
           className={cn(
             "flex flex-col flex-1 w-full overflow-auto transition-all duration-300 ease-in-out",
-            `ml-[${sidebarCurrentWidth}px]`, // Dynamic left margin
-            `mr-[${chatPanelCurrentWidth}px]`, // Dynamic right margin
+            `ml-[${sidebarCurrentWidth}px]`,
+            `mr-[${chatPanelCurrentWidth}px]`,
             "items-center justify-center"
           )}
           style={{ paddingTop: HEADER_HEIGHT }}
@@ -182,7 +176,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
         />
       </div>
       <Toaster />
-      <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} /> {/* Pass state */}
+      <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />
     </WidgetProvider>
   );
 }

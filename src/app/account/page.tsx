@@ -2,15 +2,13 @@
 
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
-import { useSupabase, UserProfile } from '@/integrations/supabase/auth';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useSupabase } from '@/integrations/supabase/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProfileForm } from '@/components/profile-form';
 
 export default function AccountPage() {
   const { supabase, session, profile, loading, refreshProfile } = useSupabase();
-  const router = useRouter();
+  // The 'router' variable was not used in this component.
 
   if (loading) {
     return (
@@ -23,7 +21,7 @@ export default function AccountPage() {
   if (session && profile) {
     return (
       <div className="flex items-center justify-center h-full bg-background py-8">
-        <Card className="w-full max-w-md p-6 bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
+        <Card className="w-full max-w-md p-6 bg-card backdrop-blur-xl border-white/20">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-foreground">Your Profile</CardTitle>
             <p className="text-muted-foreground">Manage your account information.</p>
@@ -40,7 +38,7 @@ export default function AccountPage() {
   if (!supabase) {
     return (
       <div className="flex items-center justify-center h-full bg-background">
-        <Card className="w-full max-w-md p-6 bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
+        <Card className="w-full max-w-md p-6 bg-card backdrop-blur-xl border-white/20">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-foreground">Authentication Error</CardTitle>
             <p className="text-muted-foreground">Supabase client is not initialized. Please check environment variables.</p>
@@ -52,7 +50,7 @@ export default function AccountPage() {
 
   return (
     <div className="flex items-center justify-center h-full bg-background py-8">
-      <Card className="w-full max-w-md p-6 bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
+      <Card className="w-full max-w-md p-6 bg-card backdrop-blur-xl border-white/20">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-foreground">Account</CardTitle>
           <p className="text-muted-foreground">Sign up or log in to save your progress</p>

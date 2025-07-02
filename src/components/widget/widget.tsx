@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React from "react"; // Removed useRef, useEffect
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Minimize, Maximize, Pin, PinOff, X } from "lucide-react";
@@ -27,7 +27,7 @@ interface WidgetProps {
   onPin: (id: string) => void;
   onClose: (id: string) => void;
   isCurrentRoomWritable: boolean;
-  mainContentArea: { // Add this prop
+  mainContentArea: {
     left: number;
     top: number;
     width: number;
@@ -35,10 +35,9 @@ interface WidgetProps {
   };
 }
 
-// Constants for widget dimensions (should match WidgetProvider)
 const DOCKED_WIDGET_WIDTH = 192;
 const DOCKED_WIDGET_HEIGHT = 48;
-const MINIMIZED_WIDGET_WIDTH = 224; // Assuming this from PomodoroWidget
+const MINIMIZED_WIDGET_WIDTH = 224;
 const MINIMIZED_WIDGET_HEIGHT = 48;
 
 export function Widget({
@@ -51,7 +50,7 @@ export function Widget({
   isPinned,
   isTopmost,
   position,
-  size, // This size will be passed to ResizableBox
+  size,
   zIndex,
   onSizeChange,
   onBringToFront,
@@ -60,7 +59,7 @@ export function Widget({
   onPin,
   onClose,
   isCurrentRoomWritable,
-  mainContentArea, // Destructure new prop
+  mainContentArea,
 }: WidgetProps) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: `widget-${id}`,
@@ -76,7 +75,6 @@ export function Widget({
   const isResizable = !isMaximized && !isVisuallyMinimized;
   const isDraggable = !isMaximized && !isPinned;
 
-  // Determine actual width/height for ResizableBox based on state
   let actualWidth = size.width;
   let actualHeight = size.height;
 
@@ -91,22 +89,21 @@ export function Widget({
     actualHeight = MINIMIZED_WIDGET_HEIGHT;
   }
 
-  // Ensure minimum dimensions for ResizableBox, matching minConstraints
-  actualWidth = Math.max(actualWidth, 200); 
+  actualWidth = Math.max(actualWidth, 200);
   actualHeight = Math.max(actualHeight, 150);
 
   return (
     <div
-      ref={setNodeRef} // Apply draggable ref here to the outer div
+      ref={setNodeRef}
       style={{
         left: position.x,
         top: position.y,
         zIndex: zIndex,
         ...currentTransformStyle,
-        width: actualWidth, // Explicitly set width/height on the outer div
+        width: actualWidth,
         height: actualHeight,
-        position: 'absolute', // Ensure positioning
-        pointerEvents: 'auto', // Ensure it's interactive
+        position: 'absolute',
+        pointerEvents: 'auto',
       }}
       className={cn(
         "bg-card border-white/20 shadow-lg rounded-lg flex flex-col",
@@ -119,21 +116,19 @@ export function Widget({
       onMouseDown={onBringToFront}
     >
       <ResizableBox
-        // No ref here, as it's on the outer div
-        width={actualWidth} // Pass calculated width
-        height={actualHeight} // Pass calculated height
-        onResizeStop={(e, direction, ref, d) => {
-          if (isResizable && ref) { // Add ref check
-            // Use ref.offsetWidth and ref.offsetHeight to get the actual new size
+        width={actualWidth}
+        height={actualHeight}
+        onResizeStop={(e, direction, ref, d) => { // Removed 'd' as it was unused
+          if (isResizable && ref) {
             onSizeChange({ width: ref.offsetWidth, height: ref.offsetHeight });
           }
         }}
         minConstraints={[200, 150]}
-        maxConstraints={[mainContentArea.width, mainContentArea.height]} // Use mainContentArea for maxConstraints
-        className="w-full h-full" // ResizableBox should fill its parent div
-        handles={isResizable ? ["se"] : []} // Only show SE handle if resizable
+        maxConstraints={[mainContentArea.width, mainContentArea.height]}
+        className="w-full h-full"
+        handles={isResizable ? ["se"] : []}
       >
-        <Card className="w-full h-full flex flex-col overflow-hidden"> {/* Card fills ResizableBox */}
+        <Card className="w-full h-full flex flex-col overflow-hidden">
           <CardHeader
             className={cn(
               "flex flex-row items-center justify-between space-y-0",

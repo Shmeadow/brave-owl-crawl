@@ -1,20 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Home, Bell, Search, Settings } from "lucide-react"; // Removed Sun, Moon
-import { useTheme } from "next-themes"; // Still needed for mounted check
-import { ChatPanel } from "@/components/chat-panel";
+import { Home, Bell, Search, Settings } from "lucide-react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { UserNav } from "@/components/user-nav";
 import { UpgradeButton } from "@/components/upgrade-button";
 import { useCurrentRoom } from "@/hooks/use-current-room";
-import { toast } from "sonner";
-import { ClockDisplay } from "@/components/clock-display"; // Import ClockDisplay
-import { ThemeToggle } from "@/components/theme-toggle"; // Import ThemeToggle
+import { ClockDisplay } from "@/components/clock-display";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface HeaderProps {
   onOpenUpgradeModal: () => void;
@@ -28,9 +24,10 @@ interface HeaderProps {
 export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnreadMessage, onClearUnreadMessages, unreadChatCount }: HeaderProps) {
   const { session, profile } = useSupabase();
   const router = useRouter();
-  const { currentRoomName, currentRoomId, isCurrentRoomWritable } = useCurrentRoom(); // Destructure currentRoomId here
+  const { currentRoomName, currentRoomId, isCurrentRoomWritable } = useCurrentRoom();
 
-  const displayName = profile?.first_name || profile?.last_name || session?.user?.email?.split('@')[0] || "Guest";
+  // displayName was not used in this component's JSX
+  // const displayName = profile?.first_name || profile?.last_name || session?.user?.email?.split('@')[0] || "Guest";
 
   return (
     <header className="sticky top-0 z-[1002] w-full border-b bg-background backdrop-blur-xl flex items-center h-16 px-4 md:px-6">
@@ -63,11 +60,11 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
       {/* Right Section: Clock, Progress Bar, and Actions */}
       <div className="flex items-center gap-4 ml-auto">
         {/* Clock and Progress */}
-        <ClockDisplay /> {/* No dailyProgress prop needed */}
+        <ClockDisplay />
 
         {/* Other action buttons */}
         <UpgradeButton onOpenUpgradeModal={onOpenUpgradeModal} />
-        <ThemeToggle /> {/* Added ThemeToggle here */}
+        <ThemeToggle />
         <Button variant="ghost" size="icon" title="Notifications">
           <Bell className="h-6 w-6" />
           <span className="sr-only">Notifications</span>
@@ -83,8 +80,8 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
             onNewUnreadMessage={onNewUnreadMessage}
             onClearUnreadMessages={onClearUnreadMessages}
             unreadCount={unreadChatCount}
-            currentRoomId={currentRoomId} // Pass currentRoomId
-            isCurrentRoomWritable={isCurrentRoomWritable} // Pass isCurrentRoomWritable
+            currentRoomId={currentRoomId}
+            isCurrentRoomWritable={isCurrentRoomWritable}
           />
         )}
         <UserNav />

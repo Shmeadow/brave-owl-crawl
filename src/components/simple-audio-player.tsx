@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Music, ListMusic, Youtube, VolumeX, Volume2, ChevronLeft } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react'; // Removed Music, ListMusic, Youtube, VolumeX, Volume2
 import { useYouTubePlayer } from '@/hooks/use-youtube-player';
 import { useHtmlAudioPlayer } from '@/hooks/use-html-audio-player';
-import { useSpotifyPlayer } from '@/hooks/use-spotify-player'; // Import the new Spotify hook
+import { useSpotifyPlayer } from '@/hooks/use-spotify-player';
 import { cn, getYouTubeEmbedUrl } from '@/lib/utils';
-import { useSupabase } from '@/integrations/supabase/auth'; // To get session for Spotify token
+import { useSupabase } from '@/integrations/supabase/auth';
 
-// Import new modular components
 import { PlayerDisplay } from './audio-player/player-display';
 import { MediaInput } from './audio-player/media-input';
 import { PlayerControls } from './audio-player/player-controls';
@@ -17,19 +16,17 @@ import { PlayerModeButtons } from './audio-player/player-mode-buttons';
 
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 
-// Constants for layout dimensions (should match AppWrapper and PomodoroWidget)
-const HEADER_HEIGHT = 64; // px
-const POMODORO_WIDGET_HEIGHT_EST = 200; // px, estimated height when expanded
-const POMODORO_WIDGET_BOTTOM_OFFSET = 20; // px, from PomodoroWidget's fixed bottom-20
-const PLAYER_POMODORO_BUFFER = 20; // px
+const HEADER_HEIGHT = 64;
+const POMODORO_WIDGET_HEIGHT_EST = 200;
+const POMODORO_WIDGET_BOTTOM_OFFSET = 20;
+const PLAYER_POMODORO_BUFFER = 20;
 
-// Calculate the exact top and bottom positions for the player
-const MAXIMIZED_PLAYER_TOP_POSITION = HEADER_HEIGHT + 40; // Moved down by 40px
-const MAXIMIZED_PLAYER_BOTTOM_POSITION = POMODORO_WIDGET_BOTTOM_OFFSET + POMODORO_WIDGET_HEIGHT_EST + PLAYER_POMODORO_BUFFER + 20; // Added 20px buffer
+const MAXIMIZED_PLAYER_TOP_POSITION = HEADER_HEIGHT + 40;
+const MAXIMIZED_PLAYER_BOTTOM_POSITION = POMODORO_WIDGET_BOTTOM_OFFSET + POMODORO_WIDGET_HEIGHT_EST + PLAYER_POMODORO_BUFFER + 20;
 
 
 const SimpleAudioPlayer = () => {
-  const { session } = useSupabase(); // Get session to access access_token for Spotify
+  const { session } = useSupabase();
   const [stagedInputUrl, setStagedInputUrl] = useState('');
   const [committedMediaUrl, setCommittedMediaUrl] = useState('');
   const [playerType, setPlayerType] = useState<'audio' | 'youtube' | 'spotify' | null>(null);
@@ -76,7 +73,6 @@ const SimpleAudioPlayer = () => {
     youtubeDuration,
   } = useYouTubePlayer(youtubeEmbedUrl, youtubeIframeRef);
 
-  // Spotify Player Hook
   const {
     playerReady: spotifyPlayerReady,
     isPlaying: spotifyIsPlaying,
@@ -90,9 +86,9 @@ const SimpleAudioPlayer = () => {
     toggleMute: spotifyToggleMute,
     seekTo: spotifySeekTo,
     connectToSpotify,
-    disconnectFromSpotify,
-    playTrack: spotifyPlayTrack, // Expose playTrack for direct control
-  } = useSpotifyPlayer(session?.access_token || null); // Pass Supabase session token to Spotify hook
+    // disconnectFromSpotify, // This was unused
+    playTrack: spotifyPlayTrack,
+  } = useSpotifyPlayer(session?.access_token || null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -105,7 +101,6 @@ const SimpleAudioPlayer = () => {
       setPlayerType('youtube');
     } else if (committedMediaUrl.includes('open.spotify.com')) {
       setPlayerType('spotify');
-      // Attempt to play the Spotify URI directly
       if (spotifyPlayerReady && spotifyCurrentTrack?.uri !== committedMediaUrl) {
         spotifyPlayTrack(committedMediaUrl);
       }
@@ -189,7 +184,6 @@ const SimpleAudioPlayer = () => {
     setShowUrlInput(false);
   };
 
-  // Determine current player states based on active playerType
   const currentPlaybackTime = playerType === 'youtube' ? youtubeCurrentTime : (playerType === 'spotify' ? spotifyCurrentTime : audioCurrentTime);
   const totalDuration = playerType === 'youtube' ? youtubeDuration : (playerType === 'spotify' ? spotifyDuration : audioDuration);
   const currentVolume = playerType === 'youtube' ? youtubeVolume / 100 : (playerType === 'spotify' ? spotifyVolume : audioVolume);
@@ -197,26 +191,24 @@ const SimpleAudioPlayer = () => {
   const playerIsReady = playerType === 'youtube' ? youtubePlayerReady : (playerType === 'spotify' ? spotifyPlayerReady : true);
   const currentIsMuted = playerType === 'youtube' ? youtubeIsMuted : (playerType === 'spotify' ? spotifyIsMuted : audioIsMuted);
 
-  const canPlayPause = playerIsReady; // Now all types can be controlled if ready
+  const canPlayPause = playerIsReady;
   const canSeek = playerIsReady && totalDuration > 0;
 
   return (
     <div className={cn(
-      "fixed z-[899] transition-all duration-300 ease-in-out", // Z-index changed
+      "fixed z-[899] transition-all duration-300 ease-in-out",
       displayMode === 'normal' && 'top-20 right-4 w-80',
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-16',
-      displayMode === 'maximized' && 'right-4 w-[500px] flex flex-col items-center justify-center' // Adjusted for right alignment and fixed width
+      displayMode === 'maximized' && 'right-4 w-[500px] flex flex-col items-center justify-center'
     )}
     style={displayMode === 'maximized' ? { top: `${MAXIMIZED_PLAYER_TOP_POSITION}px`, bottom: `${MAXIMIZED_PLAYER_BOTTOM_POSITION}px` } : {}}
     >
-      {/* Normal/Maximized Player UI */}
       <div className={cn(
         "bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full h-full",
         displayMode === 'normal' && 'p-1',
         displayMode === 'maximized' && 'p-4 items-center justify-center',
         displayMode === 'minimized' && 'hidden'
       )}>
-        {/* PlayerDisplay is now inside and will fill available space */}
         <PlayerDisplay
           playerType={playerType}
           inputUrl={committedMediaUrl}
@@ -228,13 +220,11 @@ const SimpleAudioPlayer = () => {
           isMaximized={displayMode === 'maximized'}
           className={cn(
             displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : '',
-            (playerType === 'youtube' || playerType === 'spotify') ? 'w-full flex-grow' : 'w-full' // Make visual players flex-grow
+            (playerType === 'youtube' || playerType === 'spotify') ? 'w-full flex-grow' : 'w-full'
           )}
         />
 
-        {/* Main Player Row: URL Input Toggle and Controls */}
         <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
-          {/* URL Input Toggle */}
           <div className="flex-grow min-w-0">
             <MediaInput
               inputUrl={stagedInputUrl}
@@ -282,7 +272,6 @@ const SimpleAudioPlayer = () => {
         <PlayerModeButtons displayMode={displayMode} setDisplayMode={setDisplayMode} />
       </div>
 
-      {/* Minimized Player Content (only visible when displayMode is 'minimized') */}
       {displayMode === 'minimized' && (
         <div
           className={cn(

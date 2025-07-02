@@ -5,8 +5,6 @@ import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button"; // Import Button
-import { toast } from "sonner"; // Import toast
 
 export default function DashboardPage() {
   const { currentRoomName, isCurrentRoomWritable } = useCurrentRoom();
@@ -14,16 +12,10 @@ export default function DashboardPage() {
 
   const displayName = profile?.first_name || profile?.last_name || session?.user?.email?.split('@')[0] || "Guest";
 
-  const handlePreDeployCheck = () => {
-    // Simulate the checks passing
-    toast.success("Pre-deploy checks passed! (Simulated)");
-    console.log("Simulated pre-deploy checks: npm run lint, npm run typecheck, npm test, vercel build");
-  };
-
   return (
     <div className={cn(
       "flex flex-col items-center justify-center h-full w-full p-4 md:p-8",
-      "absolute inset-0" // Make it absolutely positioned to fill parent and not affect layout
+      "absolute inset-0"
     )}>
       <Card className="w-full max-w-2xl bg-card backdrop-blur-2xl border-white/20 p-6 text-center">
         <CardContent>
@@ -41,9 +33,6 @@ export default function DashboardPage() {
               You are viewing this room in read-only mode. You cannot make changes.
             </p>
           )}
-          <Button onClick={handlePreDeployCheck} className="mt-6">
-            PreDeployChecklist
-          </Button>
         </CardContent>
       </Card>
     </div>

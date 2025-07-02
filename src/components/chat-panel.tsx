@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ interface ChatPanelProps {
   onClearUnreadMessages: () => void;
   unreadCount: number;
   currentRoomId: string | null;
-  isCurrentRoomWritable: boolean; // New prop
+  isCurrentRoomWritable: boolean;
 }
 
 export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnreadMessages, unreadCount, currentRoomId, isCurrentRoomWritable }: ChatPanelProps) {
@@ -36,7 +36,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
   const [showSupportContact, setShowSupportContact] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  const fetchMessages = async (roomId: string) => {
+  const fetchMessages = useCallback(async (roomId: string) => {
     if (!supabase) {
       console.warn("Supabase client not available for fetching messages.");
       toast.error("Chat unavailable: Supabase client not initialized.");
@@ -54,7 +54,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
         console.error("Error fetching messages from Supabase:", error.message, "Details:", error.details, "Hint:", error.hint);
         toast.error("Failed to load chat messages: " + error.message);
       } else if (data) {
-        const formattedMessages = data.map(msg => {
+        const formattedMessages = data.map((msg: any) => { // Added type for msg
           const authorName = (profile && profile.id === msg.user_id)
             ? (profile.first_name || profile.last_name || 'You')
             : msg.user_id?.substring(0, 8) || 'Guest';
@@ -73,7 +73,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
       console.error("Network error fetching chat messages:", networkError);
       toast.error("Failed to connect to chat server. Please check your internet connection or Supabase URL.");
     }
-  };
+  }, [supabase, profile]); // Added profile to dependencies
 
   useEffect(() => {
     if (authLoading || !supabase || !currentRoomId) return;
@@ -109,7 +109,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
       supabase.removeChannel(subscription);
       setMessages([]);
     };
-  }, [supabase, isOpen, session?.user?.id, onNewUnreadMessage, profile, authLoading, currentRoomId]);
+  }, [supabase, isOpen, session?.user?.id, onNewUnreadMessage, profile, authLoading, currentRoomId, fetchMessages]); // Added fetchMessages to dependencies
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -230,7 +230,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
           <ScrollArea className="flex-1 pr-4" ref={scrollAreaRef}>
             <div className="space-y-4">
               {!currentRoomId ? (
-                <p className="text-center text-muted-foreground text-sm">Please select a room in the 'Spaces' widget to start chatting.</p>
+                <p className="text-center text-muted-foreground text-sm">Please select a room in the &apos;Spaces&apos; widget to start chatting.</p>
               ) : messages.length === 0 ? (
                 <p className="text-center text-muted-foreground text-sm">No messages yet. Start the conversation!</p>
               ) : (
