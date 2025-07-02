@@ -113,65 +113,67 @@ export function AppWrapper({ children }: AppWrapperProps) {
 
   return (
     <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
-      <div className="flex flex-col flex-1 min-h-screen">
-        <Header
-          onOpenUpgradeModal={handleOpenUpgradeModal}
-          isChatOpen={isChatOpen}
-          onToggleChat={() => {
-            setIsChatOpen(!isChatOpen);
-            if (!isChatOpen) {
-              handleClearUnreadMessages();
-            }
-          }}
-          onNewUnreadMessage={handleNewUnreadMessage}
-          onClearUnreadMessages={handleClearUnreadMessages}
-          unreadChatCount={unreadChatCount}
-        />
-        <Sidebar /> {/* The refactored navigation sidebar */}
-        <main
-          className={cn(
-            "flex flex-col flex-1 w-full overflow-auto transition-all duration-300 ease-in-out",
-            "items-center justify-center"
-          )}
-          style={{
-            marginLeft: mainContentArea.left,
-            width: mainContentArea.width,
-            height: mainContentArea.height,
-            marginTop: mainContentArea.top,
-          }}
-        >
-          {children}
-        </main>
-      </div>
+      <SidebarProvider> {/* Moved SidebarProvider inside WidgetProvider */}
+        <div className="flex flex-col flex-1 min-h-screen">
+          <Header
+            onOpenUpgradeModal={handleOpenUpgradeModal}
+            isChatOpen={isChatOpen}
+            onToggleChat={() => {
+              setIsChatOpen(!isChatOpen);
+              if (!isChatOpen) {
+                handleClearUnreadMessages();
+              }
+            }}
+            onNewUnreadMessage={handleNewUnreadMessage}
+            onClearUnreadMessages={handleClearUnreadMessages}
+            unreadChatCount={unreadChatCount}
+          />
+          <Sidebar /> {/* The refactored navigation sidebar */}
+          <main
+            className={cn(
+              "flex flex-col flex-1 w-full overflow-auto transition-all duration-300 ease-in-out",
+              "items-center justify-center"
+            )}
+            style={{
+              marginLeft: mainContentArea.left,
+              width: mainContentArea.width,
+              height: mainContentArea.height,
+              marginTop: mainContentArea.top,
+            }}
+          >
+            {children}
+          </main>
+        </div>
 
-      <GoalReminderBar />
-      {mounted && shouldShowPomodoro && (
-        <PomodoroWidget
-          isMinimized={isPomodoroWidgetMinimized}
-          setIsMinimized={setIsPomodoroWidgetMinimized}
-          chatPanelWidth={isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED}
-        />
-      )}
-      {mounted && (youtubeEmbedUrl || spotifyEmbedUrl) && <MediaPlayerBar />}
-      <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
-      <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
-        <ChatPanel
-          isOpen={isChatOpen}
-          onToggleOpen={() => {
-            setIsChatOpen(!isChatOpen);
-            if (!isChatOpen) {
-              handleClearUnreadMessages();
-            }
-          }}
-          onNewUnreadMessage={handleNewUnreadMessage}
-          onClearUnreadMessages={handleClearUnreadMessages}
-          unreadCount={unreadChatCount}
-          currentRoomId={currentRoomId}
-          isCurrentRoomWritable={isCurrentRoomWritable}
-        />
-      </div>
-      <Toaster />
-      <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} /> {/* This is where draggable widgets are rendered */}
+        <GoalReminderBar />
+        {mounted && shouldShowPomodoro && (
+          <PomodoroWidget
+            isMinimized={isPomodoroWidgetMinimized}
+            setIsMinimized={setIsPomodoroWidgetMinimized}
+            chatPanelWidth={isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED}
+          />
+        )}
+        {mounted && (youtubeEmbedUrl || spotifyEmbedUrl) && <MediaPlayerBar />}
+        <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
+        <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
+          <ChatPanel
+            isOpen={isChatOpen}
+            onToggleOpen={() => {
+              setIsChatOpen(!isChatOpen);
+              if (!isChatOpen) {
+                handleClearUnreadMessages();
+              }
+            }}
+            onNewUnreadMessage={handleNewUnreadMessage}
+            onClearUnreadMessages={handleClearUnreadMessages}
+            unreadCount={unreadChatCount}
+            currentRoomId={currentRoomId}
+            isCurrentRoomWritable={isCurrentRoomWritable}
+          />
+        </div>
+        <Toaster />
+        <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} /> {/* This is where draggable widgets are rendered */}
+      </SidebarProvider>
     </WidgetProvider>
   );
 }

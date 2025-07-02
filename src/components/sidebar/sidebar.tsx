@@ -2,25 +2,10 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { useSidebar } from "@/components/sidebar/sidebar-context";
+import { useSidebar, NAV_ITEMS, ActivePanel } from "@/components/sidebar/sidebar-context"; // Import NAV_ITEMS and ActivePanel
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { SidebarItem } from "@/components/sidebar/sidebar-item";
-import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Wind, BookOpen, Goal } from "lucide-react";
-
-// Define navigation items and their icons
-const NAV_ITEMS = {
-  "spaces": { label: "Spaces", icon: LayoutGrid },
-  "sounds": { label: "Sounds", icon: Volume2 },
-  "calendar": { label: "Calendar", icon: Calendar },
-  "timer": { label: "Timer", icon: Timer },
-  "tasks": { label: "Tasks", icon: ListTodo },
-  "notes": { label: "Notes", icon: NotebookPen },
-  "media": { label: "Media", icon: Image },
-  "fortune": { label: "Fortune", icon: Sparkles },
-  "breathe": { label: "Breathe", icon: Wind },
-  "flash-cards": { label: "Flash Cards", icon: BookOpen },
-  "goal-focus": { label: "Goal Focus", icon: Goal },
-};
+// Removed direct lucide-react imports as NAV_ITEMS now provides them
 
 const SIDEBAR_WIDTH_CLOSED = 60; // Matches the constant in AppWrapper
 const SIDEBAR_WIDTH_OPEN = 200; // Expanded width on hover/always open
@@ -51,7 +36,7 @@ export function Sidebar() {
             icon={icon}
             label={label}
             isActive={activePanel === id}
-            onClick={() => setActivePanel(id as any)}
+            onClick={() => setActivePanel(id as ActivePanel, label)} // Pass label here
           />
         ))}
       </nav>
