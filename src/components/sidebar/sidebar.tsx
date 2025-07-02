@@ -15,7 +15,7 @@ const HEADER_HEIGHT_REM = 4; // 4rem = 64px
 
 export function Sidebar() {
   const { activePanel, setActivePanel, isSidebarOpen, setIsSidebarOpen } = useSidebar();
-  const { isAlwaysOpen, toggleAlwaysOpen } = useSidebarPreference();
+  const { isAlwaysOpen, toggleAlwaysOpen, mounted } = useSidebarPreference(); // Get mounted state
   const { toggleWidget } = useWidget();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -91,7 +91,8 @@ export function Sidebar() {
     toggleWidget(id, label);
   };
 
-  const actualSidebarOpen = isAlwaysOpen || isSidebarOpen;
+  // Ensure actualSidebarOpen is consistent on server (always false initially)
+  const actualSidebarOpen = mounted ? (isAlwaysOpen || isSidebarOpen) : false;
 
   return (
     <div
@@ -103,7 +104,6 @@ export function Sidebar() {
         `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]`,
         "rounded-r-lg"
       )}
-      // Removed onMouseEnter and onMouseLeave from here as they are handled by document.addEventListener
     >
       <div className="flex flex-col gap-2 overflow-y-auto h-full">
         {navItems.map((item) => (
@@ -118,8 +118,9 @@ export function Sidebar() {
       </div>
       <div className="mt-auto pt-4">
         <SidebarItem
-          icon={isAlwaysOpen ? ChevronLeft : ChevronRight}
-          label={isAlwaysOpen ? "Undock Sidebar" : "Dock Sidebar"}
+          // Conditionally render icon and label based on mounted state
+          icon={mounted && isAlwaysOpen ? ChevronLeft : ChevronRight}
+          label={mounted && isAlwaysOpen ? "Undock Sidebar" : "Dock Sidebar"}
           isActive={false}
           onClick={toggleAlwaysOpen}
         />

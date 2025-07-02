@@ -28,5 +28,5 @@ export function useSidebarPreference() {
     setIsAlwaysOpen(prev => !prev);
   }, []);
 
-  return { isAlwaysOpen, toggleAlwaysOpen };
+  return { isAlwaysOpen, toggleAlwaysOpen, mounted };
 }
