@@ -5,32 +5,30 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Home, Sun, Moon, Settings, Bell, MessageSquare, Search } from "lucide-react";
 import { useTheme } from "next-themes";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Sidebar } from "@/components/sidebar/sidebar";
 import { ChatPanel } from "@/components/chat-panel";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation"; // Import useRouter
+import { Input } from "@/components/ui/input"; // Import Input component
 
 interface HeaderProps {
-  isSidebarOpen: boolean;
-  toggleSidebar: () => void;
+  // isSidebarOpen and toggleSidebar props are no longer needed here
 }
 
-export function Header({ isSidebarOpen, toggleSidebar }: HeaderProps) {
-  const [currentTime, setCurrentTime] = useState<Date | null>(null); // Initialize as null
+export function Header({}: HeaderProps) { // Removed props
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [progress, setProgress] = useState(0);
   const { theme, setTheme } = useTheme();
   const { session, profile } = useSupabase();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatMessages, setUnreadChatMessages] = useState(0);
+  const router = useRouter(); // Initialize useRouter
 
   useEffect(() => {
-    // This effect runs only on the client after hydration
     const updateClock = () => {
       const now = new Date();
       setCurrentTime(now);
 
-      // Calculate daily progress (percentage of day passed)
       const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
       const totalMillisecondsInDay = endOfDay.getTime() - startOfDay.getTime();
@@ -39,24 +37,24 @@ export function Header({ isSidebarOpen, toggleSidebar }: HeaderProps) {
       setProgress(dailyProgress);
     };
 
-    updateClock(); // Initial call to set time and progress
-    const timer = setInterval(updateClock, 1000); // Update every second
+    updateClock();
+    const timer = setInterval(updateClock, 1000);
 
     return () => clearInterval(timer);
-  }, []); // Empty dependency array ensures this runs once on mount
+  }, []);
 
   const formattedTime = currentTime?.toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
     hour12: profile?.time_format_24h === false,
-  }) || '--:--:--'; // Placeholder until time is set
+  }) || '--:--:--';
   
   const formattedDate = currentTime?.toLocaleDateString([], {
     weekday: "short",
     month: "short",
     day: "numeric",
-  }) || '--- --'; // Placeholder until date is set
+  }) || '--- --';
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -73,25 +71,27 @@ export function Header({ isSidebarOpen, toggleSidebar }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md flex items-center h-16 px-4 md:px-6">
-      {/* Left Section: Sidebar Toggle / Home Button */}
+      {/* Left Section: Search Input, Home Button, and Title */}
       <div className="flex items-center gap-2">
-        <Sheet open={isSidebarOpen} onOpenChange={toggleSidebar}>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden"
-              onClick={toggleSidebar}
-              title="Toggle Sidebar / Home"
-            >
-              <Home className="h-6 w-6" />
-              <span className="sr-only">Toggle Sidebar / Home</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-64">
-            <Sidebar />
-          </SheetContent>
-        </Sheet>
+        {/* Search Input */}
+        <div className="relative flex-grow max-w-xs sm:max-w-sm">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search other rooms..."
+            className="pl-8"
+          />
+        </div>
+        {/* Home Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => router.push('/dashboard')} // Navigate to dashboard
+          title="Go to My Room"
+        >
+          <Home className="h-6 w-6" />
+          <span className="sr-only">Go to My Room</span>
+        </Button>
         <h1 className="text-xl font-semibold hidden sm:block">User's Room</h1>
       </div>
 
