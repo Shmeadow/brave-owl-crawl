@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { useCurrentRoom, useRooms } from "@/hooks";
+import { useCurrentRoom } from "@/hooks/use-current-room";
+import { useRooms } from "@/hooks/use-rooms";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RoomOwnerControlsSection } from "@/components/spaces-widget";

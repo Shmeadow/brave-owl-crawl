@@ -1,6 +1,9 @@
 "use client";
 
-import { useRoomFetching, useRoomManagement, useRoomMembership, RoomData, RoomInvite, RoomMember } from "./rooms";
+import { useRoomFetching } from "./rooms/use-room-fetching";
+import { useRoomManagement } from "./rooms/use-room-management";
+import { useRoomMembership } from "./rooms/use-room-membership";
+import type { RoomData, RoomInvite, RoomMember } from "./rooms/types";
 
 export type { RoomData, RoomInvite, RoomMember };
 

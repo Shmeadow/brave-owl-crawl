@@ -4,7 +4,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddNoteForm } from "@/components/add-note-form";
 import { NoteList } from "@/components/note-list";
-import { useNotes } from "@/hooks";
+import { useNotes } from "@/hooks/use-notes";
 
 interface NotesWidgetProps {
   isCurrentRoomWritable: boolean;

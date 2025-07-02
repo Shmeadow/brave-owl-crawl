@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft } from 'lucide-react';
-import { useYouTubePlayer, useHtmlAudioPlayer, useSpotifyPlayer } from '@/hooks';
+import { useYouTubePlayer } from '@/hooks/use-youtube-player';
+import { useHtmlAudioPlayer } from '@/hooks/use-html-audio-player';
+import { useSpotifyPlayer } from '@/hooks/use-spotify-player';
 import { cn, getYouTubeEmbedUrl } from '@/lib/utils';
 import { useSupabase } from '@/integrations/supabase/auth';
 
