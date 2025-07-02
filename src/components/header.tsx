@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, Bell, Search, Settings, Loader2 } from "lucide-react";
-import { useSupabase } from "@/integrations/supabase/auth";
+// Removed useSupabase as it's not directly used in this component
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { UserNav } from "@/components/user-nav";
