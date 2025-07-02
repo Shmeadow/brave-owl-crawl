@@ -39,7 +39,6 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
       toast.error("Chat unavailable: Supabase client not initialized.");
       return;
     }
-    // console.log("Attempting to fetch messages from Supabase URL:", supabase.supabaseUrl); // Removed this line
     try {
       // Fetch messages without joining profiles initially for better reliability
       const { data, error } = await supabase
@@ -52,14 +51,18 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
         console.error("Error fetching messages from Supabase:", error.message, "Details:", error.details, "Hint:", error.hint);
         toast.error("Failed to load chat messages: " + error.message);
       } else if (data) {
-        const formattedMessages = data.map(msg => ({
-          id: msg.id,
-          user_id: msg.user_id,
-          content: msg.content,
-          created_at: msg.created_at,
-          // Use truncated user_id as author if profile is not available or names are null
-          author: profile?.id === msg.user_id ? (profile.first_name || profile.last_name || 'You') : msg.user_id?.substring(0, 8) || 'Guest',
-        }));
+        const formattedMessages = data.map(msg => {
+          const authorName = (profile && profile.id === msg.user_id)
+            ? (profile.first_name || profile.last_name || 'You')
+            : msg.user_id?.substring(0, 8) || 'Guest';
+          return {
+            id: msg.id,
+            user_id: msg.user_id,
+            content: msg.content,
+            created_at: msg.created_at,
+            author: authorName,
+          };
+        });
         setMessages(formattedMessages);
       }
     } catch (networkError: any) {
@@ -81,7 +84,9 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, async (payload) => {
         const newMsg = payload.new as Message;
         
-        const authorName = profile?.id === newMsg.user_id ? (profile.first_name || profile.last_name || 'You') : newMsg.user_id?.substring(0, 8) || 'Guest';
+        const authorName = (profile && profile.id === newMsg.user_id)
+          ? (profile.first_name || profile.last_name || 'You')
+          : newMsg.user_id?.substring(0, 8) || 'Guest';
 
         const formattedNewMsg = {
           id: newMsg.id,
