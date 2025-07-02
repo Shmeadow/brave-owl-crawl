@@ -21,12 +21,23 @@ export function useRooms() {
     if (authLoading || !supabase) return;
 
     setLoading(true);
-    // Fetch all public rooms AND rooms created by the current user
-    const { data, error } = await supabase
+    
+    let query = supabase
       .from('rooms')
       .select('*')
-      .or(`is_public.eq.true,creator_id.eq.${session?.user?.id || 'null'}`)
       .order('created_at', { ascending: true });
+
+    // Always fetch public rooms
+    let filterConditions = 'is_public.eq.true';
+
+    // If a user is logged in, also fetch rooms created by them
+    if (session?.user?.id) {
+      filterConditions += `,creator_id.eq.${session.user.id}`;
+    }
+
+    query = query.or(filterConditions);
+
+    const { data, error } = await query;
 
     if (error) {
       toast.error("Error fetching rooms: " + error.message);
