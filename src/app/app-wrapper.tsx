@@ -133,8 +133,9 @@ export function AppWrapper({ children }: AppWrapperProps) {
     setUnreadChatCount(0);
   };
 
-  const chatPanelCurrentWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
-  const sidebarCurrentWidth = (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH : 0;
+  // Calculate these values conditionally based on `mounted`
+  const calculatedSidebarWidth = mounted && (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH : 0;
+  const calculatedChatPanelWidth = mounted && isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
 
   return (
     <>
@@ -150,7 +151,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
             "bg-background backdrop-blur-xl",
             "items-center justify-center" // Added to center content
           )}
-          style={{ marginLeft: `${sidebarCurrentWidth}px`, marginRight: `${chatPanelCurrentWidth}px` }}
+          style={mounted ? { marginLeft: `${calculatedSidebarWidth}px`, marginRight: `${calculatedChatPanelWidth}px` } : {}}
         >
           {children}
         </main>
@@ -159,7 +160,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
           <PomodoroWidget
             isMinimized={isPomodoroWidgetMinimized}
             setIsMinimized={setIsPomodoroWidgetMinimized}
-            chatPanelWidth={chatPanelCurrentWidth}
+            chatPanelWidth={calculatedChatPanelWidth}
           />
         )}
         {mounted && (youtubeEmbedUrl || spotifyEmbedUrl) && <MediaPlayerBar />}
