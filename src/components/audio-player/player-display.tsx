@@ -30,6 +30,9 @@ export function PlayerDisplay({
   const youtubeEmbedUrl = playerType === 'youtube' ? getYouTubeEmbedUrl(inputUrl) : null;
   const spotifyEmbedUrl = playerType === 'spotify' ? getSpotifyEmbedUrl(inputUrl) : null;
 
+  // Determine the aspect ratio class based on playerType
+  const aspectRatioClass = playerType === 'youtube' ? 'aspect-video' : playerType === 'spotify' ? 'aspect-square' : '';
+
   return (
     <>
       {playerType === 'audio' && (
@@ -40,16 +43,17 @@ export function PlayerDisplay({
           onTimeUpdate={onTimeUpdate}
           onEnded={onEnded}
           preload="metadata"
-          className={cn(className, isMaximized ? 'flex-grow' : 'h-auto')} // Use flex-grow for audio
+          className={cn(className, 'w-full h-full')} // Audio tag should fill its container
         >
           Your browser does not support the audio element.
         </audio>
       )}
-      {playerType === 'youtube' && youtubeEmbedUrl && (
+      {(playerType === 'youtube' && youtubeEmbedUrl) && (
         <div className={cn(
           "relative w-full mb-1",
           className,
-          isMaximized ? 'flex-grow' : 'aspect-video' // Use flex-grow when maximized, aspect-video otherwise
+          aspectRatioClass, // Always apply aspect ratio
+          isMaximized ? 'mx-auto' : '' // Center horizontally when maximized
         )}>
           <iframe
             ref={youtubeIframeRef}
@@ -62,11 +66,12 @@ export function PlayerDisplay({
           ></iframe>
         </div>
       )}
-      {playerType === 'spotify' && spotifyEmbedUrl && (
+      {(playerType === 'spotify' && spotifyEmbedUrl) && (
         <div className={cn(
           "relative w-full mb-1",
           className,
-          isMaximized ? 'flex-grow' : 'aspect-square' // Use flex-grow when maximized, aspect-square otherwise
+          aspectRatioClass, // Always apply aspect ratio
+          isMaximized ? 'mx-auto' : '' // Center horizontally when maximized
         )}>
           <iframe
             src={spotifyEmbedUrl}

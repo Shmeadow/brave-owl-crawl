@@ -22,8 +22,8 @@ const POMODORO_WIDGET_BOTTOM_OFFSET = 20; // px, from PomodoroWidget's fixed bot
 const PLAYER_POMODORO_BUFFER = 20; // px
 
 // Calculate the exact bottom position for the player
-const MAXIMIZED_PLAYER_BOTTOM_POSITION = POMODORO_WIDGET_BOTTOM_OFFSET + POMODORO_WIDGET_HEIGHT_EST + PLAYER_POMODORO_BUFFER;
-const MAXIMIZED_PLAYER_TOP_POSITION = HEADER_HEIGHT + 20; // Moved down by 20px
+const MAXIMIZED_PLAYER_BOTTOM_POSITION = POMODORO_WIDGET_BOTTOM_OFFSET + POMODORO_WIDGET_HEIGHT_EST + PLAYER_POMODORO_BUFFER + 20; // Added 20px buffer
+const MAXIMIZED_PLAYER_TOP_POSITION = HEADER_HEIGHT + 40; // Moved down by 40px
 
 
 const SimpleAudioPlayer = () => {
@@ -180,7 +180,7 @@ const SimpleAudioPlayer = () => {
       "fixed z-[1000] transition-all duration-300 ease-in-out",
       displayMode === 'normal' && 'top-20 right-4 w-80',
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-16',
-      displayMode === 'maximized' && 'left-1/2 -translate-x-1/2 w-full max-w-3xl flex flex-col' // Changed max-w-4xl to max-w-3xl
+      displayMode === 'maximized' && 'left-1/2 -translate-x-1/2 w-full max-w-3xl flex flex-col items-center justify-center' // Added items-center justify-center
     )}
     style={displayMode === 'maximized' ? { top: `${MAXIMIZED_PLAYER_TOP_POSITION}px`, bottom: `${MAXIMIZED_PLAYER_BOTTOM_POSITION}px` } : {}}
     >
@@ -188,7 +188,7 @@ const SimpleAudioPlayer = () => {
       <div className={cn(
         "bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full h-full",
         displayMode === 'normal' && 'p-1',
-        displayMode === 'maximized' && 'p-4', // Increased padding for maximized mode
+        displayMode === 'maximized' && 'p-4 items-center justify-center', // Added items-center justify-center here too
         displayMode === 'minimized' && 'hidden'
       )}>
         {/* PlayerDisplay is now inside and will fill available space */}
@@ -200,12 +200,15 @@ const SimpleAudioPlayer = () => {
           onLoadedMetadata={htmlAudioOnLoadedMetadata}
           onTimeUpdate={htmlAudioOnTimeUpdate}
           onEnded={htmlAudioOnEnded}
-          isMaximized={displayMode === 'maximized'} // New prop for PlayerDisplay
-          className={displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : ''}
+          isMaximized={displayMode === 'maximized'}
+          className={cn(
+            displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : '',
+            displayMode === 'maximized' ? 'w-full' : '' // Ensure it takes full width of its container when maximized
+          )}
         />
 
         {/* Main Player Row: Album Art, Track Info, Controls */}
-        <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0">
+        <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full"> {/* Added w-full */}
           {/* Album Art Placeholder */}
           <div className="flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs w-12 h-12">
             <PlayerIcon size={24} />
