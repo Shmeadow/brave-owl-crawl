@@ -15,6 +15,7 @@ interface UseYouTubePlayerResult {
   volume: number;
   togglePlayPause: () => void;
   setVolume: (vol: number) => void;
+  seekTo: (seconds: number) => void; // New: Expose seekTo
   playerReady: boolean;
   iframeId: string; // ID to assign to the iframe
   youtubeCurrentTime: number; // Exposed current time
@@ -167,11 +168,18 @@ export function useYouTubePlayer(embedUrl: string | null): UseYouTubePlayerResul
     }
   }, [playerReady]);
 
+  const seekTo = useCallback((seconds: number) => {
+    if (playerReady && playerRef.current) {
+      playerRef.current.seekTo(seconds, true);
+    }
+  }, [playerReady]);
+
   return {
     isPlaying,
     volume,
     togglePlayPause,
     setVolume,
+    seekTo, // Expose seekTo
     playerReady,
     iframeId,
     youtubeCurrentTime,

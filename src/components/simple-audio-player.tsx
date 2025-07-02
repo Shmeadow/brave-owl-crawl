@@ -1,24 +1,24 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, Volume2, VolumeX, FastForward, Rewind, Music, Link, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, FastForward, Rewind, Music, Link, ChevronLeft, ChevronRight, ListMusic, Youtube } from 'lucide-react';
 import { useYouTubePlayer } from '@/hooks/use-youtube-player';
 import { getYouTubeEmbedUrl, getSpotifyEmbedUrl } from '@/lib/utils'; // Import utility functions
+import { cn } from '@/lib/utils';
 
-const LOCAL_STORAGE_DOCKED_KEY = 'simple_audio_player_docked';
+const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 
 const SimpleAudioPlayer = () => {
-  const [inputUrl, setInputUrl] = useState(''); // Empty by default
+  const [inputUrl, setInputUrl] = useState('');
   const [playerType, setPlayerType] = useState<'audio' | 'youtube' | 'spotify' | null>(null);
   const [currentTitle, setCurrentTitle] = useState('No Media Loaded');
   const [currentArtist, setCurrentArtist] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
-  const [isDocked, setIsDocked] = useState<boolean>(() => {
+  const [displayMode, setDisplayMode] = useState<'docked' | 'maximized'>(() => {
     if (typeof window !== 'undefined') {
-      const savedDocked = localStorage.getItem(LOCAL_STORAGE_DOCKED_KEY);
-      return savedDocked === 'true'; // Default to false if not set
+      return localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY) === 'maximized' ? 'maximized' : 'docked';
     }
-    return false;
+    return 'docked';
   });
 
   // State for HTML Audio Player
@@ -37,18 +37,19 @@ const SimpleAudioPlayer = () => {
     volume: youtubeVolume,
     togglePlayPause: youtubeTogglePlayPause,
     setVolume: youtubeSetVolume,
+    seekTo: youtubeSeekTo, // Use the exposed seekTo
     playerReady: youtubePlayerReady,
     iframeId,
     youtubeCurrentTime,
     youtubeDuration,
   } = useYouTubePlayer(youtubeEmbedUrl);
 
-  // Effect to save docked state to local storage
+  // Effect to save display mode to local storage
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem(LOCAL_STORAGE_DOCKED_KEY, String(isDocked));
+      localStorage.setItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY, displayMode);
     }
-  }, [isDocked]);
+  }, [displayMode]);
 
   // Determine player type and set initial title/artist when inputUrl changes
   useEffect(() => {
@@ -122,10 +123,8 @@ const SimpleAudioPlayer = () => {
       setAudioIsPlaying(prev => !prev);
     } else if (playerType === 'youtube') {
       youtubeTogglePlayPause();
-    } else if (playerType === 'spotify') {
-      // Spotify embed has its own controls, no programmatic toggle here
-      // User must interact with the iframe directly
     }
+    // Spotify embed has its own controls, no programmatic toggle here
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -151,10 +150,9 @@ const SimpleAudioPlayer = () => {
       } else {
         prevAudioVolumeRef.current = audioVolume;
         setAudioVolume(0);
-        setIsMuted(true);
+        setAudioIsMuted(true);
       }
     } else if (playerType === 'youtube') {
-      // YouTube API doesn't have a direct mute toggle, set volume to 0 or previous
       if (youtubeVolume === 0) {
         youtubeSetVolume(prevAudioVolumeRef.current * 100); // Use stored volume
       } else {
@@ -170,7 +168,7 @@ const SimpleAudioPlayer = () => {
       audioRef.current.currentTime = newTime;
       setAudioCurrentTime(newTime);
     } else if (playerType === 'youtube' && youtubePlayerReady) {
-      playerRef.current?.seekTo(newTime, true);
+      youtubeSeekTo(newTime);
     }
   };
 
@@ -179,7 +177,7 @@ const SimpleAudioPlayer = () => {
       audioRef.current.currentTime = Math.min(audioRef.current.currentTime + 10, audioDuration);
       setAudioCurrentTime(audioRef.current.currentTime);
     } else if (playerType === 'youtube' && youtubePlayerReady) {
-      playerRef.current?.seekTo(youtubeCurrentTime + 10, true);
+      youtubeSeekTo(youtubeCurrentTime + 10);
     }
   };
 
@@ -188,13 +186,12 @@ const SimpleAudioPlayer = () => {
       audioRef.current.currentTime = Math.max(audioRef.current.currentTime - 10, 0);
       setAudioCurrentTime(audioRef.current.currentTime);
     } else if (playerType === 'youtube' && youtubePlayerReady) {
-      playerRef.current?.seekTo(youtubeCurrentTime - 10, true);
+      youtubeSeekTo(youtubeCurrentTime - 10);
     }
   };
 
   const loadNewMedia = () => {
     setShowUrlInput(false);
-    // Player type and title/artist will be updated by the useEffect when inputUrl changes
   };
 
   const currentPlaybackTime = playerType === 'youtube' ? youtubeCurrentTime : audioCurrentTime;
@@ -204,22 +201,33 @@ const SimpleAudioPlayer = () => {
   const currentIsMuted = playerType === 'youtube' ? youtubeVolume === 0 : audioIsMuted;
   const playerIsReady = playerType === 'youtube' ? youtubePlayerReady : true; // HTML audio is always ready, Spotify embed is also "ready" once loaded
 
-  const toggleDocked = () => {
-    setIsDocked(prev => !prev);
+  const toggleDisplayMode = () => {
+    setDisplayMode(prev => {
+      const newMode = prev === 'docked' ? 'maximized' : 'docked';
+      return newMode;
+    });
   };
 
   const spotifyEmbedUrl = playerType === 'spotify' ? getSpotifyEmbedUrl(inputUrl) : null;
 
+  const PlayerIcon = playerType === 'youtube' ? Youtube : playerType === 'spotify' ? ListMusic : Music;
+
   return (
-    <div className={`fixed right-4 z-[1000] top-20 transition-all duration-300 ease-in-out ${isDocked ? 'w-12' : 'max-w-[16rem] w-full'}`}>
-      <div className="bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex flex-col">
+    <div className={cn(
+      "fixed z-[1000] transition-all duration-300 ease-in-out",
+      displayMode === 'docked' ? 'right-4 top-20 w-12' : 'inset-0 flex items-center justify-center p-4'
+    )}>
+      <div className={cn(
+        "bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex flex-col",
+        displayMode === 'docked' ? 'w-full' : 'max-w-2xl w-full h-auto'
+      )}>
         {/* Dock/Undock Button */}
         <button
-          onClick={toggleDocked}
+          onClick={toggleDisplayMode}
           className="absolute -left-8 top-1/2 -translate-y-1/2 p-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-md"
-          title={isDocked ? "Undock Player" : "Dock Player"}
+          title={displayMode === 'docked' ? "Maximize Player" : "Dock Player"}
         >
-          {isDocked ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+          {displayMode === 'docked' ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
         </button>
 
         {/* Conditional Audio/YouTube/Spotify Player */}
@@ -236,7 +244,7 @@ const SimpleAudioPlayer = () => {
           </audio>
         )}
         {playerType === 'youtube' && youtubeEmbedUrl && (
-          <div className={`relative w-full aspect-video ${isDocked ? 'hidden' : 'mb-1'}`}>
+          <div className={cn("relative w-full aspect-video", displayMode === 'docked' ? 'hidden' : 'mb-1')}>
             <iframe
               id={iframeId}
               className="absolute top-0 left-0 w-full h-full rounded-lg"
@@ -249,7 +257,7 @@ const SimpleAudioPlayer = () => {
           </div>
         )}
         {playerType === 'spotify' && spotifyEmbedUrl && (
-          <div className={`relative w-full aspect-square ${isDocked ? 'hidden' : 'mb-1'}`}>
+          <div className={cn("relative w-full aspect-square", displayMode === 'docked' ? 'hidden' : 'mb-1')}>
             <iframe
               src={spotifyEmbedUrl}
               width="100%"
@@ -257,20 +265,27 @@ const SimpleAudioPlayer = () => {
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
               loading="lazy"
               className="rounded-lg"
+              style={{ backgroundColor: 'transparent' }} // Attempt to make background transparent
               title="Spotify Embed"
             ></iframe>
           </div>
         )}
 
         {/* Main Player Row: Album Art, Track Info, Controls */}
-        <div className={`flex items-center justify-between space-x-1.5 ${isDocked ? 'flex-col' : 'mb-1'}`}>
+        <div className={cn(
+          "flex items-center justify-between space-x-1.5",
+          displayMode === 'docked' ? 'flex-col' : 'mb-1'
+        )}>
           {/* Album Art Placeholder */}
-          <div className={`flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs ${isDocked ? 'w-10 h-10 mb-1' : 'w-12 h-12'}`}>
-            <Music size={isDocked ? 18 : 24} />
+          <div className={cn(
+            "flex-shrink-0 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow-xs",
+            displayMode === 'docked' ? 'w-10 h-10 mb-1' : 'w-12 h-12'
+          )}>
+            <PlayerIcon size={displayMode === 'docked' ? 18 : 24} />
           </div>
 
           {/* Track Info and URL Input Toggle */}
-          {!isDocked && (
+          {displayMode !== 'docked' && (
             <div className="flex-grow min-w-0">
               <p className="text-sm font-semibold text-foreground truncate leading-tight">{currentTitle}</p>
               <p className="text-xs text-muted-foreground truncate">{currentArtist}</p>
@@ -286,7 +301,10 @@ const SimpleAudioPlayer = () => {
           )}
 
           {/* Playback Controls and Volume */}
-          <div className={`flex items-center space-x-0.5 flex-shrink-0 ${isDocked ? 'flex-col space-y-1' : ''}`}>
+          <div className={cn(
+            "flex items-center space-x-0.5 flex-shrink-0",
+            displayMode === 'docked' ? 'flex-col space-y-1' : ''
+          )}>
             {playerType !== 'spotify' && ( // Spotify has its own controls
               <>
                 <button
@@ -296,7 +314,7 @@ const SimpleAudioPlayer = () => {
                   title="Skip Backward"
                   disabled={!playerIsReady || playerType === 'spotify'}
                 >
-                  <Rewind size={isDocked ? 10 : 12} />
+                  <Rewind size={displayMode === 'docked' ? 10 : 12} />
                 </button>
                 <button
                   onClick={togglePlayPause}
@@ -305,7 +323,7 @@ const SimpleAudioPlayer = () => {
                   title={currentIsPlaying ? "Pause" : "Play"}
                   disabled={!playerIsReady || playerType === 'spotify'}
                 >
-                  {currentIsPlaying ? <Pause size={isDocked ? 12 : 14} /> : <Play size={isDocked ? 12 : 14} />}
+                  {currentIsPlaying ? <Pause size={displayMode === 'docked' ? 12 : 14} /> : <Play size={displayMode === 'docked' ? 12 : 14} />}
                 </button>
                 <button
                   onClick={skipForward}
@@ -314,13 +332,13 @@ const SimpleAudioPlayer = () => {
                   title="Skip Forward"
                   disabled={!playerIsReady || playerType === 'spotify'}
                 >
-                  <FastForward size={isDocked ? 10 : 12} />
+                  <FastForward size={displayMode === 'docked' ? 10 : 12} />
                 </button>
               </>
             )}
 
             {/* Volume Control */}
-            {!isDocked && (
+            {displayMode !== 'docked' && (
               <div className="flex items-center space-x-0.5 ml-1">
                 <button
                   onClick={toggleMute}
@@ -350,7 +368,7 @@ const SimpleAudioPlayer = () => {
         </div>
 
         {/* Progress Bar and Time */}
-        {!isDocked && (
+        {displayMode !== 'docked' && (
           <div className="flex items-center space-x-1 mb-1">
             <span className="text-xs text-muted-foreground w-8 text-right">{formatTime(currentPlaybackTime)}</span>
             <input
@@ -370,7 +388,7 @@ const SimpleAudioPlayer = () => {
         )}
 
         {/* URL Input Section */}
-        {showUrlInput && !isDocked && (
+        {showUrlInput && displayMode !== 'docked' && (
           <div className="mt-1 p-1 bg-muted rounded-lg border border-border">
             <label htmlFor="media-url" className="block text-xs font-medium text-muted-foreground mb-0.5">
               Embed URL:
