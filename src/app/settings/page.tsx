@@ -1,11 +1,10 @@
 "use client";
 
 import React from "react";
-import { useCurrentRoom } from "@/hooks/use-current-room";
+import { useCurrentRoom, useRooms } from "@/hooks";
 import { useSupabase } from "@/integrations/supabase/auth";
-import { useRooms } from "@/hooks/use-rooms";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RoomOwnerControlsSection } from "@/components/spaces-widget/room-owner-controls-section";
+import { RoomOwnerControlsSection } from "@/components/spaces-widget";
 
 export default function SettingsPage() {
   const { session, loading: authLoading } = useSupabase();

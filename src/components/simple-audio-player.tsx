@@ -1,18 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft } from 'lucide-react'; // Removed Music, ListMusic, Youtube, VolumeX, Volume2
-import { useYouTubePlayer } from '@/hooks/use-youtube-player';
-import { useHtmlAudioPlayer } from '@/hooks/use-html-audio-player';
-import { useSpotifyPlayer } from '@/hooks/use-spotify-player';
+import { ChevronLeft } from 'lucide-react';
+import { useYouTubePlayer, useHtmlAudioPlayer, useSpotifyPlayer } from '@/hooks';
 import { cn, getYouTubeEmbedUrl } from '@/lib/utils';
 import { useSupabase } from '@/integrations/supabase/auth';
 
-import { PlayerDisplay } from './audio-player/player-display';
-import { MediaInput } from './audio-player/media-input';
-import { PlayerControls } from './audio-player/player-controls';
-import { ProgressBar } from './audio-player/progress-bar';
-import { PlayerModeButtons } from './audio-player/player-mode-buttons';
+import { PlayerDisplay, MediaInput, PlayerControls, ProgressBar, PlayerModeButtons } from './audio-player';
 
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 
@@ -86,7 +80,6 @@ const SimpleAudioPlayer = () => {
     toggleMute: spotifyToggleMute,
     seekTo: spotifySeekTo,
     connectToSpotify,
-    // disconnectFromSpotify, // This was unused
     playTrack: spotifyPlayTrack,
   } = useSpotifyPlayer(session?.access_token || null);
 
@@ -217,7 +210,6 @@ const SimpleAudioPlayer = () => {
           onLoadedMetadata={htmlAudioOnLoadedMetadata}
           onTimeUpdate={htmlAudioOnTimeUpdate}
           onEnded={htmlAudioOnEnded}
-          isMaximized={displayMode === 'maximized'}
           className={cn(
             displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : '',
             (playerType === 'youtube' || playerType === 'spotify') ? 'w-full flex-grow' : 'w-full'

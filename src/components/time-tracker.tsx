@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { useCurrentRoom } from "@/hooks/use-current-room"; // Import useCurrentRoom
+import { useCurrentRoom } from "@/hooks";
 
 export function TimeTracker() {
   const [time, setTime] = useState(0);

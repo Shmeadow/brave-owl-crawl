@@ -1,21 +1,18 @@
 "use client";
 
-import { useRoomFetching } from "./rooms/use-room-fetching";
-import { useRoomManagement } from "./rooms/use-room-management";
-import { useRoomMembership } from "./rooms/use-room-membership";
-import { RoomData, RoomInvite, RoomMember } from "./rooms/types";
+import { useRoomFetching, useRoomManagement, useRoomMembership, RoomData, RoomInvite, RoomMember } from "./rooms";
 
 export type { RoomData, RoomInvite, RoomMember };
 
 export function useRooms() {
-  const { rooms, loading, fetchRooms } = useRoomFetching();
+  const { rooms, setRooms, loading, fetchRooms } = useRoomFetching();
   const {
     handleCreateRoom,
     handleToggleRoomPublicStatus,
     handleToggleGuestWriteAccess,
     handleSetRoomPassword,
     handleDeleteRoom,
-  } = useRoomManagement({ setRooms: () => {}, fetchRooms }); // Removed 'newRooms' parameter
+  } = useRoomManagement({ setRooms, fetchRooms });
   const {
     handleGenerateInviteCode,
     handleJoinRoomByCode,

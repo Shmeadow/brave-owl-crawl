@@ -2,18 +2,15 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { Header } from "@/components/header";
-import { Sidebar } from "@/components/sidebar/sidebar";
-import { WidgetProvider } from "@/components/widget/widget-context";
-import { WidgetContainer } from "@/components/widget/widget-container";
+import { Sidebar, useSidebar } from "@/components/sidebar";
+import { WidgetProvider, WidgetContainer } from "@/components/widget";
 import { Toaster } from "@/components/ui/sonner";
 import { UpgradeModal } from "@/components/upgrade-modal";
 import { ChatPanel } from "@/components/chat-panel";
-import { useCurrentRoom } from "@/hooks/use-current-room";
+import { useCurrentRoom, useSidebarPreference } from "@/hooks";
 import { SimpleAudioPlayer } from "@/components/simple-audio-player";
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
 import { cn } from "@/lib/utils";
-import { useSidebar } from "@/components/sidebar/sidebar-context";
-import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 
 const HEADER_HEIGHT = 64; // Corresponds to h-16 in Tailwind
 const SIDEBAR_WIDTH = 60; // Width of the sidebar in pixels

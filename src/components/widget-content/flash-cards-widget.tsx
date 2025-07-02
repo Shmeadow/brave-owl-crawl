@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState } from "react"; // Removed useEffect
+import React, { useState } from "react";
 import { FlashCardDeck } from "@/components/flash-card-deck";
 import { FlashCardListSidebar } from "@/components/flash-card-list-sidebar";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { useFlashcards } from "@/hooks/use-flashcards"; // Removed CardData
-import { useFlashcardNavigation } from "@/hooks/use-flashcard-navigation";
+import { useFlashcards, useFlashcardNavigation } from "@/hooks";
 
 type FilterMode = 'all' | 'starred' | 'learned';
 

@@ -1,14 +1,9 @@
 "use client";
 
 import React from "react";
-import { useRooms } from "@/hooks/use-rooms";
-import { useCurrentRoom } from "@/hooks/use-current-room";
+import { useRooms, useCurrentRoom } from "@/hooks";
 import { useSupabase } from "@/integrations/supabase/auth";
-import { CreateRoomSection } from "@/components/spaces-widget/create-room-section";
-import { MyRoomsSection } from "@/components/spaces-widget/my-rooms-section";
-import { JoinRoomSection } from "@/components/spaces-widget/join-room-section";
-import { PublicRoomsSection } from "@/components/spaces-widget/public-rooms-section";
-import { RoomOwnerControlsSection } from "@/components/spaces-widget/room-owner-controls-section";
+import { CreateRoomSection, MyRoomsSection, JoinRoomSection, PublicRoomsSection, RoomOwnerControlsSection } from "@/components/spaces-widget";
 
 export function SpacesWidget() {
   const { session, loading: authLoading } = useSupabase();

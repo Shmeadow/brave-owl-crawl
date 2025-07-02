@@ -4,7 +4,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddGoalForm } from "@/components/add-goal-form";
 import { GoalList } from "@/components/goal-list";
-import { useGoals } from "@/hooks/use-goals";
+import { useGoals } from "@/hooks";
 
 interface GoalFocusWidgetProps {
   isCurrentRoomWritable: boolean;
