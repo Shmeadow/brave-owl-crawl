@@ -139,8 +139,6 @@ function AppWrapperContent({ children }: AppWrapperProps) {
   return (
     <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
       <Header
-        onTogglePomodoroVisibility={() => setIsPomodoroWidgetMinimized(prev => !prev)} // Toggle minimize
-        isPomodoroVisible={!isPomodoroWidgetMinimized} // Pass minimized state as visibility
         onOpenSpotifyModal={handleOpenSpotifyModal}
         onOpenUpgradeModal={handleOpenUpgradeModal}
         dailyProgress={dailyProgress}
@@ -157,7 +155,6 @@ function AppWrapperContent({ children }: AppWrapperProps) {
         <PomodoroWidget
           isMinimized={isPomodoroWidgetMinimized}
           setIsMinimized={setIsPomodoroWidgetMinimized}
-          onClose={() => { /* Pomodoro widget no longer has a close button, only minimize */ }}
           chatPanelWidth={chatPanelCurrentWidth}
         />
       )}

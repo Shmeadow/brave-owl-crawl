@@ -3,38 +3,34 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Home, Sun, Moon, Settings, Bell, MessageSquare, Search } from "lucide-react";
+import { Home, Sun, Moon, Bell, Search } from "lucide-react"; // Removed Settings icon
 import { useTheme } from "next-themes";
 import { ChatPanel } from "@/components/chat-panel";
 import { useSupabase } from "@/integrations/supabase/auth";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation"; // Import useRouter
-import { Input } from "@/components/ui/input"; // Import Input component
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { UserNav } from "@/components/user-nav"; // Import UserNav
+import { UpgradeButton } from "@/components/upgrade-button"; // Import UpgradeButton
+import { useCurrentRoom } from "@/hooks/use-current-room"; // Import useCurrentRoom
 
 interface HeaderProps {
-  // isSidebarOpen and toggleSidebar props are no longer needed here
+  onOpenSpotifyModal: () => void;
+  onOpenUpgradeModal: () => void;
+  dailyProgress: number; // Keep dailyProgress for the clock
 }
 
-export function Header({}: HeaderProps) { // Removed props
+export function Header({ onOpenSpotifyModal, onOpenUpgradeModal, dailyProgress }: HeaderProps) {
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
-  const [progress, setProgress] = useState(0);
   const { theme, setTheme } = useTheme();
   const { session, profile } = useSupabase();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatMessages, setUnreadChatMessages] = useState(0);
-  const router = useRouter(); // Initialize useRouter
+  const router = useRouter();
+  const { currentRoomName } = useCurrentRoom(); // Get current room name
 
   useEffect(() => {
     const updateClock = () => {
-      const now = new Date();
-      setCurrentTime(now);
-
-      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-      const totalMillisecondsInDay = endOfDay.getTime() - startOfDay.getTime();
-      const elapsedMilliseconds = now.getTime() - startOfDay.getTime();
-      const dailyProgress = (elapsedMilliseconds / totalMillisecondsInDay) * 100;
-      setProgress(dailyProgress);
+      setCurrentTime(new Date());
     };
 
     updateClock();
@@ -69,6 +65,8 @@ export function Header({}: HeaderProps) { // Removed props
     setUnreadChatMessages(0);
   };
 
+  const displayUserName = profile?.first_name || profile?.last_name || session?.user?.email?.split('@')[0] || "Guest";
+
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md flex items-center h-16 px-4 md:px-6">
       {/* Left Section: Search Input, Home Button, and Title */}
@@ -92,27 +90,26 @@ export function Header({}: HeaderProps) { // Removed props
           <Home className="h-6 w-6" />
           <span className="sr-only">Go to My Room</span>
         </Button>
-        <h1 className="text-xl font-semibold hidden sm:block">User's Room</h1>
+        <h1 className="text-xl font-semibold hidden sm:block truncate max-w-[150px]"> {/* Added truncate and max-w */}
+          {currentRoomName}
+        </h1>
       </div>
 
       {/* Center Section: Clock and Progress Bar */}
-      <div className="flex flex-col items-center gap-1 flex-grow max-w-xs mx-auto w-full">
+      <div className="flex flex-col items-center gap-1 flex-grow max-w-[150px] mx-auto w-full"> {/* Reduced max-w */}
         <div className="flex justify-between items-baseline w-full">
           <p className="text-4xl font-bold text-foreground leading-none">{formattedTime}</p>
-          <p className="text-base text-muted-foreground">{formattedDate}</p>
+          {/* Date removed to save space */}
         </div>
         {/* Progress Bar */}
         <div className="w-full">
-          <Progress value={progress} className="h-1 rounded-full" />
+          <Progress value={dailyProgress} className="h-1 rounded-full" />
         </div>
       </div>
 
       {/* Right Section: Actions */}
       <div className="flex items-center gap-2 ml-auto">
-        <Button variant="ghost" size="icon" title="Search Rooms">
-          <Search className="h-6 w-6" />
-          <span className="sr-only">Search Rooms</span>
-        </Button>
+        <UpgradeButton onOpenUpgradeModal={onOpenUpgradeModal} /> {/* Replaced Search with UpgradeButton */}
         <Button variant="ghost" size="icon" onClick={toggleTheme} title="Toggle Theme">
           {theme === "dark" ? (
             <Sun className="h-6 w-6" />
@@ -134,10 +131,7 @@ export function Header({}: HeaderProps) { // Removed props
             unreadCount={unreadChatMessages}
           />
         )}
-        <Button variant="ghost" size="icon" title="Settings">
-          <Settings className="h-6 w-6" />
-          <span className="sr-only">Settings</span>
-        </Button>
+        <UserNav /> {/* Replaced Settings with UserNav */}
       </div>
     </header>
   );
