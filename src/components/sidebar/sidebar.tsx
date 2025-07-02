@@ -6,7 +6,7 @@ import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
 import { useWidget } from "@/components/widget/widget-context";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference"; // Import useSidebarPreference
-import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Wind, BookOpen, Goal } from "lucide-react";
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Wind, BookOpen, Goal, ChevronLeft, ChevronRight } from "lucide-react"; // Added ChevronLeft, ChevronRight
 
 const SIDEBAR_WIDTH = 60; // px
 const HOT_ZONE_WIDTH = 20; // px (includes the 4px visible strip)
@@ -15,7 +15,7 @@ const HEADER_HEIGHT_REM = 4; // 4rem = 64px
 
 export function Sidebar() {
   const { activePanel, setActivePanel, isSidebarOpen, setIsSidebarOpen } = useSidebar();
-  const { isAlwaysOpen } = useSidebarPreference(); // Get the preference
+  const { isAlwaysOpen, toggleAlwaysOpen } = useSidebarPreference(); // Get the preference and toggle function
   const { toggleWidget } = useWidget();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -119,6 +119,15 @@ export function Sidebar() {
             onClick={() => handleSidebarItemClick(item.id, item.label)}
           />
         ))}
+      </div>
+      {/* New docking toggle button */}
+      <div className="mt-auto pt-4"> {/* Pushes button to the bottom */}
+        <SidebarItem
+          icon={isAlwaysOpen ? ChevronLeft : ChevronRight} // Icon changes based on docked state
+          label={isAlwaysOpen ? "Undock Sidebar" : "Dock Sidebar"}
+          isActive={false} // This button is not a panel selector
+          onClick={toggleAlwaysOpen} // Toggles the always open preference
+        />
       </div>
     </div>
   );
