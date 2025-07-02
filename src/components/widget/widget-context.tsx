@@ -18,7 +18,7 @@ interface WidgetState {
   isPinned: boolean;
   previousPosition?: { x: number; y: number };
   previousSize?: { width: number; height: number };
-  normalSize?: { width: number; number };
+  normalSize?: { width: number; height: number };
   normalPosition?: { x: number; y: number };
 }
 
@@ -54,9 +54,7 @@ const DOCKED_WIDGET_WIDTH = 192;
 const DOCKED_WIDGET_HEIGHT = 48;
 const DOCKED_WIDGET_HORIZONTAL_GAP = 4;
 const BOTTOM_DOCK_OFFSET = 16;
-
-const MINIMIZED_WIDGET_WIDTH = 192;
-const MINIMIZED_WIDGET_HEIGHT = 48;
+const LOCAL_STORAGE_WIDGET_STATE_KEY = 'active_widget_states';
 
 export const clampPosition = (x: number, y: number, width: number, height: number, bounds: { left: number; top: number; width: number; height: number }) => {
   const maxX = bounds.left + bounds.width - width;
@@ -69,6 +67,57 @@ export const clampPosition = (x: number, y: number, width: number, height: numbe
 export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea }: WidgetProviderProps) {
   const [activeWidgets, setActiveWidgets] = useState<WidgetState[]>([]);
   const [maxZIndex, setMaxZIndex] = useState(900);
+  const [mounted, setMounted] = useState(false);
+
+  // Load state from local storage on mount
+  useEffect(() => {
+    setMounted(true);
+    if (typeof window !== 'undefined') {
+      try {
+        const savedState = localStorage.getItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
+        if (savedState) {
+          const parsedState: WidgetState[] = JSON.parse(savedState);
+          // Filter out any widgets that might not have a config anymore
+          const validWidgets = parsedState.filter(w => initialWidgetConfigs[w.id]);
+          // Re-clamp positions and sizes based on current mainContentArea
+          const reClampedWidgets = validWidgets.map(widget => {
+            const clampedPos = clampPosition(
+              widget.position.x,
+              widget.position.y,
+              widget.size.width,
+              widget.size.height,
+              mainContentArea
+            );
+            return {
+              ...widget,
+              position: clampedPos,
+              normalPosition: widget.normalPosition ? clampPosition(
+                widget.normalPosition.x,
+                widget.normalPosition.y,
+                widget.normalSize?.width || initialWidgetConfigs[widget.id].initialWidth,
+                widget.normalSize?.height || initialWidgetConfigs[widget.id].initialHeight,
+                mainContentArea
+              ) : clampedPos,
+            };
+          });
+          setActiveWidgets(reClampedWidgets);
+          const currentMaxZ = reClampedWidgets.length > 0 ? Math.max(...reClampedWidgets.map(w => w.zIndex)) : 900;
+          setMaxZIndex(currentMaxZ);
+        }
+      } catch (e) {
+        console.error("Failed to parse widget states from local storage:", e);
+        // Fallback to default if parsing fails
+        setActiveWidgets([]);
+      }
+    }
+  }, [initialWidgetConfigs, mainContentArea]); // Re-run if mainContentArea changes on initial load
+
+  // Save state to local storage whenever activeWidgets changes
+  useEffect(() => {
+    if (mounted && typeof window !== 'undefined') {
+      localStorage.setItem(LOCAL_STORAGE_WIDGET_STATE_KEY, JSON.stringify(activeWidgets));
+    }
+  }, [activeWidgets, mounted]);
 
   const recalculatePinnedWidgets = useCallback((currentWidgets: WidgetState[]) => {
     const pinned = currentWidgets.filter(w => w.isPinned).sort((a, b) => a.id.localeCompare(b.id));
@@ -222,12 +271,12 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
               ...widget,
               isMaximized: false,
               isMinimized: true,
-              size: { width: MINIMIZED_WIDGET_WIDTH, height: MINIMIZED_WIDGET_HEIGHT },
+              size: { width: 224, height: 48 }, // Use fixed minimized size
               position: clampPosition(
                 widget.normalPosition?.x || initialWidgetConfigs[id].initialPosition.x,
                 widget.normalPosition?.y || initialWidgetConfigs[id].initialPosition.y,
-                MINIMIZED_WIDGET_WIDTH,
-                MINIMIZED_WIDGET_HEIGHT,
+                224, // Use fixed minimized size
+                48, // Use fixed minimized size
                 mainContentArea
               ),
             };
@@ -244,12 +293,12 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
               isMinimized: true,
               normalSize: widget.size,
               normalPosition: widget.position,
-              size: { width: MINIMIZED_WIDGET_WIDTH, height: MINIMIZED_WIDGET_HEIGHT },
+              size: { width: 224, height: 48 }, // Use fixed minimized size
               position: clampPosition(
                 widget.position.x,
                 widget.position.y,
-                MINIMIZED_WIDGET_WIDTH,
-                MINIMIZED_WIDGET_HEIGHT,
+                224, // Use fixed minimized size
+                48, // Use fixed minimized size
                 mainContentArea
               ),
             };
