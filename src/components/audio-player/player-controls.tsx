@@ -81,9 +81,6 @@ export function PlayerControls({
           value={currentVolume}
           onChange={handleVolumeChange}
           className="w-8 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
-          style={{
-            background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${currentVolume * 100}%, hsl(var(--muted)) ${currentVolume * 100}%, hsl(var(--muted)) 100%)`
-          }}
           disabled={!playerIsReady || playerType === 'spotify'}
         />
       </div>

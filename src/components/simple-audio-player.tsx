@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Music, ListMusic, Youtube } from 'lucide-react'; // Keep only the icons used directly here
+import { Music, ListMusic, Youtube, VolumeX, Volume2, ChevronLeft } from 'lucide-react'; // Keep only the icons used directly here
 import { useYouTubePlayer } from '@/hooks/use-youtube-player';
 import { useHtmlAudioPlayer } from '@/hooks/use-html-audio-player';
 import { cn } from '@/lib/utils';
@@ -277,9 +277,6 @@ const SimpleAudioPlayer = () => {
               value={currentVolume}
               onChange={handleVolumeChange}
               className="w-16 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
-              style={{
-                background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${currentVolume * 100}%, hsl(var(--muted)) ${currentVolume * 100}%, hsl(var(--muted)) 100%)`
-              }}
               disabled={!playerIsReady || playerType === 'spotify'}
             />
           </div>
