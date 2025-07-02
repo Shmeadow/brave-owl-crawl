@@ -45,7 +45,7 @@ interface SortableFlashCardItemProps {
   onDeleteCard: (cardId: string) => void;
   onUpdateCard: (cardId: string, updatedData: { front: string; back: string }) => void;
   onToggleStar: (cardId: string) => void;
-  onMarkAsLearled: (cardId: string) => void;
+  onMarkAsLearned: (cardId: string) => void; // Corrected typo here
 }
 
 function SortableFlashCardItem({
@@ -56,7 +56,7 @@ function SortableFlashCardItem({
   onDeleteCard,
   onUpdateCard,
   onToggleStar,
-  onMarkAsLearled,
+  onMarkAsLearned, // Corrected typo here
 }: SortableFlashCardItemProps) {
   const {
     attributes,
@@ -140,7 +140,7 @@ function SortableFlashCardItem({
           variant="ghost"
           size="icon"
           className={cn("h-6 w-6", index === currentCardIndex ? "text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent")}
-          onClick={(e) => { e.stopPropagation(); onMarkAsLearled(card.id); }}
+          onClick={(e) => { e.stopPropagation(); onMarkAsLearned(card.id); }} // Corrected typo here
         >
           <CheckCircle className={cn("h-3.5 w-3.5", card.status === 'mastered' && (index === currentCardIndex ? "text-green-300" : "text-green-500"))} fill="currentColor" />
           <span className="sr-only">Mark as Learned</span>
