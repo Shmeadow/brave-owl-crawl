@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { SessionContextProvider } from "@/integrations/supabase/auth";
+// Removed SessionContextProvider, SidebarProvider as they are now in layout.tsx
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
 import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { Toaster } from "@/components/ui/sonner";
@@ -9,11 +9,11 @@ import { UpgradeModal } from "@/components/upgrade-modal";
 import { usePathname } from "next/navigation";
 import { Header } from "@/components/header";
 import { SpotifyEmbedModal } from "@/components/spotify-embed-modal";
-import { SidebarProvider, useSidebar } from "@/components/sidebar/sidebar-context";
+import { useSidebar } from "@/components/sidebar/sidebar-context"; // Now valid
 import { Sidebar } from "@/components/sidebar/sidebar";
 import { ChatPanel } from "@/components/chat-panel";
 import { LofiAudioPlayer } from "@/components/lofi-audio-player";
-import { WidgetProvider } from "@/components/widget/widget-context";
+import { WidgetProvider } from "@/components/widget/widget-context"; // Still imported here
 import { WidgetContainer } from "@/components/widget/widget-container";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 
@@ -44,7 +44,7 @@ interface AppWrapperProps {
 
 export function AppWrapper({ children }: AppWrapperProps) {
   const pathname = usePathname();
-  const { isSidebarOpen } = useSidebar(); // This is the hover state
+  const { isSidebarOpen } = useSidebar(); // This is the hover state, now valid
   const { isAlwaysOpen } = useSidebarPreference(); // This is the user preference
 
   const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(true);
@@ -128,53 +128,51 @@ export function AppWrapper({ children }: AppWrapperProps) {
   };
 
   const handleClearUnreadMessages = () => {
-    setUnreadChatCount(0);
+    setUnreadChatMessages(0);
   };
 
   const chatPanelCurrentWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
   const sidebarCurrentWidth = (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH : 0; // Use combined state for margin
 
   return (
-    <SessionContextProvider>
-      <SidebarProvider>
-        <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
-          <Header
-            onOpenSpotifyModal={handleOpenSpotifyModal}
-            onOpenUpgradeModal={handleOpenUpgradeModal}
-            dailyProgress={dailyProgress}
+    <> {/* Removed SessionContextProvider and SidebarProvider */}
+      <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS} mainContentArea={mainContentArea}>
+        <Header
+          onOpenSpotifyModal={handleOpenSpotifyModal}
+          onOpenUpgradeModal={handleOpenUpgradeModal}
+          dailyProgress={dailyProgress}
+        />
+        <Sidebar />
+        <main
+          className={`flex flex-col flex-1 w-full h-[calc(100vh-${HEADER_HEIGHT}px)] overflow-auto transition-all duration-300 ease-in-out`}
+          style={{ marginLeft: `${sidebarCurrentWidth}px`, marginRight: `${chatPanelCurrentWidth}px` }}
+        >
+          {children}
+        </main>
+        <GoalReminderBar />
+        {mounted && shouldShowPomodoro && (
+          <PomodoroWidget
+            isMinimized={isPomodoroWidgetMinimized}
+            setIsMinimized={setIsPomodoroWidgetMinimized}
+            chatPanelWidth={chatPanelCurrentWidth}
           />
-          <Sidebar />
-          <main
-            className={`flex flex-col flex-1 w-full h-[calc(100vh-${HEADER_HEIGHT}px)] overflow-auto transition-all duration-300 ease-in-out`}
-            style={{ marginLeft: `${sidebarCurrentWidth}px`, marginRight: `${chatPanelCurrentWidth}px` }}
-          >
-            {children}
-          </main>
-          <GoalReminderBar />
-          {mounted && shouldShowPomodoro && (
-            <PomodoroWidget
-              isMinimized={isPomodoroWidgetMinimized}
-              setIsMinimized={setIsPomodoroWidgetMinimized}
-              chatPanelWidth={chatPanelCurrentWidth}
-            />
-          )}
-          <SpotifyEmbedModal isOpen={isSpotifyModalOpen} onClose={() => setIsSpotifyModalOpen(false)} />
-          <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModal(false)} />
-          <Toaster />
-          <LofiAudioPlayer />
-          {/* Fixed Chat Panel */}
-          <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
-            <ChatPanel
-              isOpen={isChatOpen}
-              onToggleOpen={() => setIsChatOpen(prev => !prev)}
-              onNewUnreadMessage={handleNewUnreadMessage}
-              onClearUnreadMessages={handleClearUnreadMessages}
-              unreadCount={unreadChatCount}
-            />
-          </div>
-          <WidgetContainer />
-        </WidgetProvider>
-      </SidebarProvider>
-    </SessionContextProvider>
+        )}
+        <SpotifyEmbedModal isOpen={isSpotifyModalOpen} onClose={() => setIsSpotifyModalOpen(false)} />
+        <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModal(false)} />
+        <Toaster />
+        <LofiAudioPlayer />
+        {/* Fixed Chat Panel */}
+        <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
+          <ChatPanel
+            isOpen={isChatOpen}
+            onToggleOpen={() => setIsChatOpen(prev => !prev)}
+            onNewUnreadMessage={handleNewUnreadMessage}
+            onClearUnreadMessages={handleClearUnreadMessages}
+            unreadCount={unreadChatCount}
+          />
+        </div>
+        <WidgetContainer />
+      </WidgetProvider>
+    </>
   );
 }

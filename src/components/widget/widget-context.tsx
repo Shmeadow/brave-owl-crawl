@@ -19,7 +19,7 @@ interface WidgetState {
   isPinned: boolean;
   previousPosition?: { x: number; y: number }; // Stores position before pinning
   previousSize?: { width: number; height: number }; // Stores size before pinning
-  normalSize?: { width: number; height: number }; // Stores size when not minimized/maximized
+  normalSize?: { width: number; number }; // Stores size when not minimized/maximized
   normalPosition?: { x: number; y: number }; // Stores position when not minimized/maximized
 }
 
@@ -42,7 +42,7 @@ const WidgetContext = createContext<WidgetContextType | undefined>(undefined);
 interface WidgetProviderProps {
   children: React.ReactNode;
   initialWidgetConfigs: { [key: string]: WidgetConfig };
-  mainContentArea: {
+  mainContentArea: { // Now received as a prop
     left: number;
     top: number;
     width: number;
@@ -60,7 +60,7 @@ const MINIMIZED_WIDGET_WIDTH = 192; // w-48
 const MINIMIZED_WIDGET_HEIGHT = 48; // h-12 (to fit text better)
 
 // Helper to clamp widget position within bounds
-const clampPosition = (x: number, y: number, width: number, height: number, bounds: { left: number; top: number; width: number; height: number }) => {
+export const clampPosition = (x: number, y: number, width: number, height: number, bounds: { left: number; top: number; width: number; height: number }) => {
   const maxX = bounds.left + bounds.width - width;
   const maxY = bounds.top + bounds.height - height;
   const clampedX = Math.max(bounds.left, Math.min(x, maxX));
@@ -72,6 +72,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
   const [activeWidgets, setActiveWidgets] = useState<WidgetState[]>([]);
   const [maxZIndex, setMaxZIndex] = useState(900); // Start maxZIndex lower than Pomodoro (1001)
 
+  // Adjust recalculatePinnedWidgets to accept mainContentArea as argument
   const recalculatePinnedWidgets = useCallback((currentWidgets: WidgetState[]) => {
     const pinned = currentWidgets.filter(w => w.isPinned).sort((a, b) => a.id.localeCompare(b.id)); // Sort to maintain consistent order
     let currentX = mainContentArea.left + DOCKED_WIDGET_HORIZONTAL_GAP; // Start from left edge of content area
@@ -97,21 +98,12 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       }
       return widget;
     });
-  }, [mainContentArea]);
+  }, [mainContentArea]); // Dependency on mainContentArea
 
-  useEffect(() => {
-    const handleResize = () => {
-      setActiveWidgets(prev => recalculatePinnedWidgets(prev));
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [recalculatePinnedWidgets]);
-
-  // New effect to re-clamp floating widget positions when mainContentArea changes
+  // Effect to re-clamp floating widget positions when mainContentArea changes
   useEffect(() => {
     setActiveWidgets(prevWidgets => {
-      return prevWidgets.map(widget => {
+      const updated = prevWidgets.map(widget => {
         if (!widget.isPinned && !widget.isMaximized) { // Only re-clamp floating, non-maximized widgets
           const clampedPos = clampPosition(
             widget.position.x,
@@ -127,8 +119,9 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
         }
         return widget;
       });
+      return recalculatePinnedWidgets(updated); // Also re-calculate pinned widgets
     });
-  }, [mainContentArea]); // Dependency on mainContentArea
+  }, [mainContentArea, recalculatePinnedWidgets]); // Dependency on mainContentArea and recalculatePinnedWidgets
 
   const addWidget = useCallback((id: string, title: string) => {
     if (!activeWidgets.some(widget => widget.id === id)) {
