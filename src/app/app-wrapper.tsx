@@ -12,8 +12,11 @@ import { useCurrentRoom } from "@/hooks/use-current-room";
 import { SimpleAudioPlayer } from "@/components/simple-audio-player";
 import { GoalReminderBar } from "@/components/goal-reminder-bar";
 import { cn } from "@/lib/utils";
+import { useSidebar } from "@/components/sidebar/sidebar-context";
+import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 
 const HEADER_HEIGHT = 64; // Corresponds to h-16 in Tailwind
+const SIDEBAR_WIDTH = 60; // Width of the sidebar in pixels
 
 const initialWidgetConfigs = {
   "spaces": { initialPosition: { x: 100, y: 100 }, initialWidth: 400, initialHeight: 500 },
@@ -37,6 +40,10 @@ export function AppWrapper({ children }: { children: React.ReactNode }) {
   const [mainContentArea, setMainContentArea] = useState({ left: 0, top: 0, width: 0, height: 0 });
 
   const { currentRoomId, isCurrentRoomWritable } = useCurrentRoom();
+  const { isSidebarOpen } = useSidebar();
+  const { isAlwaysOpen, mounted } = useSidebarPreference();
+
+  const actualSidebarOpen = mounted ? (isAlwaysOpen || isSidebarOpen) : false;
 
   useEffect(() => {
     const updateMainContentArea = () => {
@@ -51,10 +58,15 @@ export function AppWrapper({ children }: { children: React.ReactNode }) {
       }
     };
 
-    updateMainContentArea();
+    // A small delay to allow the transition to start
+    const timeoutId = setTimeout(updateMainContentArea, 50);
     window.addEventListener('resize', updateMainContentArea);
-    return () => window.removeEventListener('resize', updateMainContentArea);
-  }, []);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', updateMainContentArea);
+    };
+  }, [actualSidebarOpen]);
 
   const handleNewUnreadMessage = () => {
     setUnreadChatCount(prev => prev + 1);
@@ -85,6 +97,7 @@ export function AppWrapper({ children }: { children: React.ReactNode }) {
             )}
             style={{
               paddingTop: `${HEADER_HEIGHT}px`,
+              paddingLeft: actualSidebarOpen ? `${SIDEBAR_WIDTH}px` : '0px',
               position: 'absolute',
               top: `-${HEADER_HEIGHT}px`,
               left: 0,

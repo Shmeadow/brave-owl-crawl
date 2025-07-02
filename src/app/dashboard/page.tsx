@@ -14,8 +14,7 @@ export default function DashboardPage() {
 
   return (
     <div className={cn(
-      "flex flex-col items-center justify-center h-full w-full p-4 md:p-8",
-      "absolute inset-0"
+      "flex flex-col items-center justify-center h-full w-full p-4 md:p-8"
     )}>
       <Card className="w-full max-w-2xl bg-card backdrop-blur-2xl border-white/20 p-6 text-center">
         <CardContent>
