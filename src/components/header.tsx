@@ -28,7 +28,7 @@ interface HeaderProps {
 export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnreadMessage, onClearUnreadMessages, unreadChatCount }: HeaderProps) {
   const { session, profile } = useSupabase();
   const router = useRouter();
-  const { currentRoomName } = useCurrentRoom();
+  const { currentRoomName } = useCurrentRoom(); // Use currentRoomName
 
   const displayName = profile?.first_name || profile?.last_name || session?.user?.email?.split('@')[0] || "Guest";
 
@@ -56,7 +56,7 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
           <span className="sr-only">Go to My Room</span>
         </Button>
         <h1 className="text-xl font-semibold hidden sm:block">
-          {displayName}'s Room
+          {currentRoomName}
         </h1>
       </div>
 
@@ -79,6 +79,7 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
             onNewUnreadMessage={onNewUnreadMessage}
             onClearUnreadMessages={onClearUnreadMessages}
             unreadCount={unreadChatCount}
+            currentRoomId={null} // This will be passed from AppWrapper
           />
         )}
         <UserNav />

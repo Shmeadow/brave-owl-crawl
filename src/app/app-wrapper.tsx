@@ -16,6 +16,7 @@ import { WidgetContainer } from "@/components/widget/widget-container";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { MediaPlayerBar } from "@/components/media-player-bar";
 import { useMediaPlayer } from "@/components/media-player-context";
+import { useCurrentRoom } from "@/hooks/use-current-room"; // Import useCurrentRoom
 import { cn } from "@/lib/utils"; // Import cn for conditional classes
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
@@ -48,6 +49,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const { isSidebarOpen } = useSidebar();
   const { isAlwaysOpen } = useSidebarPreference();
   const { youtubeEmbedUrl, spotifyEmbedUrl } = useMediaPlayer();
+  const { currentRoomId } = useCurrentRoom(); // Get currentRoomId
 
   // Initialize with a consistent default, then update from localStorage in useEffect
   const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(true);
@@ -163,7 +165,6 @@ export function AppWrapper({ children }: AppWrapperProps) {
       )}
       {mounted && (youtubeEmbedUrl || spotifyEmbedUrl) && <MediaPlayerBar />}
       <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
-      <Toaster />
       {/* The main ChatPanel instance, controlled by AppWrapper's state */}
       <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out">
         <ChatPanel
@@ -177,8 +178,10 @@ export function AppWrapper({ children }: AppWrapperProps) {
           onNewUnreadMessage={handleNewUnreadMessage}
           onClearUnreadMessages={handleClearUnreadMessages}
           unreadCount={unreadChatCount}
+          currentRoomId={currentRoomId} {/* Pass currentRoomId */}
         />
       </div>
+      <Toaster />
       <WidgetContainer />
     </WidgetProvider>
   );

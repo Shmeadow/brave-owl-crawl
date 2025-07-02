@@ -13,6 +13,7 @@ import { toast } from "sonner";
 interface Message {
   id: string;
   user_id: string;
+  room_id: string; // Added room_id
   author: string; // This will be derived from profile or user ID
   content: string;
   created_at: string;
@@ -24,30 +25,31 @@ interface ChatPanelProps {
   onNewUnreadMessage: () => void; // Callback for new unread messages
   onClearUnreadMessages: () => void; // Callback to clear unread messages
   unreadCount: number; // Current unread count
+  currentRoomId: string | null; // New prop for current room ID
 }
 
-export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnreadMessages, unreadCount }: ChatPanelProps) {
+export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnreadMessages, unreadCount, currentRoomId }: ChatPanelProps) {
   const { supabase, session, profile, loading: authLoading } = useSupabase();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [showSupportContact, setShowSupportContact] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  const fetchMessages = async () => {
+  const fetchMessages = async (roomId: string) => {
     if (!supabase) {
       console.warn("Supabase client not available for fetching messages.");
       toast.error("Chat unavailable: Supabase client not initialized.");
       return;
     }
     try {
-      // Fetch messages without joining profiles initially for better reliability
       const { data, error } = await supabase
         .from('chat_messages')
-        .select('id, user_id, content, created_at')
+        .select('id, user_id, room_id, content, created_at')
+        .eq('room_id', roomId) // Filter by room_id
         .order('created_at', { ascending: true })
-        .limit(50); // Limit to last 50 messages
+        .limit(50);
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found, which is fine for an empty chat
+      if (error && error.code !== 'PGRST116') {
         console.error("Error fetching messages from Supabase:", error.message, "Details:", error.details, "Hint:", error.hint);
         toast.error("Failed to load chat messages: " + error.message);
       } else if (data) {
@@ -58,6 +60,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
           return {
             id: msg.id,
             user_id: msg.user_id,
+            room_id: msg.room_id,
             content: msg.content,
             created_at: msg.created_at,
             author: authorName,
@@ -72,16 +75,16 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
   };
 
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading || !supabase || !currentRoomId) return;
 
-    fetchMessages();
+    // Fetch messages for the current room
+    fetchMessages(currentRoomId);
 
-    // Setup subscription only if supabase is available
-    if (!supabase) return; 
-
+    // Setup subscription for the current room
+    const channelName = `chat_room_${currentRoomId}`;
     const subscription = supabase
-      .channel('chat_room')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, async (payload) => {
+      .channel(channelName)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `room_id=eq.${currentRoomId}` }, async (payload) => {
         const newMsg = payload.new as Message;
         
         const authorName = (profile && profile.id === newMsg.user_id)
@@ -91,6 +94,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
         const formattedNewMsg = {
           id: newMsg.id,
           user_id: newMsg.user_id,
+          room_id: newMsg.room_id,
           content: newMsg.content,
           created_at: newMsg.created_at,
           author: authorName,
@@ -104,11 +108,11 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
 
     return () => {
       supabase.removeChannel(subscription);
+      setMessages([]); // Clear messages when room changes or unmounts
     };
-  }, [supabase, isOpen, session?.user?.id, onNewUnreadMessage, profile, authLoading]);
+  }, [supabase, isOpen, session?.user?.id, onNewUnreadMessage, profile, authLoading, currentRoomId]);
 
   useEffect(() => {
-    // Scroll to bottom when messages change or chat opens
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTo({
         top: scrollAreaRef.current.scrollHeight,
@@ -118,17 +122,22 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
   }, [messages, isOpen]);
 
   const handleSendMessage = async () => {
+    if (!currentRoomId) {
+      toast.error("Please select a room to chat in.");
+      return;
+    }
     if (inputMessage.trim() && supabase) {
       const userId = session?.user?.id || null;
       const { error } = await supabase.from('chat_messages').insert({
         user_id: userId,
+        room_id: currentRoomId, // Include room_id
         content: inputMessage.trim(),
       });
 
       if (error) {
         console.error("Error sending message:", error);
         if (error.code === '42501') {
-          toast.error("Failed to send message. Guests cannot send messages due to security settings. Please log in.");
+          toast.error("Failed to send message. You might not have permission to chat in this room. Please log in or join the room.");
         } else {
           toast.error("Failed to send message: " + error.message);
         }
@@ -148,11 +157,10 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
     setShowSupportContact(false);
   };
 
-  // This function is now correctly defined within ChatPanel
   const handleToggleOpenAndClearUnread = () => {
-    onToggleOpen(); // This calls the prop passed from AppWrapper
-    if (!isOpen) { // If the chat is currently closed (meaning it's about to open)
-      onClearUnreadMessages(); // Clear unread messages
+    onToggleOpen();
+    if (!isOpen) {
+      onClearUnreadMessages();
     }
   };
 
@@ -185,7 +193,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
     )}>
       <CardHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
         <CardTitle className="text-lg">
-          {showSupportContact ? "Contact Support" : "Chat"}
+          {showSupportContact ? "Contact Support" : `Chat: ${currentRoomId ? currentRoomId.substring(0, 8) + '...' : 'No Room Selected'}`}
         </CardTitle>
         <Button
           variant="ghost"
@@ -218,7 +226,9 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
         ) : (
           <ScrollArea className="flex-1 pr-4" ref={scrollAreaRef}>
             <div className="space-y-4">
-              {messages.length === 0 ? (
+              {!currentRoomId ? (
+                <p className="text-center text-muted-foreground text-sm">Please select a room in the 'Spaces' widget to start chatting.</p>
+              ) : messages.length === 0 ? (
                 <p className="text-center text-muted-foreground text-sm">No messages yet. Start the conversation!</p>
               ) : (
                 messages.map((message) => (
@@ -231,7 +241,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
                   >
                     <div
                       className={cn(
-                        "max-w-[70%] p-3 rounded-lg backdrop-blur-xl", // Added backdrop-blur-xl
+                        "max-w-[70%] p-3 rounded-lg backdrop-blur-xl",
                         message.user_id === session?.user?.id
                           ? "bg-primary text-primary-foreground rounded-br-none"
                           : "bg-muted text-muted-foreground rounded-bl-none"
@@ -262,8 +272,9 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
                   handleSendMessage();
                 }
               }}
+              disabled={!currentRoomId}
             />
-            <Button type="submit" size="icon" onClick={handleSendMessage}>
+            <Button type="submit" size="icon" onClick={handleSendMessage} disabled={!currentRoomId}>
               <Send className="h-4 w-4" />
               <span className="sr-only">Send Message</span>
             </Button>
