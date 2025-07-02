@@ -98,22 +98,25 @@ export function Sidebar() {
       ref={sidebarRef}
       className={cn(
         "fixed left-0 top-16 z-50 flex flex-col items-center py-4",
-        "bg-sidebar backdrop-blur-xl shadow-lg shadow-black/30 transition-transform duration-300 ease-in-out",
+        "bg-sidebar backdrop-blur-xl shadow-lg transition-transform duration-300 ease-in-out", // Removed shadow-black/30
         actualSidebarOpen ? "translate-x-0 w-[60px]" : "-translate-x-full w-[60px]",
         `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]`,
-        "rounded-r-lg"
+        "rounded-r-lg border-r border-white/20" // Added border-r
       )}
-      // Removed onMouseEnter and onMouseLeave from here as they are handled by document.addEventListener
     >
       <div className="flex flex-col gap-2 overflow-y-auto h-full">
-        {navItems.map((item) => (
-          <SidebarItem
-            key={item.id}
-            icon={item.icon}
-            label={item.label}
-            isActive={activePanel === item.id}
-            onClick={() => handleSidebarItemClick(item.id, item.label)}
-          />
+        {navItems.map((item, index) => (
+          <React.Fragment key={item.id}>
+            <SidebarItem
+              icon={item.icon}
+              label={item.label}
+              isActive={activePanel === item.id}
+              onClick={() => handleSidebarItemClick(item.id, item.label)}
+            />
+            {index === 3 && ( // After "Timer" (index 3)
+              <div className="h-4 w-full my-2 bg-white/10 rounded-full" /> {/* Empty separation box */}
+            )}
+          </React.Fragment>
         ))}
       </div>
       <div className="mt-auto pt-4">
