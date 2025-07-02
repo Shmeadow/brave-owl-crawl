@@ -46,7 +46,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const { isAlwaysOpen } = useSidebarPreference();
   const { currentRoomId, isCurrentRoomWritable } = useCurrentRoom();
 
-  const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState(true);
+  const [isPomodoroWidgetMinimized, setIsPomodoroWidgetMinimized] = useState<boolean>(true); // Default to true for SSR
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
@@ -72,7 +72,9 @@ export function AppWrapper({ children }: AppWrapperProps) {
     setMounted(true);
     if (typeof window !== 'undefined') {
       const savedMinimized = localStorage.getItem(LOCAL_STORAGE_POMODORO_MINIMIZED_KEY);
-      setIsPomodoroWidgetMinimized(savedMinimized === 'false' ? false : true);
+      if (savedMinimized !== null) { // Only update if a value was actually saved
+        setIsPomodoroWidgetMinimized(savedMinimized === 'false' ? false : true);
+      }
     }
   }, []);
 

@@ -7,8 +7,10 @@ import { Sun } from "lucide-react";
 export function SunProgress() {
   const [progress, setProgress] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const [mounted, setMounted] = useState(false); // Add mounted state
 
   useEffect(() => {
+    setMounted(true); // Component has mounted on client
     const updateProgress = () => {
       const now = new Date();
       const hours = now.getHours();
@@ -22,11 +24,12 @@ export function SunProgress() {
       setProgress(percentage);
     };
 
-    updateProgress();
-    const timer = setInterval(updateProgress, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
+    if (mounted) { // Only run on client
+      updateProgress();
+      const timer = setInterval(updateProgress, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [mounted]); // Depend on mounted
 
   return (
     <div className="flex items-center space-x-2 h-8 cursor-pointer" onClick={() => setIsVisible(!isVisible)}>
