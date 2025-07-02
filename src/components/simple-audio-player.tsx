@@ -16,7 +16,8 @@ import { PlayerModeButtons } from './audio-player/player-mode-buttons';
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 
 const SimpleAudioPlayer = () => {
-  const [inputUrl, setInputUrl] = useState('');
+  const [stagedInputUrl, setStagedInputUrl] = useState(''); // New: URL as typed by user
+  const [committedMediaUrl, setCommittedMediaUrl] = useState(''); // New: URL actually used by player
   const [playerType, setPlayerType] = useState<'audio' | 'youtube' | 'spotify' | null>(null);
   const [currentTitle, setCurrentTitle] = useState('No Media Loaded');
   const [currentArtist, setCurrentArtist] = useState('');
@@ -46,23 +47,23 @@ const SimpleAudioPlayer = () => {
     onLoadedMetadata: htmlAudioOnLoadedMetadata,
     onTimeUpdate: htmlAudioOnTimeUpdate,
     onEnded: htmlAudioOnEnded,
-  } = useHtmlAudioPlayer(playerType === 'audio' ? inputUrl : null);
+  } = useHtmlAudioPlayer(playerType === 'audio' ? committedMediaUrl : null); // Use committedMediaUrl
 
   // Use YouTube Player hook - pass the converted embed URL
-  const youtubeEmbedUrl = playerType === 'youtube' ? getYouTubeEmbedUrl(inputUrl) : null;
+  const youtubeEmbedUrl = playerType === 'youtube' ? getYouTubeEmbedUrl(committedMediaUrl) : null; // Use committedMediaUrl
   const {
     isPlaying: youtubeIsPlaying,
     volume: youtubeVolume,
-    isMuted: youtubeIsMuted, // Use the new isMuted state
+    isMuted: youtubeIsMuted,
     togglePlayPause: youtubeTogglePlayPause,
     setVolume: youtubeSetVolume,
-    toggleMute: youtubeToggleMute, // Use the new toggleMute
+    toggleMute: youtubeToggleMute,
     seekTo: youtubeSeekTo,
     playerReady: youtubePlayerReady,
     iframeId,
     youtubeCurrentTime,
     youtubeDuration,
-  } = useYouTubePlayer(youtubeEmbedUrl); // Pass the converted URL here
+  } = useYouTubePlayer(youtubeEmbedUrl);
 
   // Effect to save display mode to local storage
   useEffect(() => {
@@ -71,17 +72,17 @@ const SimpleAudioPlayer = () => {
     }
   }, [displayMode]);
 
-  // Determine player type and set initial title/artist when inputUrl changes
+  // Determine player type and set initial title/artist when committedMediaUrl changes
   useEffect(() => {
-    if (inputUrl.includes('youtube.com') || inputUrl.includes('youtu.be')) {
+    if (committedMediaUrl.includes('youtube.com') || committedMediaUrl.includes('youtu.be')) {
       setPlayerType('youtube');
       setCurrentTitle('YouTube Video');
       setCurrentArtist('Unknown Artist');
-    } else if (inputUrl.includes('open.spotify.com')) {
+    } else if (committedMediaUrl.includes('open.spotify.com')) {
       setPlayerType('spotify');
       setCurrentTitle('Spotify Media');
       setCurrentArtist('Unknown Artist');
-    } else if (inputUrl.match(/\.(mp3|wav|ogg|aac|flac)$/i)) {
+    } else if (committedMediaUrl.match(/\.(mp3|wav|ogg|aac|flac)$/i)) {
       setPlayerType('audio');
       setCurrentTitle('Direct Audio');
       setCurrentArtist('Unknown Artist');
@@ -90,7 +91,7 @@ const SimpleAudioPlayer = () => {
       setCurrentTitle('No Media Loaded');
       setCurrentArtist('');
     }
-  }, [inputUrl]);
+  }, [committedMediaUrl]); // Depend on committedMediaUrl
 
   // Common functions for all players
   const formatTime = (time: number) => {
@@ -121,7 +122,7 @@ const SimpleAudioPlayer = () => {
     if (playerType === 'audio') {
       htmlAudioToggleMute();
     } else if (playerType === 'youtube') {
-      youtubeToggleMute(); // Use the new direct toggleMute from the hook
+      youtubeToggleMute();
     }
   };
 
@@ -151,6 +152,7 @@ const SimpleAudioPlayer = () => {
   };
 
   const loadNewMedia = () => {
+    setCommittedMediaUrl(stagedInputUrl); // Commit the staged URL
     setShowUrlInput(false);
   };
 
@@ -158,7 +160,7 @@ const SimpleAudioPlayer = () => {
   const totalDuration = playerType === 'youtube' ? youtubeDuration : audioDuration;
   const currentVolume = playerType === 'youtube' ? youtubeVolume / 100 : audioVolume;
   const currentIsPlaying = playerType === 'youtube' ? youtubeIsPlaying : audioIsPlaying;
-  const currentIsMuted = playerType === 'youtube' ? youtubeIsMuted : audioIsMuted; // Use youtubeIsMuted
+  const currentIsMuted = playerType === 'youtube' ? youtubeIsMuted : audioIsMuted;
   const playerIsReady = playerType === 'youtube' ? youtubePlayerReady : true; // HTML audio is always ready, Spotify embed is also "ready" once loaded
 
   const PlayerIcon = playerType === 'youtube' ? Youtube : playerType === 'spotify' ? ListMusic : Music;
@@ -180,10 +182,9 @@ const SimpleAudioPlayer = () => {
           <div className="bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex flex-col w-full h-full">
             <PlayerDisplay
               playerType={playerType}
-              inputUrl={inputUrl}
+              inputUrl={committedMediaUrl} // Pass committedMediaUrl
               iframeId={iframeId}
               audioRef={audioRef}
-              // Pass HTML audio event handlers
               onLoadedMetadata={htmlAudioOnLoadedMetadata}
               onTimeUpdate={htmlAudioOnTimeUpdate}
               onEnded={htmlAudioOnEnded}
@@ -201,8 +202,8 @@ const SimpleAudioPlayer = () => {
                 <p className="text-sm font-semibold text-foreground truncate leading-tight">{currentTitle}</p>
                 <p className="text-xs text-muted-foreground truncate">{currentArtist}</p>
                 <MediaInput
-                  inputUrl={inputUrl}
-                  setInputUrl={setInputUrl}
+                  inputUrl={stagedInputUrl} // Use stagedInputUrl for the input field
+                  setInputUrl={setStagedInputUrl} // Update stagedInputUrl
                   showUrlInput={showUrlInput}
                   setShowUrlInput={setShowUrlInput}
                   onLoadMedia={loadNewMedia}
@@ -220,7 +221,7 @@ const SimpleAudioPlayer = () => {
                 currentIsMuted={currentIsMuted}
                 toggleMute={toggleMute}
                 handleVolumeChange={handleVolumeChange}
-                totalDuration={totalDuration} // Pass totalDuration here
+                totalDuration={totalDuration}
               />
             </div>
 
@@ -259,7 +260,7 @@ const SimpleAudioPlayer = () => {
             currentIsMuted={currentIsMuted}
             toggleMute={toggleMute}
             handleVolumeChange={handleVolumeChange}
-            totalDuration={totalDuration} // Pass totalDuration here
+            totalDuration={totalDuration}
           />
 
           <button
