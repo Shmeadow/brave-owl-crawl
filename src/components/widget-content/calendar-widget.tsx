@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } = from "date-fns";
+import { format } from "date-fns"; // Corrected: Removed '='
 import { CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSupabase } from "@/integrations/supabase/auth";
@@ -76,7 +76,7 @@ export function CalendarWidget() {
         .from('calendar_events')
         .select('*')
         .eq('user_id', session.user.id)
-        .order('event_date', { ascending: true });
+        .order('created_at', { ascending: true });
 
       if (fetchError) {
         toast.error("Error fetching calendar events: " + fetchError.message);
