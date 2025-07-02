@@ -18,10 +18,10 @@ import { ThemeToggle } from "@/components/theme-toggle"; // Import ThemeToggle
 
 interface HeaderProps {
   onOpenUpgradeModal: () => void;
-  dailyProgress: number;
+  // dailyProgress: number; // Removed
 }
 
-export function Header({ onOpenUpgradeModal, dailyProgress }: HeaderProps) {
+export function Header({ onOpenUpgradeModal }: HeaderProps) {
   const { session, profile } = useSupabase();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatMessages, setUnreadChatMessages] = useState(0);
@@ -69,7 +69,7 @@ export function Header({ onOpenUpgradeModal, dailyProgress }: HeaderProps) {
       {/* Right Section: Clock, Progress Bar, and Actions */}
       <div className="flex items-center gap-4 ml-auto">
         {/* Clock and Progress */}
-        <ClockDisplay dailyProgress={dailyProgress} /> {/* Using ClockDisplay */}
+        <ClockDisplay /> {/* No dailyProgress prop needed */}
 
         {/* Other action buttons */}
         <UpgradeButton onOpenUpgradeModal={onOpenUpgradeModal} />
@@ -81,10 +81,15 @@ export function Header({ onOpenUpgradeModal, dailyProgress }: HeaderProps) {
         {session && (
           <ChatPanel
             isOpen={isChatOpen}
-            onToggleOpen={() => setIsChatOpen(!isChatOpen)}
+            onToggleOpen={() => {
+              setIsChatOpen(!isChatOpen);
+              if (!isChatOpen) {
+                handleClearUnreadMessages();
+              }
+            }}
             onNewUnreadMessage={handleNewUnreadMessage}
             onClearUnreadMessages={handleClearUnreadMessages}
-            unreadCount={unreadChatMessages}
+            unreadCount={unreadChatCount}
           />
         )}
         <UserNav />

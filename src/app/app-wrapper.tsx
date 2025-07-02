@@ -55,8 +55,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [mounted, setMounted] = useState(false);
-  // Initialize with 0, then update in useEffect
-  const [dailyProgress, setDailyProgress] = useState(0);
+  // dailyProgress state removed from here
 
   // State to hold the dimensions of the main content area
   // Initialize with fixed defaults, then update based on window in useEffect
@@ -82,21 +81,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
     }
   }, [isPomodoroWidgetMinimized, mounted]);
 
-  // Calculate daily progress only after component mounts
-  useEffect(() => {
-    const updateDailyProgress = () => {
-      const now = new Date();
-      const secondsIntoDay = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-      const totalSecondsInDay = 24 * 3600;
-      setDailyProgress((secondsIntoDay / totalSecondsInDay) * 100);
-    };
-
-    if (mounted) { // Only run on client after mount
-      updateDailyProgress(); // Initial call
-      const intervalId = setInterval(updateDailyProgress, 1000); // Update every second
-      return () => clearInterval(intervalId);
-    }
-  }, [mounted]);
+  // dailyProgress calculation removed from here
 
   // Calculate main content area dimensions dynamically only after component mounts
   useEffect(() => {
@@ -143,7 +128,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
       <div className="flex flex-col flex-1 min-h-screen">
         <Header
           onOpenUpgradeModal={handleOpenUpgradeModal}
-          dailyProgress={dailyProgress}
+          // dailyProgress={dailyProgress} // Removed
         />
         {/* Sidebar is fixed, so it's outside the main flex flow */}
         <Sidebar />
