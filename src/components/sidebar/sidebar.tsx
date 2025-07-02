@@ -98,10 +98,10 @@ export function Sidebar() {
       ref={sidebarRef}
       className={cn(
         "fixed left-0 top-16 z-50 flex flex-col items-center py-4",
-        "bg-sidebar backdrop-blur-xl shadow-lg transition-transform duration-300 ease-in-out", // Removed shadow-black/30
+        "bg-sidebar backdrop-blur-xl shadow-lg transition-transform duration-300 ease-in-out",
         actualSidebarOpen ? "translate-x-0 w-[60px]" : "-translate-x-full w-[60px]",
         `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]`,
-        "rounded-r-lg border-r border-white/20" // Added border-r
+        "rounded-r-lg border-r border-white/20"
       )}
     >
       <div className="flex flex-col gap-2 overflow-y-auto h-full">
