@@ -220,6 +220,7 @@ const SimpleAudioPlayer = () => {
                 currentIsMuted={currentIsMuted}
                 toggleMute={toggleMute}
                 handleVolumeChange={handleVolumeChange}
+                totalDuration={totalDuration} // Pass totalDuration here
               />
             </div>
 
@@ -258,6 +259,7 @@ const SimpleAudioPlayer = () => {
             currentIsMuted={currentIsMuted}
             toggleMute={toggleMute}
             handleVolumeChange={handleVolumeChange}
+            totalDuration={totalDuration} // Pass totalDuration here
           />
 
           <button
