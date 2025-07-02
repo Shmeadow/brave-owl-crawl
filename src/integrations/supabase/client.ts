@@ -8,6 +8,7 @@ let supabase: SupabaseClient | null = null;
 
 if (supabaseUrl && supabaseAnonKey) {
   try {
+    console.log('Attempting to initialize Supabase client with URL:', supabaseUrl, 'and Anon Key (first 5 chars):', supabaseAnonKey.substring(0, 5) + '...');
     supabase = createClient(supabaseUrl, supabaseAnonKey);
     console.log('Supabase client initialized successfully.');
   } catch (e) {

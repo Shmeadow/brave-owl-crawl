@@ -33,6 +33,8 @@ export default async function RootLayout({
   // Log the environment variables to help diagnose
   console.log('Server-side Supabase URL:', supabaseUrl ? 'Loaded' : 'Undefined');
   console.log('Server-side Supabase Anon Key:', supabaseAnonKey ? 'Loaded' : 'Undefined');
+  console.log('Attempting to initialize server-side Supabase client with URL:', supabaseUrl, 'and Anon Key (first 5 chars):', supabaseAnonKey?.substring(0, 5) + '...');
+
 
   if (supabaseUrl && supabaseAnonKey) {
     try {
