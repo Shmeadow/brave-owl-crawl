@@ -16,6 +16,7 @@ import { WidgetContainer } from "@/components/widget/widget-container";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { MediaPlayerBar } from "@/components/media-player-bar";
 import { useMediaPlayer } from "@/components/media-player-context";
+import { cn } from "@/lib/utils"; // Import cn for conditional classes
 
 const LOCAL_STORAGE_POMODORO_MINIMIZED_KEY = 'pomodoro_widget_minimized';
 const CHAT_PANEL_WIDTH_OPEN = 320; // px
@@ -137,7 +138,10 @@ export function AppWrapper({ children }: AppWrapperProps) {
         />
         <Sidebar />
         <main
-          className={`flex flex-col flex-1 w-full h-[calc(100vh-${HEADER_HEIGHT}px)] overflow-auto transition-all duration-300 ease-in-out`}
+          className={cn(
+            "flex flex-col flex-1 w-full h-[calc(100vh-${HEADER_HEIGHT}px)] overflow-auto transition-all duration-300 ease-in-out",
+            "bg-background backdrop-blur-xl" // Added backdrop-blur-xl here
+          )}
           style={{ marginLeft: `${sidebarCurrentWidth}px`, marginRight: `${chatPanelCurrentWidth}px` }}
         >
           {children}

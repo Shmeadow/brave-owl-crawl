@@ -18,7 +18,7 @@ export function GoalItem({ goal, onToggleComplete, onDelete }: GoalItemProps) {
     <div
       className={cn(
         "flex items-center justify-between p-3 rounded-lg shadow-sm transition-all duration-200",
-        "bg-muted backdrop-blur-md border border-border", // Applied consistent glass effect here, removed /20
+        "bg-muted backdrop-blur-xl border border-border", // Applied consistent glass effect here
         goal.completed ? "opacity-70" : ""
       )}
     >

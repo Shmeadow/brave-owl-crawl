@@ -97,8 +97,8 @@ function SortableFlashCardItem({
       style={style}
       className={cn(
         "flex items-center justify-between p-2 border rounded-md cursor-pointer transition-colors",
-        "hover:bg-accent hover:text-accent-foreground backdrop-blur-md", // Adjusted hover for glass
-        index === currentCardIndex && "bg-primary text-primary-foreground backdrop-blur-md", // Adjusted active for glass
+        "hover:bg-accent hover:text-accent-foreground backdrop-blur-xl", // Adjusted hover for glass
+        index === currentCardIndex && "bg-primary text-primary-foreground backdrop-blur-xl", // Adjusted active for glass
         isDragging && "ring-2 ring-primary"
       )}
       onClick={() => onSelectCard(index)}
@@ -216,15 +216,15 @@ export function FlashCardListSidebar({
   }
 
   return (
-    <Card className="h-full flex flex-col bg-card backdrop-blur-xl border-white/20"> {/* Removed /40 */}
+    <Card className="h-full flex flex-col bg-card backdrop-blur-xl border-white/20">
       <CardHeader>
         <CardTitle className="text-lg">Your Flashcards</CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 p-0 flex flex-col"> {/* Added flex flex-col */}
+      <CardContent className="flex-1 p-0 flex flex-col">
         {cards.length === 0 ? (
           <p className="p-4 text-muted-foreground text-sm">No flashcards added yet.</p>
         ) : (
-          <ScrollArea className="flex-1"> {/* Changed h-[calc(...)] to flex-1 */}
+          <ScrollArea className="flex-1">
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}

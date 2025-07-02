@@ -175,7 +175,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
 
   return (
     <Card className={cn(
-      "h-[400px] w-80 flex flex-col bg-card backdrop-blur-xl border-white/20", // Removed /40
+      "h-[400px] w-80 flex flex-col bg-card backdrop-blur-xl border-white/20",
       "transition-all duration-300 ease-in-out"
     )}>
       <CardHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
@@ -226,10 +226,10 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
                   >
                     <div
                       className={cn(
-                        "max-w-[70%] p-3 rounded-lg",
+                        "max-w-[70%] p-3 rounded-lg backdrop-blur-xl", // Added backdrop-blur-xl
                         message.user_id === session?.user?.id
-                          ? "bg-primary text-primary-foreground rounded-br-none backdrop-blur-md" // Removed /60
-                          : "bg-muted text-muted-foreground rounded-bl-none backdrop-blur-md" // Removed /20
+                          ? "bg-primary text-primary-foreground rounded-br-none"
+                          : "bg-muted text-muted-foreground rounded-bl-none"
                       )}
                     >
                       {message.user_id !== session?.user?.id && (
