@@ -423,7 +423,7 @@ export function usePomodoroState() {
     customTimes: state.customTimes,
     isEditingTime: state.isEditingTime,
     editableTimeString: state.editableTimeString,
-    setEditableTimeString,
+    setEditableTimeString: (timeString: string) => setState(prevState => ({ ...prevState, editableTimeString: timeString })), // Added setEditableTimeString here
     handleStartPause,
     handleReset,
     handleSwitchMode,
