@@ -67,11 +67,15 @@ export function AppWrapper({ children }: AppWrapperProps) {
         const chatWidth = isChatOpen ? CHAT_PANEL_WIDTH_OPEN : CHAT_PANEL_WIDTH_CLOSED;
         const sidebarWidth = (isAlwaysOpen || isSidebarOpen) ? SIDEBAR_WIDTH : 0; // Dynamic sidebar width
 
+        // Ensure dimensions are at least 1 to prevent issues with libraries
+        const newWidth = Math.max(1, window.innerWidth - sidebarWidth - chatWidth);
+        const newHeight = Math.max(1, window.innerHeight - HEADER_HEIGHT);
+
         setMainContentArea({
           left: sidebarWidth,
           top: HEADER_HEIGHT,
-          width: window.innerWidth - sidebarWidth - chatWidth,
-          height: window.innerHeight - HEADER_HEIGHT,
+          width: newWidth,
+          height: newHeight,
         });
       }
     };
