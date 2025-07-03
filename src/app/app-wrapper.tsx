@@ -15,6 +15,8 @@ import { Header } from "@/components/header";
 import { UpgradeModal } from "@/components/upgrade-modal";
 import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { SimpleAudioPlayer } from "@/components/simple-audio-player";
+import { useEffects } from "@/context/effect-provider";
+import { ParticlesEffect } from "@/components/effects/particles-effect";
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
@@ -25,6 +27,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const { isSidebarOpen } = useSidebar();
   const { isAlwaysOpen, mounted } = useSidebarPreference();
   const { isCurrentRoomWritable } = useCurrentRoom();
+  const { activeEffect } = useEffects();
 
   const [sidebarCurrentWidth, setSidebarCurrentWidth] = useState(0);
   const [mainContentArea, setMainContentArea] = useState({ left: 0, top: 0, width: 0, height: 0 });
@@ -77,6 +80,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   return (
     <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea}>
       <div className="relative h-screen bg-background">
+        {activeEffect === 'particles' && <ParticlesEffect />}
         <Header
           onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
           isChatOpen={isChatOpen}

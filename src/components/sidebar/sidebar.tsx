@@ -6,7 +6,7 @@ import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
 import { useWidget } from "@/components/widget/widget-context";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
-import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Mountain, BookOpen, Goal, ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, WandSparkles, BookOpen, Goal, ChevronLeft, ChevronRight } from "lucide-react";
 
 const SIDEBAR_WIDTH = 60; // px
 const HOT_ZONE_WIDTH = 20; // px (includes the 4px visible strip)
@@ -15,8 +15,8 @@ const HEADER_HEIGHT_REM = 4; // 4rem = 64px
 
 export function Sidebar() {
   const { activePanel, setActivePanel, isSidebarOpen, setIsSidebarOpen } = useSidebar();
-  const { isAlwaysOpen, toggleAlwaysOpen, mounted } = useSidebarPreference(); // Get mounted state
   const { toggleWidget } = useWidget();
+  const { isAlwaysOpen, toggleAlwaysOpen, mounted } = useSidebarPreference(); // Get mounted state
   const sidebarRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -74,6 +74,7 @@ export function Sidebar() {
 
   const navItems = [
     { id: "spaces", label: "Spaces", icon: LayoutGrid },
+    { id: "background-effects", label: "Backgrounds & Effects", icon: WandSparkles },
     { id: "sounds", label: "Sounds", icon: Volume2 },
     { id: "calendar", label: "Calendar", icon: Calendar },
     { id: "timer", label: "Timer", icon: Timer },
@@ -81,7 +82,6 @@ export function Sidebar() {
     { id: "notes", label: "Notes", icon: NotebookPen },
     { id: "media", label: "Media", icon: Image },
     { id: "fortune", label: "Fortune", icon: Sparkles },
-    { id: "background-images", label: "Backgrounds", icon: Mountain },
     { id: "flash-cards", label: "Flash Cards", icon: BookOpen },
     { id: "goal-focus", label: "Goal Focus", icon: Goal },
   ];

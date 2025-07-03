@@ -73,7 +73,7 @@ function BackgroundManager({ url, isVideo }: { url: string; isVideo: boolean }) 
 }
 
 export function BackgroundProvider({ children }: { children: React.ReactNode }) {
-  const [background, setBackgroundState] = useState({ url: '/bg2.jpg', isVideo: false });
+  const [background, setBackgroundState] = useState({ url: '/ani1.mp4', isVideo: true });
 
   // On initial load, check local storage for a saved background
   useEffect(() => {

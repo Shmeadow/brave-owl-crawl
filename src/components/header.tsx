@@ -15,6 +15,7 @@ import { useCurrentRoom } from "@/hooks/use-current-room";
 import { toast } from "sonner";
 import { ClockDisplay } from "@/components/clock-display"; // Import ClockDisplay
 import { ThemeToggle } from "@/components/theme-toggle"; // Import ThemeToggle
+import { GlassEffectSlider } from "@/components/glass-effect-slider";
 
 interface HeaderProps {
   onOpenUpgradeModal: () => void;
@@ -64,6 +65,8 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
       <div className="flex items-center gap-4 ml-auto pr-4">
         {/* Clock and Progress */}
         <ClockDisplay /> {/* No dailyProgress prop needed */}
+
+        <GlassEffectSlider />
 
         {/* Other action buttons */}
         <UpgradeButton onOpenUpgradeModal={onOpenUpgradeModal} />
