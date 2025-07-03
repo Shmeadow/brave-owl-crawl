@@ -2,7 +2,13 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
+interface BackgroundState {
+  url: string;
+  isVideo: boolean;
+}
+
 interface BackgroundContextType {
+  background: BackgroundState;
   setBackground: (url: string, isVideo?: boolean) => void;
 }
 
@@ -86,7 +92,7 @@ export function BackgroundProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   return (
-    <BackgroundContext.Provider value={{ setBackground }}>
+    <BackgroundContext.Provider value={{ background, setBackground }}>
       <BackgroundManager url={background.url} isVideo={background.isVideo} />
       {children}
     </BackgroundContext.Provider>
