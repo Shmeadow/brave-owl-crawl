@@ -15,30 +15,33 @@
   background-color: rgba(255, 255, 255, 0.8);
   border-radius: 50%;
   box-shadow: 0 0 5px 1px rgba(255, 255, 255, 0.5);
-  /* Apply both animations: fall for vertical + overall drift, sway for oscillation */
-  animation: fall var(--fall-duration) linear infinite,
-             sway var(--sway-duration) ease-in-out infinite alternate;
-  /* Initial position before animation starts, handled by the 'fall' animation's 0% keyframe */
+  
+  /* Define initial values for custom properties */
+  --current-x: var(--initial-x-px);
+  --current-y: -100vh;
+  --sway-offset-x: 0px;
+
+  /* Combine all movements into a single transform using the custom properties */
+  transform: translate(calc(var(--current-x) + var(--sway-offset-x)), var(--current-y));
+
+  /* Animate the custom properties */
+  animation:
+    fall-y var(--fall-duration) linear infinite,
+    fall-x-drift var(--fall-duration) linear infinite,
+    sway-x-oscillation var(--sway-duration) ease-in-out infinite alternate;
 }
 
-@keyframes fall {
-  0% {
-    /* Start at the initial X position and off-screen top */
-    transform: translate(var(--initial-x-px), -100vh);
-  }
-  100% {
-    /* End at initial X + drift amount, and off-screen bottom */
-    transform: translate(calc(var(--initial-x-px) + var(--drift-x-px)), 100vh);
-  }
+@keyframes fall-y {
+  from { --current-y: -100vh; }
+  to { --current-y: 100vh; }
 }
 
-@keyframes sway {
-  0%, 100% {
-    /* Start and end at no horizontal offset from the 'fall' animation's current X */
-    transform: translateX(0);
-  }
-  50% {
-    /* At midpoint, move horizontally by the sway amount */
-    transform: translateX(var(--sway-amount-px));
-  }
+@keyframes fall-x-drift {
+  from { --current-x: var(--initial-x-px); }
+  to { --current-x: calc(var(--initial-x-px) + var(--drift-x-px)); }
+}
+
+@keyframes sway-x-oscillation {
+  from, to { --sway-offset-x: 0px; }
+  50% { --sway-offset-x: var(--sway-amount-px); }
 }
