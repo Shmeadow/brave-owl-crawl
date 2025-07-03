@@ -49,7 +49,7 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => router.push('/dashboard')}
+          onClick={() => router.push('/')}
           title="Go to My Room"
         >
           <Home className="h-6 w-6" />
@@ -82,7 +82,7 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
             onToggleOpen={onToggleChat}
             onNewUnreadMessage={onNewUnreadMessage}
             onClearUnreadMessages={onClearUnreadMessages}
-            unreadCount={unreadChatCount}
+            unreadCount={unreadCount}
             currentRoomId={currentRoomId} // Pass currentRoomId
             isCurrentRoomWritable={isCurrentRoomWritable} // Pass isCurrentRoomWritable
           />
