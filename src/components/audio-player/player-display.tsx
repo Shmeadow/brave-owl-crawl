@@ -10,7 +10,7 @@ interface PlayerDisplayProps {
   playerType: 'audio' | 'youtube' | 'spotify' | null;
   inputUrl: string;
   audioRef: React.RefObject<HTMLAudioElement>;
-  youtubeIframeRef: React.RefObject<HTMLIFrameElement>;
+  youtubeIframeRef: React.RefObject<HTMLIFrameElement | null>;
   spotifyCurrentTrack: SpotifyTrack | null;
   onLoadedMetadata: () => void;
   onTimeUpdate: () => void;
