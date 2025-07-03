@@ -95,7 +95,7 @@ export default async function RootLayout({
         >
           <SessionContextProvider>
             <SidebarProvider>
-                <AppWrapper>
+                <AppWrapper initialWidgetConfigs={WIDGET_CONFIGS}>
                   {children}
                 </AppWrapper>
             </SidebarProvider>
