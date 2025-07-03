@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { BackgroundGradient, Image as ImageIcon } from "lucide-react";
+import { Palette, Image as ImageIcon } from "lucide-react"; // Changed BackgroundGradient to Palette
 import Image from "next/image";
 
 const staticImages = [
@@ -77,7 +77,7 @@ export function BackgroundEffectsMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon">
-          <BackgroundGradient className="h-5 w-5" />
+          <Palette className="h-5 w-5" /> {/* Changed to Palette */}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 p-4">
@@ -102,7 +102,7 @@ export function BackgroundEffectsMenu() {
                     <Image
                       src={imageUrl}
                       alt={`Background ${imageUrl.split("/").pop()}`}
-                      fill // Changed from layout="fill"
+                      fill
                       className="object-cover"
                     />
                     {isActive && (
@@ -136,7 +136,7 @@ export function BackgroundEffectsMenu() {
                     <Image
                       src={thumbnailUrl}
                       alt={`Animated Background ${videoUrl.split("/").pop()}`}
-                      fill // Changed from layout="fill"
+                      fill
                       className="object-cover"
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
