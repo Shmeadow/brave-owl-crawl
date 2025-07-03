@@ -5,7 +5,7 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 1003; /* Changed from -1 to 1003 */
+  z-index: 899; /* Set to appear behind widgets and header */
   overflow: hidden;
   background: transparent;
 }
@@ -15,33 +15,15 @@
   background-color: rgba(255, 255, 255, 0.8);
   border-radius: 50%;
   box-shadow: 0 0 5px 1px rgba(255, 255, 255, 0.5);
-  
-  /* Define initial values for custom properties */
-  --current-x: var(--initial-x-px);
-  --current-y: -100vh;
-  --sway-offset-x: 0px;
-
-  /* Combine all movements into a single transform using the custom properties */
-  transform: translate(calc(var(--current-x) + var(--sway-offset-x)), var(--current-y));
-
-  /* Animate the custom properties */
-  animation:
-    fall-y var(--fall-duration) linear infinite,
-    fall-x-drift var(--fall-duration) linear infinite,
-    sway-x-oscillation var(--sway-duration) ease-in-out infinite alternate;
+  animation: fall linear infinite, sway ease-in-out infinite alternate;
 }
 
-@keyframes fall-y {
-  from { --current-y: -100vh; }
-  to { --current-y: 100vh; }
+@keyframes fall {
+  0% { transform: translateY(-100vh); }
+  100% { transform: translateY(100vh); }
 }
 
-@keyframes fall-x-drift {
-  from { --current-x: var(--initial-x-px); }
-  to { --current-x: calc(var(--initial-x-px) + var(--drift-x-px)); }
-}
-
-@keyframes sway-x-oscillation {
-  from, to { --sway-offset-x: 0px; }
-  50% { --sway-offset-x: var(--sway-amount-px); }
+@keyframes sway {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(var(--sway-amount-px)); }
 }

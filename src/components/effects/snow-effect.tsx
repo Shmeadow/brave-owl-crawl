@@ -17,13 +17,8 @@ export function SnowEffect() {
       const snowflake = document.createElement('div');
       snowflake.className = styles.snowflake;
 
-      // Random initial horizontal position for the start of the fall (in pixels)
-      const initialX = Math.random() * window.innerWidth;
-      snowflake.style.setProperty('--initial-x-px', `${initialX}px`);
-
-      // Random overall horizontal drift amount (in pixels, relative to initialX)
-      const driftAmount = (Math.random() - 0.5) * 400; // e.g., -200px to +200px
-      snowflake.style.setProperty('--drift-x-px', `${driftAmount}px`);
+      // Random initial horizontal position
+      snowflake.style.left = `${Math.random() * 100}%`;
 
       // Random sway amount (side-to-side oscillation in pixels)
       const swayAmount = Math.random() * 30 + 10; // 10px to 40px
@@ -33,11 +28,8 @@ export function SnowEffect() {
       const fallDuration = 10 + Math.random() * 15; // 10s to 25s
       const swayDuration = 5 + Math.random() * 10; // 5s to 15s
 
-      snowflake.style.setProperty('--fall-duration', `${fallDuration}s`);
-      snowflake.style.setProperty('--sway-duration', `${swayDuration}s`);
-
-      // Random animation delay
-      snowflake.style.animationDelay = `${Math.random() * 10}s`;
+      snowflake.style.animationDuration = `${fallDuration}s, ${swayDuration}s`;
+      snowflake.style.animationDelay = `${Math.random() * 10}s, ${Math.random() * 10}s`;
 
       // Random size
       const size = `${1.5 + Math.random() * 3.5}px`;
