@@ -10,18 +10,18 @@ export function SnowEffect() {
     const container = containerRef.current;
     if (!container) return;
 
-    const numSnowflakes = 100;
+    const numSnowflakes = 200; // Increased number of snowflakes
     const snowflakes: HTMLDivElement[] = [];
 
     for (let i = 0; i < numSnowflakes; i++) {
       const snowflake = document.createElement('div');
       snowflake.className = styles.snowflake;
       snowflake.style.left = `${Math.random() * 100}%`;
-      snowflake.style.animationDelay = `${Math.random() * 10}s`;
-      snowflake.style.animationDuration = `${10 + Math.random() * 10}s`;
-      snowflake.style.width = `${2 + Math.random() * 3}px`;
+      snowflake.style.animationDelay = `${Math.random() * 8}s`; // Slightly shorter delay range
+      snowflake.style.animationDuration = `${8 + Math.random() * 8}s`; // Faster fall
+      snowflake.style.width = `${2 + Math.random() * 4}px`; // Larger snowflakes
       snowflake.style.height = snowflake.style.width;
-      snowflake.style.opacity = `${0.5 + Math.random() * 0.5}`;
+      snowflake.style.opacity = `${0.6 + Math.random() * 0.4}`; // More opaque
       container.appendChild(snowflake);
       snowflakes.push(snowflake);
     }
