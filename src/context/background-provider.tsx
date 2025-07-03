@@ -19,56 +19,59 @@ const LOCAL_STORAGE_BG_TYPE_KEY = 'app_background_type';
 
 // This component will manage rendering the background video or image
 function BackgroundManager({ url, isVideo }: { url: string; isVideo: boolean }) {
+  const [isImageVisible, setIsImageVisible] = useState(!isVideo);
+  const [isVideoVisible, setIsVideoVisible] = useState(isVideo);
+
   useEffect(() => {
-    const videoElement = document.getElementById('background-video') as HTMLVideoElement;
-    if (isVideo) {
-      // If it's a video, hide the body's background image and show the video element
-      document.body.style.backgroundImage = '';
-      if (videoElement) {
-        // Check if the source needs updating to avoid reloading the same video
-        if (videoElement.src !== window.location.origin + url) {
-          videoElement.src = url;
-          videoElement.load();
-          videoElement.play().catch(e => console.error("Autoplay failed", e));
-        }
-        videoElement.style.display = 'block';
-      }
-    } else {
-      // If it's an image, hide the video element and set the body's background
-      if (videoElement) {
-        videoElement.style.display = 'none';
-        videoElement.pause();
-        videoElement.src = '';
-      }
-      document.body.style.backgroundImage = `url(${url})`;
-      document.body.style.backgroundSize = 'cover';
-      document.body.style.backgroundPosition = 'center center';
-      document.body.style.backgroundRepeat = 'no-repeat';
-      document.body.style.backgroundAttachment = 'fixed';
-    }
+    setIsImageVisible(!isVideo);
+    setIsVideoVisible(isVideo);
   }, [url, isVideo]);
 
   return (
-    <video
-      id="background-video"
+    <div
+      id="background-container"
       style={{
         position: 'fixed',
-        right: '0px',
-        bottom: '0px',
-        minWidth: '100%',
-        minHeight: '100%',
-        width: 'auto',
-        height: 'auto',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
         zIndex: -100,
-        objectFit: 'cover',
-        transition: 'opacity 1s ease-in-out',
-        display: 'none',
+        transition: 'filter 0.3s ease-in-out',
+        filter: 'blur(var(--background-blur-px, 0px))',
       }}
-      autoPlay
-      muted
-      loop
-      playsInline
-    />
+    >
+      <div
+        id="background-image"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: `url(${url})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: isImageVisible ? 1 : 0,
+          transition: 'opacity 1s ease-in-out',
+        }}
+      />
+      <video
+        id="background-video"
+        src={url}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          opacity: isVideoVisible ? 1 : 0,
+          transition: 'opacity 1s ease-in-out',
+        }}
+        autoPlay
+        muted
+        loop
+        playsInline
+        key={url} // Add key to force re-render on src change
+      />
+    </div>
   );
 }
 

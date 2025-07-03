@@ -15,7 +15,7 @@ import { useCurrentRoom } from "@/hooks/use-current-room";
 import { toast } from "sonner";
 import { ClockDisplay } from "@/components/clock-display";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { GlassEffectSlider } from "@/components/glass-effect-slider";
+import { BackgroundBlurSlider } from "@/components/background-blur-slider";
 import { useWidget } from "@/components/widget/widget-context";
 
 interface HeaderProps {
@@ -36,7 +36,7 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
   const displayName = profile?.first_name || profile?.last_name || session?.user?.email?.split('@')[0] || "Guest";
 
   return (
-    <header className="sticky top-0 z-[1002] w-full border-b bg-background backdrop-blur-xl flex items-center h-16">
+    <header className="sticky top-0 z-[1002] w-full border-b bg-background/80 backdrop-blur-md flex items-center h-16">
       {/* Left Section: Search Input, Home Button, and Title */}
       <div className="flex items-center gap-2 pl-4">
         {/* Search Input */}
@@ -68,7 +68,7 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
         {/* Clock and Progress */}
         <ClockDisplay />
 
-        <GlassEffectSlider />
+        <BackgroundBlurSlider />
 
         <Button variant="ghost" size="icon" onClick={() => toggleWidget('background-effects', 'Backgrounds & Effects')} title="Change Background">
           <ImageIcon className="h-6 w-6" />

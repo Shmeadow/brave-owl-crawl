@@ -91,10 +91,10 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
         />
         <Sidebar />
         <div
-          className="absolute top-16 right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out"
+          className="absolute top-16 right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
           style={{ left: `${sidebarCurrentWidth}px` }}
         >
-          <main className="flex-1 relative overflow-y-auto">
+          <main className="flex-1 relative overflow-y-auto bg-transparent">
             <div className="p-4 sm:p-6 lg:p-8 h-full">
               {children}
             </div>

@@ -7,7 +7,7 @@ import { AppWrapper } from "@/app/app-wrapper";
 import { SessionContextProvider } from "@/integrations/supabase/auth";
 import { SidebarProvider } from "@/components/sidebar/sidebar-context";
 import { BackgroundProvider } from "@/context/background-provider";
-import { GlassEffectProvider } from "@/context/glass-effect-provider";
+import { BackgroundBlurProvider } from "@/context/background-blur-provider";
 import { EffectProvider } from "@/context/effect-provider";
 
 const geistSans = Geist({
@@ -89,7 +89,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <GlassEffectProvider>
+        <BackgroundBlurProvider>
           <EffectProvider>
             <BackgroundProvider>
               <ThemeProvider
@@ -109,7 +109,7 @@ export default async function RootLayout({
               </ThemeProvider>
             </BackgroundProvider>
           </EffectProvider>
-        </GlassEffectProvider>
+        </BackgroundBlurProvider>
       </body>
     </html>
   );
