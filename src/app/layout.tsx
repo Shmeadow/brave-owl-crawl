@@ -35,6 +35,7 @@ const WIDGET_CONFIGS = {
   "notes": { initialPosition: { x: 700, y: 350 }, initialWidth: 500, initialHeight: 600 },
   "media": { initialPosition: { x: 300, y: 400 }, initialWidth: 600, initialHeight: 500 },
   "fortune": { initialPosition: { x: 850, y: 450 }, initialWidth: 400, initialHeight: 300 },
+  "background-effects": { initialPosition: { x: 350, y: 500 }, initialWidth: 500, initialHeight: 400 },
   "flash-cards": { initialPosition: { x: 500, y: 100 }, initialWidth: 900, initialHeight: 700 },
   "goal-focus": { initialPosition: { x: 400, y: 550 }, initialWidth: 500, initialHeight: 600 },
 };

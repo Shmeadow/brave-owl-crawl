@@ -34,18 +34,7 @@
     --gold: 45 90% 55%;
     --day-start: 210 80% 70%;
     --day-end: 220 60% 30%;
-    --background-blur-px: 0px;
-
-    /* Glass effect variables */
-    --background-alpha: 0.15;
-    --card-alpha: 0.25;
-    --popover-alpha: 0.4;
-    --muted-alpha: 0.2;
-    --input-alpha: 0.3;
-    --sidebar-alpha: 0.2;
-    --secondary-alpha: 0.2;
-    --accent-alpha: 0.2;
-    --border-alpha: 0.1;
+    --background-blur-px: 0px; /* New blur variable */
   }
 
   .dark {
@@ -110,7 +99,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
     background-color: transparent; /* Ensure body is transparent */
   }
 }

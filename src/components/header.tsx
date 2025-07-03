@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Bell, Search, Settings, WandSparkles } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Home, Bell, Search, Settings, Image as ImageIcon } from "lucide-react";
+import { useTheme } from "next-themes";
 import { ChatPanel } from "@/components/chat-panel";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
@@ -10,11 +12,11 @@ import { Input } from "@/components/ui/input";
 import { UserNav } from "@/components/user-nav";
 import { UpgradeButton } from "@/components/upgrade-button";
 import { useCurrentRoom } from "@/hooks/use-current-room";
+import { toast } from "sonner";
 import { ClockDisplay } from "@/components/clock-display";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BackgroundBlurSlider } from "@/components/background-blur-slider";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { BackgroundEffectsMenu } from "@/components/background-effects-menu";
+import { useWidget } from "@/components/widget/widget-context";
 
 interface HeaderProps {
   onOpenUpgradeModal: () => void;
@@ -29,6 +31,7 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
   const { session, profile } = useSupabase();
   const router = useRouter();
   const { currentRoomName, currentRoomId, isCurrentRoomWritable } = useCurrentRoom();
+  const { toggleWidget } = useWidget();
 
   const displayName = profile?.first_name || profile?.last_name || session?.user?.email?.split('@')[0] || "Guest";
 
@@ -67,17 +70,10 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
 
         <BackgroundBlurSlider />
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" title="Change Background & Effects">
-              <WandSparkles className="h-6 w-6" />
-              <span className="sr-only">Change Background & Effects</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-80" align="end">
-            <BackgroundEffectsMenu />
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button variant="ghost" size="icon" onClick={() => toggleWidget('background-effects', 'Backgrounds & Effects')} title="Change Background">
+          <ImageIcon className="h-6 w-6" />
+          <span className="sr-only">Change Background</span>
+        </Button>
 
         {/* Other action buttons */}
         <UpgradeButton onOpenUpgradeModal={onOpenUpgradeModal} />

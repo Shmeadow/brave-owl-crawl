@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useBackground } from "@/context/background-provider";
@@ -13,21 +14,25 @@ import { Button } from "@/components/ui/button";
 const staticImages = Array.from({ length: 6 }, (_, i) => `/bg${i + 1}.jpg`);
 const animatedImages = Array.from({ length: 3 }, (_, i) => `/ani${i + 1}.mp4`);
 
-export function BackgroundEffectsMenu() {
+interface BackgroundEffectsWidgetProps {
+  isCurrentRoomWritable: boolean;
+}
+
+export function BackgroundEffectsWidget({ isCurrentRoomWritable }: BackgroundEffectsWidgetProps) {
   const { background, setBackground } = useBackground();
   const { activeEffect, setEffect } = useEffects();
 
   return (
-    <div className="p-2">
-      <Tabs defaultValue="static" className="w-full">
+    <div className="h-full w-full flex flex-col">
+      <Tabs defaultValue="static" className="w-full flex flex-col flex-1 p-4">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="static">Static</TabsTrigger>
           <TabsTrigger value="animated">Animated</TabsTrigger>
           <TabsTrigger value="effects">Effects</TabsTrigger>
         </TabsList>
-        <TabsContent value="static" className="mt-4">
-          <ScrollArea className="h-48">
-            <div className="grid grid-cols-3 gap-2 pr-4">
+        <TabsContent value="static" className="flex-1 mt-4">
+          <ScrollArea className="h-full">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pr-4">
               {staticImages.map((src) => {
                 const isActive = !background.isVideo && background.url === src;
                 return (
@@ -57,9 +62,9 @@ export function BackgroundEffectsMenu() {
             </div>
           </ScrollArea>
         </TabsContent>
-        <TabsContent value="animated" className="mt-4">
-          <ScrollArea className="h-48">
-            <div className="grid grid-cols-3 gap-2 pr-4">
+        <TabsContent value="animated" className="flex-1 mt-4">
+          <ScrollArea className="h-full">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pr-4">
               {animatedImages.map((src) => {
                 const isActive = background.isVideo && background.url === src;
                 return (
@@ -91,7 +96,7 @@ export function BackgroundEffectsMenu() {
             </div>
           </ScrollArea>
         </TabsContent>
-        <TabsContent value="effects" className="mt-4">
+        <TabsContent value="effects" className="flex-1 mt-4">
           <div className="flex flex-col gap-4">
             <Button
               variant={activeEffect === 'none' ? 'default' : 'outline'}
