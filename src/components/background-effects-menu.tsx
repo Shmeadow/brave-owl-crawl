@@ -48,6 +48,8 @@ export function BackgroundEffectsMenu() {
             <div className="grid grid-cols-2 gap-4 pr-4">
               {staticImages.map((imageUrl) => {
                 const isActive = !background.isVideo && background.url === imageUrl;
+                // Added console.log and onError for debugging
+                console.log(`Rendering static image preview for: ${imageUrl}`);
                 return (
                   <div
                     key={imageUrl}
@@ -62,6 +64,7 @@ export function BackgroundEffectsMenu() {
                       src={imageUrl}
                       alt={`Background ${imageUrl.split("/").pop()}`}
                       className="absolute inset-0 w-full h-full object-cover"
+                      onError={(e) => console.error("Error loading static image preview:", imageUrl, e)}
                     />
                     {isActive && (
                       <div className="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 text-white text-sm font-bold">
