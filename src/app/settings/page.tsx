@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRooms } from "@/hooks/use-rooms";
@@ -32,7 +33,7 @@ export default function SettingsPage() {
           <CardTitle className="text-foreground">User Profile Settings</CardTitle>
         </CardHeader>
         <CardContent className="text-muted-foreground">
-          Your profile settings, including name, avatar, and time format, can be managed on the <a href="/account" className="text-primary hover:underline">Account Page</a>.
+          Your profile settings, including name, avatar, and time format, can be managed on the <Link href="/account" className="text-primary hover:underline">Account Page</Link>.
         </CardContent>
       </Card>
 
@@ -68,7 +69,7 @@ export default function SettingsPage() {
           <CardTitle className="text-foreground">Admin Settings</CardTitle>
         </CardHeader>
         <CardContent className="text-muted-foreground">
-          Global application settings are managed by administrators on the <a href="/admin-settings" className="text-primary hover:underline">Admin Settings Page</a>.
+          Global application settings are managed by administrators on the <Link href="/admin-settings" className="text-primary hover:underline">Admin Settings Page</Link>.
         </CardContent>
       </Card>
     </div>
