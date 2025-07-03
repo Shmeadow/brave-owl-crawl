@@ -12,7 +12,7 @@ const BackgroundBlurContext = createContext<BackgroundBlurContextType | undefine
 const LOCAL_STORAGE_KEY = 'app_background_blur';
 
 export function BackgroundBlurProvider({ children }: { children: React.ReactNode }) {
-  const [blur, setBlurState] = useState(0); // Default to no blur
+  const [blur, setBlurState] = useState(8); // Default to 8px blur (50% of max 16)
 
   // Load saved value from local storage on mount
   useEffect(() => {

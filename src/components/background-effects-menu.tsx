@@ -24,7 +24,6 @@ const staticImages = [
 ];
 
 const animatedBackgrounds = [
-  { videoUrl: "/animated/ani1.mp4", thumbnailUrl: "/animated/ani1.jpg" },
   { videoUrl: "/animated/ani2.mp4", thumbnailUrl: "/animated/ani2.jpg" },
   { videoUrl: "/animated/ani3.mp4", thumbnailUrl: "/animated/ani3.jpg" },
   { videoUrl: "/animated/ani4.mp4", thumbnailUrl: "/animated/ani4.mp4" },
