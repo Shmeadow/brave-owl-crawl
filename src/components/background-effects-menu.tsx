@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Image as ImageIcon } from "lucide-react";
-import Image from "next/image";
+import Image from "next/image"; // Ensure Image is imported
 import { useBackground } from "@/context/background-provider";
 import { useEffects } from "@/context/effect-provider";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Import Tabs components
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const staticImages = [
   "/bg1.jpg",
