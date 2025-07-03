@@ -80,8 +80,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
   useEffect(() => {
     if (!supabaseClient) {
       // Supabase client is not yet available, wait for it.
-      // If loading is already false, it means client initialization failed.
-      if (loading) { // Only if we are still in a loading state
+      if (loading) {
         console.log("SessionContextProvider: Waiting for Supabase client to be ready...");
       }
       return;
@@ -115,7 +114,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
       console.log("Cleaning up Supabase auth state listener.");
       subscription.unsubscribe();
     };
-  }, [supabaseClient, fetchProfile, loading]); // Add loading to dependency array to avoid infinite loop if client fails
+  }, [supabaseClient, fetchProfile]);
 
   return (
     <SupabaseContext.Provider value={{ supabase: supabaseClient, session, profile, loading, refreshProfile }}>

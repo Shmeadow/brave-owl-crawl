@@ -15,15 +15,17 @@ export function useFlashcardNavigation({ filteredCards, updateCardInteraction }:
 
   // Adjust currentCardIndex if it goes out of bounds after filtering
   useEffect(() => {
-    if (filteredCards.length > 0) {
-      if (currentCardIndex >= filteredCards.length) {
-        setCurrentCardIndex(0);
+    setCurrentCardIndex(currentIndex => {
+      if (filteredCards.length > 0) {
+        if (currentIndex >= filteredCards.length) {
+          return 0; // Reset to 0 if out of bounds
+        }
+        return currentIndex; // No change needed
       }
-    } else {
-      setCurrentCardIndex(0);
-    }
+      return 0; // Reset to 0 if no cards
+    });
     setIsFlipped(false); // Always unflip when filter or card set changes
-  }, [filteredCards.length]); // currentCardIndex is NOT a dependency here.
+  }, [filteredCards.length]);
 
   const handleFlip = useCallback(() => {
     setIsFlipped(!isFlipped);

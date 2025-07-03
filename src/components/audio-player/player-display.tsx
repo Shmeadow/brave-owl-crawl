@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Image from 'next/image';
 import { getYouTubeEmbedUrl } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import { SpotifyTrack } from '@/hooks/use-spotify-player';
@@ -75,10 +76,11 @@ export function PlayerDisplay({
           aspectRatioClass
         )}>
           {albumArtUrl ? (
-            <img
+            <Image
               src={albumArtUrl}
               alt={spotifyCurrentTrack?.album?.name || 'Album Art'}
-              className="absolute top-0 left-0 w-full h-full object-contain"
+              fill
+              className="object-contain"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted/20">

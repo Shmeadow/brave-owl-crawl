@@ -351,7 +351,7 @@ export function usePomodoroState() {
       isEditingTime: true,
       editableTimeString: formatTime(prevState.timeLeft),
     }));
-  }, [state.timeLeft]);
+  }, []);
 
   const handleTimeInputBlur = useCallback(() => {
     setState(prevState => {

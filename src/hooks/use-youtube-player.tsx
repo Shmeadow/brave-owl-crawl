@@ -97,11 +97,12 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
 
   // Effect to manage player instance based on embedUrl and iframeRef
   useEffect(() => {
+    const iframeElement = iframeRef.current; // Capture the ref's current value
     const newVideoIdMatch = embedUrl?.match(/\/embed\/([\w-]+)/);
     const newVideoId = newVideoIdMatch ? newVideoIdMatch[1] : null;
 
     const createOrUpdatePlayer = () => {
-      if (!newVideoId || !iframeRef.current || !window.YT || !window.YT.Player) {
+      if (!newVideoId || !iframeElement || !window.YT || !window.YT.Player) {
         console.log("YouTube API or iframe not ready for player creation/update.");
         return;
       }
@@ -127,7 +128,7 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
       } else {
         // Create new player
         console.log("Creating new YouTube player for video:", newVideoId);
-        playerRef.current = new window.YT.Player(iframeRef.current, {
+        playerRef.current = new window.YT.Player(iframeElement, {
           videoId: newVideoId,
           playerVars: {
             autoplay: 1,
@@ -151,7 +152,7 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
       }
     };
 
-    if (newVideoId && iframeRef.current) {
+    if (newVideoId && iframeElement) {
       if (window.YT && window.YT.Player) {
         createOrUpdatePlayer();
       } else {
@@ -179,7 +180,7 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
       // Only destroy if switching away from YouTube or component unmounts
       // If newVideoId is null, it means we are switching away from YouTube or unmounting
       // If newVideoId is not null, but playerRef.current is null, it means the iframe itself was unmounted
-      if (!newVideoId || !iframeRef.current) { 
+      if (!newVideoId || !iframeElement) { 
         if (playerRef.current) {
           console.log("YouTube Player Cleanup: Destroying player.");
           playerRef.current.destroy();
