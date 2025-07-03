@@ -76,7 +76,8 @@ function BackgroundManager({ url, isVideo }: { url: string; isVideo: boolean }) 
 }
 
 export function BackgroundProvider({ children }: { children: React.ReactNode }) {
-  const [background, setBackgroundState] = useState({ url: '/static/bg10.jpg', isVideo: false });
+  // Set default background to ani7.mp4
+  const [background, setBackgroundState] = useState({ url: '/animated/ani7.mp4', isVideo: true });
 
   // On initial load, check local storage for a saved background
   useEffect(() => {
