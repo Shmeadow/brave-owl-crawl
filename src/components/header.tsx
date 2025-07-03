@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Home, Bell, Search, Settings } from "lucide-react"; // Removed Sun, Moon
-import { useTheme } from "next-themes"; // Still needed for mounted check
+import { Home, Bell, Search, Settings, Image as ImageIcon } from "lucide-react";
+import { useTheme } from "next-themes";
 import { ChatPanel } from "@/components/chat-panel";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
@@ -13,9 +13,10 @@ import { UserNav } from "@/components/user-nav";
 import { UpgradeButton } from "@/components/upgrade-button";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { toast } from "sonner";
-import { ClockDisplay } from "@/components/clock-display"; // Import ClockDisplay
-import { ThemeToggle } from "@/components/theme-toggle"; // Import ThemeToggle
+import { ClockDisplay } from "@/components/clock-display";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { GlassEffectSlider } from "@/components/glass-effect-slider";
+import { useWidget } from "@/components/widget/widget-context";
 
 interface HeaderProps {
   onOpenUpgradeModal: () => void;
@@ -29,7 +30,8 @@ interface HeaderProps {
 export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnreadMessage, onClearUnreadMessages, unreadChatCount }: HeaderProps) {
   const { session, profile } = useSupabase();
   const router = useRouter();
-  const { currentRoomName, currentRoomId, isCurrentRoomWritable } = useCurrentRoom(); // Destructure currentRoomId here
+  const { currentRoomName, currentRoomId, isCurrentRoomWritable } = useCurrentRoom();
+  const { toggleWidget } = useWidget();
 
   const displayName = profile?.first_name || profile?.last_name || session?.user?.email?.split('@')[0] || "Guest";
 
@@ -64,13 +66,18 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
       {/* Right Section: Clock, Progress Bar, and Actions */}
       <div className="flex items-center gap-4 ml-auto pr-4">
         {/* Clock and Progress */}
-        <ClockDisplay /> {/* No dailyProgress prop needed */}
+        <ClockDisplay />
 
         <GlassEffectSlider />
 
+        <Button variant="ghost" size="icon" onClick={() => toggleWidget('background-effects', 'Backgrounds & Effects')} title="Change Background">
+          <ImageIcon className="h-6 w-6" />
+          <span className="sr-only">Change Background</span>
+        </Button>
+
         {/* Other action buttons */}
         <UpgradeButton onOpenUpgradeModal={onOpenUpgradeModal} />
-        <ThemeToggle /> {/* Added ThemeToggle here */}
+        <ThemeToggle />
         <Button variant="ghost" size="icon" title="Notifications">
           <Bell className="h-6 w-6" />
           <span className="sr-only">Notifications</span>
@@ -86,8 +93,8 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
             onNewUnreadMessage={onNewUnreadMessage}
             onClearUnreadMessages={onClearUnreadMessages}
             unreadCount={unreadChatCount}
-            currentRoomId={currentRoomId} // Pass currentRoomId
-            isCurrentRoomWritable={isCurrentRoomWritable} // Pass isCurrentRoomWritable
+            currentRoomId={currentRoomId}
+            isCurrentRoomWritable={isCurrentRoomWritable}
           />
         )}
         <UserNav />
