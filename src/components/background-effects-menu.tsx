@@ -11,7 +11,12 @@ import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const staticImages = Array.from({ length: 6 }, (_, i) => `/bg${i + 1}.jpg`);
-const animatedImages = Array.from({ length: 3 }, (_, i) => `/ani${i + 1}.mp4`);
+// For animated images, we'll use a preview image for the selector, but store the actual video URL
+const animatedBackgrounds = [
+  { videoUrl: '/ani1.mp4', previewUrl: '/ani1-preview.jpg' },
+  { videoUrl: '/ani2.mp4', previewUrl: '/ani2-preview.jpg' },
+  { videoUrl: '/ani3.mp4', previewUrl: '/ani3-preview.jpg' },
+];
 
 export function BackgroundEffectsMenu() {
   const { background, setBackground } = useBackground();
@@ -59,24 +64,22 @@ export function BackgroundEffectsMenu() {
       <TabsContent value="animated" className="mt-4">
         <ScrollArea className="h-72">
           <div className="grid grid-cols-2 gap-4 pr-4">
-            {animatedImages.map((src) => {
-              const isActive = background.isVideo && background.url === src;
+            {animatedBackgrounds.map(({ videoUrl, previewUrl }) => {
+              const isActive = background.isVideo && background.url === videoUrl;
               return (
                 <div
-                  key={src}
+                  key={videoUrl}
                   className={cn(
                     "relative aspect-video cursor-pointer rounded-md overflow-hidden group bg-black",
                     isActive && "ring-2 ring-primary ring-offset-2 ring-offset-background"
                   )}
-                  onClick={() => setBackground(src, true)}
+                  onClick={() => setBackground(videoUrl, true)}
                 >
-                  <video
-                    src={src}
+                  <Image
+                    src={previewUrl}
+                    alt={`Animated Background Preview for ${videoUrl}`}
+                    fill
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
                   />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
                   {isActive && (
