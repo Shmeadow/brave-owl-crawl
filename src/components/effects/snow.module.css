@@ -14,34 +14,31 @@
   position: absolute;
   background-color: rgba(255, 255, 255, 0.8);
   border-radius: 50%;
-  box-shadow: 0 0 5px 1px rgba(255, 255, 255, 0.5); /* Added subtle glow */
-  animation: fall-and-sway linear infinite; /* Changed to ease-in-out */
-  transform: translateY(-100%);
-  /* Custom properties for individual snowflake movement */
-  --start-x-offset: 0px; /* Initial horizontal offset */
-  --end-x-offset: 0px;   /* Final horizontal offset (for overall drift) */
-  --sway-amount: 0px;    /* How much it sways left/right */
+  box-shadow: 0 0 5px 1px rgba(255, 255, 255, 0.5);
+  /* Apply both animations: fall for vertical + overall drift, sway for oscillation */
+  animation: fall var(--fall-duration) linear infinite,
+             sway var(--sway-duration) ease-in-out infinite alternate;
+  /* Initial position before animation starts, handled by the 'fall' animation's 0% keyframe */
 }
 
-@keyframes fall-and-sway {
+@keyframes fall {
   0% {
-    transform: translate(var(--start-x-offset), -100vh);
-    animation-timing-function: ease-in-out; /* Apply ease-in-out for smoother transitions */
-  }
-  25% {
-    transform: translate(calc(var(--start-x-offset) + var(--sway-amount)), -50vh);
-    animation-timing-function: ease-in-out;
-  }
-  50% {
-    transform: translate(var(--start-x-offset), 0vh);
-    animation-timing-function: ease-in-out;
-  }
-  75% {
-    transform: translate(calc(var(--start-x-offset) - var(--sway-amount)), 50vh);
-    animation-timing-function: ease-in-out;
+    /* Start at the initial X position and off-screen top */
+    transform: translate(var(--initial-x-px), -100vh);
   }
   100% {
-    transform: translate(var(--end-x-offset), 100vh);
-    animation-timing-function: ease-in-out;
+    /* End at initial X + drift amount, and off-screen bottom */
+    transform: translate(calc(var(--initial-x-px) + var(--drift-x-px)), 100vh);
+  }
+}
+
+@keyframes sway {
+  0%, 100% {
+    /* Start and end at no horizontal offset from the 'fall' animation's current X */
+    transform: translateX(0);
+  }
+  50% {
+    /* At midpoint, move horizontally by the sway amount */
+    transform: translateX(var(--sway-amount-px));
   }
 }
