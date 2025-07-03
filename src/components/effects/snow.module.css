@@ -16,24 +16,26 @@
   border-radius: 50%;
   animation: fall-and-sway linear infinite;
   transform: translateY(-100%);
+  /* Custom properties for individual snowflake movement */
+  --start-x-offset: 0px; /* Initial horizontal offset */
+  --end-x-offset: 0px;   /* Final horizontal offset (for overall drift) */
+  --sway-amount: 0px;    /* How much it sways left/right */
 }
 
 @keyframes fall-and-sway {
   0% {
-    transform: translate(0, -100vh);
+    transform: translate(var(--start-x-offset), -100vh);
+  }
+  25% {
+    transform: translate(calc(var(--start-x-offset) + var(--sway-amount)), -50vh);
   }
   50% {
-    transform: translate(calc(var(--sway-x, 0) * 1px), 0vh);
+    transform: translate(var(--start-x-offset), 0vh);
+  }
+  75% {
+    transform: translate(calc(var(--start-x-offset) - var(--sway-amount)), 50vh);
   }
   100% {
-    transform: translate(0, 100vh);
+    transform: translate(var(--end-x-offset), 100vh);
   }
 }
-
-/* Randomize sway for snowflakes */
-.snowflake:nth-child(1) { --sway-x: 20; }
-.snowflake:nth-child(2) { --sway-x: -15; }
-.snowflake:nth-child(3) { --sway-x: 30; }
-.snowflake:nth-child(4) { --sway-x: -25; }
-.snowflake:nth-child(5) { --sway-x: 10; }
-/* Add more for more snowflakes, or use JS to set these */
