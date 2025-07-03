@@ -1,7 +1,7 @@
 "use client";
 
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
-import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, WandSparkles, BookOpen, Goal } from "lucide-react";
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, BookOpen, Goal } from "lucide-react";
 
 // Import all widget content components
 import { SpacesWidget } from "@/components/widget-content/spaces-widget";
@@ -12,7 +12,6 @@ import { TasksWidget } from "@/components/widget-content/tasks-widget";
 import { NotesWidget } from "@/components/widget-content/notes-widget";
 import { MediaWidget } from "@/components/widget-content/media-widget";
 import { FortuneWidget } from "@/components/widget-content/fortune-widget";
-import { BackgroundEffectsWidget } from "@/components/widget-content/background-effects-widget";
 import { FlashCardsWidget } from "@/components/widget-content/flash-cards-widget";
 import { GoalFocusWidget } from "@/components/widget-content/goal-focus-widget";
 import { useWidget } from "./widget-context";
@@ -28,7 +27,6 @@ const WIDGET_COMPONENTS = {
   "notes": { icon: NotebookPen, content: NotesWidget },
   "media": { icon: Image, content: MediaWidget },
   "fortune": { icon: Sparkles, content: FortuneWidget },
-  "background-effects": { icon: WandSparkles, content: BackgroundEffectsWidget },
   "flash-cards": { icon: BookOpen, content: FlashCardsWidget },
   "goal-focus": { icon: Goal, content: GoalFocusWidget },
 };

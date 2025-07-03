@@ -6,7 +6,7 @@ import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
 import { useWidget } from "@/components/widget/widget-context";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
-import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, WandSparkles, BookOpen, Goal, ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, BookOpen, Goal, ChevronLeft, ChevronRight } from "lucide-react";
 
 const SIDEBAR_WIDTH = 60; // px
 const HOT_ZONE_WIDTH = 20; // px (includes the 4px visible strip)
@@ -74,7 +74,6 @@ export function Sidebar() {
 
   const navItems = [
     { id: "spaces", label: "Spaces", icon: LayoutGrid },
-    { id: "background-effects", label: "Backgrounds & Effects", icon: WandSparkles },
     { id: "sounds", label: "Sounds", icon: Volume2 },
     { id: "calendar", label: "Calendar", icon: Calendar },
     { id: "timer", label: "Timer", icon: Timer },
