@@ -105,7 +105,7 @@ export function Sidebar() {
         "rounded-r-lg"
       )}
     >
-      <div className="flex flex-col gap-2 overflow-y-auto h-full">
+      <div className="flex flex-col gap-2 overflow-y-auto">
         {navItems.map((item) => (
           <SidebarItem
             key={item.id}

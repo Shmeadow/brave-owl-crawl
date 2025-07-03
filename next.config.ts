@@ -2,10 +2,6 @@ import type { Configuration } from 'webpack';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export', // Enables static HTML export for GitHub Pages
-  basePath: '/brave-owl-crawl', // Adjusts routing under GitHub Pages subpath
-  assetPrefix: '/brave-owl-crawl', // Ensures static assets are resolved correctly
-
   images: {
     remotePatterns: [
       {
