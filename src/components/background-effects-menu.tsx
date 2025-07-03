@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
-import { useBackground } from "@/context/background-provider"; // Import useBackground hook
-import { useEffects } from "@/context/effect-provider"; // Import useEffects hook
+import { useBackground } from "@/context/background-provider";
+import { useEffects } from "@/context/effect-provider";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Import Tabs components
 
 const staticImages = [
   "/bg1.jpg",
@@ -25,8 +26,8 @@ const animatedBackgrounds = [
 ];
 
 export function BackgroundEffectsMenu() {
-  const { background, setBackground } = useBackground(); // Use the background context
-  const { activeEffect, setEffect } = useEffects(); // Use the effects context
+  const { background, setBackground } = useBackground();
+  const { activeEffect, setEffect } = useEffects();
 
   const handleBackgroundChange = (url: string, isVideo: boolean) => {
     setBackground(url, isVideo);
@@ -36,94 +37,99 @@ export function BackgroundEffectsMenu() {
     <div>
       <h3 className="text-lg font-semibold mb-4">Background Effects</h3>
 
-      <div className="mb-6">
-        <h4 className="text-md font-medium mb-2">Static Images</h4>
-        <ScrollArea className="h-72">
-          <div className="grid grid-cols-2 gap-4 pr-4">
-            {staticImages.map((imageUrl) => {
-              const isActive = !background.isVideo && background.url === imageUrl;
-              return (
-                <div
-                  key={imageUrl}
-                  className={`relative w-full h-24 cursor-pointer rounded-md overflow-hidden group ${
-                    isActive
-                      ? "ring-2 ring-blue-500 ring-offset-2"
-                      : "hover:ring-2 hover:ring-gray-300"
-                  }`}
-                  onClick={() => handleBackgroundChange(imageUrl, false)}
-                >
-                  <Image
-                    src={imageUrl}
-                    alt={`Background ${imageUrl.split("/").pop()}`}
-                    fill
-                    className="object-cover"
-                  />
-                  {isActive && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 text-white text-sm font-bold">
-                      Active
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </ScrollArea>
-      </div>
+      <Tabs defaultValue="static-images" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 h-auto">
+          <TabsTrigger value="static-images">Static Images</TabsTrigger>
+          <TabsTrigger value="animated-backgrounds">Animated</TabsTrigger>
+          <TabsTrigger value="visual-effects">Effects</TabsTrigger>
+        </TabsList>
 
-      <div>
-        <h4 className="text-md font-medium mb-2">Animated Backgrounds</h4>
-        <ScrollArea className="h-72">
-          <div className="grid grid-cols-2 gap-4 pr-4">
-            {animatedBackgrounds.map(({ videoUrl, thumbnailUrl }) => {
-              const isActive = background.isVideo && background.url === videoUrl;
-              return (
-                <div
-                  key={videoUrl}
-                  className={`relative w-full h-24 cursor-pointer rounded-md overflow-hidden group ${
-                    isActive
-                      ? "ring-2 ring-blue-500 ring-offset-2"
-                      : "hover:ring-2 hover:ring-gray-300"
-                  }`}
-                  onClick={() => handleBackgroundChange(videoUrl, true)}
-                >
-                  <Image
-                    src={thumbnailUrl}
-                    alt={`Animated Background ${videoUrl.split("/").pop()}`}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
-                    <ImageIcon className="h-6 w-6" />
+        <TabsContent value="static-images" className="mt-4">
+          <ScrollArea className="h-72">
+            <div className="grid grid-cols-2 gap-4 pr-4">
+              {staticImages.map((imageUrl) => {
+                const isActive = !background.isVideo && background.url === imageUrl;
+                return (
+                  <div
+                    key={imageUrl}
+                    className={`relative w-full h-24 cursor-pointer rounded-md overflow-hidden group ${
+                      isActive
+                        ? "ring-2 ring-blue-500 ring-offset-2"
+                        : "hover:ring-2 hover:ring-gray-300"
+                    }`}
+                    onClick={() => handleBackgroundChange(imageUrl, false)}
+                  >
+                    <Image
+                      src={imageUrl}
+                      alt={`Background ${imageUrl.split("/").pop()}`}
+                      fill
+                      className="object-cover"
+                    />
+                    {isActive && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 text-white text-sm font-bold">
+                        Active
+                      </div>
+                    )}
                   </div>
-                  {isActive && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 text-white text-sm font-bold">
-                      Active
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </ScrollArea>
-      </div>
+                );
+              })}
+            </div>
+          </ScrollArea>
+        </TabsContent>
 
-      <div className="mt-6">
-        <h4 className="text-md font-medium mb-2">Visual Effects</h4>
-        <div className="flex flex-col gap-2">
-          <Button
-            variant={activeEffect === 'none' ? 'default' : 'outline'}
-            onClick={() => setEffect('none')}
-          >
-            No Effect
-          </Button>
-          <Button
-            variant={activeEffect === 'particles' ? 'default' : 'outline'}
-            onClick={() => setEffect('particles')}
-          >
-            Particles Effect
-          </Button>
-        </div>
-      </div>
+        <TabsContent value="animated-backgrounds" className="mt-4">
+          <ScrollArea className="h-72">
+            <div className="grid grid-cols-2 gap-4 pr-4">
+              {animatedBackgrounds.map(({ videoUrl, thumbnailUrl }) => {
+                const isActive = background.isVideo && background.url === videoUrl;
+                return (
+                  <div
+                    key={videoUrl}
+                    className={`relative w-full h-24 cursor-pointer rounded-md overflow-hidden group ${
+                      isActive
+                        ? "ring-2 ring-blue-500 ring-offset-2"
+                        : "hover:ring-2 hover:ring-gray-300"
+                    }`}
+                    onClick={() => handleBackgroundChange(videoUrl, true)}
+                  >
+                    <Image
+                      src={thumbnailUrl}
+                      alt={`Animated Background ${videoUrl.split("/").pop()}`}
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ImageIcon className="h-6 w-6" />
+                    </div>
+                    {isActive && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 text-white text-sm font-bold">
+                        Active
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </ScrollArea>
+        </TabsContent>
+
+        <TabsContent value="visual-effects" className="mt-4">
+          <div className="flex flex-col gap-2">
+            <Button
+              variant={activeEffect === 'none' ? 'default' : 'outline'}
+              onClick={() => setEffect('none')}
+            >
+              No Effect
+            </Button>
+            <Button
+              variant={activeEffect === 'particles' ? 'default' : 'outline'}
+              onClick={() => setEffect('particles')}
+            >
+              Particles Effect
+            </Button>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
