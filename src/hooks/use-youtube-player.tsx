@@ -23,7 +23,7 @@ interface UseYouTubePlayerResult {
   youtubeDuration: number;
 }
 
-export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefObject<HTMLIFrameElement>): UseYouTubePlayerResult {
+export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefObject<HTMLIFrameElement | null>): UseYouTubePlayerResult {
   const playerRef = useRef<any>(null); // YT.Player instance
   const timeUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const currentVideoIdRef = useRef<string | null>(null); // To track the video ID currently loaded in the player
