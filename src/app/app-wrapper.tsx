@@ -10,6 +10,10 @@ import { LoadingScreen } from "@/components/loading-screen";
 import { WidgetProvider } from "@/components/widget/widget-context";
 import { WidgetContainer } from "@/components/widget/widget-container";
 import { useCurrentRoom } from "@/hooks/use-current-room";
+import { Header } from "@/components/header";
+import { UpgradeModal } from "@/components/upgrade-modal";
+import { PomodoroWidget } from "@/components/pomodoro-widget";
+import { SimpleAudioPlayer } from "@/components/simple-audio-player";
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
@@ -22,6 +26,22 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
 
   const [sidebarCurrentWidth, setSidebarCurrentWidth] = useState(0);
   const [mainContentArea, setMainContentArea] = useState({ left: 0, top: 0, width: 0, height: 0 });
+
+  // State for Header and related components
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+  const [isPomodoroMinimized, setIsPomodoroMinimized] = useState(false);
+
+  const chatPanelWidth = isChatOpen ? 320 : 56;
+
+  const handleNewUnreadMessage = () => {
+    setUnreadChatCount((prev) => prev + 1);
+  };
+
+  const handleClearUnreadMessages = () => {
+    setUnreadChatCount(0);
+  };
 
   useEffect(() => {
     const SIDEBAR_WIDTH = 60; // px
@@ -55,16 +75,33 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea}>
       <div className="flex h-screen bg-background">
         <Sidebar />
-        <main
-          className="flex flex-col flex-1 w-full overflow-auto transition-all duration-300 ease-in-out"
+        <div 
+          className="flex flex-col flex-1 w-full overflow-hidden transition-all duration-300 ease-in-out"
           style={{ marginLeft: `${sidebarCurrentWidth}px` }}
         >
-          <div className="flex-1 p-4 sm:p-6 lg:p-8 relative">
-            {children}
+          <Header
+            onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
+            isChatOpen={isChatOpen}
+            onToggleChat={() => setIsChatOpen(!isChatOpen)}
+            onNewUnreadMessage={handleNewUnreadMessage}
+            onClearUnreadMessages={handleClearUnreadMessages}
+            unreadChatCount={unreadChatCount}
+          />
+          <main className="flex-1 relative overflow-y-auto">
+            <div className="p-4 sm:p-6 lg:p-8 h-full">
+              {children}
+            </div>
             <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />
-          </div>
-          <Toaster />
-        </main>
+          </main>
+        </div>
+        <PomodoroWidget 
+          isMinimized={isPomodoroMinimized}
+          setIsMinimized={setIsPomodoroMinimized}
+          chatPanelWidth={chatPanelWidth}
+        />
+        <SimpleAudioPlayer />
+        <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
+        <Toaster />
       </div>
     </WidgetProvider>
   );
