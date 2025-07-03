@@ -25,6 +25,37 @@ export function useCurrentRoom() {
 
   const [isCurrentRoomWritable, setIsCurrentRoomWritable] = useState(true);
 
+  const setCurrentRoom = useCallback((id: string | null, name: string) => {
+    setCurrentRoomIdState(id);
+    setCurrentRoomNameState(name);
+    toast.info(`Switched to room: ${name}`);
+  }, []);
+
+  useEffect(() => {
+    // If the user is logged in but they are currently in the "guest" room (no ID),
+    // find their personal room and switch to it.
+    if (!authLoading && session && !currentRoomId && supabase) {
+      const findAndSetPersonalRoom = async () => {
+        const { data: personalRoom, error } = await supabase
+          .from('rooms')
+          .select('id, name')
+          .eq('creator_id', session.user.id)
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .single();
+
+        if (personalRoom) {
+          setCurrentRoom(personalRoom.id, personalRoom.name);
+        } else if (error && error.code !== 'PGRST116') {
+          console.error("Error fetching personal room:", error);
+          toast.error("Could not find your personal room.");
+        }
+      };
+
+      findAndSetPersonalRoom();
+    }
+  }, [authLoading, session, currentRoomId, supabase, setCurrentRoom]);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       if (currentRoomId) {
@@ -95,12 +126,6 @@ export function useCurrentRoom() {
     checkWriteAccess();
   }, [currentRoomId, session, supabase, authLoading]);
 
-
-  const setCurrentRoom = useCallback((id: string | null, name: string) => {
-    setCurrentRoomIdState(id);
-    setCurrentRoomNameState(name);
-    toast.info(`Switched to room: ${name}`);
-  }, []);
 
   return {
     currentRoomId,
