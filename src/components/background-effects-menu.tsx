@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Image as ImageIcon } from "lucide-react";
-// Removed Image from next/image as we're using standard <img> tag
 import { useBackground } from "@/context/background-provider";
 import { useEffects } from "@/context/effect-provider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,8 +20,8 @@ const animatedBackgrounds = [
   { videoUrl: "/ani1.mp4", thumbnailUrl: "/ani1.jpg" },
   { videoUrl: "/ani2.mp4", thumbnailUrl: "/ani2.jpg" },
   { videoUrl: "/ani3.mp4", thumbnailUrl: "/ani3.jpg" },
-  { videoUrl: "/ani4.mp4", thumbnailUrl: "/ani4.jpg" },
-  { videoUrl: "/ani5.mp4", thumbnailUrl: "/ani5.jpg" },
+  { videoUrl: "/ani4.mp4", thumbnailUrl: "/ani4.mp4" },
+  { videoUrl: "/ani5.mp4", thumbnailUrl: "/ani5.mp4" },
 ];
 
 export function BackgroundEffectsMenu() {
@@ -59,7 +58,6 @@ export function BackgroundEffectsMenu() {
                     }`}
                     onClick={() => handleBackgroundChange(imageUrl, false)}
                   >
-                    {/* Changed from next/image to standard <img> */}
                     <img
                       src={imageUrl}
                       alt={`Background ${imageUrl.split("/").pop()}`}
@@ -92,11 +90,14 @@ export function BackgroundEffectsMenu() {
                     }`}
                     onClick={() => handleBackgroundChange(videoUrl, true)}
                   >
-                    {/* Changed from next/image to standard <img> */}
-                    <img
-                      src={thumbnailUrl}
-                      alt={`Animated Background ${videoUrl.split("/").pop()}`}
+                    <video
+                      src={videoUrl}
                       className="absolute inset-0 w-full h-full object-cover"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      preload="auto"
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
                       <ImageIcon className="h-6 w-6" />
