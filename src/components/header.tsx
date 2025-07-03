@@ -49,7 +49,7 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => router.push('/')}
+          onClick={() => router.push('/dashboard')}
           title="Go to My Room"
         >
           <Home className="h-6 w-6" />
