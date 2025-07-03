@@ -17,6 +17,7 @@ import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { SimpleAudioPlayer } from "@/components/simple-audio-player";
 import { useEffects } from "@/context/effect-provider";
 import { ParticlesEffect } from "@/components/effects/particles-effect";
+import { StarfieldEffect } from "@/components/effects/starfield-effect"; // New import
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
@@ -81,6 +82,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea}>
       <div className="relative h-screen bg-transparent">
         {activeEffect === 'particles' && <ParticlesEffect />}
+        {activeEffect === 'starfield' && <StarfieldEffect />} {/* New conditional rendering */}
         <Header
           onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
           isChatOpen={isChatOpen}
@@ -107,7 +109,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
           chatPanelWidth={chatPanelWidth}
         />}
         {isDashboard && <SimpleAudioPlayer />}
-        <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
+        <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModal(false)} />
         <Toaster />
       </div>
     </WidgetProvider>

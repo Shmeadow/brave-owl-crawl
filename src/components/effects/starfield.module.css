@@ -1,0 +1,37 @@
+.starfieldContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+  background: transparent; /* Ensure background is transparent */
+}
+
+.star {
+  position: absolute;
+  background-color: white;
+  border-radius: 50%;
+  box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.8);
+  animation: twinkle 2s infinite alternate, moveStar 10s linear infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+@keyframes moveStar {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(calc(var(--star-dx) * 1px), calc(var(--star-dy) * 1px)); }
+}
+
+/* Randomize star movement */
+.star:nth-child(1) { --star-dx: 50; --star-dy: 30; }
+.star:nth-child(2) { --star-dx: -40; --star-dy: 60; }
+.star:nth-child(3) { --star-dx: 70; --star-dy: -20; }
+.star:nth-child(4) { --star-dx: -80; --star-dy: -50; }
+.star:nth-child(5) { --star-dx: 20; --star-dy: 90; }
+/* Add more for more stars, or use JS to set these */
