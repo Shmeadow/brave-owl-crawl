@@ -6,7 +6,7 @@ import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
 import { useWidget } from "@/components/widget/widget-context";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
-import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Wind, BookOpen, Goal, ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, Mountain, BookOpen, Goal, ChevronLeft, ChevronRight } from "lucide-react";
 
 const SIDEBAR_WIDTH = 60; // px
 const HOT_ZONE_WIDTH = 20; // px (includes the 4px visible strip)
@@ -81,7 +81,7 @@ export function Sidebar() {
     { id: "notes", label: "Notes", icon: NotebookPen },
     { id: "media", label: "Media", icon: Image },
     { id: "fortune", label: "Fortune", icon: Sparkles },
-    { id: "breathe", label: "Breathe", icon: Wind },
+    { id: "background-images", label: "Backgrounds", icon: Mountain },
     { id: "flash-cards", label: "Flash Cards", icon: BookOpen },
     { id: "goal-focus", label: "Goal Focus", icon: Goal },
   ];
@@ -127,4 +127,3 @@ export function Sidebar() {
       </div>
     </div>
   );
-}

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-type ActivePanel = 'spaces' | 'sounds' | 'calendar' | 'timer' | 'tasks' | 'notes' | 'media' | 'fortune' | 'breathe' | 'flash-cards' | 'goal-focus';
+type ActivePanel = 'spaces' | 'sounds' | 'calendar' | 'timer' | 'tasks' | 'notes' | 'media' | 'fortune' | 'background-images' | 'flash-cards' | 'goal-focus';
 
 interface SidebarContextType {
   activePanel: ActivePanel;
@@ -21,7 +21,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedPanel = localStorage.getItem('active_sidebar_panel');
-      if (savedPanel && ['spaces', 'sounds', 'calendar', 'timer', 'tasks', 'notes', 'media', 'fortune', 'breathe', 'flash-cards', 'goal-focus'].includes(savedPanel)) {
+      if (savedPanel && ['spaces', 'sounds', 'calendar', 'timer', 'tasks', 'notes', 'media', 'fortune', 'background-images', 'flash-cards', 'goal-focus'].includes(savedPanel)) {
         setActivePanel(savedPanel as ActivePanel);
       }
     }

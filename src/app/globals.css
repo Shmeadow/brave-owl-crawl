@@ -172,15 +172,6 @@
     --sidebar-border: 220 15% 35%;
     --sidebar-ring: 40 80% 60%;
   }
-
-  /* Set the background image for the entire site */
-  body {
-    background-image: url('/bgimage2.jpg');
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-  }
 }
 
 @layer base {
