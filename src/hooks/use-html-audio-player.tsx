@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface UseHtmlAudioPlayerResult {
-  audioRef: React.RefObject<HTMLAudioElement>;
+  audioRef: React.RefObject<HTMLAudioElement | null>;
   audioIsPlaying: boolean;
   audioVolume: number;
   audioIsMuted: boolean;
