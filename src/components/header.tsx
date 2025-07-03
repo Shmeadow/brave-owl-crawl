@@ -82,7 +82,7 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
             onToggleOpen={onToggleChat}
             onNewUnreadMessage={onNewUnreadMessage}
             onClearUnreadMessages={onClearUnreadMessages}
-            unreadCount={unreadCount}
+            unreadCount={unreadChatCount}
             currentRoomId={currentRoomId} // Pass currentRoomId
             isCurrentRoomWritable={isCurrentRoomWritable} // Pass isCurrentRoomWritable
           />
