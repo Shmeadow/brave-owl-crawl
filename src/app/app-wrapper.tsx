@@ -111,7 +111,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
           chatPanelWidth={chatPanelWidth}
         />}
         {isDashboard && <SimpleAudioPlayer />}
-        <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModal(false)} />
+        <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
         <Toaster />
       </div>
     </WidgetProvider>
