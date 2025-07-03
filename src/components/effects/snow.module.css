@@ -15,7 +15,7 @@
   background-color: rgba(255, 255, 255, 0.8);
   border-radius: 50%;
   box-shadow: 0 0 5px 1px rgba(255, 255, 255, 0.5); /* Added subtle glow */
-  animation: fall-and-sway linear infinite;
+  animation: fall-and-sway linear infinite; /* Changed to ease-in-out */
   transform: translateY(-100%);
   /* Custom properties for individual snowflake movement */
   --start-x-offset: 0px; /* Initial horizontal offset */

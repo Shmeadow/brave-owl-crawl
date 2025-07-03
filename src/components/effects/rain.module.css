@@ -12,7 +12,7 @@
 
 .drop {
   position: absolute;
-  background-color: rgba(173, 216, 230, 0.7); /* Light blue */
+  background-color: rgba(173, 216, 230, 0.6); /* Light blue with more transparency */
   border-radius: 50%;
   animation: fall linear infinite;
   transform: translateY(-100%);

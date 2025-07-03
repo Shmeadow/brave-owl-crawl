@@ -19,10 +19,8 @@
 }
 
 @keyframes twinkle {
-  0%, 100% { opacity: 0.1; } /* Start and end almost invisible */
-  25% { opacity: 0.7; }
-  50% { opacity: 1; }
-  75% { opacity: 0.5; }
+  0%, 100% { opacity: 0.4; } /* Start and end with some visibility */
+  50% { opacity: 1; } /* Peak brightness */
 }
 
 @keyframes moveCosmic {
