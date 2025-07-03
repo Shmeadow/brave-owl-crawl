@@ -10,22 +10,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
 const staticImages = [
-  "/bg1.jpg",
-  "/bg2.jpg",
-  "/bg3.jpg",
-  "/bg4.jpg",
-  "/bg5.jpg",
-  "/bg6.jpg", // New static image
-  "/bg7.jpg", // New static image
+  "/static/bg1.jpg",
+  "/static/bg2.jpg",
+  "/static/bg3.jpg",
+  "/static/bg4.jpg",
+  "/static/bg5.jpg",
+  "/static/bg6.jpg",
+  "/static/bg7.jpg",
 ];
 
 const animatedBackgrounds = [
-  { videoUrl: "/ani1.mp4", thumbnailUrl: "/ani1.jpg" },
-  { videoUrl: "/ani2.mp4", thumbnailUrl: "/ani2.jpg" },
-  { videoUrl: "/ani3.mp4", thumbnailUrl: "/ani3.jpg" },
-  { videoUrl: "/ani4.mp4", thumbnailUrl: "/ani4.mp4" },
-  { videoUrl: "/ani5.mp4", thumbnailUrl: "/ani5.mp4" },
-  { videoUrl: "/ani6.mp4", thumbnailUrl: "/ani6.mp4" }, // New animated background
+  { videoUrl: "/animated/ani1.mp4", thumbnailUrl: "/animated/ani1.jpg" },
+  { videoUrl: "/animated/ani2.mp4", thumbnailUrl: "/animated/ani2.jpg" },
+  { videoUrl: "/animated/ani3.mp4", thumbnailUrl: "/animated/ani3.jpg" },
+  { videoUrl: "/animated/ani4.mp4", thumbnailUrl: "/animated/ani4.mp4" },
+  { videoUrl: "/animated/ani5.mp4", thumbnailUrl: "/animated/ani5.mp4" },
+  { videoUrl: "/animated/ani6.mp4", thumbnailUrl: "/animated/ani6.mp4" },
 ];
 
 export function BackgroundEffectsMenu() {
