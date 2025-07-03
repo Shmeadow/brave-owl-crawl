@@ -26,15 +26,33 @@ interface UseYouTubePlayerResult {
 export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefObject<HTMLIFrameElement | null>): UseYouTubePlayerResult {
   const playerRef = useRef<any>(null); // YT.Player instance
   const timeUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const currentVideoIdRef = useRef<string | null>(null); // To track the video ID currently loaded in the player
+  const currentVideoIdRef = useRef<string | null>(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolumeState] = useState(50); // Default volume 0-100
+  const [volume, setVolumeState] = useState(50);
   const [isMuted, setIsMuted] = useState(false);
-  const prevVolumeRef = useRef(50); // To store volume before muting
+  const prevVolumeRef = useRef(50);
   const [playerReady, setPlayerReady] = useState(false);
   const [youtubeCurrentTime, setYoutubeCurrentTime] = useState(0);
   const [youtubeDuration, setYoutubeDuration] = useState(0);
+
+  // Use a ref to hold the latest state setters. This makes the callbacks below stable.
+  const stateSettersRef = useRef({
+    setIsPlaying,
+    setYoutubeCurrentTime,
+    setYoutubeDuration,
+    setPlayerReady,
+    setIsMuted,
+  });
+  useEffect(() => {
+    stateSettersRef.current = {
+      setIsPlaying,
+      setYoutubeCurrentTime,
+      setYoutubeDuration,
+      setPlayerReady,
+      setIsMuted,
+    };
+  });
 
   const clearTimeUpdateInterval = useCallback(() => {
     if (timeUpdateIntervalRef.current) {
@@ -43,24 +61,26 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
     }
   }, []);
 
+  // These callbacks are passed to the YouTube player. They are now stable because their
+  // dependencies are empty, and they access state setters through a ref.
   const onPlayerReady = useCallback((event: any) => {
     console.log("YouTube Player Ready:", event.target);
-    setPlayerReady(true);
+    stateSettersRef.current.setPlayerReady(true);
+    // We can read `volume` state here because it's only needed for the initial setup of the player instance.
     event.target.setVolume(volume);
-    setIsMuted(event.target.isMuted());
-    setYoutubeDuration(event.target.getDuration());
-    setYoutubeCurrentTime(event.target.getCurrentTime());
+    stateSettersRef.current.setIsMuted(event.target.isMuted());
+    stateSettersRef.current.setYoutubeDuration(event.target.getDuration());
+    stateSettersRef.current.setYoutubeCurrentTime(event.target.getCurrentTime());
     
-    // Try to play immediately, catching potential autoplay errors
     event.target.playVideo()?.catch((error: any) => {
       console.warn("Autoplay was prevented:", error);
-      setIsPlaying(false);
+      stateSettersRef.current.setIsPlaying(false);
     });
 
     clearTimeUpdateInterval();
     timeUpdateIntervalRef.current = setInterval(() => {
       if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
-        setYoutubeCurrentTime(playerRef.current.getCurrentTime());
+        stateSettersRef.current.setYoutubeCurrentTime(playerRef.current.getCurrentTime());
       }
     }, 1000);
   }, [volume, clearTimeUpdateInterval]);
@@ -68,19 +88,19 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
   const onPlayerStateChange = useCallback((event: any) => {
     if (window.YT) {
       const isNowPlaying = event.data === window.YT.PlayerState.PLAYING;
-      setIsPlaying(isNowPlaying);
+      stateSettersRef.current.setIsPlaying(isNowPlaying);
 
       if (isNowPlaying) {
         clearTimeUpdateInterval();
         timeUpdateIntervalRef.current = setInterval(() => {
           if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
-            setYoutubeCurrentTime(playerRef.current.getCurrentTime());
+            stateSettersRef.current.setYoutubeCurrentTime(playerRef.current.getCurrentTime());
           }
         }, 1000);
       } else {
         clearTimeUpdateInterval();
         if (event.data === window.YT.PlayerState.ENDED) {
-          setYoutubeCurrentTime(0);
+          stateSettersRef.current.setYoutubeCurrentTime(0);
         }
       }
     }
@@ -91,7 +111,7 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
     if (typeof window !== 'undefined' && !window.YT && !document.getElementById('youtube-iframe-api-script')) {
       const tag = document.createElement('script');
       tag.src = "https://www.youtube.com/iframe_api";
-      tag.id = "youtube-iframe-api-script"; // Add an ID to prevent multiple loads
+      tag.id = "youtube-iframe-api-script";
       const firstScriptTag = document.getElementsByTagName('script')[0];
       firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
     }
@@ -99,7 +119,7 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
 
   // Effect to manage player instance based on embedUrl and iframeRef
   useEffect(() => {
-    const iframeElement = iframeRef.current; // Capture the ref's current value
+    const iframeElement = iframeRef.current;
     const newVideoIdMatch = embedUrl?.match(/\/embed\/([\w-]+)/);
     const newVideoId = newVideoIdMatch ? newVideoIdMatch[1] : null;
 
