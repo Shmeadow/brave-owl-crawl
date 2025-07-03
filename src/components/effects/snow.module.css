@@ -1,0 +1,39 @@
+.snowContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+  background: transparent;
+}
+
+.snowflake {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: fall-and-sway linear infinite;
+  transform: translateY(-100%);
+}
+
+@keyframes fall-and-sway {
+  0% {
+    transform: translate(0, -100vh);
+  }
+  50% {
+    transform: translate(calc(var(--sway-x, 0) * 1px), 0vh);
+  }
+  100% {
+    transform: translate(0, 100vh);
+  }
+}
+
+/* Randomize sway for snowflakes */
+.snowflake:nth-child(1) { --sway-x: 20; }
+.snowflake:nth-child(2) { --sway-x: -15; }
+.snowflake:nth-child(3) { --sway-x: 30; }
+.snowflake:nth-child(4) { --sway-x: -25; }
+.snowflake:nth-child(5) { --sway-x: 10; }
+/* Add more for more snowflakes, or use JS to set these */

@@ -1,0 +1,37 @@
+"use client";
+
+import React, { useEffect, useRef } from 'react';
+import styles from './snow.module.css';
+
+export function SnowEffect() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const numSnowflakes = 100;
+    const snowflakes: HTMLDivElement[] = [];
+
+    for (let i = 0; i < numSnowflakes; i++) {
+      const snowflake = document.createElement('div');
+      snowflake.className = styles.snowflake;
+      snowflake.style.left = `${Math.random() * 100}%`;
+      snowflake.style.animationDelay = `${Math.random() * 10}s`;
+      snowflake.style.animationDuration = `${10 + Math.random() * 10}s`;
+      snowflake.style.width = `${2 + Math.random() * 3}px`;
+      snowflake.style.height = snowflake.style.width;
+      snowflake.style.opacity = `${0.5 + Math.random() * 0.5}`;
+      container.appendChild(snowflake);
+      snowflakes.push(snowflake);
+    }
+
+    return () => {
+      snowflakes.forEach(snowflake => snowflake.remove());
+    };
+  }, []);
+
+  return (
+    <div ref={containerRef} className={styles.snowContainer}></div>
+  );
+}

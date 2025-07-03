@@ -41,10 +41,10 @@ export function BackgroundEffectsMenu() {
       <h3 className="text-lg font-semibold mb-4">Background Effects</h3>
 
       <Tabs defaultValue="static-images" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 h-auto"> {/* Changed to 3 columns */}
+        <TabsList className="grid w-full grid-cols-3 h-auto">
           <TabsTrigger value="static-images">Static</TabsTrigger>
           <TabsTrigger value="animated-backgrounds">Animated</TabsTrigger>
-          <TabsTrigger value="visual-effects">Effects</TabsTrigger> {/* Moved Effects tab */}
+          <TabsTrigger value="visual-effects">Effects</TabsTrigger>
         </TabsList>
 
         <TabsContent value="static-images" className="mt-4">
@@ -127,16 +127,22 @@ export function BackgroundEffectsMenu() {
               No Effect
             </Button>
             <Button
-              variant={activeEffect === 'particles' ? 'default' : 'outline'}
-              onClick={() => setEffect('particles')}
+              variant={activeEffect === 'rain' ? 'default' : 'outline'}
+              onClick={() => setEffect('rain')}
             >
-              Particles Effect
+              Rain Effect
             </Button>
             <Button
-              variant={activeEffect === 'starfield' ? 'default' : 'outline'}
-              onClick={() => setEffect('starfield')}
+              variant={activeEffect === 'snow' ? 'default' : 'outline'}
+              onClick={() => setEffect('snow')}
             >
-              Starfield Effect
+              Snow Effect
+            </Button>
+            <Button
+              variant={activeEffect === 'cosmic' ? 'default' : 'outline'}
+              onClick={() => setEffect('cosmic')}
+            >
+              Cosmic Effect
             </Button>
           </div>
         </TabsContent>
