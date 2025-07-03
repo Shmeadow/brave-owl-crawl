@@ -145,32 +145,33 @@
 
   /* New Cozy Theme */
   [data-theme="cozy"] {
-    /* Removed background-image from here to use the body's background */
-    --background: 240 50% 10% / 0.2; /* Increased transparency */
-    --foreground: 0 0% 90%; /* Light text */
-    --card: 220 20% 20% / 0.3; /* Increased transparency */
-    --popover: 220 20% 20% / 0.3; /* Increased transparency */
-    --primary: 40 80% 60%; /* Warm orange/gold from lights */
-    --primary-foreground: 240 50% 10%; /* Dark text on primary */
-    --secondary: 160 30% 25%; /* Deep teal/green from foliage */
-    --secondary-foreground: 0 0% 90%;
-    --muted: 220 15% 30% / 0.4; /* Increased transparency */
-    --muted-foreground: 0 0% 70%; /* Muted light gray */
-    --accent: 280 60% 40%; /* Muted purple/pink from clouds/reflections */
-    --accent-foreground: 0 0% 90%;
+    --background: 60 10% 15% / 0.2;
+    --foreground: 43 88% 91%; /* FCECD2 */
+    --card: 60 10% 20% / 0.3;
+    --card-foreground: 43 88% 91%;
+    --popover: 60 10% 20% / 0.3;
+    --popover-foreground: 43 88% 91%;
+    --primary: 27 58% 67%; /* D8A57E */
+    --primary-foreground: 60 10% 15%;
+    --secondary: 75 15% 40%; /* Darker CFD4B4 */
+    --secondary-foreground: 43 88% 91%;
+    --muted: 58 10% 35% / 0.4; /* Darker ADAC91 */
+    --muted-foreground: 58 11% 62%; /* ADAC91 */
+    --accent: 65 43% 88%; /* EAEBCB */
+    --accent-foreground: 60 10% 15%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 15% 35%;
-    --input: 220 15% 35% / 0.5; /* Added transparency */
-    --ring: 40 80% 60%;
-    --sidebar-background: 220 25% 15% / 0.2; /* Adjusted transparency to 0.2 */
-    --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 40 80% 60%;
-    --sidebar-primary-foreground: 240 50% 10%;
-    --sidebar-accent: 280 60% 40%;
-    --sidebar-accent-foreground: 0 0% 90%;
-    --sidebar-border: 220 15% 35%;
-    --sidebar-ring: 40 80% 60%;
+    --border: 58 10% 40%; /* Darker ADAC91 */
+    --input: 58 10% 40% / 0.5;
+    --ring: 27 58% 67%; /* D8A57E */
+    --sidebar-background: 60 10% 18% / 0.2;
+    --sidebar-foreground: 43 88% 91%;
+    --sidebar-primary: 27 58% 67%;
+    --sidebar-primary-foreground: 60 10% 15%;
+    --sidebar-accent: 65 43% 88%;
+    --sidebar-accent-foreground: 60 10% 15%;
+    --sidebar-border: 58 10% 40%;
+    --sidebar-ring: 27 58% 67%;
   }
 }
 
