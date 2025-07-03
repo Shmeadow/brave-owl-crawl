@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useSidebar } from "@/components/sidebar/sidebar-context";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
@@ -20,6 +21,7 @@ const HEADER_HEIGHT = 64; // px
 
 export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
   const { loading } = useSupabase();
+  const pathname = usePathname();
   const { isSidebarOpen } = useSidebar();
   const { isAlwaysOpen, mounted } = useSidebarPreference();
   const { isCurrentRoomWritable } = useCurrentRoom();
@@ -34,6 +36,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const [isPomodoroMinimized, setIsPomodoroMinimized] = useState(false);
 
   const chatPanelWidth = isChatOpen ? 320 : 56;
+  const isDashboard = pathname === '/dashboard';
 
   const handleNewUnreadMessage = () => {
     setUnreadChatCount((prev) => prev + 1);
@@ -73,11 +76,11 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
 
   return (
     <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea}>
-      <div className="flex h-screen bg-background">
+      <div className="relative h-screen bg-background">
         <Sidebar />
-        <div 
-          className="flex flex-col flex-1 w-full overflow-hidden transition-all duration-300 ease-in-out"
-          style={{ marginLeft: `${sidebarCurrentWidth}px` }}
+        <div
+          className="absolute top-0 right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out"
+          style={{ left: `${sidebarCurrentWidth}px` }}
         >
           <Header
             onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
@@ -91,15 +94,15 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             <div className="p-4 sm:p-6 lg:p-8 h-full">
               {children}
             </div>
-            <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />
+            {isDashboard && <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />}
           </main>
         </div>
-        <PomodoroWidget 
+        {isDashboard && <PomodoroWidget 
           isMinimized={isPomodoroMinimized}
           setIsMinimized={setIsPomodoroMinimized}
           chatPanelWidth={chatPanelWidth}
-        />
-        <SimpleAudioPlayer />
+        />}
+        {isDashboard && <SimpleAudioPlayer />}
         <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
         <Toaster />
       </div>

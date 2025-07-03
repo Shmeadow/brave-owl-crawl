@@ -32,7 +32,7 @@ export function UserNav() {
         console.error("Error signing out:", error);
       } else {
         toast.success("Signed out successfully!");
-        router.push('/account');
+        router.push('/login');
       }
     }
   };
@@ -95,7 +95,7 @@ export function UserNav() {
           </DropdownMenuItem>
         )}
         {!session && (
-          <DropdownMenuItem onClick={() => router.push('/account')}>
+          <DropdownMenuItem onClick={() => router.push('/login')}>
             Log in
           </DropdownMenuItem>
         )}

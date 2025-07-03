@@ -32,9 +32,11 @@ export function useCurrentRoom() {
   }, []);
 
   useEffect(() => {
+    if (authLoading) return;
+
     // If the user is logged in but they are currently in the "guest" room (no ID),
     // find their personal room and switch to it.
-    if (!authLoading && session && !currentRoomId && supabase) {
+    if (session && !currentRoomId && supabase) {
       const findAndSetPersonalRoom = async () => {
         const { data: personalRoom, error } = await supabase
           .from('rooms')
@@ -53,6 +55,9 @@ export function useCurrentRoom() {
       };
 
       findAndSetPersonalRoom();
+    } else if (!session && !currentRoomId) {
+      // This is a new guest session. Set their default room.
+      setCurrentRoom(null, "My Room");
     }
   }, [authLoading, session, currentRoomId, supabase, setCurrentRoom]);
 
