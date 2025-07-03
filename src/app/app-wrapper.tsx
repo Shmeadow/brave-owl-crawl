@@ -77,19 +77,19 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   return (
     <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea}>
       <div className="relative h-screen bg-background">
+        <Header
+          onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
+          isChatOpen={isChatOpen}
+          onToggleChat={() => setIsChatOpen(!isChatOpen)}
+          onNewUnreadMessage={handleNewUnreadMessage}
+          onClearUnreadMessages={handleClearUnreadMessages}
+          unreadChatCount={unreadChatCount}
+        />
         <Sidebar />
         <div
-          className="absolute top-0 right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out"
+          className="absolute top-16 right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out"
           style={{ left: `${sidebarCurrentWidth}px` }}
         >
-          <Header
-            onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
-            isChatOpen={isChatOpen}
-            onToggleChat={() => setIsChatOpen(!isChatOpen)}
-            onNewUnreadMessage={handleNewUnreadMessage}
-            onClearUnreadMessages={handleClearUnreadMessages}
-            unreadChatCount={unreadChatCount}
-          />
           <main className="flex-1 relative overflow-y-auto">
             <div className="p-4 sm:p-6 lg:p-8 h-full">
               {children}
