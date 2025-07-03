@@ -73,23 +73,6 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth }: 
           Pomodoro
         </CardTitle>
         <div className="flex gap-1">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7" title="Pomodoro Settings" disabled={!isCurrentRoomWritable}>
-                <Settings className="h-4 w-4" />
-                <span className="sr-only">Pomodoro Settings</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] z-[1001]">
-              <DialogHeader>
-                <DialogTitle>Pomodoro Settings</DialogTitle>
-              </DialogHeader>
-              <PomodoroSettingsModal
-                initialTimes={customTimes}
-                onSave={setCustomTime}
-              />
-            </DialogContent>
-          </Dialog>
           <Button
             variant="ghost"
             size="icon"

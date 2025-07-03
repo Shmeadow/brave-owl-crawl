@@ -43,7 +43,7 @@ interface SupabasePomodoroSettings {
 }
 
 const DEFAULT_TIMES = {
-  'focus': 25 * 60, // 25 minutes
+  'focus': 30 * 60, // 30 minutes
   'short-break': 5 * 60, // 5 minutes
   'long-break': 15 * 60, // 15 minutes
 };

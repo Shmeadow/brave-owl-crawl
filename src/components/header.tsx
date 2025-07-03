@@ -33,9 +33,9 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
   const displayName = profile?.first_name || profile?.last_name || session?.user?.email?.split('@')[0] || "Guest";
 
   return (
-    <header className="sticky top-0 z-[1002] w-full border-b bg-background backdrop-blur-xl flex items-center h-16 px-4 md:px-6">
+    <header className="sticky top-0 z-[1002] w-full border-b bg-background backdrop-blur-xl flex items-center h-16">
       {/* Left Section: Search Input, Home Button, and Title */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 pl-4">
         {/* Search Input */}
         <div className="relative flex-grow max-w-xs sm:max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -61,7 +61,7 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
       </div>
 
       {/* Right Section: Clock, Progress Bar, and Actions */}
-      <div className="flex items-center gap-4 ml-auto">
+      <div className="flex items-center gap-4 ml-auto pr-4">
         {/* Clock and Progress */}
         <ClockDisplay /> {/* No dailyProgress prop needed */}
 
