@@ -24,11 +24,13 @@ const staticImages = [
 ];
 
 const animatedBackgrounds = [
+  { videoUrl: "/animated/ani1.mp4", thumbnailUrl: "/animated/ani1.jpg" }, // Added new animated background
   { videoUrl: "/animated/ani2.mp4", thumbnailUrl: "/animated/ani2.jpg" },
   { videoUrl: "/animated/ani3.mp4", thumbnailUrl: "/animated/ani3.jpg" },
   { videoUrl: "/animated/ani4.mp4", thumbnailUrl: "/animated/ani4.mp4" },
   { videoUrl: "/animated/ani5.mp4", thumbnailUrl: "/animated/ani5.mp4" },
   { videoUrl: "/animated/ani6.mp4", thumbnailUrl: "/animated/ani6.mp4" },
+  { videoUrl: "/animated/ani7.mp4", thumbnailUrl: "/animated/ani7.jpg" }, // Added new animated background
 ];
 
 export function BackgroundEffectsMenu() {
