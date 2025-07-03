@@ -17,6 +17,11 @@ const staticImages = [
   "/static/bg5.jpg",
   "/static/bg6.jpg",
   "/static/bg7.jpg",
+  "/static/bg8.jpg",
+  "/static/bg9.jpg",
+  "/static/bg10.jpg",
+  "/static/bg11.jpg",
+  "/static/bg12.jpg",
 ];
 
 const animatedBackgrounds = [
