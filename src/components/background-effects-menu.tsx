@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Image as ImageIcon } from "lucide-react";
-import Image from "next/image"; // Ensure Image is imported
+// Removed Image from next/image as we're using standard <img> tag
 import { useBackground } from "@/context/background-provider";
 import { useEffects } from "@/context/effect-provider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -59,11 +59,11 @@ export function BackgroundEffectsMenu() {
                     }`}
                     onClick={() => handleBackgroundChange(imageUrl, false)}
                   >
-                    <Image
+                    {/* Changed from next/image to standard <img> */}
+                    <img
                       src={imageUrl}
                       alt={`Background ${imageUrl.split("/").pop()}`}
-                      fill
-                      className="object-cover"
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                     {isActive && (
                       <div className="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 text-white text-sm font-bold">
@@ -92,11 +92,11 @@ export function BackgroundEffectsMenu() {
                     }`}
                     onClick={() => handleBackgroundChange(videoUrl, true)}
                   >
-                    <Image
+                    {/* Changed from next/image to standard <img> */}
+                    <img
                       src={thumbnailUrl}
                       alt={`Animated Background ${videoUrl.split("/").pop()}`}
-                      fill
-                      className="object-cover"
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
                       <ImageIcon className="h-6 w-6" />
