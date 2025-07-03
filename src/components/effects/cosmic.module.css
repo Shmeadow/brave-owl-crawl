@@ -15,66 +15,18 @@
   background-color: white;
   border-radius: 50%;
   box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.8);
-  animation: twinkle 3s infinite alternate, moveCosmic 30s linear infinite; /* Adjusted animation */
+  animation: twinkle 3s infinite alternate, moveCosmic 30s linear infinite;
 }
 
 @keyframes twinkle {
-  0%, 100% { opacity: 0.4; } /* Start and end with some visibility */
-  50% { opacity: 1; } /* Peak brightness */
+  0%, 100% { opacity: 0.3; } /* Subtle base opacity */
+  20% { opacity: 0.7; }
+  40% { opacity: 0.4; }
+  60% { opacity: 0.9; }
+  80% { opacity: 0.5; }
 }
 
 @keyframes moveCosmic {
   0% { transform: translate(0, 0); }
-  100% { transform: translate(calc(var(--star-dx, 0) * 1px), calc(var(--star-dy, 0) * 1px)); }
-}
-
-/* Randomize star movement (more subtle for cosmic feel) */
-.star:nth-child(1) { --star-dx: 10; --star-dy: 5; }
-.star:nth-child(2) { --star-dx: -8; --star-dy: 12; }
-.star:nth-child(3) { --star-dx: 15; --star-dy: -7; }
-.star:nth-child(4) { --star-dx: -12; --star-dy: -10; }
-.star:nth-child(5) { --star-dx: 5; --star-dy: 18; }
-/* Add more for more stars, or use JS to set these */
-
-/* Nebula styles */
-.nebula1, .nebula2, .nebula3 {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(50px); /* Soft blur for nebula effect */
-  opacity: 0.15; /* Subtle opacity */
-  animation: nebulaPulse 20s infinite alternate ease-in-out;
-  pointer-events: none;
-}
-
-.nebula1 {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle at 30% 40%, #ff00ff, transparent 70%); /* Magenta */
-  top: 10%;
-  left: 15%;
-  animation-delay: 0s;
-}
-
-.nebula2 {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle at 70% 60%, #00ffff, transparent 70%); /* Cyan */
-  top: 40%;
-  left: 60%;
-  animation-delay: 7s;
-}
-
-.nebula3 {
-  width: 350px;
-  height: 350px;
-  background: radial-gradient(circle at 50% 50%, #ffff00, transparent 70%); /* Yellow */
-  top: 70%;
-  left: 30%;
-  animation-delay: 14s;
-}
-
-@keyframes nebulaPulse {
-  0% { transform: scale(1); opacity: 0.15; }
-  50% { transform: scale(1.1); opacity: 0.25; }
-  100% { transform: scale(1); opacity: 0.15; }
+  100% { transform: translate(var(--star-dx), var(--star-dy)); }
 }

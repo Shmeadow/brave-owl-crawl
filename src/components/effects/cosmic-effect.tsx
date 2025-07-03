@@ -10,7 +10,7 @@ export function CosmicEffect() {
     const container = containerRef.current;
     if (!container) return;
 
-    const numStars = 200; // Increased stars for denser feel
+    const numStars = 800; // Increased stars for denser feel
     const stars: HTMLDivElement[] = [];
 
     for (let i = 0; i < numStars; i++) {
@@ -23,6 +23,11 @@ export function CosmicEffect() {
       star.style.width = `${0.5 + Math.random() * 3}px`; // Wider range of sizes
       star.style.height = star.style.width;
       star.style.opacity = `${0.2 + Math.random() * 0.8}`; // Varying opacity
+
+      // Set random drift for each star
+      star.style.setProperty('--star-dx', `${(Math.random() - 0.5) * 200}px`);
+      star.style.setProperty('--star-dy', `${(Math.random() - 0.5) * 200}px`);
+
       container.appendChild(star);
       stars.push(star);
     }
@@ -34,10 +39,7 @@ export function CosmicEffect() {
 
   return (
     <div ref={containerRef} className={styles.cosmicContainer}>
-      {/* Nebula-like background elements */}
-      <div className={styles.nebula1}></div>
-      <div className={styles.nebula2}></div>
-      <div className={styles.nebula3}></div>
+      {/* Nebula elements removed as per request */}
     </div>
   );
 }

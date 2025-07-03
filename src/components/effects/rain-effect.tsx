@@ -10,18 +10,18 @@ export function RainEffect() {
     const container = containerRef.current;
     if (!container) return;
 
-    const numDrops = 200; // Increased number of drops
+    const numDrops = 300; // Increased number of drops for denser rain
     const drops: HTMLDivElement[] = [];
 
     for (let i = 0; i < numDrops; i++) {
       const drop = document.createElement('div');
       drop.className = styles.drop;
       drop.style.left = `${Math.random() * 100}%`;
-      drop.style.animationDelay = `${Math.random() * 2}s`; // Shorter delay range for more constant rain
-      drop.style.animationDuration = `${0.5 + Math.random() * 0.7}s`; // Faster fall
+      drop.style.animationDelay = `${Math.random() * 3}s`; // Slightly longer delay range for more natural start
+      drop.style.animationDuration = `${0.8 + Math.random() * 1.2}s`; // Varied fall speed
       drop.style.width = `${1 + Math.random() * 1.5}px`; // Slightly wider drops
       drop.style.height = `${25 + Math.random() * 25}px`; // Longer drops
-      drop.style.opacity = `${0.3 + Math.random() * 0.5}`; // More opaque
+      drop.style.opacity = `${0.4 + Math.random() * 0.4}`; // More opaque, less transparent
       container.appendChild(drop);
       drops.push(drop);
     }
