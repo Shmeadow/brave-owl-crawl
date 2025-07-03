@@ -47,15 +47,15 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
     console.log("YouTube Player Ready:", event.target);
     setPlayerReady(true);
     event.target.setVolume(volume);
-    setIsPlaying(event.target.getPlayerState() === window.YT.PlayerState.PLAYING);
     setIsMuted(event.target.isMuted());
     setYoutubeDuration(event.target.getDuration());
     setYoutubeCurrentTime(event.target.getCurrentTime());
     
-    // Try to play immediately if not already playing (might be blocked by browser)
-    if (event.target.getPlayerState() !== window.YT.PlayerState.PLAYING) {
-      event.target.playVideo(); // Removed .catch()
-    }
+    // Try to play immediately, catching potential autoplay errors
+    event.target.playVideo()?.catch((error: any) => {
+      console.warn("Autoplay was prevented:", error);
+      setIsPlaying(false);
+    });
 
     clearTimeUpdateInterval();
     timeUpdateIntervalRef.current = setInterval(() => {
@@ -67,8 +67,10 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
 
   const onPlayerStateChange = useCallback((event: any) => {
     if (window.YT) {
-      setIsPlaying(event.data === window.YT.PlayerState.PLAYING);
-      if (event.data === window.YT.PlayerState.PLAYING) {
+      const isNowPlaying = event.data === window.YT.PlayerState.PLAYING;
+      setIsPlaying(isNowPlaying);
+
+      if (isNowPlaying) {
         clearTimeUpdateInterval();
         timeUpdateIntervalRef.current = setInterval(() => {
           if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
@@ -103,30 +105,16 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
 
     const createOrUpdatePlayer = () => {
       if (!newVideoId || !iframeElement || !window.YT || !window.YT.Player) {
-        console.log("YouTube API or iframe not ready for player creation/update.");
         return;
       }
 
       if (playerRef.current) {
-        // Player exists
-        if (currentVideoIdRef.current === newVideoId) {
-          // Same video, just ensure state is correct (e.g., if it was paused externally)
-          console.log("YouTube player exists, same video. Ensuring state.");
-          if (playerRef.current.getPlayerState() !== window.YT.PlayerState.PLAYING) {
-            playerRef.current.playVideo(); // Removed .catch()
-          }
-        } else {
-          // Different video, load new video
+        if (currentVideoIdRef.current !== newVideoId) {
           console.log("YouTube player exists, loading new video:", newVideoId);
-          playerRef.current.loadVideoById(newVideoId); // Removed .catch()
-          playerRef.current.setVolume(volume);
-          playerRef.current.unMute();
-          setIsMuted(false);
-          setIsPlaying(true); // Assume play on load
+          playerRef.current.loadVideoById(newVideoId);
           currentVideoIdRef.current = newVideoId;
         }
       } else {
-        // Create new player
         console.log("Creating new YouTube player for video:", newVideoId);
         playerRef.current = new window.YT.Player(iframeElement, {
           videoId: newVideoId,
@@ -156,13 +144,9 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
       if (window.YT && window.YT.Player) {
         createOrUpdatePlayer();
       } else {
-        // If API not ready, set a global callback.
-        // This is crucial for when the script loads *after* the component mounts.
         window.onYouTubeIframeAPIReady = createOrUpdatePlayer;
       }
     } else {
-      // If no valid embedUrl or iframeRef.current is null, destroy player
-      console.log("No valid embedUrl or iframeRef.current is null. Destroying player.");
       if (playerRef.current) {
         playerRef.current.destroy();
         playerRef.current = null;
@@ -175,30 +159,12 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
       currentVideoIdRef.current = null;
     }
 
-    // Cleanup function for this effect (component unmounts or embedUrl changes to non-YouTube)
     return () => {
-      // Only destroy if switching away from YouTube or component unmounts
-      // If newVideoId is null, it means we are switching away from YouTube or unmounting
-      // If newVideoId is not null, but playerRef.current is null, it means the iframe itself was unmounted
-      if (!newVideoId || !iframeElement) { 
-        if (playerRef.current) {
-          console.log("YouTube Player Cleanup: Destroying player.");
-          playerRef.current.destroy();
-          playerRef.current = null;
-          setPlayerReady(false);
-          setIsPlaying(false);
-          setYoutubeCurrentTime(0);
-          setYoutubeDuration(0);
-          clearTimeUpdateInterval();
-          currentVideoIdRef.current = null;
-        }
-      }
-      // Remove global callback if it was set by this instance
       if (typeof window !== 'undefined' && window.onYouTubeIframeAPIReady === createOrUpdatePlayer) {
         delete window.onYouTubeIframeAPIReady;
       }
     };
-  }, [embedUrl, iframeRef, volume, onPlayerReady, onPlayerStateChange, clearTimeUpdateInterval]);
+  }, [embedUrl, iframeRef, onPlayerReady, onPlayerStateChange, clearTimeUpdateInterval]);
 
 
   const togglePlayPause = useCallback(() => {
@@ -206,7 +172,7 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
       if (isPlaying) {
         playerRef.current.pauseVideo();
       } else {
-        playerRef.current.playVideo(); // Removed .catch()
+        playerRef.current.playVideo()?.catch((error: any) => console.warn("Play command failed:", error));
       }
     }
   }, [isPlaying, playerReady]);
