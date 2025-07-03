@@ -42,7 +42,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
         console.log("SessionContextProvider: Supabase client created successfully.");
       }
     }
-  }, []); // Empty dependency array ensures this runs only once on mount
+  }, [supabaseClient]); // Add supabaseClient as a dependency
 
   const fetchProfile = useCallback(async (userId: string, client: SupabaseClient) => {
     const { data, error } = await client
@@ -114,7 +114,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
       console.log("Cleaning up Supabase auth state listener.");
       subscription.unsubscribe();
     };
-  }, [supabaseClient, fetchProfile]);
+  }, [supabaseClient, fetchProfile, loading]);
 
   return (
     <SupabaseContext.Provider value={{ supabase: supabaseClient, session, profile, loading, refreshProfile }}>

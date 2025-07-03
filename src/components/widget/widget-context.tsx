@@ -385,7 +385,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       });
       return recalculatePinnedWidgets(updatedWidgets);
     });
-  }, [initialWidgetConfigs, recalculatePinnedWidgets, mainContentArea]);
+  }, [initialWidgetConfigs, recalculatePinnedWidgets]);
 
   const closeWidget = useCallback((id: string) => {
     removeWidget(id);
