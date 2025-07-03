@@ -131,7 +131,7 @@ export function Widget({
         minConstraints={[200, 150]}
         maxConstraints={[mainContentArea.width, mainContentArea.height]} // Use mainContentArea for maxConstraints
         className="w-full h-full" // ResizableBox should fill its parent div
-        handles={isResizable ? ["se"] : []} // Only show SE handle if resizable
+        resizeHandles={isResizable ? ["se"] : []} // Only show SE handle if resizable
       >
         <Card className="w-full h-full flex flex-col overflow-hidden"> {/* Card fills ResizableBox */}
           <CardHeader

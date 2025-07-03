@@ -9,7 +9,7 @@ import { SpotifyTrack } from '@/hooks/use-spotify-player';
 interface PlayerDisplayProps {
   playerType: 'audio' | 'youtube' | 'spotify' | null;
   inputUrl: string;
-  audioRef: React.RefObject<HTMLAudioElement>;
+  audioRef: React.RefObject<HTMLAudioElement | null>;
   youtubeIframeRef: React.RefObject<HTMLIFrameElement | null>;
   spotifyCurrentTrack: SpotifyTrack | null;
   onLoadedMetadata: () => void;
