@@ -102,8 +102,8 @@ export function BackgroundEffectsMenu() {
                     <Image
                       src={imageUrl}
                       alt={`Background ${imageUrl.split("/").pop()}`}
-                      layout="fill"
-                      className="object-cover" // Added object-cover
+                      fill // Changed from layout="fill"
+                      className="object-cover"
                     />
                     {isActive && (
                       <div className="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 text-white text-sm font-bold">
@@ -136,8 +136,8 @@ export function BackgroundEffectsMenu() {
                     <Image
                       src={thumbnailUrl}
                       alt={`Animated Background ${videoUrl.split("/").pop()}`}
-                      layout="fill"
-                      className="object-cover" // Added object-cover
+                      fill // Changed from layout="fill"
+                      className="object-cover"
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
                       <ImageIcon className="h-6 w-6" />
