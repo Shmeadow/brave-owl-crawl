@@ -1,10 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Home, Bell, Search, Settings, Image as ImageIcon } from "lucide-react";
-import { useTheme } from "next-themes";
+import { Home, Bell, Search, Settings, WandSparkles } from "lucide-react";
 import { ChatPanel } from "@/components/chat-panel";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
@@ -12,11 +10,15 @@ import { Input } from "@/components/ui/input";
 import { UserNav } from "@/components/user-nav";
 import { UpgradeButton } from "@/components/upgrade-button";
 import { useCurrentRoom } from "@/hooks/use-current-room";
-import { toast } from "sonner";
 import { ClockDisplay } from "@/components/clock-display";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BackgroundBlurSlider } from "@/components/background-blur-slider";
-import { useWidget } from "@/components/widget/widget-context";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { BackgroundEffectsMenu } from "@/components/background-effects-menu";
 
 interface HeaderProps {
   onOpenUpgradeModal: () => void;
@@ -31,9 +33,6 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
   const { session, profile } = useSupabase();
   const router = useRouter();
   const { currentRoomName, currentRoomId, isCurrentRoomWritable } = useCurrentRoom();
-  const { toggleWidget } = useWidget();
-
-  const displayName = profile?.first_name || profile?.last_name || session?.user?.email?.split('@')[0] || "Guest";
 
   return (
     <header className="sticky top-0 z-[1002] w-full border-b bg-background/80 backdrop-blur-md flex items-center h-16">
@@ -70,10 +69,17 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
 
         <BackgroundBlurSlider />
 
-        <Button variant="ghost" size="icon" onClick={() => toggleWidget('background-effects', 'Backgrounds & Effects')} title="Change Background">
-          <ImageIcon className="h-6 w-6" />
-          <span className="sr-only">Change Background</span>
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" title="Change Background & Effects">
+              <WandSparkles className="h-6 w-6" />
+              <span className="sr-only">Change Background & Effects</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-80 z-[1003] p-4" align="end">
+            <BackgroundEffectsMenu />
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Other action buttons */}
         <UpgradeButton onOpenUpgradeModal={onOpenUpgradeModal} />
