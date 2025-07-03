@@ -7,6 +7,7 @@ import { Minimize, Maximize, Pin, PinOff, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDraggable } from "@dnd-kit/core";
 import { ResizableBox } from "@/components/resizable-box";
+import type { ResizeCallbackData } from 'react-resizable';
 
 interface WidgetProps {
   id: string;
@@ -122,10 +123,9 @@ export function Widget({
         // No ref here, as it's on the outer div
         width={actualWidth} // Pass calculated width
         height={actualHeight} // Pass calculated height
-        onResizeStop={(e, direction, ref, d) => {
-          if (isResizable && ref) { // Add ref check
-            // Use ref.offsetWidth and ref.offsetHeight to get the actual new size
-            onSizeChange({ width: ref.offsetWidth, height: ref.offsetHeight });
+        onResizeStop={(e: React.SyntheticEvent, data: ResizeCallbackData) => {
+          if (isResizable) {
+            onSizeChange({ width: data.size.width, height: data.size.height });
           }
         }}
         minConstraints={[200, 150]}

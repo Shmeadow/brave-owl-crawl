@@ -9,6 +9,7 @@ import { useRooms, RoomData } from "@/hooks/use-rooms";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface PublicRoomsSectionProps {
   publicRooms: RoomData[];

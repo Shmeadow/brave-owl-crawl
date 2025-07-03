@@ -5,13 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { useCurrentRoom } from "@/hooks/use-current-room"; // Import useCurrentRoom
 
-export function TimeTracker() {
+interface TimeTrackerProps {
+  isCurrentRoomWritable: boolean;
+}
+
+export function TimeTracker({ isCurrentRoomWritable }: TimeTrackerProps) {
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const { isCurrentRoomWritable } = useCurrentRoom(); // Get writability status
 
   useEffect(() => {
     if (isRunning) {

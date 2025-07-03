@@ -154,7 +154,7 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
               <SelectContent>
                 {roomMembers.filter(member => member.user_id !== session?.user?.id).map(member => (
                   <SelectItem key={member.user_id} value={member.user_id}>
-                    {member.profiles?.first_name || member.profiles?.last_name || `User (${member.user_id.substring(0, 8)}...)`}
+                    {member.profiles?.[0]?.first_name || member.profiles?.[0]?.last_name || `User (${member.user_id.substring(0, 8)}...)`}
                   </SelectItem>
                 ))}
               </SelectContent>
