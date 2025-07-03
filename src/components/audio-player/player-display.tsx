@@ -1,19 +1,21 @@
 "use client";
 
 import React from 'react';
-import { getYouTubeEmbedUrl, getSpotifyEmbedUrl } from '@/lib/utils';
-import { cn } from '@/lib/utils'; // Import cn for conditional classNames
+import { getYouTubeEmbedUrl } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { SpotifyTrack } from '@/hooks/use-spotify-player';
 
 interface PlayerDisplayProps {
   playerType: 'audio' | 'youtube' | 'spotify' | null;
   inputUrl: string;
   audioRef: React.RefObject<HTMLAudioElement>;
   youtubeIframeRef: React.RefObject<HTMLIFrameElement>;
+  spotifyCurrentTrack: SpotifyTrack | null;
   onLoadedMetadata: () => void;
   onTimeUpdate: () => void;
   onEnded: () => void;
-  className?: string; // New prop for conditional styling
-  isMaximized: boolean; // New prop
+  className?: string;
+  isMaximized: boolean;
 }
 
 export function PlayerDisplay({
@@ -21,17 +23,18 @@ export function PlayerDisplay({
   inputUrl,
   audioRef,
   youtubeIframeRef,
+  spotifyCurrentTrack,
   onLoadedMetadata,
   onTimeUpdate,
   onEnded,
-  className, // Destructure new prop
-  isMaximized, // Destructure new prop
+  className,
+  isMaximized,
 }: PlayerDisplayProps) {
   const youtubeEmbedUrl = playerType === 'youtube' ? getYouTubeEmbedUrl(inputUrl) : null;
-  // Spotify embed is removed, so no spotifyEmbedUrl needed here
+  const albumArtUrl = spotifyCurrentTrack?.album?.images?.[0]?.url;
 
   // Determine the aspect ratio class based on playerType
-  const aspectRatioClass = playerType === 'youtube' ? 'aspect-video' : playerType === 'spotify' ? 'aspect-square' : '';
+  const aspectRatioClass = playerType === 'youtube' ? 'aspect-video' : (playerType === 'spotify' ? 'aspect-square' : '');
 
   return (
     <>
@@ -43,7 +46,7 @@ export function PlayerDisplay({
           onTimeUpdate={onTimeUpdate}
           onEnded={onEnded}
           preload="metadata"
-          className={cn(className, 'w-full h-full')} // Audio tag should fill its container
+          className={cn(className, 'w-full h-full')}
         >
           Your browser does not support the audio element.
         </audio>
@@ -52,7 +55,7 @@ export function PlayerDisplay({
         <div className={cn(
           "relative w-full overflow-hidden",
           className,
-          aspectRatioClass // Always apply aspect ratio
+          aspectRatioClass
         )}>
           <iframe
             ref={youtubeIframeRef}
@@ -65,7 +68,25 @@ export function PlayerDisplay({
           ></iframe>
         </div>
       )}
-      {/* Spotify embed removed from here. Its functionality will be handled by the SDK. */}
+      {playerType === 'spotify' && (
+        <div className={cn(
+          "relative w-full overflow-hidden bg-black rounded-lg",
+          className,
+          aspectRatioClass
+        )}>
+          {albumArtUrl ? (
+            <img
+              src={albumArtUrl}
+              alt={spotifyCurrentTrack?.album?.name || 'Album Art'}
+              className="absolute top-0 left-0 w-full h-full object-contain"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted/20">
+              <span>Spotify Player</span>
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 }

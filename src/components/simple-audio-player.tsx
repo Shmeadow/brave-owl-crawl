@@ -222,6 +222,7 @@ const SimpleAudioPlayer = () => {
           inputUrl={committedMediaUrl}
           audioRef={audioRef}
           youtubeIframeRef={youtubeIframeRef}
+          spotifyCurrentTrack={spotifyCurrentTrack}
           onLoadedMetadata={htmlAudioOnLoadedMetadata}
           onTimeUpdate={htmlAudioOnTimeUpdate}
           onEnded={htmlAudioOnEnded}
@@ -231,6 +232,14 @@ const SimpleAudioPlayer = () => {
             (playerType === 'youtube' || playerType === 'spotify') ? 'w-full flex-grow' : 'w-full' // Make visual players flex-grow
           )}
         />
+
+        {/* Spotify Track Info */}
+        {playerType === 'spotify' && spotifyCurrentTrack && (
+          <div className="text-center p-1 flex-shrink-0">
+            <p className="text-sm font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
+            <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map(a => a.name).join(', ')}</p>
+          </div>
+        )}
 
         {/* Main Player Row: URL Input Toggle and Controls */}
         <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
