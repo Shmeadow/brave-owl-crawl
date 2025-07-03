@@ -11,11 +11,11 @@ import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const staticImages = Array.from({ length: 6 }, (_, i) => `/bg${i + 1}.jpg`);
-// For animated images, we'll use a preview image for the selector, but store the actual video URL
+// For animated images, we'll use the video URL directly for the preview
 const animatedBackgrounds = [
-  { videoUrl: '/ani1.mp4', previewUrl: '/ani1-preview.jpg' },
-  { videoUrl: '/ani2.mp4', previewUrl: '/ani2-preview.jpg' },
-  { videoUrl: '/ani3.mp4', previewUrl: '/ani3-preview.jpg' },
+  { videoUrl: '/ani1.mp4' },
+  { videoUrl: '/ani2.mp4' },
+  { videoUrl: '/ani3.mp4' },
 ];
 
 export function BackgroundEffectsMenu() {
@@ -64,7 +64,7 @@ export function BackgroundEffectsMenu() {
       <TabsContent value="animated" className="mt-4">
         <ScrollArea className="h-72">
           <div className="grid grid-cols-2 gap-4 pr-4">
-            {animatedBackgrounds.map(({ videoUrl, previewUrl }) => {
+            {animatedBackgrounds.map(({ videoUrl }) => {
               const isActive = background.isVideo && background.url === videoUrl;
               return (
                 <div
@@ -75,11 +75,13 @@ export function BackgroundEffectsMenu() {
                   )}
                   onClick={() => setBackground(videoUrl, true)}
                 >
-                  <Image
-                    src={previewUrl}
-                    alt={`Animated Background Preview for ${videoUrl}`}
-                    fill
+                  <video
+                    src={videoUrl}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
                   />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
                   {isActive && (
