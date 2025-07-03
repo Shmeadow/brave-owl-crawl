@@ -79,7 +79,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
 
   return (
     <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea}>
-      <div className="relative h-screen bg-background">
+      <div className="relative h-screen bg-transparent">
         {activeEffect === 'particles' && <ParticlesEffect />}
         <Header
           onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}

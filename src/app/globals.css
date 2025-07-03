@@ -4,7 +4,6 @@
 
 @layer base {
   :root {
-
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
@@ -45,13 +44,17 @@
     --ws-bg-semi: 0 0% 0% / 0.5;
     --ws-fg: 0 0% 93.3%;
 
-    /* Glass effect variables with fallbacks */
-    --background-alpha: calc(0.2 * var(--glass-intensity, 0.7));
-    --card-alpha: calc(0.3 * var(--glass-intensity, 0.7));
-    --popover-alpha: calc(0.3 * var(--glass-intensity, 0.7));
-    --muted-alpha: calc(0.4 * var(--glass-intensity, 0.7));
-    --input-alpha: calc(0.5 * var(--glass-intensity, 0.7));
-    --sidebar-alpha: calc(0.2 * var(--glass-intensity, 0.7));
+    /* Glass effect variables */
+    --glass-intensity: 0.7;
+    --background-alpha: calc(0.5 * var(--glass-intensity));
+    --card-alpha: calc(0.6 * var(--glass-intensity));
+    --popover-alpha: calc(0.7 * var(--glass-intensity));
+    --muted-alpha: calc(0.5 * var(--glass-intensity));
+    --input-alpha: calc(0.4 * var(--glass-intensity));
+    --sidebar-alpha: calc(0.6 * var(--glass-intensity));
+    --secondary-alpha: calc(0.5 * var(--glass-intensity));
+    --accent-alpha: calc(0.5 * var(--glass-intensity));
+    --border-alpha: calc(0.3 * var(--glass-intensity));
   }
 
   .dark {
