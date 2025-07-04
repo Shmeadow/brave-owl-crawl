@@ -12,35 +12,13 @@ const LOCAL_STORAGE_CURRENT_ROOM_BG_VIDEO_KEY = 'current_room_bg_video';
 
 export function useCurrentRoom() {
   const { supabase, session, loading: authLoading } = useSupabase();
-  const [currentRoomId, setCurrentRoomIdState] = useState<string | null>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(LOCAL_STORAGE_CURRENT_ROOM_ID_KEY);
-    }
-    return null;
-  });
-
-  const [currentRoomName, setCurrentRoomNameState] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(LOCAL_STORAGE_CURRENT_ROOM_NAME_KEY) || "My Room";
-    }
-    return "My Room";
-  });
-
+  // Initialize with null/empty defaults to avoid hydration mismatch
+  const [currentRoomId, setCurrentRoomIdState] = useState<string | null>(null);
+  const [currentRoomName, setCurrentRoomNameState] = useState<string>("My Room");
   const [isCurrentRoomWritable, setIsCurrentRoomWritable] = useState(true);
   const [currentRoomCreatorId, setCurrentRoomCreatorId] = useState<string | null>(null);
-  const [currentRoomBackgroundUrl, setCurrentRoomBackgroundUrl] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(LOCAL_STORAGE_CURRENT_ROOM_BG_URL_KEY) || getRandomBackground().url;
-    }
-    return getRandomBackground().url;
-  });
-  const [isCurrentRoomVideoBackground, setIsCurrentRoomVideoBackground] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(LOCAL_STORAGE_CURRENT_ROOM_BG_VIDEO_KEY);
-      return saved === 'true';
-    }
-    return getRandomBackground().isVideo;
-  });
+  const [currentRoomBackgroundUrl, setCurrentRoomBackgroundUrl] = useState<string>(""); // Initialize empty
+  const [isCurrentRoomVideoBackground, setIsCurrentRoomVideoBackground] = useState<boolean>(false); // Initialize false
 
   const setCurrentRoom = useCallback(async (id: string | null, name: string) => {
     setCurrentRoomIdState(id);
@@ -78,79 +56,93 @@ export function useCurrentRoom() {
     if (authLoading) return;
 
     const initializeRoom = async () => {
-      // If the user is logged in but they are currently in the "guest" room (no ID),
-      // find their personal room and switch to it.
-      if (session && !currentRoomId && supabase) {
-        const { data: personalRoom, error } = await supabase
-          .from('rooms')
-          .select('id, name, creator_id, background_url, is_video_background')
-          .eq('creator_id', session.user.id)
-          .order('created_at', { ascending: true })
-          .limit(1)
-          .single();
+      let initialRoomId: string | null = null;
+      let initialRoomName: string = "My Room";
+      let initialRoomCreatorId: string | null = null;
+      let initialBgUrl: string = "";
+      let initialIsVideoBg: boolean = false;
 
-        if (personalRoom) {
-          setCurrentRoomIdState(personalRoom.id);
-          setCurrentRoomNameState(personalRoom.name);
-          setCurrentRoomCreatorId(personalRoom.creator_id);
-          setCurrentRoomBackgroundUrl(personalRoom.background_url || getRandomBackground().url);
-          setIsCurrentRoomVideoBackground(personalRoom.is_video_background ?? getRandomBackground().isVideo);
-        } else if (error && error.code !== 'PGRST116') {
-          console.error("Error fetching personal room:", error);
-          toast.error("Could not find your personal room.");
-          // Fallback to default guest room if personal room not found
-          setCurrentRoomIdState(null);
-          setCurrentRoomNameState("My Room");
-          setCurrentRoomCreatorId(null);
-          const defaultBg = getRandomBackground();
-          setCurrentRoomBackgroundUrl(defaultBg.url);
-          setIsCurrentRoomVideoBackground(defaultBg.isVideo);
-        } else {
-          // No personal room found, but logged in. This shouldn't happen if handle_new_user works.
-          // For now, default to guest room.
-          setCurrentRoomIdState(null);
-          setCurrentRoomNameState("My Room");
-          setCurrentRoomCreatorId(null);
-          const defaultBg = getRandomBackground();
-          setCurrentRoomBackgroundUrl(defaultBg.url);
-          setIsCurrentRoomVideoBackground(defaultBg.isVideo);
-        }
-      } else if (!session && !currentRoomId) {
-        // This is a new guest session. Set their default room.
-        setCurrentRoomIdState(null);
-        setCurrentRoomNameState("My Room");
-        setCurrentRoomCreatorId(null);
-        const defaultBg = getRandomBackground();
-        setCurrentRoomBackgroundUrl(defaultBg.url);
-        setIsCurrentRoomVideoBackground(defaultBg.isVideo);
-      } else if (currentRoomId && supabase) {
-        // If a room ID is already set (from local storage), fetch its details
-        const { data: roomData, error: roomError } = await supabase
-          .from('rooms')
-          .select('name, creator_id, background_url, is_video_background')
-          .eq('id', currentRoomId)
-          .single();
-
-        if (roomError || !roomData) {
-          console.error("Error fetching details for saved current room:", roomError);
-          toast.error("Could not load details for your last room. Switching to My Room.");
-          setCurrentRoomIdState(null);
-          setCurrentRoomNameState("My Room");
-          setCurrentRoomCreatorId(null);
-          const defaultBg = getRandomBackground();
-          setCurrentRoomBackgroundUrl(defaultBg.url);
-          setIsCurrentRoomVideoBackground(defaultBg.isVideo);
-        } else {
-          setCurrentRoomNameState(roomData.name);
-          setCurrentRoomCreatorId(roomData.creator_id);
-          setCurrentRoomBackgroundUrl(roomData.background_url || getRandomBackground().url);
-          setIsCurrentRoomVideoBackground(roomData.is_video_background ?? getRandomBackground().isVideo);
-        }
+      // Try to load from local storage first (client-side only)
+      if (typeof window !== 'undefined') {
+        initialRoomId = localStorage.getItem(LOCAL_STORAGE_CURRENT_ROOM_ID_KEY);
+        initialRoomName = localStorage.getItem(LOCAL_STORAGE_CURRENT_ROOM_NAME_KEY) || "My Room";
+        initialBgUrl = localStorage.getItem(LOCAL_STORAGE_CURRENT_ROOM_BG_URL_KEY) || "";
+        initialIsVideoBg = localStorage.getItem(LOCAL_STORAGE_CURRENT_ROOM_BG_VIDEO_KEY) === 'true';
       }
+
+      if (session && supabase) {
+        // If logged in, prioritize fetching personal room from Supabase
+        if (!initialRoomId) { // Only fetch personal room if no room was saved locally
+          const { data: personalRoom, error } = await supabase
+            .from('rooms')
+            .select('id, name, creator_id, background_url, is_video_background')
+            .eq('creator_id', session.user.id)
+            .order('created_at', { ascending: true })
+            .limit(1)
+            .single();
+
+          if (personalRoom) {
+            initialRoomId = personalRoom.id;
+            initialRoomName = personalRoom.name;
+            initialRoomCreatorId = personalRoom.creator_id;
+            initialBgUrl = personalRoom.background_url || getRandomBackground().url; // Use random if Supabase has null
+            initialIsVideoBg = personalRoom.is_video_background ?? getRandomBackground().isVideo;
+          } else if (error && error.code !== 'PGRST116') {
+            console.error("Error fetching personal room:", error);
+            toast.error("Could not find your personal room.");
+            // Fallback to default guest room if personal room not found
+            initialRoomId = null;
+            initialRoomName = "My Room";
+            initialRoomCreatorId = null;
+            const defaultBg = getRandomBackground();
+            initialBgUrl = defaultBg.url;
+            initialIsVideoBg = defaultBg.isVideo;
+          }
+        } else { // A room ID was saved locally, fetch its details from Supabase
+          const { data: roomData, error: roomError } = await supabase
+            .from('rooms')
+            .select('name, creator_id, background_url, is_video_background')
+            .eq('id', initialRoomId)
+            .single();
+
+          if (roomError || !roomData) {
+            console.error("Error fetching details for saved current room:", roomError);
+            toast.error("Could not load details for your last room. Switching to My Room.");
+            initialRoomId = null;
+            initialRoomName = "My Room";
+            initialRoomCreatorId = null;
+            const defaultBg = getRandomBackground();
+            initialBgUrl = defaultBg.url;
+            initialIsVideoBg = defaultBg.isVideo;
+          } else {
+            initialRoomName = roomData.name;
+            initialRoomCreatorId = roomData.creator_id;
+            initialBgUrl = roomData.background_url || getRandomBackground().url;
+            initialIsVideoBg = roomData.is_video_background ?? getRandomBackground().isVideo;
+          }
+        }
+      } else {
+        // Not logged in (guest mode)
+        if (!initialRoomId) { // If no local room saved, set a random default
+          const defaultBg = getRandomBackground();
+          initialBgUrl = defaultBg.url;
+          initialIsVideoBg = defaultBg.isVideo;
+        }
+        initialRoomId = null; // Guests always operate in a "null" room context for data storage
+        initialRoomName = "My Room";
+        initialRoomCreatorId = null;
+      }
+
+      // Set states after all determination logic
+      setCurrentRoomIdState(initialRoomId);
+      setCurrentRoomNameState(initialRoomName);
+      setCurrentRoomCreatorId(initialRoomCreatorId);
+      setCurrentRoomBackgroundUrl(initialBgUrl || getRandomBackground().url); // Fallback to random if still empty
+      setIsCurrentRoomVideoBackground(initialIsVideoBg ?? getRandomBackground().isVideo); // Fallback to random if still null
     };
 
     initializeRoom();
-  }, [authLoading, session, currentRoomId, supabase]);
+  }, [authLoading, session, supabase]); // Depend on authLoading, session, supabase
 
   // Persist current room ID and name to local storage
   useEffect(() => {

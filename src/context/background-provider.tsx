@@ -40,37 +40,41 @@ function BackgroundManager({ url, isVideo, isMirrored }: { url: string; isVideo:
         filter: 'blur(var(--background-blur-px, 0px))',
       }}
     >
-      <div
-        id="background-image"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: `url(${url})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          opacity: isImageVisible ? 1 : 0,
-          transition: 'opacity 1s ease-in-out',
-        }}
-      />
-      <video
-        id="background-video"
-        src={url}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          opacity: isVideoVisible ? 1 : 0,
-          transition: 'opacity 1s ease-in-out',
-          transform: isMirrored ? 'scaleX(-1)' : 'scaleX(1)',
-        }}
-        autoPlay
-        muted
-        loop
-        playsInline
-        key={url}
-      />
+      {url && !isVideo && ( // Only render image if URL exists and it's not a video
+        <div
+          id="background-image"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: `url(${url})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            opacity: isImageVisible ? 1 : 0,
+            transition: 'opacity 1s ease-in-out',
+          }}
+        />
+      )}
+      {url && isVideo && ( // Only render video if URL exists and it's a video
+        <video
+          id="background-video"
+          src={url}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: isVideoVisible ? 1 : 0,
+            transition: 'opacity 1s ease-in-out',
+            transform: isMirrored ? 'scaleX(-1)' : 'scaleX(1)',
+          }}
+          autoPlay
+          muted
+          loop
+          playsInline
+          key={url}
+        />
+      )}
     </div>
   );
 }
