@@ -1,0 +1,63 @@
+"use client";
+
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Edit, Trash2, FolderCog } from 'lucide-react';
+import { CardData } from '@/hooks/use-flashcards';
+import { cn } from '@/lib/utils';
+
+interface FlashcardListItemProps {
+  card: CardData;
+  onEdit: (card: CardData) => void;
+  onDelete: (id: string) => void;
+  onOrganize: (card: CardData) => void;
+  rowHeight: number;
+}
+
+export function FlashcardListItem({ card, onEdit, onDelete, onOrganize, rowHeight }: FlashcardListItemProps) {
+  return (
+    <li
+      className="flex flex-col justify-between bg-muted backdrop-blur-xl p-4 rounded-lg shadow-sm border border-border transition-all duration-200 hover:shadow-lg hover:border-primary/50"
+      style={{ minHeight: `${rowHeight}px` }}
+    >
+      <div className="flex-grow overflow-hidden mb-3">
+        <p className="font-semibold text-foreground text-base mb-2 truncate" title={card.front}>{card.front}</p>
+        <p className="text-muted-foreground text-sm line-clamp-3">{card.back}</p>
+      </div>
+      <div className="flex items-center justify-between mt-auto pt-3 border-t border-border/50">
+        <p className="text-muted-foreground text-xs">
+          Status: <span className="capitalize font-medium">{card.status}</span>
+        </p>
+        <div className="flex gap-1">
+          <Button
+            onClick={() => onOrganize(card)}
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7 text-muted-foreground hover:text-primary"
+            title="Organize flashcard"
+          >
+            <FolderCog className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={() => onEdit(card)}
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7 text-muted-foreground hover:text-primary"
+            title="Edit flashcard"
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={() => onDelete(card.id)}
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+            title="Delete flashcard"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </li>
+  );
+}
