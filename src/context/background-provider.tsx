@@ -5,20 +5,22 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 interface BackgroundState {
   url: string;
   isVideo: boolean;
+  isMirrored: boolean; // New property
 }
 
 interface BackgroundContextType {
   background: BackgroundState;
-  setBackground: (url: string, isVideo?: boolean) => void;
+  setBackground: (url: string, isVideo?: boolean, isMirrored?: boolean) => void; // Updated signature
 }
 
 const BackgroundContext = createContext<BackgroundContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_BG_KEY = 'app_background_url';
 const LOCAL_STORAGE_BG_TYPE_KEY = 'app_background_type';
+const LOCAL_STORAGE_BG_MIRRORED_KEY = 'app_background_mirrored'; // New local storage key
 
 // This component will manage rendering the background video or image
-function BackgroundManager({ url, isVideo }: { url: string; isVideo: boolean }) {
+function BackgroundManager({ url, isVideo, isMirrored }: { url: string; isVideo: boolean; isMirrored: boolean }) {
   const [isImageVisible, setIsImageVisible] = useState(!isVideo);
   const [isVideoVisible, setIsVideoVisible] = useState(isVideo);
 
@@ -64,6 +66,7 @@ function BackgroundManager({ url, isVideo }: { url: string; isVideo: boolean }) 
           objectFit: 'cover',
           opacity: isVideoVisible ? 1 : 0,
           transition: 'opacity 1s ease-in-out',
+          transform: isMirrored ? 'scaleX(-1)' : 'scaleX(1)', // Apply mirroring here
         }}
         autoPlay
         muted
@@ -76,28 +79,35 @@ function BackgroundManager({ url, isVideo }: { url: string; isVideo: boolean }) 
 }
 
 export function BackgroundProvider({ children }: { children: React.ReactNode }) {
-  // Set default background to ani7.mp4
-  const [background, setBackgroundState] = useState({ url: '/animated/ani7.mp4', isVideo: true });
+  // Set default background to ani7.mp4 and mirrored
+  const [background, setBackgroundState] = useState<BackgroundState>({ url: '/animated/ani7.mp4', isVideo: true, isMirrored: true });
 
   // On initial load, check local storage for a saved background
   useEffect(() => {
     const savedUrl = localStorage.getItem(LOCAL_STORAGE_BG_KEY);
     const savedType = localStorage.getItem(LOCAL_STORAGE_BG_TYPE_KEY);
+    const savedMirrored = localStorage.getItem(LOCAL_STORAGE_BG_MIRRORED_KEY);
+
     if (savedUrl) {
-      setBackgroundState({ url: savedUrl, isVideo: savedType === 'video' });
+      setBackgroundState({
+        url: savedUrl,
+        isVideo: savedType === 'video',
+        isMirrored: savedMirrored === 'true',
+      });
     }
   }, []);
 
   // Callback to change the background and save the choice to local storage
-  const setBackground = useCallback((url: string, isVideo: boolean = false) => {
-    setBackgroundState({ url, isVideo });
+  const setBackground = useCallback((url: string, isVideo: boolean = false, isMirrored: boolean = false) => {
+    setBackgroundState({ url, isVideo, isMirrored });
     localStorage.setItem(LOCAL_STORAGE_BG_KEY, url);
     localStorage.setItem(LOCAL_STORAGE_BG_TYPE_KEY, isVideo ? 'video' : 'image');
+    localStorage.setItem(LOCAL_STORAGE_BG_MIRRORED_KEY, String(isMirrored));
   }, []);
 
   return (
     <BackgroundContext.Provider value={{ background, setBackground }}>
-      <BackgroundManager url={background.url} isVideo={background.isVideo} />
+      <BackgroundManager url={background.url} isVideo={background.isVideo} isMirrored={background.isMirrored} />
       {children}
     </BackgroundContext.Provider>
   );
