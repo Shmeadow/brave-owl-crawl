@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCcw } from 'lucide-react';
 import { CardData, Category } from '@/hooks/flashcards/types';
 import { OrganizeCardModal } from './OrganizeCardModal';
+import { toast } from 'sonner';
 
 interface ManageModeProps {
   cards: CardData[];
@@ -58,7 +59,7 @@ export function ManageMode({
     const isTrueFalseCard = cardData.front.toLowerCase().includes('true or false') || cardData.back.toLowerCase().includes('true or false');
 
     if (isTrueFalseCard) {
-      let tfCategory: Category | null | undefined = categories.find(c => c.name.toLowerCase() === 'true or false');
+      let tfCategory: Category | undefined | null = categories.find(c => c.name.toLowerCase() === 'true or false');
       if (!tfCategory) {
         tfCategory = await onAddCategory('True or False');
       }
@@ -76,22 +77,60 @@ export function ManageMode({
     onCancelEdit();
   };
 
+  const handleOrganizeTrueFalse = async () => {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to organize cards.");
+      return;
+    }
+
+    const tfCards = cards.filter(c =>
+      (c.front.toLowerCase().includes('true or false') || c.back.toLowerCase().includes('true or false'))
+    );
+
+    if (tfCards.length === 0) {
+      toast.info("No 'True or False' cards found to organize.");
+      return;
+    }
+
+    let tfCategory: Category | undefined | null = categories.find(c => c.name.toLowerCase() === 'true or false');
+    if (!tfCategory) {
+      tfCategory = await onAddCategory('True or False');
+    }
+
+    if (!tfCategory) {
+      toast.error("Could not create or find the 'True or False' category.");
+      return;
+    }
+
+    const tfCategoryId = tfCategory.id;
+    let organizedCount = 0;
+    const promises = [];
+    for (const card of tfCards) {
+      if (card.category_id !== tfCategoryId) {
+        promises.push(onUpdateCardCategory(card.id, tfCategoryId));
+        organizedCount++;
+      }
+    }
+    
+    await Promise.all(promises);
+
+    if (organizedCount > 0) {
+      toast.success(`Successfully organized ${organizedCount} 'True or False' cards.`);
+    } else {
+      toast.info("All 'True or False' cards are already in the correct category.");
+    }
+  };
+
   return (
     <div className="flex flex-col md:flex-row gap-6 w-full">
-      <CategorySidebar
-        categories={categories}
-        selectedCategoryId={selectedCategoryId}
-        onSelectCategory={setSelectedCategoryId}
-        onAddCategory={onAddCategory}
-        onDeleteCategory={onDeleteCategory}
-        onUpdateCategory={onUpdateCategory}
-        isCurrentRoomWritable={isCurrentRoomWritable}
-      />
-      <div className="w-full md:w-2/3 flex flex-col gap-6">
-        <FlashcardForm
-          onSave={handleSave}
-          editingCard={editingCard}
-          onCancel={onCancelEdit}
+      <div className="w-full md:w-1/3 flex flex-col gap-6">
+        <CategorySidebar
+          categories={categories}
+          selectedCategoryId={selectedCategoryId}
+          onSelectCategory={setSelectedCategoryId}
+          onAddCategory={onAddCategory}
+          onDeleteCategory={onDeleteCategory}
+          onUpdateCategory={onUpdateCategory}
           isCurrentRoomWritable={isCurrentRoomWritable}
         />
         <FlashcardList
@@ -99,6 +138,14 @@ export function ManageMode({
           onEdit={onEdit}
           onDelete={onDeleteCard}
           onOrganize={setOrganizingCard}
+          isCurrentRoomWritable={isCurrentRoomWritable}
+        />
+      </div>
+      <div className="w-full md:w-2/3 flex flex-col gap-6">
+        <FlashcardForm
+          onSave={handleSave}
+          editingCard={editingCard}
+          onCancel={onCancelEdit}
           isCurrentRoomWritable={isCurrentRoomWritable}
         />
         <ImportExport
@@ -110,16 +157,26 @@ export function ManageMode({
           <CardHeader>
             <CardTitle>Deck Options</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex flex-col gap-4">
             <Button
-              onClick={onResetProgress}
-              variant="destructive"
+              onClick={handleOrganizeTrueFalse}
+              variant="secondary"
               className="w-full"
               disabled={!isCurrentRoomWritable}
             >
-              <RefreshCcw className="mr-2 h-4 w-4" /> Reset All Progress & Stats
+              Organize 'True or False' Cards
             </Button>
-            <p className="text-xs text-muted-foreground mt-2">This will reset the status and guess statistics for all cards in this deck.</p>
+            <div>
+              <Button
+                onClick={onResetProgress}
+                variant="destructive"
+                className="w-full"
+                disabled={!isCurrentRoomWritable}
+              >
+                <RefreshCcw className="mr-2 h-4 w-4" /> Reset All Progress & Stats
+              </Button>
+              <p className="text-xs text-muted-foreground mt-2">This will reset the status and guess statistics for all cards in this deck.</p>
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -62,11 +62,11 @@ export function CategorySidebar({
   };
 
   return (
-    <Card className="w-full md:w-1/3 flex flex-col bg-card backdrop-blur-xl border-white/20">
+    <Card className="w-full flex flex-col bg-card backdrop-blur-xl border-white/20">
       <CardHeader>
         <CardTitle>Categories</CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 p-0 flex flex-col">
+      <CardContent className="p-0 flex flex-col">
         <div className="p-4 border-b">
           <div className="flex gap-2">
             <Input
@@ -80,7 +80,7 @@ export function CategorySidebar({
             </Button>
           </div>
         </div>
-        <ScrollArea className="flex-1">
+        <ScrollArea className="h-[250px]">
           <div className="p-2 space-y-1">
             <Button
               variant="ghost"
