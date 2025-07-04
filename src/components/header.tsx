@@ -93,7 +93,7 @@ export const Header = React.memo(({ onOpenUpgradeModal, isChatOpen, onToggleChat
               <span className="sr-only">Change Background & Effects</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-80 z-[1003] p-4" align="end">
+          <DropdownMenuContent className="w-96 z-[1003] p-4" align="end">
             <BackgroundEffectsMenu />
           </DropdownMenuContent>
         </DropdownMenu>

@@ -26,10 +26,10 @@ const staticImages = [
 const animatedBackgrounds = [
   { videoUrl: "/animated/ani1.mp4", thumbnailUrl: "/animated/ani1.jpg" },
   { videoUrl: "/animated/ani2.mp4", thumbnailUrl: "/animated/ani2.jpg" },
-  { videoUrl: "/animated/ani3.mp4", thumbnailUrl: "/animated/ani3.mp4" },
-  { videoUrl: "/animated/ani4.mp4", thumbnailUrl: "/animated/ani4.mp4" },
-  { videoUrl: "/animated/ani5.mp4", thumbnailUrl: "/animated/ani5.mp4" },
-  { videoUrl: "/animated/ani6.mp4", thumbnailUrl: "/animated/ani6.mp4" },
+  { videoUrl: "/animated/ani3.mp4", thumbnailUrl: "/animated/ani3.jpg" },
+  { videoUrl: "/animated/ani4.mp4", thumbnailUrl: "/animated/ani4.jpg" },
+  { videoUrl: "/animated/ani5.mp4", thumbnailUrl: "/animated/ani5.jpg" },
+  { videoUrl: "/animated/ani6.mp4", thumbnailUrl: "/animated/ani6.jpg" },
   { videoUrl: "/animated/ani7.mp4", thumbnailUrl: "/animated/ani7.jpg" },
   { videoUrl: "/animated/ani8.mp4", thumbnailUrl: "/animated/ani8.jpg" },
   { videoUrl: "/animated/ani9.mp4", thumbnailUrl: "/animated/ani9.jpg" },
@@ -85,6 +85,7 @@ export function BackgroundEffectsMenu() {
                       src={imageUrl}
                       alt={`Background ${imageUrl.split("/").pop()}`}
                       className="absolute inset-0 w-full h-full object-cover"
+                      loading="lazy"
                     />
                     {isActive && (
                       <div className="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 text-white text-sm font-bold">
@@ -113,14 +114,11 @@ export function BackgroundEffectsMenu() {
                     }`}
                     onClick={() => handleBackgroundChange(videoUrl, true)}
                   >
-                    <video
-                      src={videoUrl}
+                    <img
+                      src={thumbnailUrl}
+                      alt={`Animated background ${videoUrl.split("/").pop()}`}
                       className="absolute inset-0 w-full h-full object-cover"
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                      preload="auto"
+                      loading="lazy"
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
                       <ImageIcon className="h-6 w-6" />
