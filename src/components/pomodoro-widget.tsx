@@ -283,6 +283,9 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
             <RotateCcw className="h-4 w-4" /> {/* Removed mr-1 */}
           </Button>
         </div>
+        <p className="text-xs text-muted-foreground text-center mt-2">
+          A customizable timer to help you focus and take breaks.
+        </p>
       </CardContent>
 
       {isMinimized && (
