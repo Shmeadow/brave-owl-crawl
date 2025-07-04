@@ -47,10 +47,11 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
 
   const fetchMessages = useCallback(async (roomId: string) => {
     if (!supabase) {
-      console.warn("Supabase client not available for fetching messages.");
+      console.warn("[ChatPanel] Supabase client not available for fetching messages.");
       toast.error("Chat unavailable: Supabase client not initialized.");
       return;
     }
+    console.log(`[ChatPanel] Fetching initial messages for room: ${roomId}`);
     try {
       const { data, error } = await supabase
         .from('chat_messages')
@@ -60,7 +61,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
         .limit(50);
 
       if (error && error.code !== 'PGRST116') {
-        console.error("Error fetching messages from Supabase:", error.message, "Details:", error.details, "Hint:", error.hint);
+        console.error("[ChatPanel] Error fetching messages from Supabase:", error.message, "Details:", error.details, "Hint:", error.hint);
         toast.error("Failed to load chat messages: " + error.message);
       } else if (data) {
         const formattedMessages = data.map(msg => {
@@ -77,16 +78,30 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
           };
         });
         setMessages(formattedMessages);
+        console.log(`[ChatPanel] Fetched ${formattedMessages.length} messages for room ${roomId}.`);
       }
     } catch (networkError: any) {
-      console.error("Network error fetching chat messages:", networkError);
+      console.error("[ChatPanel] Network error fetching chat messages:", networkError);
       toast.error("Failed to connect to chat server. Please check your internet connection or Supabase URL.");
     }
   }, [supabase, profile]);
 
   useEffect(() => {
-    if (authLoading || !supabase || !currentRoomId) return;
+    if (authLoading) {
+      console.log("[ChatPanel] Auth loading, skipping chat subscription setup.");
+      return;
+    }
+    if (!supabase) {
+      console.warn("[ChatPanel] Supabase client not available, cannot set up chat subscription.");
+      return;
+    }
+    if (!currentRoomId) {
+      console.log("[ChatPanel] No current room ID, clearing messages and skipping subscription.");
+      setMessages([]); // Clear messages when no room is selected
+      return;
+    }
 
+    console.log(`[ChatPanel] Setting up chat subscription for room: ${currentRoomId}`);
     fetchMessages(currentRoomId);
 
     const channelName = `chat_room_${currentRoomId}`;
@@ -94,6 +109,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
       .channel(channelName)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `room_id=eq.${currentRoomId}` }, async (payload) => {
         const newMsg = payload.new as Message;
+        console.log("[ChatPanel] New message received via Realtime:", newMsg);
         
         const authorName = (profile && profile.id === newMsg.user_id)
           ? (profile.first_name || profile.last_name || 'You')
@@ -115,8 +131,9 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
       .subscribe();
 
     return () => {
+      console.log(`[ChatPanel] Unsubscribing from chat channel: ${channelName}`);
       supabase.removeChannel(subscription);
-      setMessages([]);
+      setMessages([]); // Clear messages on unmount or room change
     };
   }, [supabase, isOpen, session?.user?.id, onNewUnreadMessage, profile, authLoading, currentRoomId, fetchMessages]);
 
