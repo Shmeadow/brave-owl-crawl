@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, FolderCog } from 'lucide-react';
 import { CardData } from '@/hooks/use-flashcards';
 import { toast } from 'sonner';
 
@@ -12,10 +12,11 @@ interface FlashcardListProps {
   flashcards: CardData[];
   onEdit: (card: CardData) => void;
   onDelete: (id: string) => void;
+  onOrganize: (card: CardData) => void;
   isCurrentRoomWritable: boolean;
 }
 
-export function FlashcardList({ flashcards, onEdit, onDelete, isCurrentRoomWritable }: FlashcardListProps) {
+export function FlashcardList({ flashcards, onEdit, onDelete, onOrganize, isCurrentRoomWritable }: FlashcardListProps) {
   const handleDeleteClick = (id: string) => {
     if (!isCurrentRoomWritable) {
       toast.error("You do not have permission to delete flashcards in this room.");
@@ -30,6 +31,14 @@ export function FlashcardList({ flashcards, onEdit, onDelete, isCurrentRoomWrita
       return;
     }
     onEdit(card);
+  };
+
+  const handleOrganizeClick = (card: CardData) => {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to organize flashcards in this room.");
+      return;
+    }
+    onOrganize(card);
   };
 
   return (
@@ -53,6 +62,16 @@ export function FlashcardList({ flashcards, onEdit, onDelete, isCurrentRoomWrita
                     </p>
                   </div>
                   <div className="flex gap-2">
+                    <Button
+                      onClick={() => handleOrganizeClick(card)}
+                      size="icon"
+                      variant="ghost"
+                      className="text-primary hover:bg-primary/10"
+                      title="Organize flashcard"
+                      disabled={!isCurrentRoomWritable}
+                    >
+                      <FolderCog className="h-5 w-5" />
+                    </Button>
                     <Button
                       onClick={() => handleEditClick(card)}
                       size="icon"

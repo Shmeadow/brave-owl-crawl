@@ -8,8 +8,8 @@ import { ImportExport } from './ImportExport';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCcw } from 'lucide-react';
-import { useFlashcardCategories } from '@/hooks/flashcards/useFlashcardCategories';
-import { CardData } from '@/hooks/flashcards/types';
+import { CardData, Category } from '@/hooks/flashcards/types';
+import { OrganizeCardModal } from './OrganizeCardModal';
 
 interface ManageModeProps {
   cards: CardData[];
@@ -22,6 +22,11 @@ interface ManageModeProps {
   onResetProgress: () => void;
   onBulkImport: (cards: { front: string; back: string }[], categoryId: string | null) => Promise<number>;
   isCurrentRoomWritable: boolean;
+  categories: Category[];
+  onAddCategory: (name: string) => Promise<Category | null>;
+  onDeleteCategory: (id: string) => void;
+  onUpdateCategory: (id: string, name: string) => void;
+  onUpdateCardCategory: (cardId: string, newCategoryId: string | null) => void;
 }
 
 export function ManageMode({
@@ -35,16 +40,34 @@ export function ManageMode({
   onResetProgress,
   onBulkImport,
   isCurrentRoomWritable,
+  categories,
+  onAddCategory,
+  onDeleteCategory,
+  onUpdateCategory,
+  onUpdateCardCategory,
 }: ManageModeProps) {
-  const { categories, addCategory, deleteCategory, updateCategory } = useFlashcardCategories();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [organizingCard, setOrganizingCard] = useState<CardData | null>(null);
 
   const filteredCards = useMemo(() => {
     return cards.filter(card => card.category_id === selectedCategoryId);
   }, [cards, selectedCategoryId]);
 
-  const handleSave = (cardData: { id?: string; front: string; back: string }) => {
-    const dataToSave = { ...cardData, category_id: selectedCategoryId };
+  const handleSave = async (cardData: { id?: string; front: string; back: string }) => {
+    let categoryIdToSave = selectedCategoryId;
+    const isTrueFalseCard = cardData.front.toLowerCase().includes('true or false') || cardData.back.toLowerCase().includes('true or false');
+
+    if (isTrueFalseCard) {
+      let tfCategory: Category | null | undefined = categories.find(c => c.name.toLowerCase() === 'true or false');
+      if (!tfCategory) {
+        tfCategory = await onAddCategory('True or False');
+      }
+      if (tfCategory) {
+        categoryIdToSave = tfCategory.id;
+      }
+    }
+
+    const dataToSave = { ...cardData, category_id: categoryIdToSave };
     if (cardData.id) {
       onUpdateCard(cardData.id, dataToSave);
     } else {
@@ -59,9 +82,9 @@ export function ManageMode({
         categories={categories}
         selectedCategoryId={selectedCategoryId}
         onSelectCategory={setSelectedCategoryId}
-        onAddCategory={addCategory}
-        onDeleteCategory={deleteCategory}
-        onUpdateCategory={updateCategory}
+        onAddCategory={onAddCategory}
+        onDeleteCategory={onDeleteCategory}
+        onUpdateCategory={onUpdateCategory}
         isCurrentRoomWritable={isCurrentRoomWritable}
       />
       <div className="w-full md:w-2/3 flex flex-col gap-6">
@@ -75,6 +98,7 @@ export function ManageMode({
           flashcards={filteredCards}
           onEdit={onEdit}
           onDelete={onDeleteCard}
+          onOrganize={setOrganizingCard}
           isCurrentRoomWritable={isCurrentRoomWritable}
         />
         <ImportExport
@@ -99,6 +123,14 @@ export function ManageMode({
           </CardContent>
         </Card>
       </div>
+      <OrganizeCardModal
+        card={organizingCard}
+        categories={categories}
+        isOpen={!!organizingCard}
+        onClose={() => setOrganizingCard(null)}
+        onUpdateCategory={onUpdateCardCategory}
+        isCurrentRoomWritable={isCurrentRoomWritable}
+      />
     </div>
   );
 }

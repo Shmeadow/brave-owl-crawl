@@ -10,6 +10,7 @@ import { ManageMode } from './ManageMode';
 import { LearnMode } from './LearnMode';
 import { TestMode } from './TestMode';
 import { SummaryMode } from './SummaryMode';
+import { useFlashcardCategories } from '@/hooks/flashcards/useFlashcardCategories';
 
 type FlashcardMode = 'manage' | 'learn' | 'test' | 'summary';
 
@@ -18,7 +19,8 @@ interface FlashcardAppProps {
 }
 
 export function FlashcardApp({ isCurrentRoomWritable }: FlashcardAppProps) {
-  const { cards, loading, isLoggedInMode, handleAddCard, handleDeleteCard, handleUpdateCard, handleAnswerFeedback, handleResetProgress, handleBulkAddCards } = useFlashcards();
+  const { cards, loading, isLoggedInMode, handleAddCard, handleDeleteCard, handleUpdateCard, handleAnswerFeedback, handleResetProgress, handleBulkAddCards, handleUpdateCardCategory } = useFlashcards();
+  const { categories, addCategory, deleteCategory, updateCategory } = useFlashcardCategories();
   const { session } = useSupabase();
   const [currentMode, setCurrentMode] = useState<FlashcardMode>('manage');
   const [editingCard, setEditingCard] = useState<CardData | null>(null);
@@ -63,6 +65,11 @@ export function FlashcardApp({ isCurrentRoomWritable }: FlashcardAppProps) {
             onResetProgress={handleResetProgress}
             onBulkImport={handleBulkAddCards}
             isCurrentRoomWritable={isCurrentRoomWritable}
+            categories={categories}
+            onAddCategory={addCategory}
+            onDeleteCategory={deleteCategory}
+            onUpdateCategory={updateCategory}
+            onUpdateCardCategory={handleUpdateCardCategory}
           />
         );
       case 'learn':

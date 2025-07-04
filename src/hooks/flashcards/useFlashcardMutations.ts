@@ -199,6 +199,32 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
     }
   }, [isLoggedInMode, session, supabase, setCards, cards]);
 
+  const handleUpdateCardCategory = useCallback(async (cardId: string, newCategoryId: string | null) => {
+    if (isLoggedInMode && session && supabase) {
+      const { data, error } = await supabase
+        .from('flashcards')
+        .update({ category_id: newCategoryId })
+        .eq('id', cardId)
+        .eq('user_id', session.user.id)
+        .select()
+        .single();
+
+      if (error) {
+        toast.error("Error updating card category: " + error.message);
+      } else if (data) {
+        setCards(prev => prev.map(c => c.id === cardId ? data as CardData : c));
+        toast.success("Card moved to new category!");
+      }
+    } else {
+      const updatedCards = cards.map(c =>
+        c.id === cardId ? { ...c, category_id: newCategoryId } : c
+      );
+      setCards(updatedCards);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedCards));
+      toast.success("Card moved (locally)!");
+    }
+  }, [cards, isLoggedInMode, session, supabase, setCards]);
+
   return {
     handleAddCard,
     handleUpdateCard,
@@ -206,5 +232,6 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
     handleBulkAddCards,
     handleResetProgress,
     handleAnswerFeedback,
+    handleUpdateCardCategory,
   };
 }
