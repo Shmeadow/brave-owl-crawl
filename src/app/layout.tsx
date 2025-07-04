@@ -89,27 +89,28 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <BackgroundBlurProvider>
-          <EffectProvider>
-            <BackgroundProvider>
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-                isCozyThemeGloballyEnabled={isCozyThemeGloballyEnabled}
-              >
-                <SessionContextProvider>
+        {/* SessionContextProvider must be the outermost client-side provider if any child depends on it */}
+        <SessionContextProvider>
+          <BackgroundBlurProvider>
+            <EffectProvider>
+              <BackgroundProvider>
+                <ThemeProvider
+                  attribute="class"
+                  defaultTheme="system"
+                  enableSystem
+                  disableTransitionOnChange
+                  isCozyThemeGloballyEnabled={isCozyThemeGloballyEnabled}
+                >
                   <SidebarProvider>
                       <AppWrapper initialWidgetConfigs={WIDGET_CONFIGS}>
                         {children}
                       </AppWrapper>
                   </SidebarProvider>
-                </SessionContextProvider>
-              </ThemeProvider>
-            </BackgroundProvider>
-          </EffectProvider>
-        </BackgroundBlurProvider>
+                </ThemeProvider>
+              </BackgroundProvider>
+            </EffectProvider>
+          </BackgroundBlurProvider>
+        </SessionContextProvider>
       </body>
     </html>
   );
