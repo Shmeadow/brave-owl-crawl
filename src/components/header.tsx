@@ -95,7 +95,7 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
                 handleJoinRoom();
               }
             }}
-            disabled={!session}
+            // Removed disabled={!session} to allow typing even when logged out
           />
           <Button
             onClick={handleJoinRoom}
