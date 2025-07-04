@@ -22,7 +22,7 @@ export function PlayerModeButtons({ displayMode, setDisplayMode }: PlayerModeBut
       )}
       {displayMode === 'maximized' && (
         <button
-          onClick={() => setDisplayMode('normal')}
+          onClick={() => setDisplayMode('minimized')} // Changed from 'normal' to 'minimized'
           className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
           title="Shrink Player"
         >
