@@ -74,6 +74,9 @@ export function UserNav() {
         <DropdownMenuItem onClick={() => router.push('/account')}>
           Account
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push('/settings')}>
+          Settings
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         {/* Theme options removed from here */}
         <DropdownMenuItem className="p-0">

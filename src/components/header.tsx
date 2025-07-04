@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Bell, Search, Settings, Menu, LayoutGrid } from "lucide-react";
+import { Home, Bell, Search, Menu, LayoutGrid } from "lucide-react";
 import { ChatPanel } from "@/components/chat-panel";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
@@ -97,10 +97,6 @@ export const Header = React.memo(({ onOpenUpgradeModal, isChatOpen, onToggleChat
         <Button variant="ghost" size="icon" title="Notifications">
           <Bell className="h-6 w-6" />
           <span className="sr-only">Notifications</span>
-        </Button>
-        <Button variant="ghost" size="icon" onClick={() => router.push('/settings')} title="Settings">
-          <Settings className="h-5 w-5" />
-          <span className="sr-only">Settings</span>
         </Button>
         {session && (
           <ChatPanel
