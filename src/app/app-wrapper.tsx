@@ -18,7 +18,8 @@ import { SimpleAudioPlayer } from "@/components/simple-audio-player";
 import { useEffects } from "@/context/effect-provider";
 import { RainEffect } from "@/components/effects/rain-effect";
 import { SnowEffect } from "@/components/effects/snow-effect";
-import { RaindropsEffect } from "@/components/effects/raindrops-effect"; // Updated import
+import { RaindropsEffect } from "@/components/effects/raindrops-effect";
+import { SnowAccumulationEffect } from "@/components/effects/snow-accumulation-effect"; // New import
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
@@ -84,7 +85,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
       <div className="relative h-screen bg-transparent">
         {activeEffect === 'rain' && <RainEffect />}
         {activeEffect === 'snow' && <SnowEffect />}
-        {activeEffect === 'raindrops' && <RaindropsEffect />} {/* Updated component */}
+        {activeEffect === 'raindrops' && <RaindropsEffect />}
+        {activeEffect === 'snow-accumulation' && <SnowAccumulationEffect />} {/* Render new effect */}
         <Header
           onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
           isChatOpen={isChatOpen}

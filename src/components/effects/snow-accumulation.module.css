@@ -1,0 +1,23 @@
+.snowAccumulationContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 899; /* Behind widgets, above background */
+  overflow: hidden;
+  background: transparent;
+}
+
+.snowPatch {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.8); /* White with some transparency */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* Soft glow */
+  animation: appear-fade 5s ease-out forwards; /* Animation to appear and then stay */
+}
+
+@keyframes appear-fade {
+  0% { opacity: 0; transform: scale(0.5); }
+  100% { opacity: var(--opacity); transform: scale(1); } /* Use the opacity set by JS */
+}
