@@ -104,7 +104,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
           isMobile={isMobile}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         />
-        <Sidebar isMobile={isMobile} />
+        <Sidebar isMobile={isMobile} isCurrentRoomWritable={isCurrentRoomWritable} /> {/* Pass isCurrentRoomWritable */}
         <div
           className="absolute top-16 right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
           style={{ left: `${sidebarCurrentWidth}px` }}

@@ -35,7 +35,7 @@ interface HeaderProps {
 export const Header = React.memo(({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnreadMessage, onClearUnreadMessages, unreadChatCount, isMobile, onToggleSidebar }: HeaderProps) => {
   const { session } = useSupabase();
   const router = useRouter();
-  const { currentRoomName, currentRoomId, isCurrentRoomWritable } = useCurrentRoom();
+  const { currentRoomName, currentRoomId, isCurrentRoomWritable, setCurrentRoom } = useCurrentRoom();
 
   return (
     <header className="sticky top-0 z-[1002] w-full border-b bg-background/80 backdrop-blur-md flex items-center h-16">
@@ -62,7 +62,7 @@ export const Header = React.memo(({ onOpenUpgradeModal, isChatOpen, onToggleChat
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => router.push('/dashboard')}
+          onClick={() => setCurrentRoom(null, "My Room")} // Navigate to personal room
           title="Go to My Room"
           className={isMobile ? "hidden" : ""}
         >
