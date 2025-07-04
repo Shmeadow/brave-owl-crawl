@@ -7,12 +7,10 @@ import { FlashcardForm } from './FlashcardForm';
 import { ImportExport } from './ImportExport';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCcw, LayoutGrid } from 'lucide-react';
+import { RefreshCcw } from 'lucide-react';
 import { CardData, Category } from '@/hooks/flashcards/types';
 import { OrganizeCardModal } from './OrganizeCardModal';
 import { toast } from 'sonner';
-import { Slider } from '@/components/ui/slider';
-import { Label } from '@/components/ui/label';
 
 interface ManageModeProps {
   cards: CardData[];
@@ -50,16 +48,7 @@ export function ManageMode({
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all' | null>('all');
   const [organizingCard, setOrganizingCard] = useState<CardData | null>(null);
   const [columns, setColumns] = useState(2);
-  const [sizePreset, setSizePreset] = useState<'default' | 'small' | 'big'>('default');
-
-  const rowHeight = useMemo(() => {
-    switch (sizePreset) {
-      case 'small': return 80;
-      case 'big': return 160;
-      case 'default':
-      default: return 120;
-    }
-  }, [sizePreset]);
+  const [rowHeight, setRowHeight] = useState(120);
 
   const filteredCards = useMemo(() => {
     if (selectedCategoryId === 'all') {
@@ -143,35 +132,6 @@ export function ManageMode({
         />
         <Card>
           <CardHeader>
-            <CardTitle>View Options</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="columns-slider">Columns: {columns}</Label>
-              <div className="flex items-center gap-4">
-                <LayoutGrid className="h-5 w-5 text-muted-foreground" />
-                <Slider
-                  id="columns-slider"
-                  value={[columns]}
-                  onValueChange={(value) => setColumns(value[0])}
-                  min={1}
-                  max={4}
-                  step={1}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Card Size</Label>
-              <div className="flex gap-2">
-                <Button className="flex-1" variant={sizePreset === 'small' ? 'default' : 'outline'} onClick={() => setSizePreset('small')}>Small</Button>
-                <Button className="flex-1" variant={sizePreset === 'default' ? 'default' : 'outline'} onClick={() => setSizePreset('default')}>Default</Button>
-                <Button className="flex-1" variant={sizePreset === 'big' ? 'default' : 'outline'} onClick={() => setSizePreset('big')}>Big</Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
             <CardTitle>Deck Options</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
@@ -218,7 +178,9 @@ export function ManageMode({
           onDelete={onDeleteCard}
           onOrganize={setOrganizingCard}
           columns={columns}
+          setColumns={setColumns}
           rowHeight={rowHeight}
+          setRowHeight={setRowHeight}
         />
       </div>
       <OrganizeCardModal

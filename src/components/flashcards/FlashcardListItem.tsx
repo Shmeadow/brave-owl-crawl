@@ -22,7 +22,14 @@ export function FlashcardListItem({ card, onEdit, onDelete, onOrganize, rowHeigh
     >
       <div className="flex-grow overflow-hidden mb-3">
         <p className="font-semibold text-foreground text-base mb-2 truncate" title={card.front}>{card.front}</p>
-        <p className="text-muted-foreground text-sm line-clamp-3">{card.back}</p>
+        <p className={cn(
+          "text-muted-foreground text-sm",
+          rowHeight < 100 && 'line-clamp-1',
+          rowHeight >= 100 && rowHeight < 160 && 'line-clamp-3',
+          rowHeight >= 160 && 'line-clamp-6'
+        )}>
+          {card.back}
+        </p>
       </div>
       <div className="flex items-center justify-between mt-auto pt-3 border-t border-border/50">
         <p className="text-muted-foreground text-xs">
