@@ -12,8 +12,8 @@ const BackgroundBlurContext = createContext<BackgroundBlurContextType | undefine
 const LOCAL_STORAGE_KEY = 'app_background_blur';
 
 export function BackgroundBlurProvider({ children }: { children: React.ReactNode }) {
-  // Always default to 8px blur (50% of max 16) on initial render
-  const [blur, setBlurState] = useState(8); 
+  // Always default to 4px blur (25% of max 16) on initial render
+  const [blur, setBlurState] = useState(4); 
 
   // Update CSS variable and local storage when blur changes
   useEffect(() => {
