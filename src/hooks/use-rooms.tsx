@@ -20,6 +20,7 @@ export function useRooms() {
     handleGenerateInviteCode,
     handleJoinRoomByCode,
     handleJoinRoomByPassword,
+    handleSendJoinRequest,
     handleLeaveRoom,
     handleKickUser,
   } = useRoomMembership({ rooms, fetchRooms });
@@ -35,6 +36,7 @@ export function useRooms() {
     handleGenerateInviteCode,
     handleJoinRoomByCode,
     handleJoinRoomByPassword,
+    handleSendJoinRequest, // Explicitly return handleSendJoinRequest
     handleLeaveRoom,
     handleKickUser,
     fetchRooms, // Expose fetchRooms for manual refresh if needed

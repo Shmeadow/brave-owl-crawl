@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SpacesWidget } from "@/components/widget-content/spaces-widget";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown"; // Import NotificationsDropdown
 
 interface HeaderProps {
   onOpenUpgradeModal: () => void;
@@ -51,14 +52,7 @@ export const Header = React.memo(({ onOpenUpgradeModal, isChatOpen, onToggleChat
             <span className="sr-only">Open Menu</span>
           </Button>
         )}
-        <div className="relative flex-grow max-w-xs sm:max-w-sm hidden sm:block">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search other rooms..."
-            className="pl-8"
-          />
-        </div>
+        {/* Removed search input */}
         <Button
           variant="ghost"
           size="icon"
@@ -94,10 +88,13 @@ export const Header = React.memo(({ onOpenUpgradeModal, isChatOpen, onToggleChat
 
         <UpgradeButton onOpenUpgradeModal={onOpenUpgradeModal} />
         <ThemeToggle />
-        <Button variant="ghost" size="icon" title="Notifications">
-          <Bell className="h-6 w-6" />
-          <span className="sr-only">Notifications</span>
-        </Button>
+        {session && (
+          <NotificationsDropdown
+            unreadCount={unreadChatCount} // Reusing unreadChatCount for general notifications for now
+            onClearUnread={onClearUnreadMessages}
+            onNewUnread={onNewUnreadMessage}
+          />
+        )}
         {session && (
           <ChatPanel
             isOpen={isChatOpen}
