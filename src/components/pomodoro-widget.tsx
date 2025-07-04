@@ -85,12 +85,12 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
               </Button>
             </CardHeader>
             <CardContent className="flex flex-col items-center gap-3 w-full p-2">
-              <div className="flex gap-1 justify-center w-full">
+              <div className="flex gap-0.5 justify-center w-full">
                 <Button
                   variant={mode === 'focus' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => handleSwitchMode('focus')}
-                  className={cn("text-xs px-2 h-7", mode === 'focus' && "bg-primary text-primary-foreground")}
+                  className={cn("text-xs px-1 h-7", mode === 'focus' ? "bg-primary text-primary-foreground" : "")}
                   disabled={!isCurrentRoomWritable}
                 >
                   <Brain className="h-3 w-3 mr-1" /> Focus
@@ -99,7 +99,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
                   variant={mode === 'short-break' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => handleSwitchMode('short-break')}
-                  className={cn("text-xs px-2 h-7", mode === 'short-break' && "bg-secondary text-secondary-foreground")}
+                  className={cn("text-xs px-1 h-7", mode === 'short-break' ? "bg-secondary text-secondary-foreground" : "")}
                   disabled={!isCurrentRoomWritable}
                 >
                   <Coffee className="h-3 w-3 mr-1" /> Short
@@ -108,7 +108,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
                   variant={mode === 'long-break' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => handleSwitchMode('long-break')}
-                  className={cn("text-xs px-2 h-7", mode === 'long-break' && "bg-accent text-accent-foreground")}
+                  className={cn("text-xs px-1 h-7", mode === 'long-break' ? "bg-accent text-accent-foreground" : "")}
                   disabled={!isCurrentRoomWritable}
                 >
                   <Home className="h-3 w-3 mr-1" /> Long
