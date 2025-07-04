@@ -10,12 +10,12 @@ interface UseRoomMembershipProps {
   fetchRooms: () => Promise<void>;
 }
 
+export function generateRandomCode() {
+  return Math.random().toString(36).substring(2, 8).toUpperCase(); // 6 alphanumeric characters
+}
+
 export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps) {
   const { supabase, session } = useSupabase();
-
-  const generateRandomCode = () => {
-    return Math.random().toString(36).substring(2, 8).toUpperCase(); // 6 alphanumeric characters
-  };
 
   const handleGenerateInviteCode = useCallback(async (roomId: string) => {
     if (!session?.user?.id || !supabase) {
@@ -39,12 +39,13 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
       return null;
     }
 
+    // Check for an existing active invite code for this room
     const { data: existingInvites, error: existingInvitesError } = await supabase
       .from('room_invites')
       .select('code')
       .eq('room_id', roomId)
       .eq('creator_id', session.user.id)
-      .is('expires_at', null);
+      .is('expires_at', null); // Only consider non-expired invites
 
     if (existingInvitesError) {
       console.error("Error checking existing invites:", existingInvitesError);
@@ -69,14 +70,14 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
         .eq('code', newCode)
         .single();
 
-      if (codeCheckError && codeCheckError.code === 'PGRST116') {
+      if (codeCheckError && codeCheckError.code === 'PGRST116') { // PGRST116 means no rows found
         isCodeUnique = true;
       } else if (codeCheckError) {
         console.error("Error checking code uniqueness:", codeCheckError);
         toast.error("Error generating invite code.");
         return null;
       } else {
-        newCode = generateRandomCode();
+        newCode = generateRandomCode(); // Generate a new code if it's not unique
         attempts++;
       }
     }
@@ -92,7 +93,7 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
         room_id: roomId,
         code: newCode,
         creator_id: session.user.id,
-        expires_at: null,
+        expires_at: null, // No expiration for now
       })
       .select()
       .single();

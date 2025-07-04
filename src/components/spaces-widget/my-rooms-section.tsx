@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Lock, Unlock, Trash2, LogIn, Share2, LogOut } from "lucide-react";
+import { Lock, Unlock, Trash2, LogIn, Share2, LogOut, Copy } from "lucide-react"; // Added Copy icon
 import { useRooms, RoomData } from "@/hooks/use-rooms";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
@@ -45,6 +45,11 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
     if (code) {
       setGeneratedInviteCodes(prev => ({ ...prev, [roomId]: code }));
     }
+  };
+
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    toast.success("Invite code copied to clipboard!");
   };
 
   const getRoomCreatorName = (room: RoomData) => {
@@ -94,8 +99,23 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
                       {room.is_public ? "Public" : "Private"}
                       {room.password_hash && " (Password Protected)"}
                     </p>
-                    {!room.is_public && generatedInviteCodes[room.id] && (
-                      <p className="text-xs text-primary mt-1">Invite Code: <span className="font-bold">{generatedInviteCodes[room.id]}</span></p>
+                    {/* Display invite code and copy button */}
+                    {!room.is_public && (
+                      <div className="flex items-center mt-1">
+                        <p className="text-xs text-primary">Invite Code: <span className="font-bold">{generatedInviteCodes[room.id] || 'Generating...'}</span></p>
+                        {generatedInviteCodes[room.id] && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 ml-1 text-primary hover:bg-primary/10"
+                            onClick={(e) => { e.stopPropagation(); handleCopyCode(generatedInviteCodes[room.id]!); }}
+                            title="Copy Invite Code"
+                          >
+                            <Copy className="h-3 w-3" />
+                            <span className="sr-only">Copy Invite Code</span>
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
