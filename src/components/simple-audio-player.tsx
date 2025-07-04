@@ -18,11 +18,15 @@ import { PlayerModeButtons } from './audio-player/player-mode-buttons';
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 
 // Constants for layout dimensions (should match AppWrapper and PomodoroWidget)
-// These are no longer directly used for maximized player positioning, but kept for context if needed elsewhere.
 const HEADER_HEIGHT = 64; // px
 const POMODORO_WIDGET_HEIGHT_EST = 200; // px, estimated height when expanded
 const POMODORO_WIDGET_BOTTOM_OFFSET = 20; // px, from PomodoroWidget's fixed bottom-20
-const PLAYER_POMODORO_BUFFER = 20; // px
+const PLAYER_POMODORO_BUFFER = 40; // px - Increased buffer for more clearance
+
+
+// Calculate the exact top and bottom positions for the player
+const MAXIMIZED_PLAYER_TOP_POSITION = HEADER_HEIGHT + 40; // Moved down by 40px
+const MAXIMIZED_PLAYER_BOTTOM_POSITION = POMODORO_WIDGET_BOTTOM_OFFSET + POMODORO_WIDGET_HEIGHT_EST + PLAYER_POMODORO_BUFFER + 20; // Added 20px buffer
 
 
 const SimpleAudioPlayer = () => {
@@ -202,8 +206,9 @@ const SimpleAudioPlayer = () => {
       "fixed z-[899] transition-all duration-300 ease-in-out",
       displayMode === 'normal' && 'top-20 right-4 w-80',
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-16',
-      displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 max-w-[500px] w-full flex flex-col items-center justify-center' // Adjusted for right alignment, max-width, and vertical centering
+      displayMode === 'maximized' && 'right-4 w-[500px] flex flex-col items-center justify-center' // Adjusted for right alignment and fixed width
     )}
+    style={displayMode === 'maximized' ? { top: `${MAXIMIZED_PLAYER_TOP_POSITION}px`, bottom: `${MAXIMIZED_PLAYER_BOTTOM_POSITION}px` } : {}}
     >
       {/* Normal/Maximized Player UI */}
       <div className={cn(
