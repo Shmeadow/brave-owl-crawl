@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Play, Pause, RotateCcw, Coffee, Brain, Home, ChevronDown, Settings, ChevronUp, Pin, PinOff } from "lucide-react";
+import { Play, Pause, RotateCcw, Coffee, Brain, Home, ChevronDown, Settings, ChevronUp } from "lucide-react";
 import { usePomodoroState, formatTime, parseTimeToSeconds, PomodoroMode } from "@/hooks/use-pomodoro-state";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -36,7 +36,6 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
   } = usePomodoroState();
 
   const { isCurrentRoomWritable } = useCurrentRoom();
-  const [isAlwaysOnTop, setIsAlwaysOnTop] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleTimeInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -182,42 +181,28 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
     );
   }
 
-  // Desktop rendering (original logic)
+  // Desktop rendering
   return (
     <Card
       className={cn(
         "fixed bottom-20 left-1/2 -translate-x-1/2",
         "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg",
-        "flex transition-all duration-300 ease-in-out",
-        `w-[200px]`, // Fixed width for desktop
+        "flex transition-all duration-300 ease-in-out z-[901]",
+        "w-56", // Adjusted width
         isMinimized
           ? "flex-col items-center px-2 py-1 h-auto cursor-pointer"
-          : "flex-col items-center p-2 gap-2 h-auto",
-        isAlwaysOnTop ? "z-[9999]" : "z-[901]"
+          : "flex-col items-center p-4 gap-4 h-auto"
       )}
       onClick={isMinimized ? () => setIsMinimized(false) : undefined}
     >
       <CardHeader className={cn(
-        "flex flex-row items-center justify-between w-full p-1",
+        "flex flex-row items-center justify-between w-full p-0",
         isMinimized ? "hidden" : "pb-2"
       )}>
         <CardTitle className="text-lg font-bold flex-1 text-left">
           Pomodoro
         </CardTitle>
         <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsAlwaysOnTop(prev => !prev);
-            }}
-            title={isAlwaysOnTop ? "Unpin from top" : "Pin on top"}
-          >
-            {isAlwaysOnTop ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-            <span className="sr-only">{isAlwaysOnTop ? "Unpin from top" : "Pin on top"}</span>
-          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -234,43 +219,43 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
         </div>
       </CardHeader>
 
-      <CardContent className={cn("flex flex-col items-center gap-3 w-full p-1", isMinimized ? "hidden" : "flex")}>
-        <div className="flex gap-1 justify-center w-full">
-          <div className="flex flex-col items-center">
+      <CardContent className={cn("flex flex-col items-center gap-4 w-full p-0", isMinimized ? "hidden" : "flex")}>
+        <div className="grid grid-cols-3 gap-2 w-full">
+          <div className="flex flex-col items-center gap-1">
             <Button
               variant={mode === 'focus' ? 'default' : 'outline'}
               size="icon"
               onClick={() => handleSwitchMode('focus')}
-              className={cn("h-7 w-7", mode === 'focus' && "bg-primary text-primary-foreground")}
+              className={cn("h-10 w-10 rounded-md", mode === 'focus' && "bg-primary text-primary-foreground")}
               disabled={!isCurrentRoomWritable}
             >
-              <Brain className="h-3 w-3" />
+              <Brain className="h-5 w-5" />
             </Button>
-            <span className="text-xs text-muted-foreground mt-1">Focus</span>
+            <span className="text-xs text-muted-foreground">Focus</span>
           </div>
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center gap-1">
             <Button
               variant={mode === 'short-break' ? 'default' : 'outline'}
               size="icon"
               onClick={() => handleSwitchMode('short-break')}
-              className={cn("h-7 w-7", mode === 'short-break' && "bg-secondary text-secondary-foreground")}
+              className={cn("h-10 w-10 rounded-md", mode === 'short-break' && "bg-secondary text-secondary-foreground")}
               disabled={!isCurrentRoomWritable}
             >
-              <Coffee className="h-3 w-3" />
+              <Coffee className="h-5 w-5" />
             </Button>
-            <span className="text-xs text-muted-foreground mt-1">Short</span>
+            <span className="text-xs text-muted-foreground">Short</span>
           </div>
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center gap-1">
             <Button
               variant={mode === 'long-break' ? 'default' : 'outline'}
               size="icon"
               onClick={() => handleSwitchMode('long-break')}
-              className={cn("h-7 w-7", mode === 'long-break' && "bg-accent text-accent-foreground")}
+              className={cn("h-10 w-10 rounded-md", mode === 'long-break' && "bg-accent text-accent-foreground")}
               disabled={!isCurrentRoomWritable}
             >
-              <Home className="h-3 w-3" />
+              <Home className="h-5 w-5" />
             </Button>
-            <span className="text-xs text-muted-foreground mt-1">Long</span>
+            <span className="text-xs text-muted-foreground">Long</span>
           </div>
         </div>
         {isEditingTime ? (
@@ -281,13 +266,13 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
             onChange={(e) => setEditableTimeString(e.target.value)}
             onBlur={handleTimeInputBlur}
             onKeyDown={handleTimeInputKeyDown}
-            className="text-3xl font-bold font-mono text-center w-full max-w-[180px] h-10"
+            className="text-5xl font-bold font-mono text-center w-full h-14 bg-transparent border-none focus-visible:ring-0"
             disabled={!isCurrentRoomWritable}
           />
         ) : (
           <div
             className={cn(
-              "text-3xl font-bold font-mono transition-colors",
+              "text-5xl font-bold font-mono transition-colors",
               isCurrentRoomWritable ? "cursor-pointer hover:text-primary" : "cursor-not-allowed opacity-70"
             )}
             onClick={isCurrentRoomWritable ? handleTimeDisplayClick : undefined}
@@ -295,16 +280,16 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
             {formatTime(timeLeft)}
           </div>
         )}
-        <div className="flex gap-2">
-          <Button onClick={handleStartPause} size="icon" className="h-7 w-7" disabled={!isCurrentRoomWritable}>
+        <div className="flex gap-4 justify-center">
+          <Button onClick={handleStartPause} size="icon" className="h-14 w-14 rounded-full" disabled={!isCurrentRoomWritable}>
             {isRunning ? (
-              <Pause className="h-4 w-4" />
+              <Pause className="h-6 w-6" />
             ) : (
-              <Play className="h-4 w-4" />
+              <Play className="h-6 w-6" />
             )}
           </Button>
-          <Button onClick={handleReset} size="icon" variant="secondary" className="h-7 w-7" disabled={!isCurrentRoomWritable}>
-            <RotateCcw className="h-4 w-4" />
+          <Button onClick={handleReset} size="icon" variant="secondary" className="h-14 w-14 rounded-full" disabled={!isCurrentRoomWritable}>
+            <RotateCcw className="h-6 w-6" />
           </Button>
         </div>
       </CardContent>
