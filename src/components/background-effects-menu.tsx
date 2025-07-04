@@ -31,6 +31,20 @@ const animatedBackgrounds = [
   { videoUrl: "/animated/ani5.mp4", thumbnailUrl: "/animated/ani5.mp4" },
   { videoUrl: "/animated/ani6.mp4", thumbnailUrl: "/animated/ani6.mp4" },
   { videoUrl: "/animated/ani7.mp4", thumbnailUrl: "/animated/ani7.jpg" },
+  { videoUrl: "/animated/ani8.mp4", thumbnailUrl: "/animated/ani8.jpg" },
+  { videoUrl: "/animated/ani9.mp4", thumbnailUrl: "/animated/ani9.jpg" },
+  { videoUrl: "/animated/ani10.mp4", thumbnailUrl: "/animated/ani10.jpg" },
+  { videoUrl: "/animated/ani11.mp4", thumbnailUrl: "/animated/ani11.jpg" },
+  { videoUrl: "/animated/ani12.mp4", thumbnailUrl: "/animated/ani12.jpg" },
+  { videoUrl: "/animated/ani13.mp4", thumbnailUrl: "/animated/ani13.jpg" },
+  { videoUrl: "/animated/ani14.mp4", thumbnailUrl: "/animated/ani14.jpg" },
+  { videoUrl: "/animated/ani15.mp4", thumbnailUrl: "/animated/ani15.jpg" },
+  { videoUrl: "/animated/ani16.mp4", thumbnailUrl: "/animated/ani16.jpg" },
+  { videoUrl: "/animated/ani17.mp4", thumbnailUrl: "/animated/ani17.jpg" },
+  { videoUrl: "/animated/ani18.mp4", thumbnailUrl: "/animated/ani18.jpg" },
+  { videoUrl: "/animated/ani19.mp4", thumbnailUrl: "/animated/ani19.jpg" },
+  { videoUrl: "/animated/ani20.mp4", thumbnailUrl: "/animated/ani20.jpg" },
+  { videoUrl: "/animated/ani21.mp4", thumbnailUrl: "/animated/ani21.jpg" },
 ];
 
 export function BackgroundEffectsMenu() {
