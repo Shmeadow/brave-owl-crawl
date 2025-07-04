@@ -24,27 +24,27 @@ const staticImages = [
 ];
 
 const animatedBackgrounds = [
-  { videoUrl: "/animated/ani1.mp4", thumbnailUrl: "/animated/ani1.jpg" },
-  { videoUrl: "/animated/ani2.mp4", thumbnailUrl: "/animated/ani2.jpg" },
-  { videoUrl: "/animated/ani3.mp4", thumbnailUrl: "/animated/ani3.jpg" },
-  { videoUrl: "/animated/ani4.mp4", thumbnailUrl: "/animated/ani4.jpg" },
-  { videoUrl: "/animated/ani5.mp4", thumbnailUrl: "/animated/ani5.jpg" },
-  { videoUrl: "/animated/ani6.mp4", thumbnailUrl: "/animated/ani6.jpg" },
-  { videoUrl: "/animated/ani7.mp4", thumbnailUrl: "/animated/ani7.jpg" },
-  { videoUrl: "/animated/ani8.mp4", thumbnailUrl: "/animated/ani8.jpg" },
-  { videoUrl: "/animated/ani9.mp4", thumbnailUrl: "/animated/ani9.jpg" },
-  { videoUrl: "/animated/ani10.mp4", thumbnailUrl: "/animated/ani10.jpg" },
-  { videoUrl: "/animated/ani11.mp4", thumbnailUrl: "/animated/ani11.jpg" },
-  { videoUrl: "/animated/ani12.mp4", thumbnailUrl: "/animated/ani12.jpg" },
-  { videoUrl: "/animated/ani13.mp4", thumbnailUrl: "/animated/ani13.jpg" },
-  { videoUrl: "/animated/ani14.mp4", thumbnailUrl: "/animated/ani14.jpg" },
-  { videoUrl: "/animated/ani15.mp4", thumbnailUrl: "/animated/ani15.jpg" },
-  { videoUrl: "/animated/ani16.mp4", thumbnailUrl: "/animated/ani16.jpg" },
-  { videoUrl: "/animated/ani17.mp4", thumbnailUrl: "/animated/ani17.jpg" },
-  { videoUrl: "/animated/ani18.mp4", thumbnailUrl: "/animated/ani18.jpg" },
-  { videoUrl: "/animated/ani19.mp4", thumbnailUrl: "/animated/ani19.jpg" },
-  { videoUrl: "/animated/ani20.mp4", thumbnailUrl: "/animated/ani20.jpg" },
-  { videoUrl: "/animated/ani21.mp4", thumbnailUrl: "/animated/ani21.jpg" },
+  { videoUrl: "/animated/ani1.mp4" },
+  { videoUrl: "/animated/ani2.mp4" },
+  { videoUrl: "/animated/ani3.mp4" },
+  { videoUrl: "/animated/ani4.mp4" },
+  { videoUrl: "/animated/ani5.mp4" },
+  { videoUrl: "/animated/ani6.mp4" },
+  { videoUrl: "/animated/ani7.mp4" },
+  { videoUrl: "/animated/ani8.mp4" },
+  { videoUrl: "/animated/ani9.mp4" },
+  { videoUrl: "/animated/ani10.mp4" },
+  { videoUrl: "/animated/ani11.mp4" },
+  { videoUrl: "/animated/ani12.mp4" },
+  { videoUrl: "/animated/ani13.mp4" },
+  { videoUrl: "/animated/ani14.mp4" },
+  { videoUrl: "/animated/ani15.mp4" },
+  { videoUrl: "/animated/ani16.mp4" },
+  { videoUrl: "/animated/ani17.mp4" },
+  { videoUrl: "/animated/ani18.mp4" },
+  { videoUrl: "/animated/ani19.mp4" },
+  { videoUrl: "/animated/ani20.mp4" },
+  { videoUrl: "/animated/ani21.mp4" },
 ];
 
 export function BackgroundEffectsMenu() {
@@ -102,7 +102,7 @@ export function BackgroundEffectsMenu() {
         <TabsContent value="animated-backgrounds" className="mt-4">
           <ScrollArea className="h-72">
             <div className="grid grid-cols-2 gap-4 pr-4">
-              {animatedBackgrounds.map(({ videoUrl, thumbnailUrl }) => {
+              {animatedBackgrounds.map(({ videoUrl }) => {
                 const isActive = background.isVideo && background.url === videoUrl;
                 return (
                   <div
@@ -114,11 +114,12 @@ export function BackgroundEffectsMenu() {
                     }`}
                     onClick={() => handleBackgroundChange(videoUrl, true)}
                   >
-                    <img
-                      src={thumbnailUrl}
-                      alt={`Animated background ${videoUrl.split("/").pop()}`}
+                    <video
+                      src={videoUrl}
                       className="absolute inset-0 w-full h-full object-cover"
-                      loading="lazy"
+                      preload="metadata"
+                      muted
+                      playsInline
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
                       <ImageIcon className="h-6 w-6" />
