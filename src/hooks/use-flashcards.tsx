@@ -7,7 +7,7 @@ import { useFlashcardDeck } from './flashcards/useFlashcardDeck';
 export type { CardData } from './flashcards/types';
 
 export function useFlashcards() {
-  const { cards, setCards, loading, isLoggedInMode, session, supabase } = useFlashcardData();
+  const { cards, setCards, loading, isLoggedInMode, session, supabase, fetchCards } = useFlashcardData();
   
   const mutations = useFlashcardMutations({
     cards,
@@ -27,6 +27,7 @@ export function useFlashcards() {
     cards,
     loading,
     isLoggedInMode,
+    fetchCards,
     ...mutations,
     ...deckActions,
   };

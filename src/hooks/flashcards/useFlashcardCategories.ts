@@ -81,11 +81,23 @@ export function useFlashcardCategories() {
     }
   };
 
-  const deleteCategory = async (id: string) => {
+  const deleteCategory = async (id: string): Promise<boolean> => {
     if (!session || !supabase) {
       toast.error('You must be logged in to delete a category.');
-      return;
+      return false;
     }
+    // First, unlink all cards from this category
+    const { error: unlinkError } = await supabase
+      .from('flashcards')
+      .update({ category_id: null })
+      .eq('category_id', id);
+
+    if (unlinkError) {
+      toast.error('Failed to unlink cards from category: ' + unlinkError.message);
+      return false;
+    }
+
+    // Now, delete the category
     const { error } = await supabase
       .from('flashcard_categories')
       .delete()
@@ -93,9 +105,11 @@ export function useFlashcardCategories() {
 
     if (error) {
       toast.error('Failed to delete category: ' + error.message);
+      return false;
     } else {
       setCategories(prev => prev.filter(c => c.id !== id));
-      toast.success('Category deleted.');
+      toast.success('Category deleted. Cards are now uncategorized.');
+      return true;
     }
   };
 

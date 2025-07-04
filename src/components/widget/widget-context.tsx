@@ -265,84 +265,68 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
   const minimizeWidget = useCallback((id: string) => {
     setActiveWidgets(prev => {
       const updatedWidgets = prev.map(widget => {
-        if (widget.id === id && !widget.isPinned) {
-          if (widget.isMaximized) {
-            return {
-              ...widget,
-              isMaximized: false,
-              isMinimized: true,
-              size: { width: 224, height: 48 }, // Use fixed minimized size
-              position: clampPosition(
-                widget.normalPosition?.x || initialWidgetConfigs[id].initialPosition.x,
-                widget.normalPosition?.y || initialWidgetConfigs[id].initialPosition.y,
-                224, // Use fixed minimized size
-                48, // Use fixed minimized size
-                mainContentArea
-              ),
-            };
-          } else if (widget.isMinimized) {
-            return {
-              ...widget,
-              isMinimized: false,
-              position: widget.normalPosition || initialWidgetConfigs[id].initialPosition,
-              size: widget.normalSize || { width: initialWidgetConfigs[id].initialWidth, height: initialWidgetConfigs[id].initialHeight },
-            };
-          } else {
-            return {
-              ...widget,
-              isMinimized: true,
-              normalSize: widget.size,
-              normalPosition: widget.position,
-              size: { width: 224, height: 48 }, // Use fixed minimized size
-              position: clampPosition(
-                widget.position.x,
-                widget.position.y,
-                224, // Use fixed minimized size
-                48, // Use fixed minimized size
-                mainContentArea
-              ),
-            };
-          }
-        }
-        return widget;
-      });
-      return recalculatePinnedWidgets(updatedWidgets);
-    });
-  }, [initialWidgetConfigs, recalculatePinnedWidgets, mainContentArea]);
-
-  const maximizeWidget = useCallback((id: string) => {
-    setActiveWidgets(prev => {
-      const updatedWidgets = prev.map(widget => {
         if (widget.id === id) {
-          if (widget.isPinned) {
-            const config = initialWidgetConfigs[id];
+          if (widget.isMinimized) {
+            // It's minimized, restore to normal
             return {
               ...widget,
-              isPinned: false,
-              isMinimized: false,
-              isMaximized: true,
-              normalPosition: widget.previousPosition!,
-              normalSize: widget.previousSize!,
-              position: { x: mainContentArea.left, y: mainContentArea.top },
-              size: { width: mainContentArea.width, height: mainContentArea.height },
-              previousPosition: undefined,
-              previousSize: undefined,
-            };
-          } else if (widget.isMaximized) {
-            return {
-              ...widget,
-              isMaximized: false,
               isMinimized: false,
               position: widget.normalPosition!,
               size: widget.normalSize!,
             };
           } else {
+            // It's normal or maximized, so minimize it.
+            const normalSizeToSave = widget.isMaximized ? widget.normalSize! : widget.size;
+            const normalPositionToSave = widget.isMaximized ? widget.normalPosition! : widget.position;
+            
+            return {
+              ...widget,
+              isMinimized: true,
+              isMaximized: false, // Ensure it's not maximized
+              normalSize: normalSizeToSave,
+              normalPosition: normalPositionToSave,
+              size: { width: 224, height: 48 },
+              position: clampPosition(
+                normalPositionToSave.x,
+                normalPositionToSave.y,
+                224,
+                48,
+                mainContentArea
+              ),
+            };
+          }
+        }
+        return widget;
+      });
+      return recalculatePinnedWidgets(updatedWidgets);
+    });
+  }, [mainContentArea, recalculatePinnedWidgets]);
+
+  const maximizeWidget = useCallback((id: string) => {
+    setActiveWidgets(prev => {
+      const updatedWidgets = prev.map(widget => {
+        if (widget.id === id) {
+          if (widget.isMaximized) {
+            // It's maximized, restore to normal
+            return {
+              ...widget,
+              isMaximized: false,
+              position: widget.normalPosition!,
+              size: widget.normalSize!,
+            };
+          } else {
+            // It's normal or minimized, so maximize it.
+            // First, ensure we have the correct "normal" state to save.
+            const normalSizeToSave = widget.isMinimized ? widget.normalSize! : widget.size;
+            const normalPositionToSave = widget.isMinimized ? widget.normalPosition! : widget.position;
+
             return {
               ...widget,
               isMaximized: true,
-              isMinimized: false,
-              normalSize: widget.size,
-              normalPosition: widget.position,
+              isMinimized: false, // Ensure it's not minimized
+              isPinned: false, // Maximizing unpins it
+              normalSize: normalSizeToSave,
+              normalPosition: normalPositionToSave,
               size: { width: mainContentArea.width, height: mainContentArea.height },
               position: { x: mainContentArea.left, y: mainContentArea.top },
             };
@@ -352,7 +336,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       });
       return recalculatePinnedWidgets(updatedWidgets);
     });
-  }, [initialWidgetConfigs, recalculatePinnedWidgets, mainContentArea]);
+  }, [mainContentArea, recalculatePinnedWidgets]);
 
   const togglePinned = useCallback((id: string) => {
     setActiveWidgets(prev => {

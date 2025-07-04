@@ -13,6 +13,7 @@ import { OrganizeCardModal } from './OrganizeCardModal';
 import { toast } from 'sonner';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
+import { useFlashcards } from '@/hooks/use-flashcards';
 
 interface ManageModeProps {
   cards: CardData[];
@@ -26,7 +27,7 @@ interface ManageModeProps {
   onBulkImport: (cards: { front: string; back: string }[], categoryId: string | null) => Promise<number>;
   categories: Category[];
   onAddCategory: (name: string) => Promise<Category | null>;
-  onDeleteCategory: (id: string) => void;
+  onDeleteCategory: (id: string) => Promise<boolean>;
   onUpdateCategory: (id: string, name: string) => void;
   onUpdateCardCategory: (cardId: string, newCategoryId: string | null) => void;
 }
@@ -47,25 +48,10 @@ export function ManageMode({
   onUpdateCategory,
   onUpdateCardCategory,
 }: ManageModeProps) {
+  const { fetchCards } = useFlashcards();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all' | null>('all');
   const [organizingCard, setOrganizingCard] = useState<CardData | null>(null);
-  const [columns, setColumns] = useState(2);
-  const [sizePreset, setSizePreset] = useState<'default' | 'small' | 'big'>('default');
-
-  useEffect(() => {
-    if (columns > 3) {
-      setColumns(3);
-    }
-  }, [columns]);
-
-  const rowHeight = useMemo(() => {
-    switch (sizePreset) {
-      case 'small': return 60;
-      case 'big': return 200;
-      case 'default':
-      default: return 120;
-    }
-  }, [sizePreset]);
+  const [columns, setColumns] = useState(3);
 
   const filteredCards = useMemo(() => {
     if (selectedCategoryId === 'all') {
@@ -74,27 +60,20 @@ export function ManageMode({
     return cards.filter(card => card.category_id === selectedCategoryId);
   }, [cards, selectedCategoryId]);
 
-  const handleSave = async (cardData: { id?: string; front: string; back: string }) => {
-    let categoryIdToSave = selectedCategoryId === 'all' ? null : selectedCategoryId;
-    const isTrueFalseCard = cardData.front.toLowerCase().includes('true or false') || cardData.back.toLowerCase().includes('true or false');
-
-    if (isTrueFalseCard) {
-      let tfCategory: Category | undefined | null = categories.find(c => c.name.toLowerCase() === 'true or false');
-      if (!tfCategory) {
-        tfCategory = await onAddCategory('True or False');
-      }
-      if (tfCategory) {
-        categoryIdToSave = tfCategory.id;
-      }
-    }
-
-    const dataToSave = { ...cardData, category_id: categoryIdToSave };
+  const handleSave = async (cardData: { id?: string; front: string; back: string; category_id?: string | null }) => {
     if (cardData.id) {
-      onUpdateCard(cardData.id, dataToSave);
+      onUpdateCard(cardData.id, cardData);
     } else {
-      onAddCard(dataToSave);
+      onAddCard(cardData);
     }
     onCancelEdit();
+  };
+
+  const handleDeleteCategoryWrapper = async (id: string) => {
+    const success = await onDeleteCategory(id);
+    if (success) {
+      fetchCards();
+    }
   };
 
   const handleOrganizeTrueFalse = async () => {
@@ -144,7 +123,7 @@ export function ManageMode({
           selectedCategoryId={selectedCategoryId}
           onSelectCategory={setSelectedCategoryId}
           onAddCategory={onAddCategory}
-          onDeleteCategory={onDeleteCategory}
+          onDeleteCategory={handleDeleteCategoryWrapper}
           onUpdateCategory={onUpdateCategory}
         />
         <Card>
@@ -164,14 +143,6 @@ export function ManageMode({
                   max={3}
                   step={1}
                 />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Card Size</Label>
-              <div className="flex gap-2">
-                <Button className="flex-1" variant={sizePreset === 'small' ? 'default' : 'outline'} onClick={() => setSizePreset('small')}>Small</Button>
-                <Button className="flex-1" variant={sizePreset === 'default' ? 'default' : 'outline'} onClick={() => setSizePreset('default')}>Default</Button>
-                <Button className="flex-1" variant={sizePreset === 'big' ? 'default' : 'outline'} onClick={() => setSizePreset('big')}>Big</Button>
               </div>
             </div>
           </CardContent>
@@ -217,6 +188,8 @@ export function ManageMode({
           onSave={handleSave}
           editingCard={editingCard}
           onCancel={onCancelEdit}
+          categories={categories}
+          selectedCategoryId={selectedCategoryId}
         />
         <FlashcardList
           flashcards={filteredCards}
@@ -224,7 +197,7 @@ export function ManageMode({
           onDelete={onDeleteCard}
           onOrganize={setOrganizingCard}
           columns={columns}
-          rowHeight={rowHeight}
+          rowHeight={120}
         />
       </div>
       <OrganizeCardModal

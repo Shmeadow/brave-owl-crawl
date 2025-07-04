@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Play, Pause, RotateCcw, Coffee, Brain, Home, ChevronDown, Settings, ChevronUp } from "lucide-react";
+import { Play, Pause, RotateCcw, Coffee, Brain, Home, ChevronDown, Settings, ChevronUp, Pin, PinOff } from "lucide-react";
 import { usePomodoroState, formatTime, parseTimeToSeconds, PomodoroMode } from "@/hooks/use-pomodoro-state";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
   } = usePomodoroState();
 
   const { isCurrentRoomWritable } = useCurrentRoom();
+  const [isAlwaysOnTop, setIsAlwaysOnTop] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleTimeInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -185,13 +186,14 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
   return (
     <Card
       className={cn(
-        "fixed bottom-20 left-1/2 -translate-x-1/2 z-[901]",
+        "fixed bottom-20 left-1/2 -translate-x-1/2",
         "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg",
         "flex transition-all duration-300 ease-in-out",
         `w-[200px]`, // Fixed width for desktop
         isMinimized
           ? "flex-col items-center px-2 py-1 h-auto cursor-pointer"
-          : "flex-col items-center p-2 gap-2 h-auto"
+          : "flex-col items-center p-2 gap-2 h-auto",
+        isAlwaysOnTop ? "z-[9999]" : "z-[901]"
       )}
       onClick={isMinimized ? () => setIsMinimized(false) : undefined}
     >
@@ -203,6 +205,19 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
           Pomodoro
         </CardTitle>
         <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsAlwaysOnTop(prev => !prev);
+            }}
+            title={isAlwaysOnTop ? "Unpin from top" : "Pin on top"}
+          >
+            {isAlwaysOnTop ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+            <span className="sr-only">{isAlwaysOnTop ? "Unpin from top" : "Pin on top"}</span>
+          </Button>
           <Button
             variant="ghost"
             size="icon"

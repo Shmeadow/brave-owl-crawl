@@ -17,38 +17,48 @@ import {
 } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { CardData } from '@/hooks/use-flashcards'; // Updated import
+import { CardData, Category } from '@/hooks/flashcards/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
   front: z.string().min(1, { message: "Front of card cannot be empty." }),
   back: z.string().min(1, { message: "Back of card cannot be empty." }),
+  category_id: z.string().nullable().optional(),
 });
 
 interface FlashcardFormProps {
-  onSave: (card: { id?: string; front: string; back: string }) => void;
+  onSave: (card: { id?: string; front: string; back: string; category_id?: string | null }) => void;
   editingCard: CardData | null;
   onCancel: () => void;
+  categories: Category[];
+  selectedCategoryId: string | 'all' | null;
 }
 
-export function FlashcardForm({ onSave, editingCard, onCancel }: FlashcardFormProps) {
+export function FlashcardForm({ onSave, editingCard, onCancel, categories, selectedCategoryId }: FlashcardFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      front: editingCard?.front || '',
-      back: editingCard?.back || '',
+      front: '',
+      back: '',
+      category_id: null,
     },
   });
 
   useEffect(() => {
+    const defaultCategoryId = editingCard
+      ? editingCard.category_id
+      : (selectedCategoryId === 'all' ? null : selectedCategoryId);
+
     form.reset({
       front: editingCard?.front || '',
       back: editingCard?.back || '',
+      category_id: defaultCategoryId,
     });
-  }, [editingCard, form]);
+  }, [editingCard, selectedCategoryId, form]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     onSave({ id: editingCard?.id, ...values });
-    form.reset();
+    form.reset({ front: '', back: '', category_id: values.category_id });
     toast.success(editingCard ? "Flashcard updated successfully!" : "Flashcard added successfully!");
   }
 
@@ -82,6 +92,34 @@ export function FlashcardForm({ onSave, editingCard, onCancel }: FlashcardFormPr
                   <FormControl>
                     <Textarea placeholder="e.g., Paris" {...field} rows={4} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="category_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <Select
+                    onValueChange={(value) => field.onChange(value === 'null' ? null : value)}
+                    defaultValue={field.value || 'null'}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="null">Uncategorized</SelectItem>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
