@@ -13,9 +13,22 @@ interface FlashcardListProps {
   onOrganize: (card: CardData) => void;
   columns: number;
   rowHeight: number;
+  selectionMode: boolean;
+  selectedCardIds: Set<string>;
+  onToggleSelection: (id: string) => void;
 }
 
-export function FlashcardList({ flashcards, onEdit, onDelete, onOrganize, columns, rowHeight }: FlashcardListProps) {
+export function FlashcardList({
+  flashcards,
+  onEdit,
+  onDelete,
+  onOrganize,
+  columns,
+  rowHeight,
+  selectionMode,
+  selectedCardIds,
+  onToggleSelection,
+}: FlashcardListProps) {
   return (
     <Card className="w-full flex flex-col flex-1 bg-card backdrop-blur-xl border-white/20">
       <CardHeader>
@@ -38,6 +51,9 @@ export function FlashcardList({ flashcards, onEdit, onDelete, onOrganize, column
                   onDelete={onDelete}
                   onOrganize={onOrganize}
                   rowHeight={rowHeight}
+                  isSelected={selectedCardIds.has(card.id)}
+                  selectionMode={selectionMode}
+                  onToggleSelection={onToggleSelection}
                 />
               ))}
             </ul>

@@ -225,6 +225,43 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
     }
   }, [cards, isLoggedInMode, session, supabase, setCards]);
 
+  const handleBulkDelete = useCallback(async (cardIds: string[]) => {
+    if (isLoggedInMode && session && supabase) {
+      const { error } = await supabase.from('flashcards').delete().in('id', cardIds);
+      if (error) {
+        toast.error("Error deleting cards: " + error.message);
+      } else {
+        setCards(prev => prev.filter(c => !cardIds.includes(c.id)));
+        toast.success(`${cardIds.length} cards deleted.`);
+      }
+    } else {
+      const updatedCards = cards.filter(c => !cardIds.includes(c.id));
+      setCards(updatedCards);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedCards));
+      toast.success(`${cardIds.length} cards deleted (locally).`);
+    }
+  }, [cards, isLoggedInMode, session, supabase, setCards]);
+
+  const handleBulkMove = useCallback(async (cardIds: string[], newCategoryId: string | null) => {
+    if (isLoggedInMode && session && supabase) {
+      const { data, error } = await supabase.from('flashcards').update({ category_id: newCategoryId }).in('id', cardIds).select();
+      if (error) {
+        toast.error("Error moving cards: " + error.message);
+      } else if (data) {
+        setCards(prev => prev.map(c => {
+          const updatedCard = data.find(uc => uc.id === c.id);
+          return updatedCard ? updatedCard as CardData : c;
+        }));
+        toast.success(`${cardIds.length} cards moved.`);
+      }
+    } else {
+      const updatedCards = cards.map(c => cardIds.includes(c.id) ? { ...c, category_id: newCategoryId } : c);
+      setCards(updatedCards);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedCards));
+      toast.success(`${cardIds.length} cards moved (locally).`);
+    }
+  }, [cards, isLoggedInMode, session, supabase, setCards]);
+
   return {
     handleAddCard,
     handleUpdateCard,
@@ -233,5 +270,7 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
     handleResetProgress,
     handleAnswerFeedback,
     handleUpdateCardCategory,
+    handleBulkDelete,
+    handleBulkMove,
   };
 }

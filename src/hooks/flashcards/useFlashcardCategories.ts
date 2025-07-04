@@ -81,23 +81,37 @@ export function useFlashcardCategories() {
     }
   };
 
-  const deleteCategory = async (id: string): Promise<boolean> => {
+  const deleteCategory = async (id: string, deleteContents: boolean): Promise<boolean> => {
     if (!session || !supabase) {
       toast.error('You must be logged in to delete a category.');
       return false;
     }
-    // First, unlink all cards from this category
-    const { error: unlinkError } = await supabase
-      .from('flashcards')
-      .update({ category_id: null })
-      .eq('category_id', id);
 
-    if (unlinkError) {
-      toast.error('Failed to unlink cards from category: ' + unlinkError.message);
-      return false;
+    if (deleteContents) {
+      // Delete all flashcards within the category first
+      const { error: deleteCardsError } = await supabase
+        .from('flashcards')
+        .delete()
+        .eq('category_id', id);
+
+      if (deleteCardsError) {
+        toast.error('Failed to delete flashcards in category: ' + deleteCardsError.message);
+        return false;
+      }
+    } else {
+      // Unlink all cards from this category
+      const { error: unlinkError } = await supabase
+        .from('flashcards')
+        .update({ category_id: null })
+        .eq('category_id', id);
+
+      if (unlinkError) {
+        toast.error('Failed to unlink cards from category: ' + unlinkError.message);
+        return false;
+      }
     }
 
-    // Now, delete the category
+    // Now, delete the category itself
     const { error } = await supabase
       .from('flashcard_categories')
       .delete()
@@ -108,7 +122,7 @@ export function useFlashcardCategories() {
       return false;
     } else {
       setCategories(prev => prev.filter(c => c.id !== id));
-      toast.success('Category deleted. Cards are now uncategorized.');
+      toast.success('Category and its contents handled successfully.');
       return true;
     }
   };

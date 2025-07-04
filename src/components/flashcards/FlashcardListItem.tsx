@@ -12,13 +12,36 @@ interface FlashcardListItemProps {
   onDelete: (id: string) => void;
   onOrganize: (card: CardData) => void;
   rowHeight: number;
+  selectionMode: boolean;
+  isSelected: boolean;
+  onToggleSelection: (id: string) => void;
 }
 
-export function FlashcardListItem({ card, onEdit, onDelete, onOrganize, rowHeight }: FlashcardListItemProps) {
+export function FlashcardListItem({
+  card,
+  onEdit,
+  onDelete,
+  onOrganize,
+  rowHeight,
+  selectionMode,
+  isSelected,
+  onToggleSelection,
+}: FlashcardListItemProps) {
+  const handleClick = () => {
+    if (selectionMode) {
+      onToggleSelection(card.id);
+    }
+  };
+
   return (
     <li
-      className="flex flex-col justify-between bg-muted backdrop-blur-xl p-4 rounded-lg shadow-sm border border-border transition-all duration-200 hover:shadow-lg hover:border-primary/50"
+      className={cn(
+        "flex flex-col justify-between bg-muted backdrop-blur-xl p-4 rounded-lg shadow-sm border border-border transition-all duration-200",
+        selectionMode ? "cursor-pointer" : "hover:shadow-lg hover:border-primary/50",
+        isSelected && "ring-2 ring-primary border-primary"
+      )}
       style={{ minHeight: `${rowHeight}px` }}
+      onClick={handleClick}
     >
       <div className="flex-grow overflow-hidden mb-3">
         <p className="font-semibold text-foreground text-base mb-2 truncate" title={card.front}>{card.front}</p>
@@ -30,29 +53,32 @@ export function FlashcardListItem({ card, onEdit, onDelete, onOrganize, rowHeigh
         </p>
         <div className="flex gap-1">
           <Button
-            onClick={() => onOrganize(card)}
+            onClick={(e) => { e.stopPropagation(); onOrganize(card); }}
             size="icon"
             variant="ghost"
             className="h-7 w-7 text-muted-foreground hover:text-primary"
             title="Organize flashcard"
+            disabled={selectionMode}
           >
             <FolderCog className="h-4 w-4" />
           </Button>
           <Button
-            onClick={() => onEdit(card)}
+            onClick={(e) => { e.stopPropagation(); onEdit(card); }}
             size="icon"
             variant="ghost"
             className="h-7 w-7 text-muted-foreground hover:text-primary"
             title="Edit flashcard"
+            disabled={selectionMode}
           >
             <Edit className="h-4 w-4" />
           </Button>
           <Button
-            onClick={() => onDelete(card.id)}
+            onClick={(e) => { e.stopPropagation(); onDelete(card.id); }}
             size="icon"
             variant="ghost"
             className="h-7 w-7 text-muted-foreground hover:text-destructive"
             title="Delete flashcard"
+            disabled={selectionMode}
           >
             <Trash2 className="h-4 w-4" />
           </Button>

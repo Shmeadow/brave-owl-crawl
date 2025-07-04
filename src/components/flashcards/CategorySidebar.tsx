@@ -9,13 +9,14 @@ import { PlusCircle, Trash2, Edit, Folder } from 'lucide-react';
 import { Category } from '@/hooks/flashcards/types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { DeleteCategoryDialog } from './DeleteCategoryDialog';
 
 interface CategorySidebarProps {
   categories: Category[];
   selectedCategoryId: string | 'all' | null;
   onSelectCategory: (id: string | 'all' | null) => void;
   onAddCategory: (name: string) => Promise<Category | null>;
-  onDeleteCategory: (id: string) => void;
+  onDeleteCategory: (id: string, deleteContents: boolean) => void;
   onUpdateCategory: (id: string, name: string) => void;
 }
 
@@ -30,6 +31,7 @@ export function CategorySidebar({
   const [newCategoryName, setNewCategoryName] = useState('');
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editingCategoryName, setEditingCategoryName] = useState('');
+  const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
 
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) {
@@ -59,80 +61,93 @@ export function CategorySidebar({
     handleCancelEdit();
   };
 
+  const handleDeleteConfirm = async (categoryId: string, deleteContents: boolean) => {
+    await onDeleteCategory(categoryId, deleteContents);
+    setDeletingCategory(null);
+  };
+
   return (
-    <Card className="w-full flex flex-col bg-card backdrop-blur-xl border-white/20">
-      <CardHeader>
-        <CardTitle>Categories</CardTitle>
-      </CardHeader>
-      <CardContent className="p-0 flex flex-col">
-        <div className="p-4 border-b">
-          <div className="flex gap-2">
-            <Input
-              placeholder="New category name..."
-              value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
-            />
-            <Button onClick={handleAddCategory} size="icon">
-              <PlusCircle className="h-4 w-4" />
-            </Button>
+    <>
+      <Card className="w-full flex flex-col bg-card backdrop-blur-xl border-white/20">
+        <CardHeader>
+          <CardTitle>Categories</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0 flex flex-col">
+          <div className="p-4 border-b">
+            <div className="flex gap-2">
+              <Input
+                placeholder="New category name..."
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+              />
+              <Button onClick={handleAddCategory} size="icon">
+                <PlusCircle className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-        </div>
-        <ScrollArea className="h-[250px]">
-          <div className="p-2 space-y-1">
-            <Button
-              variant="ghost"
-              className={cn(
-                'w-full justify-start text-left',
-                selectedCategoryId === 'all' && 'bg-accent text-accent-foreground'
-              )}
-              onClick={() => onSelectCategory('all')}
-            >
-              <Folder className="mr-2 h-4 w-4" /> All Cards
-            </Button>
-            <Button
-              variant="ghost"
-              className={cn(
-                'w-full justify-start text-left',
-                selectedCategoryId === null && 'bg-accent text-accent-foreground'
-              )}
-              onClick={() => onSelectCategory(null)}
-            >
-              <Folder className="mr-2 h-4 w-4" /> Uncategorized
-            </Button>
-            {categories.map((category) => (
-              <div
-                key={category.id}
+          <ScrollArea className="h-[250px]">
+            <div className="p-2 space-y-1">
+              <Button
+                variant="ghost"
                 className={cn(
-                  'flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-accent',
-                  selectedCategoryId === category.id && 'bg-accent text-accent-foreground'
+                  'w-full justify-start text-left',
+                  selectedCategoryId === 'all' && 'bg-accent text-accent-foreground'
                 )}
-                onClick={() => onSelectCategory(category.id)}
+                onClick={() => onSelectCategory('all')}
               >
-                {editingCategoryId === category.id ? (
-                  <Input
-                    value={editingCategoryName}
-                    onChange={(e) => setEditingCategoryName(e.target.value)}
-                    onBlur={handleSaveEdit}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit()}
-                    autoFocus
-                    className="h-8"
-                  />
-                ) : (
-                  <span className="flex-1 truncate">{category.name}</span>
+                <Folder className="mr-2 h-4 w-4" /> All Cards
+              </Button>
+              <Button
+                variant="ghost"
+                className={cn(
+                  'w-full justify-start text-left',
+                  selectedCategoryId === null && 'bg-accent text-accent-foreground'
                 )}
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); handleStartEdit(category); }}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={(e) => { e.stopPropagation(); onDeleteCategory(category.id); }}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                onClick={() => onSelectCategory(null)}
+              >
+                <Folder className="mr-2 h-4 w-4" /> Uncategorized
+              </Button>
+              {categories.map((category) => (
+                <div
+                  key={category.id}
+                  className={cn(
+                    'flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-accent',
+                    selectedCategoryId === category.id && 'bg-accent text-accent-foreground'
+                  )}
+                  onClick={() => onSelectCategory(category.id)}
+                >
+                  {editingCategoryId === category.id ? (
+                    <Input
+                      value={editingCategoryName}
+                      onChange={(e) => setEditingCategoryName(e.target.value)}
+                      onBlur={handleSaveEdit}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit()}
+                      autoFocus
+                      className="h-8"
+                    />
+                  ) : (
+                    <span className="flex-1 truncate">{category.name}</span>
+                  )}
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); handleStartEdit(category); }}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={(e) => { e.stopPropagation(); setDeletingCategory(category); }}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
-      </CardContent>
-    </Card>
+              ))}
+            </div>
+          </ScrollArea>
+        </CardContent>
+      </Card>
+      <DeleteCategoryDialog
+        category={deletingCategory}
+        isOpen={!!deletingCategory}
+        onClose={() => setDeletingCategory(null)}
+        onConfirm={handleDeleteConfirm}
+      />
+    </>
   );
 }
