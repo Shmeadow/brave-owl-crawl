@@ -6,7 +6,7 @@ import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
 import { useWidget } from "@/components/widget/widget-context";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
-import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, BookOpen, Goal, ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, BookOpen, Goal, ChevronLeft, ChevronRight, WandSparkles } from "lucide-react";
 
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
 const SIDEBAR_WIDTH_MOBILE = 200; // px for the off-canvas menu
@@ -88,7 +88,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
   }, [isAlwaysOpen, handleMouseMove, setIsSidebarOpen, isMobile]);
 
   const navItems = [
-    { id: "spaces", label: "Spaces", icon: LayoutGrid },
+    { id: "background-effects", label: "Backgrounds", icon: WandSparkles },
     { id: "sounds", label: "Sounds", icon: Volume2 },
     { id: "calendar", label: "Calendar", icon: Calendar },
     { id: "timer", label: "Timer", icon: Timer },

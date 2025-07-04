@@ -16,7 +16,7 @@ interface PublicRoomsSectionProps {
 }
 
 export function PublicRoomsSection({ publicRooms }: PublicRoomsSectionProps) {
-  const { session, profile } = useSupabase();
+  const { session } = useSupabase();
   const { currentRoomId, setCurrentRoom } = useCurrentRoom();
 
   const handleEnterRoom = (room: RoomData) => {
@@ -28,11 +28,15 @@ export function PublicRoomsSection({ publicRooms }: PublicRoomsSectionProps) {
     setCurrentRoom(room.id, room.name);
   };
 
-  const getRoomCreatorName = (creatorId: string) => {
-    if (session?.user?.id === creatorId) {
-      return profile?.first_name || profile?.last_name || "You";
+  const getRoomCreatorName = (room: RoomData) => {
+    if (session?.user?.id === room.creator_id) {
+      return "You";
     }
-    return `User (${creatorId.substring(0, 4)}...)`;
+    if (room.creator) {
+      const name = [room.creator.first_name, room.creator.last_name].filter(Boolean).join(' ');
+      return name || `User (${room.creator_id.substring(0, 4)}...)`;
+    }
+    return `User (${room.creator_id.substring(0, 4)}...)`;
   };
 
   if (publicRooms.length === 0) {
@@ -55,12 +59,23 @@ export function PublicRoomsSection({ publicRooms }: PublicRoomsSectionProps) {
                   currentRoomId === room.id && "ring-2 ring-primary"
                 )}
               >
-                <div className="flex-1 pr-2">
-                  <p className="font-medium text-sm">{room.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Created by: {getRoomCreatorName(room.creator_id)}
-                    {room.password_hash && " (Password Protected)"}
-                  </p>
+                <div className="flex items-center flex-1 min-w-0">
+                  <div className="relative w-16 h-10 rounded-md overflow-hidden mr-3 flex-shrink-0 bg-muted">
+                    {room.background_url && (
+                      room.is_video_background ? (
+                        <video src={room.background_url} className="w-full h-full object-cover" muted playsInline />
+                      ) : (
+                        <img src={room.background_url} alt={room.name} className="w-full h-full object-cover" />
+                      )
+                    )}
+                  </div>
+                  <div className="flex-1 pr-2">
+                    <p className="font-medium text-sm">{room.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Created by: {getRoomCreatorName(room)}
+                      {room.password_hash && " (Password Protected)"}
+                    </p>
+                  </div>
                 </div>
                 <Button
                   variant="ghost"

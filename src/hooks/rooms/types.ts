@@ -7,6 +7,13 @@ export interface RoomData {
   password_hash: string | null;
   created_at: string;
   is_member?: boolean; // Client-side flag to indicate if the current user is a member
+  background_url: string | null;
+  is_video_background: boolean | null;
+  creator: {
+    first_name: string | null;
+    last_name: string | null;
+  } | null;
+  room_members: { user_id: string }[];
 }
 
 export interface RoomInvite {

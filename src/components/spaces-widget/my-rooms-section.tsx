@@ -17,7 +17,7 @@ interface MyRoomsSectionProps {
 }
 
 export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSectionProps) {
-  const { session, profile } = useSupabase();
+  const { session } = useSupabase();
   const {
     handleToggleRoomPublicStatus,
     handleGenerateInviteCode,
@@ -47,11 +47,15 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
     }
   };
 
-  const getRoomCreatorName = (creatorId: string) => {
-    if (session?.user?.id === creatorId) {
-      return profile?.first_name || profile?.last_name || "You";
+  const getRoomCreatorName = (room: RoomData) => {
+    if (session?.user?.id === room.creator_id) {
+      return "You";
     }
-    return `User (${creatorId.substring(0, 4)}...)`;
+    if (room.creator) {
+      const name = [room.creator.first_name, room.creator.last_name].filter(Boolean).join(' ');
+      return name || `User (${room.creator_id.substring(0, 4)}...)`;
+    }
+    return `User (${room.creator_id.substring(0, 4)}...)`;
   };
 
   if (myCreatedRooms.length === 0 && myJoinedRooms.length === 0) {
@@ -64,7 +68,7 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
         <CardTitle className="text-xl">My Rooms & Joined Rooms</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-[300px] pr-4">
+        <ScrollArea className="max-h-[300px] pr-4">
           <div className="space-y-3">
             {myCreatedRooms.map((room) => (
               <div
@@ -74,15 +78,26 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
                   currentRoomId === room.id && "ring-2 ring-primary"
                 )}
               >
-                <div className="flex-1 pr-2 mb-2 sm:mb-0">
-                  <p className="font-medium text-sm">{room.name} (Created by You)</p>
-                  <p className="text-xs text-muted-foreground">
-                    {room.is_public ? "Public" : "Private"}
-                    {room.password_hash && " (Password Protected)"}
-                  </p>
-                  {!room.is_public && generatedInviteCodes[room.id] && (
-                    <p className="text-xs text-primary mt-1">Invite Code: <span className="font-bold">{generatedInviteCodes[room.id]}</span></p>
-                  )}
+                <div className="flex items-center flex-1 min-w-0">
+                  <div className="relative w-16 h-10 rounded-md overflow-hidden mr-3 flex-shrink-0 bg-muted">
+                    {room.background_url && (
+                      room.is_video_background ? (
+                        <video src={room.background_url} className="w-full h-full object-cover" muted playsInline />
+                      ) : (
+                        <img src={room.background_url} alt={room.name} className="w-full h-full object-cover" />
+                      )
+                    )}
+                  </div>
+                  <div className="flex-1 pr-2 mb-2 sm:mb-0">
+                    <p className="font-medium text-sm">{room.name} (Created by You)</p>
+                    <p className="text-xs text-muted-foreground">
+                      {room.is_public ? "Public" : "Private"}
+                      {room.password_hash && " (Password Protected)"}
+                    </p>
+                    {!room.is_public && generatedInviteCodes[room.id] && (
+                      <p className="text-xs text-primary mt-1">Invite Code: <span className="font-bold">{generatedInviteCodes[room.id]}</span></p>
+                    )}
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-1 sm:ml-auto">
                   {!room.is_public && (
@@ -139,11 +154,22 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
                   currentRoomId === room.id && "ring-2 ring-primary"
                 )}
               >
-                <div className="flex-1 pr-2">
-                  <p className="font-medium text-sm">{room.name} (Joined)</p>
-                  <p className="text-xs text-muted-foreground">
-                    Created by: {getRoomCreatorName(room.creator_id)}
-                  </p>
+                <div className="flex items-center flex-1 min-w-0">
+                  <div className="relative w-16 h-10 rounded-md overflow-hidden mr-3 flex-shrink-0 bg-muted">
+                    {room.background_url && (
+                      room.is_video_background ? (
+                        <video src={room.background_url} className="w-full h-full object-cover" muted playsInline />
+                      ) : (
+                        <img src={room.background_url} alt={room.name} className="w-full h-full object-cover" />
+                      )
+                    )}
+                  </div>
+                  <div className="flex-1 pr-2">
+                    <p className="font-medium text-sm">{room.name} (Joined)</p>
+                    <p className="text-xs text-muted-foreground">
+                      Created by: {getRoomCreatorName(room)}
+                    </p>
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-1 sm:ml-auto">
                   <Button

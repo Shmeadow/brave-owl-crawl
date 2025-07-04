@@ -22,7 +22,7 @@ export function useRoomFetching() {
     // Fetch public rooms
     const { data: publicRooms, error: publicError } = await supabase
       .from('rooms')
-      .select('*, room_members(user_id)')
+      .select('*, room_members(user_id), creator:profiles(first_name, last_name)')
       .eq('is_public', true)
       .order('created_at', { ascending: true });
 
@@ -41,7 +41,7 @@ export function useRoomFetching() {
       // Fetch rooms created by the user
       const { data: userCreatedRooms, error: createdError } = await supabase
         .from('rooms')
-        .select('*, room_members(user_id)')
+        .select('*, room_members(user_id), creator:profiles(first_name, last_name)')
         .eq('creator_id', session.user.id)
         .order('created_at', { ascending: true });
 
@@ -76,7 +76,7 @@ export function useRoomFetching() {
         
         const { data: memberRooms, error: memberRoomsError } = await supabase
           .from('rooms')
-          .select('*, room_members(user_id)')
+          .select('*, room_members(user_id), creator:profiles(first_name, last_name)')
           .in('id', Array.from(memberRoomIds))
           .order('created_at', { ascending: true });
 

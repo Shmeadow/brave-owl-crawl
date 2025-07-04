@@ -7,45 +7,7 @@ import { Image as ImageIcon } from "lucide-react";
 import { useBackground } from "@/context/background-provider";
 import { useEffects } from "@/context/effect-provider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
-
-const staticImages = [
-  "/static/bg1.jpg",
-  "/static/bg2.jpg",
-  "/static/bg3.jpg",
-  "/static/bg4.jpg",
-  "/static/bg5.jpg",
-  "/static/bg6.jpg",
-  "/static/bg7.jpg",
-  "/static/bg9.jpg",
-  "/static/bg10.jpg",
-  "/static/bg11.jpg",
-  "/static/bg12.jpg",
-];
-
-const animatedBackgrounds = [
-  { videoUrl: "/animated/ani1.mp4" },
-  { videoUrl: "/animated/ani2.mp4" },
-  { videoUrl: "/animated/ani3.mp4" },
-  { videoUrl: "/animated/ani4.mp4" },
-  { videoUrl: "/animated/ani5.mp4" },
-  { videoUrl: "/animated/ani6.mp4" },
-  { videoUrl: "/animated/ani7.mp4" },
-  { videoUrl: "/animated/ani8.mp4" },
-  { videoUrl: "/animated/ani9.mp4" },
-  { videoUrl: "/animated/ani10.mp4" },
-  { videoUrl: "/animated/ani11.mp4" },
-  { videoUrl: "/animated/ani12.mp4" },
-  { videoUrl: "/animated/ani13.mp4" },
-  { videoUrl: "/animated/ani14.mp4" },
-  { videoUrl: "/animated/ani15.mp4" },
-  { videoUrl: "/animated/ani16.mp4" },
-  { videoUrl: "/animated/ani17.mp4" },
-  { videoUrl: "/animated/ani18.mp4" },
-  { videoUrl: "/animated/ani19.mp4" },
-  { videoUrl: "/animated/ani20.mp4" },
-  { videoUrl: "/animated/ani21.mp4" },
-];
+import { staticImages, animatedBackgrounds } from "@/lib/backgrounds";
 
 export function BackgroundEffectsMenu() {
   const { background, setBackground } = useBackground();

@@ -37,6 +37,7 @@ const WIDGET_CONFIGS = {
   "fortune": { initialPosition: { x: 850, y: 450 }, initialWidth: 400, initialHeight: 300 },
   "flash-cards": { initialPosition: { x: 500, y: 100 }, initialWidth: 900, initialHeight: 700 },
   "goal-focus": { initialPosition: { x: 400, y: 550 }, initialWidth: 500, initialHeight: 600 },
+  "background-effects": { initialPosition: { x: 900, y: 100 }, initialWidth: 400, initialHeight: 450 },
 };
 
 // Constants for layout dimensions (needed for mainContentArea calculation)
