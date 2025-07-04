@@ -315,6 +315,65 @@ export function useFlashcards() {
     }
   }, [isLoggedInMode, session, supabase]);
 
+  const handleBulkAddCards = useCallback(async (newCards: { front: string; back:string }[]): Promise<number> => {
+    const uniqueNewCards = newCards.filter(newCard => 
+      !cards.some(existingCard => 
+        existingCard.front.toLowerCase() === newCard.front.toLowerCase() && 
+        existingCard.back.toLowerCase() === newCard.back.toLowerCase()
+      )
+    );
+
+    if (uniqueNewCards.length === 0) {
+      toast.info("No new cards to import. All provided cards already exist in the deck.");
+      return 0;
+    }
+
+    if (isLoggedInMode && session && supabase) {
+      const cardsToInsert = uniqueNewCards.map(card => ({
+        user_id: session.user.id,
+        front: card.front,
+        back: card.back,
+        starred: false,
+        status: 'new' as const,
+        seen_count: 0,
+        last_reviewed_at: null,
+        interval_days: 0,
+        correct_guesses: 0,
+        incorrect_guesses: 0,
+      }));
+
+      const { data, error } = await supabase
+        .from('flashcards')
+        .insert(cardsToInsert)
+        .select();
+
+      if (error) {
+        toast.error("Error importing cards (Supabase): " + error.message);
+        console.error("Error importing cards (Supabase):", error);
+        return 0;
+      } else if (data) {
+        setCards((prevCards) => [...prevCards, ...data as CardData[]]);
+        return data.length;
+      }
+    } else {
+      const guestCards: CardData[] = uniqueNewCards.map(card => ({
+        id: crypto.randomUUID(),
+        front: card.front,
+        back: card.back,
+        starred: false,
+        status: 'new',
+        seen_count: 0,
+        last_reviewed_at: null,
+        interval_days: 0,
+        correct_guesses: 0,
+        incorrect_guesses: 0,
+      }));
+      setCards((prevCards) => [...prevCards, ...guestCards]);
+      return guestCards.length;
+    }
+    return 0;
+  }, [cards, isLoggedInMode, session, supabase]);
+
   const handleDeleteCard = useCallback(async (cardId: string) => {
     if (isLoggedInMode && session && supabase) {
       const { error } = await supabase
@@ -479,6 +538,7 @@ export function useFlashcards() {
     markCardAsSeen, // Expose new function
     incrementCardSeenCount, // Expose new function
     handleAddCard,
+    handleBulkAddCards,
     handleDeleteCard,
     handleShuffleCards,
     handleToggleStar,

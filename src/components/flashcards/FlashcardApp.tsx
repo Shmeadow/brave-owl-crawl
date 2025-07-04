@@ -13,6 +13,7 @@ import { LearnMode } from './LearnMode';
 import { TestMode } from './TestMode';
 import { SummaryMode } from './SummaryMode';
 import { toast } from 'sonner';
+import { ImportExport } from './ImportExport';
 
 type FlashcardMode = 'manage' | 'flashcards' | 'learn' | 'test' | 'summary';
 
@@ -21,7 +22,7 @@ interface FlashcardAppProps {
 }
 
 export function FlashcardApp({ isCurrentRoomWritable }: FlashcardAppProps) {
-  const { cards, loading, isLoggedInMode, handleAddCard, handleDeleteCard, handleUpdateCard, handleAnswerFeedback, markCardAsSeen, incrementCardSeenCount, handleResetProgress } = useFlashcards();
+  const { cards, loading, isLoggedInMode, handleAddCard, handleDeleteCard, handleUpdateCard, handleAnswerFeedback, markCardAsSeen, incrementCardSeenCount, handleResetProgress, handleBulkAddCards } = useFlashcards();
   const { session } = useSupabase();
   const [currentMode, setCurrentMode] = useState<FlashcardMode>('manage');
   const [editingCard, setEditingCard] = useState<CardData | null>(null);
@@ -80,13 +81,17 @@ export function FlashcardApp({ isCurrentRoomWritable }: FlashcardAppProps) {
                   <p className="text-xs text-muted-foreground mt-2">This will reset the status, seen count, and guess statistics for all cards in this deck.</p>
                 </CardContent>
               </Card>
+              <ImportExport
+                cards={cards}
+                onBulkImport={handleBulkAddCards}
+                isCurrentRoomWritable={isCurrentRoomWritable}
+              />
             </div>
             <FlashcardList
               flashcards={cards}
               onEdit={handleEditClick}
               onDelete={handleDeleteCard}
               isCurrentRoomWritable={isCurrentRoomWritable}
-              session={session}
             />
           </div>
         );
@@ -106,6 +111,10 @@ export function FlashcardApp({ isCurrentRoomWritable }: FlashcardAppProps) {
   return (
     <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto py-4">
       <h1 className="text-3xl font-bold text-foreground text-center">Flashcard Widget</h1>
+      
+      {isLoggedInMode && session?.user?.id && (
+        <p className="text-xs text-muted-foreground font-mono">User ID: {session.user.id}</p>
+      )}
 
       {!isLoggedInMode && (
         <Card className="w-full bg-card backdrop-blur-xl border-white/20">

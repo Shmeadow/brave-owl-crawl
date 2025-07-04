@@ -7,17 +7,15 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Edit, Trash2 } from 'lucide-react';
 import { CardData } from '@/hooks/use-flashcards';
 import { toast } from 'sonner';
-import { Session } from '@supabase/supabase-js';
 
 interface FlashcardListProps {
   flashcards: CardData[];
   onEdit: (card: CardData) => void;
   onDelete: (id: string) => void;
   isCurrentRoomWritable: boolean;
-  session: Session | null;
 }
 
-export function FlashcardList({ flashcards, onEdit, onDelete, isCurrentRoomWritable, session }: FlashcardListProps) {
+export function FlashcardList({ flashcards, onEdit, onDelete, isCurrentRoomWritable }: FlashcardListProps) {
   const handleDeleteClick = (id: string) => {
     if (!isCurrentRoomWritable) {
       toast.error("You do not have permission to delete flashcards in this room.");
@@ -32,12 +30,6 @@ export function FlashcardList({ flashcards, onEdit, onDelete, isCurrentRoomWrita
       return;
     }
     onEdit(card);
-  };
-
-  const getOwnerDisplay = (cardUserId?: string) => {
-    if (!cardUserId) return 'Local';
-    if (session?.user?.id === cardUserId) return 'You';
-    return `User (${cardUserId.substring(0, 6)}...)`;
   };
 
   return (
@@ -57,7 +49,7 @@ export function FlashcardList({ flashcards, onEdit, onDelete, isCurrentRoomWrita
                     <p className="font-semibold text-foreground text-lg mb-1">{card.front}</p>
                     <p className="text-muted-foreground text-sm">{card.back}</p>
                     <p className="text-muted-foreground text-xs mt-1">
-                      Status: <span className="capitalize">{card.status}</span> | Seen: {card.seen_count} | Owner: {getOwnerDisplay(card.user_id)}
+                      Status: <span className="capitalize">{card.status}</span> | Seen: {card.seen_count}
                     </p>
                   </div>
                   <div className="flex gap-2">
