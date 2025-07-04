@@ -93,7 +93,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
                   className={cn("text-xs px-1 h-7", mode === 'focus' ? "bg-primary text-primary-foreground" : "")}
                   disabled={!isCurrentRoomWritable}
                 >
-                  <Brain className="h-3 w-3 mr-1" /> Focus
+                  <Brain className="h-3 w-3" /> Focus
                 </Button>
                 <Button
                   variant={mode === 'short-break' ? 'default' : 'outline'}
@@ -102,7 +102,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
                   className={cn("text-xs px-1 h-7", mode === 'short-break' ? "bg-secondary text-secondary-foreground" : "")}
                   disabled={!isCurrentRoomWritable}
                 >
-                  <Coffee className="h-3 w-3 mr-1" /> Short
+                  <Coffee className="h-3 w-3" /> Short
                 </Button>
                 <Button
                   variant={mode === 'long-break' ? 'default' : 'outline'}
@@ -111,7 +111,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
                   className={cn("text-xs px-1 h-7", mode === 'long-break' ? "bg-accent text-accent-foreground" : "")}
                   disabled={!isCurrentRoomWritable}
                 >
-                  <Home className="h-3 w-3 mr-1" /> Long
+                  <Home className="h-3 w-3" /> Long
                 </Button>
               </div>
               {isEditingTime ? (
