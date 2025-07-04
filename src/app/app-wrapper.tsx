@@ -16,9 +16,9 @@ import { UpgradeModal } from "@/components/upgrade-modal";
 import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { SimpleAudioPlayer } from "@/components/simple-audio-player";
 import { useEffects } from "@/context/effect-provider";
-import { RainEffect } from "@/components/effects/rain-effect"; // New import
-import { SnowEffect } from "@/components/effects/snow-effect"; // New import
-import { CosmicEffect } from "@/components/effects/cosmic-effect"; // Renamed import
+import { RainEffect } from "@/components/effects/rain-effect";
+import { SnowEffect } from "@/components/effects/snow-effect";
+import { RaindropsEffect } from "@/components/effects/raindrops-effect"; // Updated import
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
@@ -84,7 +84,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
       <div className="relative h-screen bg-transparent">
         {activeEffect === 'rain' && <RainEffect />}
         {activeEffect === 'snow' && <SnowEffect />}
-        {activeEffect === 'cosmic' && <CosmicEffect />}
+        {activeEffect === 'raindrops' && <RaindropsEffect />} {/* Updated component */}
         <Header
           onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
           isChatOpen={isChatOpen}

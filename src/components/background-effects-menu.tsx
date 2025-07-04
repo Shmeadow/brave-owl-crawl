@@ -144,10 +144,10 @@ export function BackgroundEffectsMenu() {
               Snow Effect
             </Button>
             <Button
-              variant={activeEffect === 'cosmic' ? 'default' : 'outline'}
-              onClick={() => setEffect('cosmic')}
+              variant={activeEffect === 'raindrops' ? 'default' : 'outline'}
+              onClick={() => setEffect('raindrops')}
             >
-              Cosmic Effect
+              Raindrops Effect
             </Button>
           </div>
         </TabsContent>
