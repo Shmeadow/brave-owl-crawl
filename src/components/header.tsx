@@ -21,6 +21,7 @@ import {
 import { SpacesWidget } from "@/components/widget-content/spaces-widget";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown"; // Import NotificationsDropdown
+import { JoinRoomByIdHeader } from "@/components/join-room-by-id-header"; // Import new component
 
 interface HeaderProps {
   onOpenUpgradeModal: () => void;
@@ -71,6 +72,8 @@ export const Header = React.memo(({ onOpenUpgradeModal, isChatOpen, onToggleChat
       <div className="flex items-center gap-4 ml-auto pr-4">
         <ClockDisplay className="hidden md:flex" />
         <BackgroundBlurSlider className="hidden md:flex" />
+
+        <JoinRoomByIdHeader /> {/* New component for joining by ID */}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
