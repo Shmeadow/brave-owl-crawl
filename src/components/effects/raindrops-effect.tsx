@@ -16,16 +16,21 @@ export function RaindropsEffect() {
     for (let i = 0; i < numDrops; i++) {
       const drop = document.createElement('div');
       drop.className = styles.raindrop;
+      
+      // Random initial horizontal position
       drop.style.left = `${Math.random() * 100}%`;
-      drop.style.top = `${Math.random() * 100}%`;
       
       // Random size for drops
       const size = `${5 + Math.random() * 15}px`; // 5px to 20px
       drop.style.width = size;
       drop.style.height = size;
 
-      // Random animation delay for staggered appearance
-      drop.style.animationDelay = `${Math.random() * 5}s`; // Appear over 5 seconds
+      // Random animation duration for falling
+      const fallDuration = 5 + Math.random() * 5; // 5s to 10s
+      drop.style.setProperty('--fall-duration', `${fallDuration}s`);
+
+      // Random animation delay for staggered appearance and continuous loop
+      drop.style.animationDelay = `${Math.random() * fallDuration}s`;
       
       container.appendChild(drop);
       drops.push(drop);
