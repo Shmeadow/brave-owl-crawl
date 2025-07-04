@@ -28,10 +28,9 @@ interface FlashcardFormProps {
   onSave: (card: { id?: string; front: string; back: string }) => void;
   editingCard: CardData | null;
   onCancel: () => void;
-  isCurrentRoomWritable: boolean;
 }
 
-export function FlashcardForm({ onSave, editingCard, onCancel, isCurrentRoomWritable }: FlashcardFormProps) {
+export function FlashcardForm({ onSave, editingCard, onCancel }: FlashcardFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -48,10 +47,6 @@ export function FlashcardForm({ onSave, editingCard, onCancel, isCurrentRoomWrit
   }, [editingCard, form]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to add/edit flashcards in this room.");
-      return;
-    }
     onSave({ id: editingCard?.id, ...values });
     form.reset();
     toast.success(editingCard ? "Flashcard updated successfully!" : "Flashcard added successfully!");
@@ -72,7 +67,7 @@ export function FlashcardForm({ onSave, editingCard, onCancel, isCurrentRoomWrit
                 <FormItem>
                   <FormLabel>Card Front (Question)</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., What is the capital of France?" {...field} disabled={!isCurrentRoomWritable} />
+                    <Input placeholder="e.g., What is the capital of France?" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -85,7 +80,7 @@ export function FlashcardForm({ onSave, editingCard, onCancel, isCurrentRoomWrit
                 <FormItem>
                   <FormLabel>Card Back (Answer)</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="e.g., Paris" {...field} rows={4} disabled={!isCurrentRoomWritable} />
+                    <Textarea placeholder="e.g., Paris" {...field} rows={4} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -97,7 +92,7 @@ export function FlashcardForm({ onSave, editingCard, onCancel, isCurrentRoomWrit
                   Cancel
                 </Button>
               )}
-              <Button type="submit" disabled={!isCurrentRoomWritable}>
+              <Button type="submit">
                 {editingCard ? 'Update Card' : 'Add Card'}
               </Button>
             </div>

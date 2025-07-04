@@ -12,12 +12,11 @@ import { toast } from 'sonner';
 
 interface CategorySidebarProps {
   categories: Category[];
-  selectedCategoryId: string | null;
-  onSelectCategory: (id: string | null) => void;
+  selectedCategoryId: string | 'all' | null;
+  onSelectCategory: (id: string | 'all' | null) => void;
   onAddCategory: (name: string) => Promise<Category | null>;
   onDeleteCategory: (id: string) => void;
   onUpdateCategory: (id: string, name: string) => void;
-  isCurrentRoomWritable: boolean;
 }
 
 export function CategorySidebar({
@@ -27,7 +26,6 @@ export function CategorySidebar({
   onAddCategory,
   onDeleteCategory,
   onUpdateCategory,
-  isCurrentRoomWritable,
 }: CategorySidebarProps) {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
@@ -73,15 +71,24 @@ export function CategorySidebar({
               placeholder="New category name..."
               value={newCategoryName}
               onChange={(e) => setNewCategoryName(e.target.value)}
-              disabled={!isCurrentRoomWritable}
             />
-            <Button onClick={handleAddCategory} size="icon" disabled={!isCurrentRoomWritable}>
+            <Button onClick={handleAddCategory} size="icon">
               <PlusCircle className="h-4 w-4" />
             </Button>
           </div>
         </div>
         <ScrollArea className="h-[250px]">
           <div className="p-2 space-y-1">
+            <Button
+              variant="ghost"
+              className={cn(
+                'w-full justify-start text-left',
+                selectedCategoryId === 'all' && 'bg-accent text-accent-foreground'
+              )}
+              onClick={() => onSelectCategory('all')}
+            >
+              <Folder className="mr-2 h-4 w-4" /> All Cards
+            </Button>
             <Button
               variant="ghost"
               className={cn(
@@ -113,16 +120,14 @@ export function CategorySidebar({
                 ) : (
                   <span className="flex-1 truncate">{category.name}</span>
                 )}
-                {isCurrentRoomWritable && (
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); handleStartEdit(category); }}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={(e) => { e.stopPropagation(); onDeleteCategory(category.id); }}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); handleStartEdit(category); }}>
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={(e) => { e.stopPropagation(); onDeleteCategory(category.id); }}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>

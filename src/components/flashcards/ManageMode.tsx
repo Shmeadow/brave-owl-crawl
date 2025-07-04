@@ -11,6 +11,7 @@ import { RefreshCcw } from 'lucide-react';
 import { CardData, Category } from '@/hooks/flashcards/types';
 import { OrganizeCardModal } from './OrganizeCardModal';
 import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ManageModeProps {
   cards: CardData[];
@@ -22,7 +23,6 @@ interface ManageModeProps {
   onCancelEdit: () => void;
   onResetProgress: () => void;
   onBulkImport: (cards: { front: string; back: string }[], categoryId: string | null) => Promise<number>;
-  isCurrentRoomWritable: boolean;
   categories: Category[];
   onAddCategory: (name: string) => Promise<Category | null>;
   onDeleteCategory: (id: string) => void;
@@ -40,22 +40,24 @@ export function ManageMode({
   onCancelEdit,
   onResetProgress,
   onBulkImport,
-  isCurrentRoomWritable,
   categories,
   onAddCategory,
   onDeleteCategory,
   onUpdateCategory,
   onUpdateCardCategory,
 }: ManageModeProps) {
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all' | null>('all');
   const [organizingCard, setOrganizingCard] = useState<CardData | null>(null);
 
   const filteredCards = useMemo(() => {
+    if (selectedCategoryId === 'all') {
+      return cards;
+    }
     return cards.filter(card => card.category_id === selectedCategoryId);
   }, [cards, selectedCategoryId]);
 
   const handleSave = async (cardData: { id?: string; front: string; back: string }) => {
-    let categoryIdToSave = selectedCategoryId;
+    let categoryIdToSave = selectedCategoryId === 'all' ? null : selectedCategoryId;
     const isTrueFalseCard = cardData.front.toLowerCase().includes('true or false') || cardData.back.toLowerCase().includes('true or false');
 
     if (isTrueFalseCard) {
@@ -78,11 +80,6 @@ export function ManageMode({
   };
 
   const handleOrganizeTrueFalse = async () => {
-    if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to organize cards.");
-      return;
-    }
-
     const tfCards = cards.filter(c =>
       (c.front.toLowerCase().includes('true or false') || c.back.toLowerCase().includes('true or false'))
     );
@@ -131,27 +128,6 @@ export function ManageMode({
           onAddCategory={onAddCategory}
           onDeleteCategory={onDeleteCategory}
           onUpdateCategory={onUpdateCategory}
-          isCurrentRoomWritable={isCurrentRoomWritable}
-        />
-        <FlashcardList
-          flashcards={filteredCards}
-          onEdit={onEdit}
-          onDelete={onDeleteCard}
-          onOrganize={setOrganizingCard}
-          isCurrentRoomWritable={isCurrentRoomWritable}
-        />
-      </div>
-      <div className="w-full md:w-2/3 flex flex-col gap-6">
-        <FlashcardForm
-          onSave={handleSave}
-          editingCard={editingCard}
-          onCancel={onCancelEdit}
-          isCurrentRoomWritable={isCurrentRoomWritable}
-        />
-        <ImportExport
-          cards={cards}
-          onBulkImport={(newCards) => onBulkImport(newCards, selectedCategoryId)}
-          isCurrentRoomWritable={isCurrentRoomWritable}
         />
         <Card className="w-full bg-card backdrop-blur-xl border-white/20">
           <CardHeader>
@@ -162,7 +138,6 @@ export function ManageMode({
               onClick={handleOrganizeTrueFalse}
               variant="secondary"
               className="w-full"
-              disabled={!isCurrentRoomWritable}
             >
               Organize 'True or False' Cards
             </Button>
@@ -171,7 +146,6 @@ export function ManageMode({
                 onClick={onResetProgress}
                 variant="destructive"
                 className="w-full"
-                disabled={!isCurrentRoomWritable}
               >
                 <RefreshCcw className="mr-2 h-4 w-4" /> Reset All Progress & Stats
               </Button>
@@ -180,13 +154,39 @@ export function ManageMode({
           </CardContent>
         </Card>
       </div>
+      <div className="w-full md:w-2/3 flex flex-col gap-6">
+        <FlashcardForm
+          onSave={handleSave}
+          editingCard={editingCard}
+          onCancel={onCancelEdit}
+        />
+        <Tabs defaultValue="deck" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="deck">Your Flashcards</TabsTrigger>
+            <TabsTrigger value="import-export">Import/Export</TabsTrigger>
+          </TabsList>
+          <TabsContent value="deck" className="mt-4">
+            <FlashcardList
+              flashcards={filteredCards}
+              onEdit={onEdit}
+              onDelete={onDeleteCard}
+              onOrganize={setOrganizingCard}
+            />
+          </TabsContent>
+          <TabsContent value="import-export" className="mt-4">
+            <ImportExport
+              cards={cards}
+              onBulkImport={(newCards) => onBulkImport(newCards, selectedCategoryId === 'all' ? null : selectedCategoryId)}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
       <OrganizeCardModal
         card={organizingCard}
         categories={categories}
         isOpen={!!organizingCard}
         onClose={() => setOrganizingCard(null)}
         onUpdateCategory={onUpdateCardCategory}
-        isCurrentRoomWritable={isCurrentRoomWritable}
       />
     </div>
   );

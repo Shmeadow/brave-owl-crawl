@@ -18,10 +18,9 @@ interface LearnModeProps {
   flashcards: CardData[];
   handleAnswerFeedback: (cardId: string, isCorrect: boolean) => void;
   goToSummary: (data: any, source: 'learn' | 'test') => void;
-  isCurrentRoomWritable: boolean;
 }
 
-export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary, isCurrentRoomWritable }: LearnModeProps) {
+export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: LearnModeProps) {
   const { categories } = useFlashcardCategories();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all'>('all');
   const [activeCards, setActiveCards] = useState<CardData[]>([]);
@@ -78,10 +77,6 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary, isCur
     const isCorrect = userAnswer.trim().toLowerCase() === currentCardData.back.trim().toLowerCase();
     
     if (trackProgress) {
-      if (!isCurrentRoomWritable) {
-        toast.error("You do not have permission to track progress in this room.");
-        return;
-      }
       handleAnswerFeedback(currentCardData.id, isCorrect);
       toast(isCorrect ? "Correct!" : "Incorrect, try again!", {
         icon: isCorrect ? <Check className="text-green-500" /> : <XCircle className="text-red-500" />,
@@ -116,7 +111,7 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary, isCur
             </Select>
           </div>
           <div className="flex items-center space-x-2">
-            <Switch id="track-progress" checked={trackProgress} onCheckedChange={setTrackProgress} disabled={!isCurrentRoomWritable} />
+            <Switch id="track-progress" checked={trackProgress} onCheckedChange={setTrackProgress} />
             <Label htmlFor="track-progress">Track Progress</Label>
           </div>
           <p className="text-xs text-muted-foreground">

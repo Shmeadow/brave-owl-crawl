@@ -12,10 +12,9 @@ interface TestModeProps {
   flashcards: CardData[];
   handleAnswerFeedback: (cardId: string, isCorrect: boolean) => void;
   goToSummary: (data: any, source: 'learn' | 'test') => void;
-  isCurrentRoomWritable: boolean;
 }
 
-export function TestMode({ flashcards, handleAnswerFeedback, goToSummary, isCurrentRoomWritable }: TestModeProps) {
+export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: TestModeProps) {
   const [testQuestions, setTestQuestions] = useState<any[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -68,10 +67,6 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary, isCurr
   }
 
   const handleSubmitAnswer = () => {
-    if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to take tests in this room.");
-      return;
-    }
     if (selectedAnswer === null) {
       toast.error("Please select an answer.");
       return;
@@ -138,13 +133,13 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary, isCurr
                   className={cn('w-full text-left justify-start px-5 py-3 rounded-md border transition-all duration-200',
                     selectedAnswer === option ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted'
                   )}
-                  disabled={showFeedback || !isCurrentRoomWritable}
+                  disabled={showFeedback}
                 >
                   {option}
                 </Button>
               ))}
             </div>
-            <Button onClick={handleSubmitAnswer} disabled={selectedAnswer === null || showFeedback || !isCurrentRoomWritable}>
+            <Button onClick={handleSubmitAnswer} disabled={selectedAnswer === null || showFeedback}>
               Submit Answer
             </Button>
           </>

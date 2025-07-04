@@ -13,19 +13,14 @@ interface OrganizeCardModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdateCategory: (cardId: string, newCategoryId: string | null) => void;
-  isCurrentRoomWritable: boolean;
 }
 
-export function OrganizeCardModal({ card, categories, isOpen, onClose, onUpdateCategory, isCurrentRoomWritable }: OrganizeCardModalProps) {
+export function OrganizeCardModal({ card, categories, isOpen, onClose, onUpdateCategory }: OrganizeCardModalProps) {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(card?.category_id || null);
 
   if (!card) return null;
 
   const handleSave = () => {
-    if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to organize cards in this room.");
-      return;
-    }
     onUpdateCategory(card.id, selectedCategoryId);
     onClose();
   };
@@ -57,7 +52,7 @@ export function OrganizeCardModal({ card, categories, isOpen, onClose, onUpdateC
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} disabled={!isCurrentRoomWritable}>Save</Button>
+          <Button onClick={handleSave}>Save</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

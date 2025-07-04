@@ -14,11 +14,7 @@ import { useFlashcardCategories } from '@/hooks/flashcards/useFlashcardCategorie
 
 type FlashcardMode = 'manage' | 'learn' | 'test' | 'summary';
 
-interface FlashcardAppProps {
-  isCurrentRoomWritable: boolean;
-}
-
-export function FlashcardApp({ isCurrentRoomWritable }: FlashcardAppProps) {
+export function FlashcardApp() {
   const { cards, loading, isLoggedInMode, handleAddCard, handleDeleteCard, handleUpdateCard, handleAnswerFeedback, handleResetProgress, handleBulkAddCards, handleUpdateCardCategory } = useFlashcards();
   const { categories, addCategory, deleteCategory, updateCategory } = useFlashcardCategories();
   const { session } = useSupabase();
@@ -64,7 +60,6 @@ export function FlashcardApp({ isCurrentRoomWritable }: FlashcardAppProps) {
             onCancelEdit={handleCancelEdit}
             onResetProgress={handleResetProgress}
             onBulkImport={handleBulkAddCards}
-            isCurrentRoomWritable={isCurrentRoomWritable}
             categories={categories}
             onAddCategory={addCategory}
             onDeleteCategory={deleteCategory}
@@ -73,9 +68,9 @@ export function FlashcardApp({ isCurrentRoomWritable }: FlashcardAppProps) {
           />
         );
       case 'learn':
-        return <LearnMode flashcards={cards} handleAnswerFeedback={handleAnswerFeedback} goToSummary={goToSummary} isCurrentRoomWritable={isCurrentRoomWritable} />;
+        return <LearnMode flashcards={cards} handleAnswerFeedback={handleAnswerFeedback} goToSummary={goToSummary} />;
       case 'test':
-        return <TestMode flashcards={cards} handleAnswerFeedback={handleAnswerFeedback} goToSummary={goToSummary} isCurrentRoomWritable={isCurrentRoomWritable} />;
+        return <TestMode flashcards={cards} handleAnswerFeedback={handleAnswerFeedback} goToSummary={goToSummary} />;
       case 'summary':
         return <SummaryMode summaryData={summaryData} summaryModeSource={summaryModeSource} />;
       default:

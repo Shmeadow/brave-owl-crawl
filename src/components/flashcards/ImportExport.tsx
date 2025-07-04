@@ -12,10 +12,9 @@ import { CardData } from '@/hooks/use-flashcards';
 interface ImportExportProps {
   cards: CardData[];
   onBulkImport: (newCards: { front: string; back: string }[]) => Promise<number>;
-  isCurrentRoomWritable: boolean;
 }
 
-export function ImportExport({ cards, onBulkImport, isCurrentRoomWritable }: ImportExportProps) {
+export function ImportExport({ cards, onBulkImport }: ImportExportProps) {
   const [textValue, setTextValue] = useState('');
 
   const handleExport = (format: 'csv' | 'json') => {
@@ -68,10 +67,6 @@ export function ImportExport({ cards, onBulkImport, isCurrentRoomWritable }: Imp
   };
 
   const handleImport = async (content: string) => {
-    if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to import cards in this room.");
-      return;
-    }
     try {
       const parsedCards = parseCSV(content);
       if (parsedCards.length === 0) {
@@ -121,9 +116,8 @@ export function ImportExport({ cards, onBulkImport, isCurrentRoomWritable }: Imp
                 value={textValue}
                 onChange={(e) => setTextValue(e.target.value)}
                 rows={5}
-                disabled={!isCurrentRoomWritable}
               />
-              <Button onClick={() => handleImport(textValue)} className="mt-2 w-full" disabled={!textValue || !isCurrentRoomWritable}>
+              <Button onClick={() => handleImport(textValue)} className="mt-2 w-full" disabled={!textValue}>
                 Import from Text
               </Button>
             </div>
@@ -139,7 +133,6 @@ export function ImportExport({ cards, onBulkImport, isCurrentRoomWritable }: Imp
                 type="file"
                 accept=".csv"
                 onChange={handleFileChange}
-                disabled={!isCurrentRoomWritable}
               />
             </div>
             <p className="text-xs text-muted-foreground pt-2">Note: Import from URL is not yet supported. Please paste text or upload a file.</p>
