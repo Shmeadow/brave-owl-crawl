@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { CategorySidebar } from './CategorySidebar';
 import { FlashcardList } from './FlashcardList';
 import { FlashcardForm } from './FlashcardForm';
@@ -52,10 +52,16 @@ export function ManageMode({
   const [columns, setColumns] = useState(2);
   const [sizePreset, setSizePreset] = useState<'default' | 'small' | 'big'>('default');
 
+  useEffect(() => {
+    if (columns > 3) {
+      setColumns(3);
+    }
+  }, [columns]);
+
   const rowHeight = useMemo(() => {
     switch (sizePreset) {
-      case 'small': return 80;
-      case 'big': return 160;
+      case 'small': return 60;
+      case 'big': return 200;
       case 'default':
       default: return 120;
     }
@@ -155,7 +161,7 @@ export function ManageMode({
                   value={[columns]}
                   onValueChange={(value) => setColumns(value[0])}
                   min={1}
-                  max={4}
+                  max={3}
                   step={1}
                 />
               </div>
