@@ -66,7 +66,7 @@ export const clampPosition = (x: number, y: number, width: number, height: numbe
 
 export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea }: WidgetProviderProps) {
   const [activeWidgets, setActiveWidgets] = useState<WidgetState[]>([]);
-  const [maxZIndex, setMaxZIndex] = useState(900);
+  const [maxZIndex, setMaxZIndex] = useState(903); // Changed from 900 to 903
   const [mounted, setMounted] = useState(false);
 
   // Load state from local storage on mount
@@ -101,7 +101,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
             };
           });
           setActiveWidgets(reClampedWidgets);
-          const currentMaxZ = reClampedWidgets.length > 0 ? Math.max(...reClampedWidgets.map(w => w.zIndex)) : 900;
+          const currentMaxZ = reClampedWidgets.length > 0 ? Math.max(...reClampedWidgets.map(w => w.zIndex)) : 903; // Changed from 900 to 903
           setMaxZIndex(currentMaxZ);
         }
       } catch (e) {

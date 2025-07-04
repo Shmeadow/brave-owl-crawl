@@ -76,7 +76,7 @@ export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobi
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
-      <div className="fixed inset-0 z-[900] pointer-events-none">
+      <div className="fixed inset-0 z-[903] pointer-events-none">
         {visibleWidgets.map(widget => {
           const WidgetIcon = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.icon;
           const WidgetContent = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.content;

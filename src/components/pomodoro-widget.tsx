@@ -61,7 +61,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
     return (
       <Card
         className={cn(
-          "fixed bottom-4 left-4 right-4 z-[1001]",
+          "fixed bottom-4 left-4 right-4 z-[901]",
           "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg",
           "flex flex-col transition-all duration-300 ease-in-out",
           isMobileExpanded ? "h-auto p-2" : "h-16 p-2 items-center justify-between flex-row"
@@ -185,7 +185,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
   return (
     <Card
       className={cn(
-        "fixed bottom-20 left-1/2 -translate-x-1/2 z-[1001]",
+        "fixed bottom-20 left-1/2 -translate-x-1/2 z-[901]",
         "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg",
         "flex transition-all duration-300 ease-in-out",
         `w-[200px]`, // Fixed width for desktop

@@ -115,7 +115,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
     <div
       ref={sidebarRef}
       className={cn(
-        "fixed top-16 z-50 flex flex-col items-center py-4",
+        "fixed top-16 z-[902] flex flex-col items-center py-4",
         "bg-sidebar backdrop-blur-xl shadow-lg shadow-black/30 transition-transform duration-300 ease-in-out",
         `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]`,
         "rounded-r-lg",
