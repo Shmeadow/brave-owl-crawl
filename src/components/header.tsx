@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Bell, Search, Settings, WandSparkles } from "lucide-react";
+import { Home, Bell, Search, Settings, WandSparkles, Menu } from "lucide-react"; // Import Menu icon
 import { ChatPanel } from "@/components/chat-panel";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
@@ -27,19 +27,32 @@ interface HeaderProps {
   onNewUnreadMessage: () => void;
   onClearUnreadMessages: () => void;
   unreadChatCount: number;
+  isMobile: boolean; // New prop
+  onToggleSidebar: () => void; // New prop
 }
 
-export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnreadMessage, onClearUnreadMessages, unreadChatCount }: HeaderProps) {
+export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnreadMessage, onClearUnreadMessages, unreadChatCount, isMobile, onToggleSidebar }: HeaderProps) {
   const { session, profile } = useSupabase();
   const router = useRouter();
   const { currentRoomName, currentRoomId, isCurrentRoomWritable } = useCurrentRoom();
 
   return (
     <header className="sticky top-0 z-[1002] w-full border-b bg-background/80 backdrop-blur-md flex items-center h-16">
-      {/* Left Section: Search Input, Home Button, and Title */}
+      {/* Left Section: Mobile Menu, Home Button, and Title */}
       <div className="flex items-center gap-2 pl-4">
-        {/* Search Input */}
-        <div className="relative flex-grow max-w-xs sm:max-w-sm">
+        {isMobile && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleSidebar}
+            title="Open Menu"
+          >
+            <Menu className="h-6 w-6" />
+            <span className="sr-only">Open Menu</span>
+          </Button>
+        )}
+        {/* Search Input (hidden on mobile, shown on larger screens) */}
+        <div className="relative flex-grow max-w-xs sm:max-w-sm hidden sm:block">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
@@ -47,16 +60,18 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
             className="pl-8"
           />
         </div>
-        {/* Home Button */}
+        {/* Home Button (always visible) */}
         <Button
           variant="ghost"
           size="icon"
           onClick={() => router.push('/dashboard')}
           title="Go to My Room"
+          className={isMobile ? "hidden" : ""} // Hide on mobile if menu button is present
         >
           <Home className="h-6 w-6" />
           <span className="sr-only">Go to My Room</span>
         </Button>
+        {/* Room Name (hidden on mobile, shown on larger screens) */}
         <h1 className="text-xl font-semibold hidden sm:block">
           {currentRoomName}
         </h1>
@@ -64,11 +79,13 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
 
       {/* Right Section: Clock, Progress Bar, and Actions */}
       <div className="flex items-center gap-4 ml-auto pr-4">
-        {/* Clock and Progress */}
-        <ClockDisplay />
+        {/* Clock Display (hidden on mobile) */}
+        <ClockDisplay className="hidden md:flex" /> {/* Use md:flex to hide on small screens */}
 
-        <BackgroundBlurSlider />
+        {/* Background Blur Slider (hidden on mobile) */}
+        <BackgroundBlurSlider className="hidden md:flex" /> {/* Use md:flex to hide on small screens */}
 
+        {/* Background Effects Menu (always visible) */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" title="Change Background & Effects">
@@ -101,6 +118,7 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
             unreadCount={unreadChatCount}
             currentRoomId={currentRoomId}
             isCurrentRoomWritable={isCurrentRoomWritable}
+            isMobile={isMobile} // Pass isMobile
           />
         )}
         <UserNav />

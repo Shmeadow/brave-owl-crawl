@@ -28,12 +28,13 @@ interface WidgetProps {
   onPin: (id: string) => void;
   onClose: (id: string) => void;
   isCurrentRoomWritable: boolean;
-  mainContentArea: { // Add this prop
+  mainContentArea: {
     left: number;
     top: number;
     width: number;
     height: number;
   };
+  isMobile: boolean; // New prop
 }
 
 // Constants for widget dimensions (should match WidgetProvider)
@@ -61,12 +62,13 @@ export function Widget({
   onPin,
   onClose,
   isCurrentRoomWritable,
-  mainContentArea, // Destructure new prop
+  mainContentArea,
+  isMobile, // Destructure new prop
 }: WidgetProps) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: `widget-${id}`,
     data: { id, type: "widget", initialPosition: position },
-    disabled: isPinned || isMaximized,
+    disabled: isPinned || isMaximized || isMobile, // Disable dragging on mobile
   });
 
   const currentTransformStyle = transform ? {
@@ -74,8 +76,8 @@ export function Widget({
   } : {};
 
   const isVisuallyMinimized = isMinimized || isPinned;
-  const isResizable = !isMaximized && !isVisuallyMinimized;
-  const isDraggable = !isMaximized && !isPinned;
+  const isResizable = !isMaximized && !isVisuallyMinimized && !isMobile; // Disable resizing on mobile
+  const isDraggable = !isMaximized && !isPinned && !isMobile; // Disable dragging on mobile
 
   // Determine actual width/height for ResizableBox based on state
   let actualWidth = size.width;
@@ -99,7 +101,7 @@ export function Widget({
   return (
     <div
       ref={setNodeRef} // Apply draggable ref here to the outer div
-      style={{
+      style={isMobile ? {} : { // No fixed positioning on mobile, let flexbox handle it
         left: position.x,
         top: position.y,
         zIndex: zIndex,
@@ -107,7 +109,6 @@ export function Widget({
         width: actualWidth, // Explicitly set width/height on the outer div
         height: actualHeight,
         position: 'absolute', // Ensure positioning
-        pointerEvents: 'auto', // Ensure it's interactive
       }}
       className={cn(
         "bg-card border-white/20 shadow-lg rounded-lg flex flex-col",
@@ -115,25 +116,25 @@ export function Widget({
         isTopmost ? "backdrop-blur-2xl" : "backdrop-blur-xl",
         isResizable ? "resize" : "",
         isMinimized && !isPinned ? "cursor-pointer" : "",
+        isMobile ? "relative w-full h-auto my-2 pointer-events-auto" : "pointer-events-auto" // Mobile styling: relative, full width, auto height, margin
       )}
       onClick={isMinimized && !isPinned ? () => onMinimize(id) : undefined}
       onMouseDown={onBringToFront}
     >
       <ResizableBox
-        // No ref here, as it's on the outer div
-        width={actualWidth} // Pass calculated width
-        height={actualHeight} // Pass calculated height
+        width={isMobile ? 1 : actualWidth} // Always pass a number
+        height={isMobile ? 1 : actualHeight} // Always pass a number
         onResizeStop={(e: React.SyntheticEvent, data: ResizeCallbackData) => {
           if (isResizable) {
             onSizeChange({ width: data.size.width, height: data.size.height });
           }
         }}
         minConstraints={[200, 150]}
-        maxConstraints={[mainContentArea.width, mainContentArea.height]} // Use mainContentArea for maxConstraints
-        className="w-full h-full" // ResizableBox should fill its parent div
-        resizeHandles={isResizable ? ["se"] : []} // Only show SE handle if resizable
+        maxConstraints={[mainContentArea.width, mainContentArea.height]}
+        className="w-full h-full"
+        resizeHandles={isResizable ? ["se"] : []}
       >
-        <Card className="w-full h-full flex flex-col overflow-hidden"> {/* Card fills ResizableBox */}
+        <Card className="w-full h-full flex flex-col overflow-hidden">
           <CardHeader
             className={cn(
               "flex flex-row items-center justify-between space-y-0",
@@ -185,15 +186,19 @@ export function Widget({
                   </CardTitle>
                 </div>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMinimize(id); }} title="Minimize">
-                    <Minimize className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
-                    <Maximize className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title="Pin">
-                    <Pin className="h-4 w-4" />
-                  </Button>
+                  {!isMobile && ( // Hide minimize/maximize/pin on mobile
+                    <>
+                      <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMinimize(id); }} title="Minimize">
+                        <Minimize className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
+                        <Maximize className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title="Pin">
+                        <Pin className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
                   <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onClose(id); }} title="Close">
                     <X className="h-4 w-4" />
                   </Button>

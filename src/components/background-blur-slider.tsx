@@ -5,12 +5,17 @@ import { Slider } from '@/components/ui/slider';
 import { useBackgroundBlur } from '@/context/background-blur-provider';
 import { Sun, Wind } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from '@/lib/utils'; // Import cn
 
-export function BackgroundBlurSlider() {
+interface BackgroundBlurSliderProps {
+  className?: string; // Add className prop
+}
+
+export function BackgroundBlurSlider({ className }: BackgroundBlurSliderProps) {
   const { blur, setBlur } = useBackgroundBlur();
 
   return (
-    <div className="flex items-center gap-2 w-32">
+    <div className={cn("flex items-center gap-2 w-32", className)}> {/* Apply className here */}
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>

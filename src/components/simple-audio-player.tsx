@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Music, ListMusic, Youtube, VolumeX, Volume2, ChevronLeft } from 'lucide-react';
+import { Music, ListMusic, Youtube, VolumeX, Volume2, ChevronLeft, ChevronUp, ChevronDown } from 'lucide-react'; // Added ChevronDown
 import { useYouTubePlayer } from '@/hooks/use-youtube-player';
 import { useHtmlAudioPlayer } from '@/hooks/use-html-audio-player';
-import { useSpotifyPlayer } from '@/hooks/use-spotify-player'; // Import the new Spotify hook
+import { useSpotifyPlayer } from '@/hooks/use-spotify-player';
 import { cn, getYouTubeEmbedUrl } from '@/lib/utils';
-import { useSupabase } from '@/integrations/supabase/auth'; // To get session for Spotify token
+import { useSupabase } from '@/integrations/supabase/auth';
+import { Button } from '@/components/ui/button'; // Added Button import
 
 // Import new modular components
 import { PlayerDisplay } from './audio-player/player-display';
@@ -17,17 +18,12 @@ import { PlayerModeButtons } from './audio-player/player-mode-buttons';
 
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 
-// Removed fixed height constants as the player will now adapt to content aspect ratio
-// const HEADER_HEIGHT = 64; // px
-// const POMODORO_WIDGET_HEIGHT_EST = 200; // px, estimated height when expanded
-// const POMODORO_WIDGET_BOTTOM_OFFSET = 20; // px, from PomodoroWidget's fixed bottom-20
-// const PLAYER_POMODORO_BUFFER = 40; // px - Increased buffer for more clearance
-// const MAXIMIZED_PLAYER_TOP_POSITION = HEADER_HEIGHT + 40; // Moved down by 40px
-// const MAXIMIZED_PLAYER_BOTTOM_POSITION = POMODORO_WIDGET_BOTTOM_OFFSET + POMODORO_WIDGET_HEIGHT_EST + PLAYER_POMODORO_BUFFER + 20; // Added 20px buffer
+interface SimpleAudioPlayerProps {
+  isMobile: boolean; // New prop
+}
 
-
-const SimpleAudioPlayer = () => {
-  const { session } = useSupabase(); // Get session to access access_token for Spotify
+const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
+  const { session } = useSupabase();
   const [stagedInputUrl, setStagedInputUrl] = useState('');
   const [committedMediaUrl, setCommittedMediaUrl] = useState('');
   const [playerType, setPlayerType] = useState<'audio' | 'youtube' | 'spotify' | null>(null);
@@ -74,7 +70,6 @@ const SimpleAudioPlayer = () => {
     youtubeDuration,
   } = useYouTubePlayer(youtubeEmbedUrl, youtubeIframeRef);
 
-  // Spotify Player Hook
   const {
     playerReady: spotifyPlayerReady,
     isPlaying: spotifyIsPlaying,
@@ -89,8 +84,8 @@ const SimpleAudioPlayer = () => {
     seekTo: spotifySeekTo,
     connectToSpotify,
     disconnectFromSpotify,
-    playTrack: spotifyPlayTrack, // Expose playTrack for direct control
-  } = useSpotifyPlayer(session?.access_token || null); // Pass Supabase session token to Spotify hook
+    playTrack: spotifyPlayTrack,
+  } = useSpotifyPlayer(session?.access_token || null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -103,7 +98,6 @@ const SimpleAudioPlayer = () => {
       setPlayerType('youtube');
     } else if (committedMediaUrl.includes('open.spotify.com')) {
       setPlayerType('spotify');
-      // Attempt to play the Spotify URI directly
       if (spotifyPlayerReady && spotifyCurrentTrack?.uri !== committedMediaUrl) {
         spotifyPlayTrack(committedMediaUrl);
       }
@@ -187,7 +181,6 @@ const SimpleAudioPlayer = () => {
     setShowUrlInput(false);
   };
 
-  // Determine current player states based on active playerType
   const currentPlaybackTime = playerType === 'youtube' ? youtubeCurrentTime : (playerType === 'spotify' ? spotifyCurrentTime : audioCurrentTime);
   const totalDuration = playerType === 'youtube' ? youtubeDuration : (playerType === 'spotify' ? spotifyDuration : audioDuration);
   const currentVolume = playerType === 'youtube' ? youtubeVolume / 100 : (playerType === 'spotify' ? spotifyVolume : audioVolume);
@@ -195,27 +188,146 @@ const SimpleAudioPlayer = () => {
   const playerIsReady = playerType === 'youtube' ? youtubePlayerReady : (playerType === 'spotify' ? spotifyPlayerReady : true);
   const currentIsMuted = playerType === 'youtube' ? youtubeIsMuted : (playerType === 'spotify' ? spotifyIsMuted : audioIsMuted);
 
-  const canPlayPause = playerIsReady; // Now all types can be controlled if ready
+  const canPlayPause = playerIsReady;
   const canSeek = playerIsReady && totalDuration > 0;
 
+  // Mobile specific state for expanded/collapsed
+  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
+
+  const toggleMobileExpand = () => {
+    setIsMobileExpanded(prev => !prev);
+  };
+
+  if (isMobile) {
+    return (
+      <div className={cn(
+        "fixed bottom-4 left-4 right-4 z-[899] transition-all duration-300 ease-in-out",
+        "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-auto",
+        isMobileExpanded ? "h-auto p-2" : "h-16 p-2 items-center justify-between flex-row"
+      )}>
+        {isMobileExpanded ? (
+          <>
+            {/* PlayerDisplay is now inside and will fill available space */}
+            <PlayerDisplay
+              playerType={playerType}
+              inputUrl={committedMediaUrl}
+              audioRef={audioRef}
+              youtubeIframeRef={youtubeIframeRef}
+              spotifyCurrentTrack={spotifyCurrentTrack}
+              onLoadedMetadata={htmlAudioOnLoadedMetadata}
+              onTimeUpdate={htmlAudioOnTimeUpdate}
+              onEnded={htmlAudioOnEnded}
+              isMaximized={false} // Not maximized in mobile expanded view
+              className="w-full"
+            />
+
+            {/* Spotify Track Info */}
+            {playerType === 'spotify' && spotifyCurrentTrack && (
+              <div className="text-center p-1 flex-shrink-0">
+                <p className="text-sm font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
+                <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map(a => a.name).join(', ')}</p>
+              </div>
+            )}
+
+            {/* Main Player Row: URL Input Toggle and Controls */}
+            <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
+              {/* URL Input Toggle */}
+              <div className="flex-grow min-w-0">
+                <MediaInput
+                  inputUrl={stagedInputUrl}
+                  setInputUrl={setStagedInputUrl}
+                  showUrlInput={showUrlInput}
+                  setShowUrlInput={setShowUrlInput}
+                  onLoadMedia={loadNewMedia}
+                />
+              </div>
+
+              <PlayerControls
+                playerType={playerType}
+                playerIsReady={playerIsReady}
+                currentIsPlaying={currentIsPlaying}
+                togglePlayPause={togglePlayPause}
+                skipBackward={skipBackward}
+                skipForward={skipForward}
+                currentVolume={currentVolume}
+                currentIsMuted={currentIsMuted}
+                toggleMute={toggleMute}
+                handleVolumeChange={handleVolumeChange}
+                canPlayPause={canPlayPause}
+                canSeek={canSeek}
+              />
+            </div>
+
+            <ProgressBar
+              playerType={playerType}
+              playerIsReady={playerIsReady}
+              currentPlaybackTime={currentPlaybackTime}
+              totalDuration={totalDuration}
+              handleProgressBarChange={handleProgressBarChange}
+              formatTime={formatTime}
+            />
+
+            {playerType === 'spotify' && !spotifyPlayerReady && (
+              <div className="text-center text-sm text-muted-foreground mt-2">
+                <p>Connect to Spotify to enable playback.</p>
+                <Button onClick={connectToSpotify} className="text-primary hover:underline mt-1">
+                  Connect to Spotify
+                </Button>
+              </div>
+            )}
+            <Button
+              onClick={toggleMobileExpand}
+              className="w-full mt-2"
+              variant="secondary"
+            >
+              <ChevronDown className="mr-2 h-4 w-4" /> Collapse Player
+            </Button>
+          </>
+        ) : (
+          // Minimized mobile view
+          <>
+            <PlayerControls
+              playerType={playerType}
+              playerIsReady={playerIsReady}
+              currentIsPlaying={currentIsPlaying}
+              togglePlayPause={togglePlayPause}
+              skipBackward={skipBackward}
+              skipForward={skipForward}
+              currentVolume={currentVolume}
+              currentIsMuted={currentIsMuted}
+              toggleMute={toggleMute}
+              handleVolumeChange={handleVolumeChange}
+              canPlayPause={canPlayPause}
+              canSeek={canSeek}
+            />
+
+            <button
+              onClick={toggleMobileExpand}
+              className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 ml-1 flex-shrink-0"
+              title="Expand Player"
+            >
+              <ChevronUp size={16} />
+            </button>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // Desktop rendering (original logic)
   return (
     <div className={cn(
       "fixed z-[899] transition-all duration-300 ease-in-out",
       displayMode === 'normal' && 'top-20 right-4 w-80',
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-16',
       displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-[500px] flex flex-col items-center justify-center'
-    )}
-    // Removed the style prop that was setting fixed top/bottom
-    >
-      {/* Normal/Maximized Player UI */}
+    )}>
       <div className={cn(
         "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full",
-        // Removed h-full from here to allow content to dictate height
         displayMode === 'normal' && 'p-1',
         displayMode === 'maximized' && 'p-4 items-center justify-center',
         displayMode === 'minimized' && 'hidden'
       )}>
-        {/* PlayerDisplay is now inside and will fill available space */}
         <PlayerDisplay
           playerType={playerType}
           inputUrl={committedMediaUrl}
@@ -228,11 +340,10 @@ const SimpleAudioPlayer = () => {
           isMaximized={displayMode === 'maximized'}
           className={cn(
             displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : '',
-            'w-full' // Ensures PlayerDisplay takes full width, its aspect ratio will define height
+            'w-full'
           )}
         />
 
-        {/* Spotify Track Info */}
         {playerType === 'spotify' && spotifyCurrentTrack && (
           <div className="text-center p-1 flex-shrink-0">
             <p className="text-sm font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
@@ -240,9 +351,7 @@ const SimpleAudioPlayer = () => {
           </div>
         )}
 
-        {/* Main Player Row: URL Input Toggle and Controls */}
         <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
-          {/* URL Input Toggle */}
           <div className="flex-grow min-w-0">
             <MediaInput
               inputUrl={stagedInputUrl}
@@ -281,16 +390,15 @@ const SimpleAudioPlayer = () => {
         {playerType === 'spotify' && !spotifyPlayerReady && (
           <div className="text-center text-sm text-muted-foreground mt-2">
             <p>Connect to Spotify to enable playback.</p>
-            <button onClick={connectToSpotify} className="text-primary hover:underline mt-1">
+            <Button onClick={connectToSpotify} className="text-primary hover:underline mt-1">
               Connect to Spotify
-            </button>
+            </Button>
           </div>
         )}
 
         <PlayerModeButtons displayMode={displayMode} setDisplayMode={setDisplayMode} />
       </div>
 
-      {/* Minimized Player Content (only visible when displayMode is 'minimized') */}
       {displayMode === 'minimized' && (
         <div
           className={cn(

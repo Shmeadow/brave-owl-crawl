@@ -33,15 +33,16 @@ const WIDGET_COMPONENTS = {
 
 interface WidgetContainerProps {
   isCurrentRoomWritable: boolean;
-  mainContentArea: { // Add this prop
+  mainContentArea: {
     left: number;
     top: number;
     width: number;
     height: number;
   };
+  isMobile: boolean; // New prop
 }
 
-export function WidgetContainer({ isCurrentRoomWritable, mainContentArea }: WidgetContainerProps) {
+export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobile }: WidgetContainerProps) {
   const {
     activeWidgets,
     updateWidgetPosition,
@@ -68,10 +69,15 @@ export function WidgetContainer({ isCurrentRoomWritable, mainContentArea }: Widg
     }
   };
 
+  // Filter out minimized/pinned widgets if on mobile, as they will be stacked
+  const visibleWidgets = isMobile
+    ? activeWidgets.filter(widget => !widget.isMinimized && !widget.isPinned)
+    : activeWidgets;
+
   return (
     <DndContext onDragEnd={handleDragEnd}>
       <div className="fixed inset-0 z-[900] pointer-events-none">
-        {activeWidgets.map(widget => {
+        {visibleWidgets.map(widget => {
           const WidgetIcon = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.icon;
           const WidgetContent = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.content;
 
@@ -103,7 +109,8 @@ export function WidgetContainer({ isCurrentRoomWritable, mainContentArea }: Widg
               onPin={togglePinned}
               onClose={closeWidget}
               isCurrentRoomWritable={isCurrentRoomWritable}
-              mainContentArea={mainContentArea} // Pass mainContentArea
+              mainContentArea={mainContentArea}
+              isMobile={isMobile} // Pass isMobile
             />
           );
         })}

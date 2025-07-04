@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Progress } from "@/components/ui/progress";
 import { useSupabase } from "@/integrations/supabase/auth";
+import { cn } from "@/lib/utils"; // Import cn
 
 // Helper function to format time manually
 const formatTimeManual = (date: Date, use24Hour: boolean) => {
@@ -28,7 +29,11 @@ const formatDateManual = (date: Date) => {
   return date.toLocaleDateString('en-US', options); // This is generally safe as it's less locale-dependent for basic format
 };
 
-export function ClockDisplay() {
+interface ClockDisplayProps {
+  className?: string; // Add className prop
+}
+
+export function ClockDisplay({ className }: ClockDisplayProps) {
   const { profile, loading: authLoading } = useSupabase();
   const [currentTimeStr, setCurrentTimeStr] = useState("--:--:--");
   const [currentDateStr, setCurrentDateStr] = useState("--- -- --");
@@ -64,7 +69,10 @@ export function ClockDisplay() {
 
   return (
     <div
-      className="hidden sm:flex flex-col items-center text-sm font-mono text-muted-foreground ml-4"
+      className={cn(
+        "hidden sm:flex flex-col items-center text-sm font-mono text-muted-foreground ml-4",
+        className // Apply className here
+      )}
     >
       <div className="flex items-center space-x-2">
         <div id="clock" className="text-2xl font-bold leading-none text-foreground">{currentTimeStr}</div>

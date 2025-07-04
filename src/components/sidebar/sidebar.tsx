@@ -8,15 +8,20 @@ import { useWidget } from "@/components/widget/widget-context";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, BookOpen, Goal, ChevronLeft, ChevronRight } from "lucide-react";
 
-const SIDEBAR_WIDTH = 60; // px
+const SIDEBAR_WIDTH_DESKTOP = 60; // px
+const SIDEBAR_WIDTH_MOBILE = 200; // px for the off-canvas menu
 const HOT_ZONE_WIDTH = 20; // px (includes the 4px visible strip)
 const UNDOCK_DELAY = 500; // ms
 const HEADER_HEIGHT_REM = 4; // 4rem = 64px
 
-export function Sidebar() {
+interface SidebarProps {
+  isMobile: boolean; // New prop
+}
+
+export function Sidebar({ isMobile }: SidebarProps) {
   const { activePanel, setActivePanel, isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const { toggleWidget } = useWidget();
-  const { isAlwaysOpen, toggleAlwaysOpen, mounted } = useSidebarPreference(); // Get mounted state
+  const { isAlwaysOpen, toggleAlwaysOpen, mounted } = useSidebarPreference();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -26,42 +31,52 @@ export function Sidebar() {
   }, [isSidebarOpen]);
 
   const handleMouseEnter = useCallback(() => {
-    if (isAlwaysOpen) return;
+    if (isAlwaysOpen || isMobile) return; // Disable hot zone for mobile
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
     setIsSidebarOpen(true);
-  }, [isAlwaysOpen, setIsSidebarOpen]);
+  }, [isAlwaysOpen, isMobile, setIsSidebarOpen]);
 
   const handleMouseLeave = useCallback(() => {
-    if (isAlwaysOpen) return;
+    if (isAlwaysOpen || isMobile) return; // Disable hot zone for mobile
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
     timeoutRef.current = setTimeout(() => {
       setIsSidebarOpen(false);
     }, UNDOCK_DELAY);
-  }, [isAlwaysOpen, setIsSidebarOpen]);
+  }, [isAlwaysOpen, isMobile, setIsSidebarOpen]);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (isAlwaysOpen) return;
+    if (isAlwaysOpen || isMobile) return; // Disable hot zone for mobile
 
     if (e.clientX < HOT_ZONE_WIDTH && !isSidebarOpenRef.current) {
       handleMouseEnter();
     } 
-    else if (e.clientX >= SIDEBAR_WIDTH && isSidebarOpenRef.current && !sidebarRef.current?.contains(e.target as Node)) {
+    else if (e.clientX >= SIDEBAR_WIDTH_DESKTOP && isSidebarOpenRef.current && !sidebarRef.current?.contains(e.target as Node)) {
       handleMouseLeave();
     }
-  }, [isAlwaysOpen, handleMouseEnter, handleMouseLeave]);
+  }, [isAlwaysOpen, isMobile, handleMouseEnter, handleMouseLeave]);
 
   useEffect(() => {
-    if (isAlwaysOpen) {
-      setIsSidebarOpen(true);
+    if (isMobile) {
+      // On mobile, remove desktop hot zone listener
       document.removeEventListener('mousemove', handleMouseMove);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      // Sidebar state on mobile is controlled by hamburger menu
     } else {
-      setIsSidebarOpen(false);
-      document.addEventListener('mousemove', handleMouseMove);
+      // On desktop, apply hot zone logic
+      if (isAlwaysOpen) {
+        setIsSidebarOpen(true);
+        document.removeEventListener('mousemove', handleMouseMove);
+      } else {
+        setIsSidebarOpen(false);
+        document.addEventListener('mousemove', handleMouseMove);
+      }
     }
 
     return () => {
@@ -70,7 +85,7 @@ export function Sidebar() {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [isAlwaysOpen, handleMouseMove, setIsSidebarOpen]);
+  }, [isAlwaysOpen, handleMouseMove, setIsSidebarOpen, isMobile]);
 
   const navItems = [
     { id: "spaces", label: "Spaces", icon: LayoutGrid },
@@ -88,20 +103,25 @@ export function Sidebar() {
   const handleSidebarItemClick = (id: string, label: string) => {
     setActivePanel(id as any);
     toggleWidget(id, label);
+    if (isMobile) {
+      setIsSidebarOpen(false); // Close sidebar after selecting item on mobile
+    }
   };
 
-  // Ensure actualSidebarOpen is consistent on server (always false initially)
-  const actualSidebarOpen = mounted ? (isAlwaysOpen || isSidebarOpen) : false;
+  // Determine actual sidebar open state for visual rendering
+  const actualSidebarOpen = mounted ? (isMobile ? isSidebarOpen : (isAlwaysOpen || isSidebarOpen)) : false;
 
   return (
     <div
       ref={sidebarRef}
       className={cn(
-        "fixed left-0 top-16 z-50 flex flex-col items-center py-4",
+        "fixed top-16 z-50 flex flex-col items-center py-4",
         "bg-sidebar backdrop-blur-xl shadow-lg shadow-black/30 transition-transform duration-300 ease-in-out",
-        actualSidebarOpen ? "translate-x-0 w-[60px]" : "-translate-x-full w-[60px]",
         `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]`,
-        "rounded-r-lg"
+        "rounded-r-lg",
+        isMobile
+          ? `w-[${SIDEBAR_WIDTH_MOBILE}px] ${actualSidebarOpen ? "translate-x-0" : "-translate-x-full"}` // Mobile off-canvas
+          : `w-[${SIDEBAR_WIDTH_DESKTOP}px] ${actualSidebarOpen ? "translate-x-0" : "-translate-x-full"}` // Desktop fixed
       )}
     >
       <div className="flex flex-col gap-2 overflow-y-auto">
@@ -116,13 +136,14 @@ export function Sidebar() {
         ))}
       </div>
       <div className="mt-auto pt-4">
-        <SidebarItem
-          // Conditionally render icon and label based on mounted state
-          icon={mounted && isAlwaysOpen ? ChevronLeft : ChevronRight}
-          label={mounted && isAlwaysOpen ? "Undock Sidebar" : "Dock Sidebar"}
-          isActive={false}
-          onClick={toggleAlwaysOpen}
-        />
+        {!isMobile && ( // Only show dock/undock button on desktop
+          <SidebarItem
+            icon={mounted && isAlwaysOpen ? ChevronLeft : ChevronRight}
+            label={mounted && isAlwaysOpen ? "Undock Sidebar" : "Dock Sidebar"}
+            isActive={false}
+            onClick={toggleAlwaysOpen}
+          />
+        )}
       </div>
     </div>
   );

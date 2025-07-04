@@ -19,17 +19,20 @@ import { useEffects } from "@/context/effect-provider";
 import { RainEffect } from "@/components/effects/rain-effect";
 import { SnowEffect } from "@/components/effects/snow-effect";
 import { RaindropsEffect } from "@/components/effects/raindrops-effect";
+import { useIsMobile } from "@/hooks/use-mobile"; // Import useIsMobile
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
+const SIDEBAR_WIDTH_DESKTOP = 60; // px
 
 export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
   const { loading } = useSupabase();
   const pathname = usePathname();
-  const { isSidebarOpen } = useSidebar();
+  const { isSidebarOpen, setIsSidebarOpen } = useSidebar(); // Get setIsSidebarOpen
   const { isAlwaysOpen, mounted } = useSidebarPreference();
   const { isCurrentRoomWritable } = useCurrentRoom();
   const { activeEffect } = useEffects();
+  const isMobile = useIsMobile(); // Use the mobile hook
 
   const [sidebarCurrentWidth, setSidebarCurrentWidth] = useState(0);
   const [mainContentArea, setMainContentArea] = useState({ left: 0, top: 0, width: 0, height: 0 });
@@ -52,10 +55,16 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   };
 
   useEffect(() => {
-    const SIDEBAR_WIDTH = 60; // px
-    const actualSidebarOpen = mounted ? (isAlwaysOpen || isSidebarOpen) : false;
-    setSidebarCurrentWidth(actualSidebarOpen ? SIDEBAR_WIDTH : 0);
-  }, [isSidebarOpen, isAlwaysOpen, mounted]);
+    // On mobile, sidebar is always off-canvas, so content starts at 0.
+    // On desktop, it's either 0 (closed) or SIDEBAR_WIDTH_DESKTOP (open/always open).
+    const newSidebarWidth = isMobile ? 0 : (mounted && isAlwaysOpen || isSidebarOpen ? SIDEBAR_WIDTH_DESKTOP : 0);
+    setSidebarCurrentWidth(newSidebarWidth);
+
+    // If on mobile, ensure sidebar is closed by default (unless explicitly opened by hamburger)
+    if (isMobile && isSidebarOpen && !isAlwaysOpen) {
+      setIsSidebarOpen(false);
+    }
+  }, [isSidebarOpen, isAlwaysOpen, mounted, isMobile, setIsSidebarOpen]);
 
   useEffect(() => {
     const calculateArea = () => {
@@ -63,9 +72,9 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
       const windowHeight = window.innerHeight;
 
       setMainContentArea({
-        left: sidebarCurrentWidth,
+        left: isMobile ? 0 : sidebarCurrentWidth, // On mobile, content always starts at left 0
         top: HEADER_HEIGHT,
-        width: windowWidth - sidebarCurrentWidth,
+        width: isMobile ? windowWidth : windowWidth - sidebarCurrentWidth, // On mobile, content is full width
         height: windowHeight - HEADER_HEIGHT,
       });
     };
@@ -73,7 +82,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     calculateArea();
     window.addEventListener('resize', calculateArea);
     return () => window.removeEventListener('resize', calculateArea);
-  }, [sidebarCurrentWidth]);
+  }, [sidebarCurrentWidth, isMobile]); // Depend on isMobile
 
   if (loading) {
     return <LoadingScreen />;
@@ -92,8 +101,10 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
           onNewUnreadMessage={handleNewUnreadMessage}
           onClearUnreadMessages={handleClearUnreadMessages}
           unreadChatCount={unreadChatCount}
+          isMobile={isMobile} // Pass isMobile
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} // Pass sidebar toggle
         />
-        <Sidebar />
+        <Sidebar isMobile={isMobile} /> {/* Pass isMobile */}
         <div
           className="absolute top-16 right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
           style={{ left: `${sidebarCurrentWidth}px` }}
@@ -102,15 +113,16 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             <div className="p-4 sm:p-6 lg:p-8 h-full">
               {children}
             </div>
-            {isDashboard && <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />}
+            {isDashboard && <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} isMobile={isMobile} />} {/* Pass isMobile */}
           </main>
         </div>
         {isDashboard && <PomodoroWidget 
           isMinimized={isPomodoroMinimized}
           setIsMinimized={setIsPomodoroMinimized}
           chatPanelWidth={chatPanelWidth}
+          isMobile={isMobile} // Pass isMobile
         />}
-        {isDashboard && <SimpleAudioPlayer />}
+        {isDashboard && <SimpleAudioPlayer isMobile={isMobile} />} {/* Pass isMobile */}
         <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
         <Toaster />
       </div>
