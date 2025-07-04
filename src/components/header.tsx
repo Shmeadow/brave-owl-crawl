@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Bell, Search, Menu, LayoutGrid, MessageSquare } from "lucide-react";
+import { Home, Bell, Search, Menu, LayoutGrid, MessageSquare, Copy } from "lucide-react"; // Added Copy icon
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -26,12 +26,12 @@ import { toast } from "sonner"; // Import toast for notifications
 interface HeaderProps {
   onOpenUpgradeModal: () => void;
   onToggleChat: () => void;
-  onNewUnreadMessage: () => void; // Added missing prop
-  onClearUnreadMessages: () => void; // Added missing prop
+  onNewUnreadMessage: () => void;
+  onClearUnreadMessages: () => void;
   unreadChatCount: number;
   isMobile: boolean;
   onToggleSidebar: () => void;
-  isChatOpen: boolean; // Added missing prop
+  isChatOpen: boolean;
 }
 
 export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChatCount, isMobile, onToggleSidebar, isChatOpen, onNewUnreadMessage, onClearUnreadMessages }: HeaderProps) => {
@@ -53,6 +53,15 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
     }
     await handleJoinRoomByCode(roomCodeInput.trim());
     setRoomCodeInput(""); // Clear input after attempt
+  };
+
+  const handleCopyRoomCode = () => {
+    if (currentRoomId) {
+      navigator.clipboard.writeText(currentRoomId);
+      toast.success("Room ID copied to clipboard!");
+    } else {
+      toast.error("No room ID to copy.");
+    }
   };
 
   return (
@@ -79,8 +88,18 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
           <Home className="h-6 w-6" />
           <span className="sr-only">Go to My Room</span>
         </Button>
-        <h1 className="text-xl font-semibold hidden sm:block">
+        <h1 className="text-xl font-semibold hidden sm:flex items-center gap-2">
           {currentRoomName}
+          {currentRoomId && (
+            <span
+              className="text-sm font-mono text-muted-foreground cursor-pointer flex items-center gap-1 hover:text-foreground transition-colors"
+              onClick={handleCopyRoomCode}
+              title="Copy Room ID"
+            >
+              ({currentRoomId.substring(0, 8)}...)
+              <Copy className="h-3 w-3" />
+            </span>
+          )}
         </h1>
       </div>
 
@@ -98,7 +117,6 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
                 handleJoinRoom();
               }
             }}
-            // Removed disabled={!session} to allow typing even when logged out
           />
           <Button
             onClick={handleJoinRoom}
@@ -131,9 +149,9 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
         <ThemeToggle />
         {session && (
           <NotificationsDropdown
-            unreadCount={unreadChatCount} // Reusing unreadChatCount for general notifications for now
-            onClearUnread={() => {}} // NotificationsDropdown will manage its own unread state
-            onNewUnread={() => {}} // NotificationsDropdown will manage its own unread state
+            unreadCount={unreadChatCount}
+            onClearUnread={onClearUnreadMessages}
+            onNewUnread={onNewUnreadMessage}
           />
         )}
         {session && (

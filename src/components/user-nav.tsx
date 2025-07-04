@@ -75,20 +75,7 @@ export function UserNav() {
           Account
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        {/* Theme options removed from here */}
-        <DropdownMenuItem className="p-0">
-          <div className="flex items-center justify-between px-2 py-1.5 w-full">
-            <Label htmlFor="sidebar-toggle" className="cursor-pointer text-sm font-normal">
-              Always Open Sidebar
-            </Label>
-            <Switch
-              id="sidebar-toggle"
-              checked={isAlwaysOpen}
-              onCheckedChange={toggleAlwaysOpen}
-              className="ml-2"
-            />
-          </div>
-        </DropdownMenuItem>
+        {/* Removed "Always Open Sidebar" toggle from here */}
         {session && (
           <DropdownMenuItem onClick={handleSignOut}>
             Log out
