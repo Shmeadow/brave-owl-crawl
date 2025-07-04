@@ -7,7 +7,6 @@ import { useSidebar } from "./sidebar-context";
 import { useWidget } from "@/components/widget/widget-context";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, BookOpen, Goal, ChevronLeft, ChevronRight, WandSparkles } from "lucide-react";
-import { toast } from "sonner"; // Import toast
 
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
 const SIDEBAR_WIDTH_MOBILE = 200; // px for the off-canvas menu
@@ -15,22 +14,11 @@ const HOT_ZONE_WIDTH = 20; // px (includes the 4px visible strip)
 const UNDOCK_DELAY = 500; // ms
 const HEADER_HEIGHT_REM = 4; // 4rem = 64px
 
-// List of widget IDs that require write access to the current room
-const WRITABLE_WIDGET_IDS = [
-  "calendar",
-  "timer",
-  "tasks",
-  "notes",
-  "flash-cards",
-  "goal-focus",
-];
-
 interface SidebarProps {
-  isMobile: boolean;
-  isCurrentRoomWritable: boolean; // New prop
+  isMobile: boolean; // New prop
 }
 
-export function Sidebar({ isMobile, isCurrentRoomWritable }: SidebarProps) {
+export function Sidebar({ isMobile }: SidebarProps) {
   const { activePanel, setActivePanel, isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const { toggleWidget } = useWidget();
   const { isAlwaysOpen, toggleAlwaysOpen, mounted } = useSidebarPreference();
@@ -113,13 +101,6 @@ export function Sidebar({ isMobile, isCurrentRoomWritable }: SidebarProps) {
   ];
 
   const handleSidebarItemClick = (id: string, label: string) => {
-    // Check if the widget is a writable one and if the room is not writable
-    const isWritableWidget = WRITABLE_WIDGET_IDS.includes(id);
-    if (isWritableWidget && !isCurrentRoomWritable) {
-      toast.error("You do not have permission to use this feature in the current room.");
-      return;
-    }
-
     setActivePanel(id as any);
     toggleWidget(id, label);
     if (isMobile) {
@@ -144,19 +125,15 @@ export function Sidebar({ isMobile, isCurrentRoomWritable }: SidebarProps) {
       )}
     >
       <div className="flex flex-col gap-2 overflow-y-auto">
-        {navItems.map((item) => {
-          const isDisabled = WRITABLE_WIDGET_IDS.includes(item.id) && !isCurrentRoomWritable;
-          return (
-            <SidebarItem
-              key={item.id}
-              icon={item.icon}
-              label={item.label}
-              isActive={activePanel === item.id}
-              onClick={() => handleSidebarItemClick(item.id, item.label)}
-              disabled={isDisabled} // Disable the item if not writable
-            />
-          );
-        })}
+        {navItems.map((item) => (
+          <SidebarItem
+            key={item.id}
+            icon={item.icon}
+            label={item.label}
+            isActive={activePanel === item.id}
+            onClick={() => handleSidebarItemClick(item.id, item.label)}
+          />
+        ))}
       </div>
       <div className="mt-auto pt-4">
         {!isMobile && ( // Only show dock/undock button on desktop

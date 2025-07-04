@@ -15,9 +15,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { PomodoroMode } from "@/hooks/use-pomodoro-state";
 import { DialogContent } from "@/components/ui/dialog";
 import { useCurrentRoom } from "@/hooks/use-current-room"; // Import useCurrentRoom
-import { PomodoroMode } from "@/lib/pomodoro-utils"; // Corrected import path
 
 const formSchema = z.object({
   focusMinutes: z.coerce.number().min(1, { message: "Focus time must be at least 1 minute." }).max(120, { message: "Focus time cannot exceed 120 minutes." }),

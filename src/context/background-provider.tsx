@@ -1,20 +1,23 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useCurrentRoom } from '@/hooks/use-current-room'; // Import useCurrentRoom
 
 interface BackgroundState {
   url: string;
   isVideo: boolean;
-  isMirrored: boolean;
+  isMirrored: boolean; // New property
 }
 
 interface BackgroundContextType {
   background: BackgroundState;
-  setBackground: (url: string, isVideo?: boolean, isMirrored?: boolean) => void;
+  setBackground: (url: string, isVideo?: boolean, isMirrored?: boolean) => void; // Updated signature
 }
 
 const BackgroundContext = createContext<BackgroundContextType | undefined>(undefined);
+
+const LOCAL_STORAGE_BG_KEY = 'app_background_url';
+const LOCAL_STORAGE_BG_TYPE_KEY = 'app_background_type';
+const LOCAL_STORAGE_BG_MIRRORED_KEY = 'app_background_mirrored'; // New local storage key
 
 // This component will manage rendering the background video or image
 function BackgroundManager({ url, isVideo, isMirrored }: { url: string; isVideo: boolean; isMirrored: boolean }) {
@@ -22,7 +25,6 @@ function BackgroundManager({ url, isVideo, isMirrored }: { url: string; isVideo:
   const [isVideoVisible, setIsVideoVisible] = useState(isVideo);
 
   useEffect(() => {
-    console.log(`BackgroundManager: URL changed to ${url}, isVideo: ${isVideo}`);
     setIsImageVisible(!isVideo);
     setIsVideoVisible(isVideo);
   }, [url, isVideo]);
@@ -41,69 +43,66 @@ function BackgroundManager({ url, isVideo, isMirrored }: { url: string; isVideo:
         filter: 'blur(var(--background-blur-px, 0px))',
       }}
     >
-      {url && !isVideo && ( // Only render image if URL exists and it's not a video
-        <div
-          id="background-image"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: `url(${url})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            opacity: isImageVisible ? 1 : 0,
-            transition: 'opacity 1s ease-in-out',
-          }}
-        />
-      )}
-      {url && isVideo && ( // Only render video if URL exists and it's a video
-        <video
-          id="background-video"
-          src={url}
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            opacity: isVideoVisible ? 1 : 0,
-            transition: 'opacity 1s ease-in-out',
-            transform: isMirrored ? 'scaleX(-1)' : 'scaleX(1)',
-          }}
-          autoPlay
-          muted
-          loop
-          playsInline
-          key={url}
-        />
-      )}
+      <div
+        id="background-image"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: `url(${url})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: isImageVisible ? 1 : 0,
+          transition: 'opacity 1s ease-in-out',
+        }}
+      />
+      <video
+        id="background-video"
+        src={url}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          opacity: isVideoVisible ? 1 : 0,
+          transition: 'opacity 1s ease-in-out',
+          transform: isMirrored ? 'scaleX(-1)' : 'scaleX(1)', // Apply mirroring here
+        }}
+        autoPlay
+        muted
+        loop
+        playsInline
+        key={url} // Add key to force re-render on src change
+      />
     </div>
   );
 }
 
 export function BackgroundProvider({ children }: { children: React.ReactNode }) {
-  const { currentRoomBackgroundUrl, isCurrentRoomVideoBackground } = useCurrentRoom();
-  const [background, setBackgroundState] = useState<BackgroundState>({
-    url: currentRoomBackgroundUrl,
-    isVideo: isCurrentRoomVideoBackground,
-    isMirrored: false, // Default to not mirrored, can be added as a room setting later
-  });
+  // Set default background to ani7.mp4 and mirrored
+  const [background, setBackgroundState] = useState<BackgroundState>({ url: '/animated/ani7.mp4', isVideo: true, isMirrored: true });
 
-  // Update background state when currentRoomBackgroundUrl or isCurrentRoomVideoBackground changes
+  // On initial load, check local storage for a saved background
   useEffect(() => {
-    console.log(`BackgroundProvider: Updating background from current room. URL: ${currentRoomBackgroundUrl}, isVideo: ${isCurrentRoomVideoBackground}`);
-    setBackgroundState({
-      url: currentRoomBackgroundUrl,
-      isVideo: isCurrentRoomVideoBackground,
-      isMirrored: false, // Keep default for now
-    });
-  }, [currentRoomBackgroundUrl, isCurrentRoomVideoBackground]);
+    const savedUrl = localStorage.getItem(LOCAL_STORAGE_BG_KEY);
+    const savedType = localStorage.getItem(LOCAL_STORAGE_BG_TYPE_KEY);
+    const savedMirrored = localStorage.getItem(LOCAL_STORAGE_BG_MIRRORED_KEY);
 
-  // Callback to change the background (for the BackgroundEffectsMenu)
+    if (savedUrl) {
+      setBackgroundState({
+        url: savedUrl,
+        isVideo: savedType === 'video',
+        isMirrored: savedMirrored === 'true',
+      });
+    }
+  }, []);
+
+  // Callback to change the background and save the choice to local storage
   const setBackground = useCallback((url: string, isVideo: boolean = false, isMirrored: boolean = false) => {
     setBackgroundState({ url, isVideo, isMirrored });
-    // Note: This local setBackground will override the room's background.
-    // To make it persistent for the room, it would need to update the room's background_url in Supabase.
-    // For now, this is a temporary override for the current session.
+    localStorage.setItem(LOCAL_STORAGE_BG_KEY, url);
+    localStorage.setItem(LOCAL_STORAGE_BG_TYPE_KEY, isVideo ? 'video' : 'image');
+    localStorage.setItem(LOCAL_STORAGE_BG_MIRRORED_KEY, String(isMirrored));
   }, []);
 
   return (

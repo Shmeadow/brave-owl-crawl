@@ -230,119 +230,6 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
     }
   }, [session, supabase, fetchRooms]);
 
-  const handleSendJoinRequest = useCallback(async (roomId: string) => {
-    if (!session?.user?.id || !supabase) {
-      toast.error("You must be logged in to send a join request.");
-      return;
-    }
-
-    // Validate Room ID format (basic UUID check)
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(roomId)) {
-      toast.error("Invalid Room ID format. Please enter a valid UUID.");
-      return;
-    }
-
-    // Check if the room exists and is not public
-    const { data: room, error: roomError } = await supabase
-      .from('rooms')
-      .select('id, name, creator_id, is_public')
-      .eq('id', roomId)
-      .single();
-
-    if (roomError || !room) {
-      toast.error("Room not found or you do not have access to request to join it.");
-      console.error("Error fetching room for join request:", roomError);
-      return;
-    }
-
-    if (room.is_public) {
-      toast.info("This is a public room. You can join it directly from the 'Public Rooms' list.");
-      return;
-    }
-
-    if (room.creator_id === session.user.id) {
-      toast.info("You are the creator of this room. You are already a member.");
-      return;
-    }
-
-    // Check if already a member
-    const { data: existingMembership, error: membershipError } = await supabase
-      .from('room_members')
-      .select('id')
-      .eq('room_id', roomId)
-      .eq('user_id', session.user.id)
-      .single();
-
-    if (existingMembership) {
-      toast.info("You are already a member of this room.");
-      return;
-    }
-
-    // Check if a pending request already exists
-    const { data: existingRequest, error: requestError } = await supabase
-      .from('room_join_requests')
-      .select('id, status')
-      .eq('room_id', roomId)
-      .eq('requester_id', session.user.id)
-      .in('status', ['pending', 'accepted']); // Check for pending or already accepted requests
-
-    if (requestError) {
-      console.error("Error checking existing join request:", requestError);
-      toast.error("Error checking for existing join request.");
-      return;
-    }
-
-    if (existingRequest && existingRequest.length > 0) {
-      if (existingRequest[0].status === 'pending') {
-        toast.info("You already have a pending join request for this room.");
-      } else if (existingRequest[0].status === 'accepted') {
-        toast.info("You have already been accepted into this room. Please refresh your rooms list.");
-      }
-      return;
-    }
-
-    // Check if the requesting user is blocked by the room creator
-    const { data: blockedStatus, error: blockedError } = await supabase
-      .from('blocked_users')
-      .select('id, type')
-      .eq('blocker_id', room.creator_id)
-      .eq('blocked_id', session.user.id)
-      .single();
-
-    if (blockedError && blockedError.code !== 'PGRST116') { // PGRST116 means no rows found
-      console.error("Error checking blocked status:", blockedError);
-      toast.error("An error occurred while checking block status.");
-      return;
-    }
-
-    if (blockedStatus) {
-      if (blockedStatus.type === 'block') {
-        toast.error("You are blocked by the owner of this room and cannot send join requests.");
-        return;
-      } else if (blockedStatus.type === 'mute') {
-        toast.info("Your requests to this room's owner are currently muted. They may not receive this notification.");
-        // Still allow sending, but inform the user
-      }
-    }
-
-    // Insert new join request
-    const { error: insertError } = await supabase
-      .from('room_join_requests')
-      .insert({
-        room_id: roomId,
-        requester_id: session.user.id,
-        status: 'pending',
-      });
-
-    if (insertError) {
-      toast.error("Error sending join request: " + insertError.message);
-      console.error("Error inserting join request:", insertError);
-    } else {
-      toast.success("Join request sent successfully! The room owner will be notified.");
-    }
-  }, [session, supabase]);
-
   const handleLeaveRoom = useCallback(async (roomId: string) => {
     if (!session?.user?.id || !supabase) {
       toast.error("You must be logged in to leave a room.");
@@ -405,7 +292,6 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
     handleGenerateInviteCode,
     handleJoinRoomByCode,
     handleJoinRoomByPassword,
-    handleSendJoinRequest, // Export the new function
     handleLeaveRoom,
     handleKickUser,
   };

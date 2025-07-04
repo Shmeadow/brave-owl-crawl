@@ -4,65 +4,39 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSupabase } from '@/integrations/supabase/auth';
 import { toast } from 'sonner';
 import { Category } from './types';
-import { useCurrentRoom } from '../use-current-room'; // Import useCurrentRoom
 
 export function useFlashcardCategories() {
   const { supabase, session, loading: authLoading } = useSupabase();
-  const { currentRoomId } = useCurrentRoom(); // Get current room ID
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchCategories = useCallback(async () => {
-    if (authLoading) {
-      setLoading(false);
-      return;
-    }
     if (!session || !supabase) {
       setCategories([]);
       setLoading(false);
       return;
     }
     setLoading(true);
-    
-    let fetchedCategories: Category[] = [];
-    if (currentRoomId) {
-      // Fetch categories for the current room
-      const { data, error } = await supabase
-        .from('flashcard_categories')
-        .select('*')
-        .eq('room_id', currentRoomId)
-        .eq('user_id', session.user.id) // Only fetch user's categories for this room
-        .order('created_at', { ascending: true });
+    const { data, error } = await supabase
+      .from('flashcard_categories')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: true });
 
-      if (error) {
-        toast.error('Failed to load categories for room: ' + error.message);
-        console.error("Error fetching categories (Supabase, room):", error);
-      } else {
-        fetchedCategories = data as Category[];
-      }
+    if (error) {
+      toast.error('Failed to load categories: ' + error.message);
+      setCategories([]);
     } else {
-      // Fetch personal categories (room_id is NULL)
-      const { data, error } = await supabase
-        .from('flashcard_categories')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .is('room_id', null)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        toast.error('Failed to load personal categories: ' + error.message);
-        console.error("Error fetching categories (Supabase, personal):", error);
-      } else {
-        fetchedCategories = data as Category[];
-      }
+      setCategories(data as Category[]);
     }
-    setCategories(fetchedCategories);
     setLoading(false);
-  }, [session, supabase, authLoading, currentRoomId]); // Depend on currentRoomId
+  }, [session, supabase]);
 
   useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+    if (!authLoading) {
+      fetchCategories();
+    }
+  }, [authLoading, fetchCategories]);
 
   const addCategory = async (name: string): Promise<Category | null> => {
     if (!session || !supabase) {
@@ -71,7 +45,7 @@ export function useFlashcardCategories() {
     }
     const { data, error } = await supabase
       .from('flashcard_categories')
-      .insert({ name, user_id: session.user.id, room_id: currentRoomId }) // Use current room ID
+      .insert({ name, user_id: session.user.id })
       .select()
       .single();
     
@@ -96,7 +70,6 @@ export function useFlashcardCategories() {
       .from('flashcard_categories')
       .update({ name })
       .eq('id', id)
-      .eq('user_id', session.user.id) // Ensure user owns the category
       .select()
       .single();
 
@@ -119,8 +92,7 @@ export function useFlashcardCategories() {
       const { error: deleteCardsError } = await supabase
         .from('flashcards')
         .delete()
-        .eq('category_id', id)
-        .eq('user_id', session.user.id); // Ensure user owns the cards
+        .eq('category_id', id);
 
       if (deleteCardsError) {
         toast.error('Failed to delete flashcards in category: ' + deleteCardsError.message);
@@ -131,8 +103,7 @@ export function useFlashcardCategories() {
       const { error: unlinkError } = await supabase
         .from('flashcards')
         .update({ category_id: null })
-        .eq('category_id', id)
-        .eq('user_id', session.user.id); // Ensure user owns the cards
+        .eq('category_id', id);
 
       if (unlinkError) {
         toast.error('Failed to unlink cards from category: ' + unlinkError.message);
@@ -144,8 +115,7 @@ export function useFlashcardCategories() {
     const { error } = await supabase
       .from('flashcard_categories')
       .delete()
-      .eq('id', id)
-      .eq('user_id', session.user.id); // Ensure user owns the category
+      .eq('id', id);
 
     if (error) {
       toast.error('Failed to delete category: ' + error.message);

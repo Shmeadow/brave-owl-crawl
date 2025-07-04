@@ -24,12 +24,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useCurrentRoom } from "@/hooks/use-current-room"; // Import useCurrentRoom
 
 interface CalendarEvent {
   id: string;
-  user_id: string; // Now always present for Supabase, or local for guest
-  room_id: string | null; // New: Can be null for personal events
+  user_id?: string;
   title: string;
   description: string | null;
   event_date: string;
@@ -49,7 +47,6 @@ interface CalendarWidgetProps {
 
 export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
   const { supabase, session, loading: authLoading } = useSupabase();
-  const { currentRoomId } = useCurrentRoom(); // Get current room ID
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
@@ -69,83 +66,58 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
     setLoadingEvents(true);
     if (session && supabase) {
       setIsLoggedInMode(true);
-      
-      let fetchedEvents: CalendarEvent[] = [];
-      if (currentRoomId) {
-        // Fetch events for the current room
-        const { data: roomEvents, error: fetchError } = await supabase
-          .from('calendar_events')
-          .select('*')
-          .eq('room_id', currentRoomId)
-          .order('created_at', { ascending: true });
+      const localEventsString = localStorage.getItem(LOCAL_STORAGE_KEY_EVENTS);
+      let localEvents: CalendarEvent[] = [];
+      try {
+        localEvents = localEventsString ? JSON.parse(localEventsString) : [];
+      } catch (e) {
+        console.error("Error parsing local storage events:", e);
+        localEvents = [];
+      }
 
-        if (fetchError) {
-          toast.error("Error fetching calendar events for room: " + fetchError.message);
-          console.error("Error fetching events (Supabase, room):", fetchError);
-        } else {
-          fetchedEvents = roomEvents as CalendarEvent[];
-        }
+      const { data: supabaseEvents, error: fetchError } = await supabase
+        .from('calendar_events')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: true });
+
+      if (fetchError) {
+        toast.error("Error fetching calendar events: " + fetchError.message);
+        console.error("Error fetching events (Supabase):", fetchError);
+        setEvents([]);
       } else {
-        // Fetch personal events (room_id is NULL)
-        const { data: personalEvents, error: fetchError } = await supabase
-          .from('calendar_events')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .is('room_id', null)
-          .order('created_at', { ascending: true });
-
-        if (fetchError) {
-          toast.error("Error fetching personal calendar events: " + fetchError.message);
-          console.error("Error fetching events (Supabase, personal):", fetchError);
-        } else {
-          fetchedEvents = personalEvents as CalendarEvent[];
-        }
-
-        // Attempt to migrate local events to personal events if they exist
-        const localEventsString = localStorage.getItem(LOCAL_STORAGE_KEY_EVENTS);
-        let localEvents: CalendarEvent[] = [];
-        try {
-          localEvents = localEventsString ? JSON.parse(localEventsString) : [];
-        } catch (e) {
-          console.error("Error parsing local storage events:", e);
-          localEvents = [];
-        }
+        let mergedEvents = [...(supabaseEvents as CalendarEvent[])];
 
         if (localEvents.length > 0) {
-          console.log(`Found ${localEvents.length} local events. Attempting migration...`);
-          const toInsert = localEvents.filter(localEvent => 
-            !fetchedEvents.some(se => se.title === localEvent.title && se.event_date === localEvent.event_date) // Avoid duplicates
-          ).map(localEvent => ({
-            user_id: session.user.id,
-            room_id: null, // Migrate as personal events
-            title: localEvent.title,
-            description: localEvent.description,
-            event_date: localEvent.event_date,
-            created_at: localEvent.created_at || new Date().toISOString(),
-          }));
-
-          if (toInsert.length > 0) {
-            const { data: newSupabaseEvents, error: insertError } = await supabase
-              .from('calendar_events')
-              .insert(toInsert)
-              .select();
-
-            if (insertError) {
-              console.error("Error migrating local events to Supabase:", insertError);
-              toast.error("Error migrating some local events.");
-            } else if (newSupabaseEvents) {
-              fetchedEvents = [...fetchedEvents, ...newSupabaseEvents as CalendarEvent[]];
-              localStorage.removeItem(LOCAL_STORAGE_KEY_EVENTS);
-              toast.success("Local calendar events migrated!");
+          for (const localEvent of localEvents) {
+            const existsInSupabase = mergedEvents.some(
+              se => se.title === localEvent.title && se.event_date === localEvent.event_date
+            );
+            if (!existsInSupabase) {
+              const { data: newSupabaseEvent, error: insertError } = await supabase
+                .from('calendar_events')
+                .insert({
+                  user_id: session.user.id,
+                  title: localEvent.title,
+                  description: localEvent.description,
+                  event_date: localEvent.event_date,
+                  created_at: localEvent.created_at || new Date().toISOString(),
+                })
+                .select()
+                .single();
+              if (insertError) {
+                console.error("Error migrating local event:", insertError);
+              } else if (newSupabaseEvent) {
+                mergedEvents.push(newSupabaseEvent as CalendarEvent);
+              }
             }
-          } else {
-            localStorage.removeItem(LOCAL_STORAGE_KEY_EVENTS); // Clear if all already exist
           }
+          localStorage.removeItem(LOCAL_STORAGE_KEY_EVENTS);
+          toast.success("Local calendar events migrated!");
         }
+        setEvents(mergedEvents);
       }
-      setEvents(fetchedEvents);
     } else {
-      // User is a guest (not logged in)
       setIsLoggedInMode(false);
       const storedEventsString = localStorage.getItem(LOCAL_STORAGE_KEY_EVENTS);
       let loadedEvents: CalendarEvent[] = [];
@@ -161,7 +133,7 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
       }
     }
     setLoadingEvents(false);
-  }, [session, supabase, authLoading, currentRoomId]); // Depend on currentRoomId
+  }, [session, supabase, authLoading]);
 
   useEffect(() => {
     fetchEvents();
@@ -189,7 +161,6 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
         .from('calendar_events')
         .insert({
           user_id: session.user.id,
-          room_id: currentRoomId, // Use current room ID
           title: values.title,
           description: values.description || null,
           event_date: eventDate,
@@ -208,8 +179,6 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
     } else {
       const newEvent: CalendarEvent = {
         id: crypto.randomUUID(),
-        user_id: 'guest', // Placeholder for guest mode
-        room_id: null,
         title: values.title,
         description: values.description || null,
         event_date: eventDate,
@@ -219,7 +188,7 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
       toast.success("Event added successfully (saved locally)!");
       form.reset();
     }
-  }, [date, isLoggedInMode, session, supabase, form, isCurrentRoomWritable, currentRoomId]);
+  }, [date, isLoggedInMode, session, supabase, form, isCurrentRoomWritable]);
 
   const handleDeleteEvent = useCallback(async (eventId: string) => {
     if (!isCurrentRoomWritable) {
@@ -231,7 +200,7 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
         .from('calendar_events')
         .delete()
         .eq('id', eventId)
-        .eq('user_id', session.user.id); // Ensure user owns the event
+        .eq('user_id', session.user.id);
 
       if (error) {
         toast.error("Error deleting event: " + error.message);

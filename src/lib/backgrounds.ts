@@ -45,5 +45,3 @@ export const getRandomBackground = () => {
     const randomIndex = Math.floor(Math.random() * allBackgrounds.length);
     return allBackgrounds[randomIndex];
 };
-
-export const DEFAULT_BACKGROUND_FOR_NEW_USERS = { url: "/animated/ani7.mp4", isVideo: true };

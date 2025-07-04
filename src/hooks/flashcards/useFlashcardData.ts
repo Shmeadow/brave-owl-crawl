@@ -4,13 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
 import { CardData } from "./types";
-import { useCurrentRoom } from "../use-current-room"; // Import useCurrentRoom
 
 const LOCAL_STORAGE_KEY = 'guest_flashcards';
 
 export function useFlashcardData() {
   const { supabase, session, loading: authLoading } = useSupabase();
-  const { currentRoomId } = useCurrentRoom(); // Get current room ID
   const [cards, setCards] = useState<CardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
@@ -18,88 +16,76 @@ export function useFlashcardData() {
   const fetchCards = useCallback(async () => {
     setLoading(true);
     if (session && supabase) {
+      // User is logged in
       setIsLoggedInMode(true);
-      
-      let fetchedCards: CardData[] = [];
-      if (currentRoomId) {
-        // Fetch cards for the current room
-        const { data: roomCards, error: fetchError } = await supabase
-          .from('flashcards')
-          .select('*')
-          .eq('room_id', currentRoomId)
-          .order('created_at', { ascending: true });
+      console.log("User logged in. Checking for local cards to migrate...");
 
-        if (fetchError) {
-          toast.error("Error fetching flashcards for room: " + fetchError.message);
-          console.error("Error fetching flashcards (Supabase, room):", fetchError);
-        } else {
-          fetchedCards = roomCards as CardData[];
-        }
+      // 1. Load local cards (if any)
+      const localCardsString = localStorage.getItem(LOCAL_STORAGE_KEY);
+      let localCards: CardData[] = [];
+      try {
+        localCards = localCardsString ? JSON.parse(localCardsString) : [];
+      } catch (e) {
+        console.error("Error parsing local storage cards:", e);
+        localCards = [];
+      }
+
+      // 2. Fetch user's existing cards from Supabase
+      const { data: supabaseCards, error: fetchError } = await supabase
+        .from('flashcards')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: true });
+
+      if (fetchError) {
+        toast.error("Error fetching flashcards from Supabase: " + fetchError.message);
+        console.error("Error fetching flashcards (Supabase):", fetchError);
+        setCards([]);
       } else {
-        // Fetch personal cards (room_id is NULL)
-        const { data: personalCards, error: fetchError } = await supabase
-          .from('flashcards')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .is('room_id', null)
-          .order('created_at', { ascending: true });
+        let mergedCards = [...(supabaseCards as CardData[])];
 
-        if (fetchError) {
-          toast.error("Error fetching personal flashcards: " + fetchError.message);
-          console.error("Error fetching flashcards (Supabase, personal):", fetchError);
-        } else {
-          fetchedCards = personalCards as CardData[];
-        }
-
-        // Attempt to migrate local cards to personal cards if they exist
-        const localCardsString = localStorage.getItem(LOCAL_STORAGE_KEY);
-        let localCards: CardData[] = [];
-        try {
-          localCards = localCardsString ? JSON.parse(localCardsString) : [];
-        } catch (e) {
-          console.error("Error parsing local storage cards:", e);
-          localCards = [];
-        }
-
+        // 3. Migrate local cards to Supabase if they don't already exist
         if (localCards.length > 0) {
           console.log(`Found ${localCards.length} local cards. Attempting migration...`);
-          const toInsert = localCards.filter(localCard => 
-            !fetchedCards.some(sc => sc.front.toLowerCase() === localCard.front.toLowerCase() && sc.back.toLowerCase() === localCard.back.toLowerCase()) // Avoid duplicates
-          ).map(localCard => ({
-            user_id: session.user.id,
-            room_id: null, // Migrate as personal cards
-            category_id: localCard.category_id,
-            front: localCard.front,
-            back: localCard.back,
-            starred: localCard.starred,
-            status: localCard.status,
-            seen_count: localCard.seen_count,
-            last_reviewed_at: localCard.last_reviewed_at,
-            interval_days: localCard.interval_days,
-            correct_guesses: localCard.correct_guesses || 0,
-            incorrect_guesses: localCard.incorrect_guesses || 0,
-          }));
+          for (const localCard of localCards) {
+            // Check if a similar card (by front/back) already exists in Supabase
+            const existsInSupabase = mergedCards.some(
+              sc => sc.front === localCard.front && sc.back === localCard.back
+            );
 
-          if (toInsert.length > 0) {
-            const { data: newSupabaseCards, error: insertError } = await supabase
-              .from('flashcards')
-              .insert(toInsert)
-              .select();
+            if (!existsInSupabase) {
+              const { data: newSupabaseCard, error: insertError } = await supabase
+                .from('flashcards')
+                .insert({
+                  user_id: session.user.id,
+                  front: localCard.front,
+                  back: localCard.back,
+                  starred: localCard.starred,
+                  status: localCard.status,
+                  seen_count: localCard.seen_count,
+                  last_reviewed_at: localCard.last_reviewed_at,
+                  interval_days: localCard.interval_days,
+                  correct_guesses: localCard.correct_guesses || 0,
+                  incorrect_guesses: localCard.incorrect_guesses || 0,
+                })
+                .select()
+                .single();
 
-            if (insertError) {
-              console.error("Error migrating local cards to Supabase:", insertError);
-              toast.error("Error migrating some local cards.");
-            } else if (newSupabaseCards) {
-              fetchedCards = [...fetchedCards, ...newSupabaseCards as CardData[]];
-              localStorage.removeItem(LOCAL_STORAGE_KEY);
-              toast.success("Local flashcards migrated to your account!");
+              if (insertError) {
+                console.error("Error migrating local card to Supabase:", insertError);
+                toast.error("Error migrating some local cards.");
+              } else if (newSupabaseCard) {
+                mergedCards.push(newSupabaseCard as CardData);
+                console.log("Migrated local card:", newSupabaseCard.front);
+              }
             }
-          } else {
-            localStorage.removeItem(LOCAL_STORAGE_KEY); // Clear if all already exist
           }
+          // Clear local storage after migration attempt
+          localStorage.removeItem(LOCAL_STORAGE_KEY);
+          toast.success("Local flashcards migrated to your account!");
         }
+        setCards(mergedCards);
       }
-      setCards(fetchedCards);
     } else {
       // User is a guest (not logged in)
       setIsLoggedInMode(false);
@@ -117,7 +103,7 @@ export function useFlashcardData() {
       }
     }
     setLoading(false);
-  }, [session, supabase, authLoading, currentRoomId]); // Depend on currentRoomId
+  }, [session, supabase, authLoading]);
 
   // Effect to handle initial load and auth state changes
   useEffect(() => {
@@ -140,6 +126,5 @@ export function useFlashcardData() {
     session,
     supabase,
     fetchCards,
-    currentRoomId, // Expose currentRoomId for mutations
   };
 }

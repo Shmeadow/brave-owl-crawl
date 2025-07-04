@@ -4,8 +4,7 @@ import { useCallback } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
 import { RoomData } from "./types";
-import { getRandomBackground, DEFAULT_BACKGROUND_FOR_NEW_USERS } from "@/lib/backgrounds";
-import { generateRandomCode } from "@/lib/room-utils"; // New import
+import { getRandomBackground } from "@/lib/backgrounds";
 
 interface UseRoomManagementProps {
   setRooms: React.Dispatch<React.SetStateAction<RoomData[]>>;
@@ -21,10 +20,9 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
       return;
     }
 
-    const defaultBg = DEFAULT_BACKGROUND_FOR_NEW_USERS;
+    const randomBg = getRandomBackground();
 
-    // 1. Create the room
-    const { data: newRoom, error: roomError } = await supabase
+    const { data, error } = await supabase
       .from('rooms')
       .insert({
         creator_id: session.user.id,
@@ -32,65 +30,18 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
         is_public: isPublic,
         allow_guest_write: false,
         password_hash: null,
-        background_url: defaultBg.url,
-        is_video_background: defaultBg.isVideo,
+        background_url: randomBg.url,
+        is_video_background: randomBg.isVideo,
       })
       .select('*, creator:profiles(first_name, last_name)')
       .single();
 
-    if (roomError) {
-      toast.error("Error creating room: " + roomError.message);
-      console.error("Error creating room:", roomError);
-      return;
-    }
-
-    // 2. Generate and insert a unique invite code for the new room
-    let inviteCode = '';
-    let isCodeUnique = false;
-    let attempts = 0;
-    const MAX_ATTEMPTS = 5;
-
-    while (!isCodeUnique && attempts < MAX_ATTEMPTS) {
-      const potentialCode = generateRandomCode();
-      const { data: existingCode, error: codeCheckError } = await supabase
-        .from('room_invites')
-        .select('id')
-        .eq('code', potentialCode)
-        .single();
-
-      if (codeCheckError && codeCheckError.code === 'PGRST116') { // PGRST116 means no rows found
-        inviteCode = potentialCode;
-        isCodeUnique = true;
-      } else if (codeCheckError) {
-        console.error("Error checking code uniqueness during room creation:", codeCheckError);
-        // Continue attempts or break if critical error
-      }
-      attempts++;
-    }
-
-    if (!isCodeUnique) {
-      toast.error("Failed to generate a unique invite code for the room.");
-      // Proceed without invite code, but log the issue.
-    } else {
-      const { error: inviteError } = await supabase
-        .from('room_invites')
-        .insert({
-          room_id: newRoom.id,
-          code: inviteCode,
-          creator_id: session.user.id,
-          expires_at: null, // No expiration for now
-        });
-
-      if (inviteError) {
-        toast.error("Error creating invite code for room: " + inviteError.message);
-        console.error("Error creating invite code for room:", inviteError);
-      }
-    }
-
-    setRooms((prevRooms) => [...prevRooms, { ...newRoom, is_member: true } as RoomData]);
-    toast.success(`Room "${newRoom.name}" created successfully! It is currently ${newRoom.is_public ? 'public' : 'private'}.`);
-    if (inviteCode) {
-      toast.info(`Invite Code: ${inviteCode}`); // Show the code immediately
+    if (error) {
+      toast.error("Error creating room: " + error.message);
+      console.error("Error creating room:", error);
+    } else if (data) {
+      setRooms((prevRooms) => [...prevRooms, { ...data, is_member: true } as RoomData]);
+      toast.success(`Room "${data.name}" created successfully! It is currently ${data.is_public ? 'public' : 'private'}.`);
     }
   }, [session, supabase, setRooms]);
 
