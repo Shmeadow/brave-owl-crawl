@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { toast } from 'sonner';
+import { toast } from 'sonner'; // Keep toast import for non-Spotify related errors if any, or remove if not used.
 
 // Declare global Spotify object for TypeScript
 declare global {
@@ -91,7 +91,7 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
 
   const connectToSpotify = useCallback(() => {
     if (!accessToken) {
-      toast.error("Spotify access token is missing. Please log in to Spotify.");
+      // No toast, just return if token is missing
       return;
     }
 
@@ -101,7 +101,7 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
     }
 
     if (typeof window.Spotify === 'undefined') {
-      toast.error("Spotify Web Playback SDK not loaded.");
+      // No toast, internal SDK loading issue
       return;
     }
 
@@ -113,19 +113,15 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
 
     // Ready
     player.addListener('ready', ({ device_id }: { device_id: string }) => {
-      console.log('Ready with Device ID', device_id);
       deviceIdRef.current = device_id;
       setPlayerReady(true);
-      toast.success("Connected to Spotify!");
       // Optionally transfer playback to this device immediately
       // transferPlayback(device_id);
     });
 
     // Not Ready
     player.addListener('not_ready', ({ device_id }: { device_id: string }) => {
-      console.log('Device ID has gone offline', device_id);
       setPlayerReady(false);
-      toast.error("Spotify device went offline.");
     });
 
     // Player State Changed
@@ -133,20 +129,17 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
 
     // Account Error
     player.addListener('account_error', ({ message }: { message: string }) => {
-      console.error('Account error:', message);
-      toast.error(`Spotify Account Error: ${message}`);
+      console.error('Spotify Account Error:', message); // Keep console.error for debugging
     });
 
     // Playback Error
     player.addListener('playback_error', ({ message }: { message: string }) => {
-      console.error('Playback error:', message);
-      toast.error(`Spotify Playback Error: ${message}`);
+      console.error('Spotify Playback Error:', message); // Keep console.error for debugging
     });
 
     // Autoplay Failed
     player.addListener('autoplay_failed', () => {
-      console.warn('Autoplay is not allowed by the browser.');
-      toast.info("Autoplay blocked. Please click play manually.");
+      console.warn('Autoplay is not allowed by the browser.'); // Keep console.warn
     });
 
     player.connect();
@@ -163,7 +156,6 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
       setSpotifyCurrentTime(0);
       setSpotifyDuration(0);
       clearTimeUpdateInterval();
-      toast.info("Disconnected from Spotify.");
     }
   }, [clearTimeUpdateInterval]);
 
@@ -177,8 +169,7 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
       document.body.appendChild(script);
 
       window.onSpotifyWebPlaybackSDKReady = () => {
-        console.log("Spotify Web Playback SDK is ready!");
-        // The connectToSpotify function will be called manually by the user
+        // SDK is ready, connectToSpotify can now be called manually
       };
     }
   }, []);
@@ -193,8 +184,6 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
   const togglePlayPause = useCallback(() => {
     if (playerReady && playerRef.current) {
       playerRef.current.togglePlay().catch((e: any) => console.error("Error toggling play/pause:", e));
-    } else {
-      toast.error("Spotify player not ready. Please connect first.");
     }
   }, [playerReady]);
 
@@ -224,7 +213,6 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
 
   const transferPlayback = useCallback(async (deviceId: string) => {
     if (!accessToken) {
-      toast.error("Access token required to transfer playback.");
       return;
     }
     try {
@@ -239,16 +227,13 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
           play: true, // Start playback on the new device
         }),
       });
-      console.log("Playback transferred to new device:", deviceId);
     } catch (error) {
       console.error("Error transferring playback:", error);
-      toast.error("Failed to transfer Spotify playback.");
     }
   }, [accessToken]);
 
   const playTrack = useCallback(async (trackUri: string) => {
     if (!accessToken || !deviceIdRef.current) {
-      toast.error("Spotify not connected or device not ready.");
       return;
     }
     try {
@@ -260,10 +245,8 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
         },
         body: JSON.stringify({ uris: [trackUri] }),
       });
-      toast.success("Playing Spotify track!");
     } catch (error) {
       console.error("Error playing track:", error);
-      toast.error("Failed to play Spotify track.");
     }
   }, [accessToken]);
 
