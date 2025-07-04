@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Music, ListMusic, Youtube, VolumeX, Volume2, ChevronLeft } from 'lucide-react';
 import { useYouTubePlayer } from '@/hooks/use-youtube-player';
 import { useHtmlAudioPlayer } from '@/hooks/use-html-audio-player';
@@ -211,7 +211,7 @@ const SimpleAudioPlayer = () => {
     >
       {/* Normal/Maximized Player UI */}
       <div className={cn(
-        "bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full h-full",
+        "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full h-full", // Changed bg-card to bg-card/40
         displayMode === 'normal' && 'p-1',
         displayMode === 'maximized' && 'p-4 items-center justify-center',
         displayMode === 'minimized' && 'hidden'
@@ -295,7 +295,7 @@ const SimpleAudioPlayer = () => {
       {displayMode === 'minimized' && (
         <div
           className={cn(
-            "bg-card backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex items-center justify-between w-full h-full"
+            "bg-card/40 backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex items-center justify-between w-full h-full" // Changed bg-card to bg-card/40
           )}
           title="Expand Player"
           onClick={(e) => { e.stopPropagation(); setDisplayMode('normal'); }}
