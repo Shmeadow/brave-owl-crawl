@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Bell, Search, Menu, LayoutGrid, MessageSquare } from "lucide-react"; // Added MessageSquare
+import { Home, Bell, Search, Menu, LayoutGrid, MessageSquare } from "lucide-react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -20,12 +20,13 @@ import {
 import { SpacesWidget } from "@/components/widget-content/spaces-widget";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
-import { JoinRoomByIdHeader } from "@/components/join-room-by-id-header";
+import { useRooms } from "@/hooks/use-rooms"; // Import useRooms for join functionality
+import { toast } from "sonner"; // Import toast for notifications
 
 interface HeaderProps {
   onOpenUpgradeModal: () => void;
-  onToggleChat: () => void; // Now just a toggle function
-  unreadChatCount: number; // Still need unread count for the button
+  onToggleChat: () => void;
+  unreadChatCount: number;
   isMobile: boolean;
   onToggleSidebar: () => void;
 }
@@ -34,6 +35,22 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
   const { session } = useSupabase();
   const router = useRouter();
   const { currentRoomName, currentRoomId, isCurrentRoomWritable, setCurrentRoom } = useCurrentRoom();
+  const { handleJoinRoomByCode } = useRooms(); // Use the hook for joining rooms
+
+  const [roomCodeInput, setRoomCodeInput] = useState("");
+
+  const handleJoinRoom = async () => {
+    if (!session) {
+      toast.error("You must be logged in to join a room.");
+      return;
+    }
+    if (!roomCodeInput.trim()) {
+      toast.error("Please enter a room code.");
+      return;
+    }
+    await handleJoinRoomByCode(roomCodeInput.trim());
+    setRoomCodeInput(""); // Clear input after attempt
+  };
 
   return (
     <header className="sticky top-0 z-[1002] w-full border-b bg-background/80 backdrop-blur-md flex items-center h-16">
@@ -65,10 +82,33 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
       </div>
 
       <div className="flex items-center gap-4 ml-auto pr-4">
+        {/* Join Room Input and Button */}
+        <div className="flex items-center space-x-2">
+          <Input
+            type="text"
+            placeholder="Room Code"
+            className="w-32 text-sm h-9"
+            value={roomCodeInput}
+            onChange={(e) => setRoomCodeInput(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && roomCodeInput.trim()) {
+                handleJoinRoom();
+              }
+            }}
+            disabled={!session}
+          />
+          <Button
+            onClick={handleJoinRoom}
+            size="sm"
+            className="h-9"
+            disabled={!session || !roomCodeInput.trim()}
+          >
+            Join
+          </Button>
+        </div>
+
         <ClockDisplay className="hidden md:flex" />
         <BackgroundBlurSlider className="hidden md:flex" />
-
-        <JoinRoomByIdHeader />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -88,7 +128,7 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
         <ThemeToggle />
         {session && (
           <NotificationsDropdown
-            unreadCount={unreadChatCount}
+            unreadCount={unreadChatCount} // Reusing unreadChatCount for general notifications for now
             onClearUnread={() => {}} // NotificationsDropdown will manage its own unread state
             onNewUnread={() => {}} // NotificationsDropdown will manage its own unread state
           />
@@ -97,7 +137,7 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
           <Button
             variant="ghost"
             size="icon"
-            onClick={onToggleChat} // Use the passed toggle function
+            onClick={onToggleChat}
             title="Open Chat"
             className="relative"
           >
