@@ -221,33 +221,42 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
 
       <CardContent className={cn("flex flex-col items-center gap-3 w-full p-1", isMinimized ? "hidden" : "flex")}>
         <div className="flex gap-1 justify-center w-full">
-          <Button
-            variant={mode === 'focus' ? 'default' : 'outline'}
-            size="icon" // Changed to icon size
-            onClick={() => handleSwitchMode('focus')}
-            className={cn("h-7 w-7 flex-1", mode === 'focus' && "bg-primary text-primary-foreground")}
-            disabled={!isCurrentRoomWritable}
-          >
-            <Brain className="h-3 w-3" /> {/* Removed mr-1 */}
-          </Button>
-          <Button
-            variant={mode === 'short-break' ? 'default' : 'outline'}
-            size="icon" // Changed to icon size
-            onClick={() => handleSwitchMode('short-break')}
-            className={cn("h-7 w-7 flex-1", mode === 'short-break' && "bg-secondary text-secondary-foreground")}
-            disabled={!isCurrentRoomWritable}
-          >
-            <Coffee className="h-3 w-3" /> {/* Removed mr-1 */}
-          </Button>
-          <Button
-            variant={mode === 'long-break' ? 'default' : 'outline'}
-            size="icon" // Changed to icon size
-            onClick={() => handleSwitchMode('long-break')}
-            className={cn("h-7 w-7 flex-1", mode === 'long-break' && "bg-accent text-accent-foreground")}
-            disabled={!isCurrentRoomWritable}
-          >
-            <Home className="h-3 w-3" /> {/* Removed mr-1 */}
-          </Button>
+          <div className="flex flex-col items-center">
+            <Button
+              variant={mode === 'focus' ? 'default' : 'outline'}
+              size="icon"
+              onClick={() => handleSwitchMode('focus')}
+              className={cn("h-7 w-7", mode === 'focus' && "bg-primary text-primary-foreground")}
+              disabled={!isCurrentRoomWritable}
+            >
+              <Brain className="h-3 w-3" />
+            </Button>
+            <span className="text-xs text-muted-foreground mt-1">Focus</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <Button
+              variant={mode === 'short-break' ? 'default' : 'outline'}
+              size="icon"
+              onClick={() => handleSwitchMode('short-break')}
+              className={cn("h-7 w-7", mode === 'short-break' && "bg-secondary text-secondary-foreground")}
+              disabled={!isCurrentRoomWritable}
+            >
+              <Coffee className="h-3 w-3" />
+            </Button>
+            <span className="text-xs text-muted-foreground mt-1">Short</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <Button
+              variant={mode === 'long-break' ? 'default' : 'outline'}
+              size="icon"
+              onClick={() => handleSwitchMode('long-break')}
+              className={cn("h-7 w-7", mode === 'long-break' && "bg-accent text-accent-foreground")}
+              disabled={!isCurrentRoomWritable}
+            >
+              <Home className="h-3 w-3" />
+            </Button>
+            <span className="text-xs text-muted-foreground mt-1">Long</span>
+          </div>
         </div>
         {isEditingTime ? (
           <Input
@@ -272,15 +281,15 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
           </div>
         )}
         <div className="flex gap-2">
-          <Button onClick={handleStartPause} size="icon" className="h-7 w-7" disabled={!isCurrentRoomWritable}> {/* Changed to icon size */}
+          <Button onClick={handleStartPause} size="icon" className="h-7 w-7" disabled={!isCurrentRoomWritable}>
             {isRunning ? (
-              <Pause className="h-4 w-4" /> // Removed mr-1
+              <Pause className="h-4 w-4" />
             ) : (
-              <Play className="h-4 w-4" /> // Removed mr-1
+              <Play className="h-4 w-4" />
             )}
           </Button>
-          <Button onClick={handleReset} size="icon" variant="secondary" className="h-7 w-7" disabled={!isCurrentRoomWritable}> {/* Changed to icon size */}
-            <RotateCcw className="h-4 w-4" /> {/* Removed mr-1 */}
+          <Button onClick={handleReset} size="icon" variant="secondary" className="h-7 w-7" disabled={!isCurrentRoomWritable}>
+            <RotateCcw className="h-4 w-4" />
           </Button>
         </div>
       </CardContent>
