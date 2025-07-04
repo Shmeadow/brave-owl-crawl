@@ -15,9 +15,9 @@ export function useRooms() {
     handleToggleGuestWriteAccess,
     handleSetRoomPassword,
     handleDeleteRoom,
-  } = useRoomManagement({ setRooms: (newRooms) => {}, fetchRooms }); // Pass a dummy setRooms, as fetchRooms will update the state in useRoomFetching
+  } = useRoomManagement({ setRooms: (newRooms) => {}, fetchRooms });
   const {
-    handleGenerateInviteCode,
+    // handleGenerateInviteCode, // Removed as codes are now auto-generated on room creation
     handleJoinRoomByCode,
     handleJoinRoomByPassword,
     handleSendJoinRequest,
@@ -33,10 +33,10 @@ export function useRooms() {
     handleToggleGuestWriteAccess,
     handleSetRoomPassword,
     handleDeleteRoom,
-    handleGenerateInviteCode,
+    // handleGenerateInviteCode, // Removed from export
     handleJoinRoomByCode,
     handleJoinRoomByPassword,
-    handleSendJoinRequest, // Explicitly return handleSendJoinRequest
+    handleSendJoinRequest,
     handleLeaveRoom,
     handleKickUser,
     fetchRooms, // Expose fetchRooms for manual refresh if needed

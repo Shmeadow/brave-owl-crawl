@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Lock, Unlock, Trash2, LogIn, Share2, LogOut, DoorOpen } from "lucide-react"; // Added DoorOpen
+import { Lock, Unlock, Trash2, LogIn, Share2, LogOut, DoorOpen, Copy } from "lucide-react"; // Added Copy
 import { useRooms, RoomData } from "@/hooks/use-rooms";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
@@ -17,16 +17,47 @@ interface MyRoomsSectionProps {
 }
 
 export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSectionProps) {
-  const { session } = useSupabase();
+  const { session, supabase } = useSupabase();
   const {
     handleToggleRoomPublicStatus,
-    handleGenerateInviteCode,
     handleLeaveRoom,
     handleDeleteRoom,
   } = useRooms();
   const { currentRoomId, setCurrentRoom } = useCurrentRoom();
 
-  const [generatedInviteCodes, setGeneratedInviteCodes] = useState<{ [roomId: string]: string | null }>({});
+  const [roomInviteCodes, setRoomInviteCodes] = useState<{ [roomId: string]: string | null }>({});
+
+  // Fetch invite codes for created rooms
+  useEffect(() => {
+    const fetchInviteCodes = async () => {
+      if (!supabase || !session?.user?.id || myCreatedRooms.length === 0) {
+        setRoomInviteCodes({});
+        return;
+      }
+
+      const roomIds = myCreatedRooms.map(room => room.id);
+      const { data, error } = await supabase
+        .from('room_invites')
+        .select('room_id, code')
+        .in('room_id', roomIds)
+        .eq('creator_id', session.user.id)
+        .is('expires_at', null); // Only active invites
+
+      if (error) {
+        console.error("Error fetching invite codes:", error);
+        toast.error("Failed to load some invite codes.");
+        setRoomInviteCodes({});
+      } else {
+        const codesMap = data.reduce((acc, invite) => {
+          acc[invite.room_id] = invite.code;
+          return acc;
+        }, {} as { [roomId: string]: string });
+        setRoomInviteCodes(codesMap);
+      }
+    };
+
+    fetchInviteCodes();
+  }, [myCreatedRooms, supabase, session]); // Re-fetch when myCreatedRooms or session/supabase changes
 
   const handleEnterRoom = (room: RoomData) => {
     if (!session && !room.is_public && !room.password_hash) {
@@ -41,15 +72,9 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
     toast.info("You have exited the room and returned to your personal space.");
   };
 
-  const handleGenerateCodeClick = async (roomId: string) => {
-    if (!session) {
-      toast.error("You must be logged in to generate an invite code.");
-      return;
-    }
-    const code = await handleGenerateInviteCode(roomId);
-    if (code) {
-      setGeneratedInviteCodes(prev => ({ ...prev, [roomId]: code }));
-    }
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    toast.success("Invite code copied to clipboard!");
   };
 
   const getRoomCreatorName = (room: RoomData) => {
@@ -131,24 +156,24 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
                       {room.is_public ? "Public" : "Private"}
                       {room.password_hash && " (Password Protected)"}
                     </p>
-                    {!room.is_public && generatedInviteCodes[room.id] && (
-                      <p className="text-xs text-primary mt-1">Invite Code: <span className="font-bold">{generatedInviteCodes[room.id]}</span></p>
+                    {roomInviteCodes[room.id] && ( // Display invite code if available
+                      <div className="flex items-center mt-1">
+                        <p className="text-xs text-primary">Invite Code: <span className="font-bold">{roomInviteCodes[room.id]}</span></p>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-5 w-5 ml-1 text-muted-foreground hover:text-primary"
+                          onClick={(e) => { e.stopPropagation(); handleCopyCode(roomInviteCodes[room.id]!); }}
+                          title="Copy Invite Code"
+                        >
+                          <Copy className="h-3 w-3" />
+                          <span className="sr-only">Copy Invite Code</span>
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-1 sm:ml-auto">
-                  {!room.is_public && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleGenerateCodeClick(room.id)}
-                      title="Generate Invite Code"
-                      disabled={!session}
-                    >
-                      <Share2 className="h-4 w-4" />
-                      <span className="sr-only">Generate Invite Code</span>
-                    </Button>
-                  )}
                   <Button
                     variant="ghost"
                     size="icon"
