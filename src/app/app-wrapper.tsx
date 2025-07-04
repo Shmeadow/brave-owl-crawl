@@ -20,6 +20,7 @@ import { RainEffect } from "@/components/effects/rain-effect";
 import { SnowEffect } from "@/components/effects/snow-effect";
 import { RaindropsEffect } from "@/components/effects/raindrops-effect";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ChatPanel } from "@/components/chat-panel"; // Import ChatPanel
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
@@ -30,7 +31,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const pathname = usePathname();
   const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const { isAlwaysOpen, mounted } = useSidebarPreference();
-  const { isCurrentRoomWritable, currentRoomBackgroundUrl, isCurrentRoomVideoBackground } = useCurrentRoom(); // Get background info
+  const { isCurrentRoomWritable, currentRoomBackgroundUrl, isCurrentRoomVideoBackground, currentRoomId } = useCurrentRoom(); // Get background info
   const { activeEffect } = useEffects();
   const isMobile = useIsMobile();
 
@@ -96,11 +97,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
         {activeEffect === 'raindrops' && <RaindropsEffect />}
         <Header
           onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
-          isChatOpen={isChatOpen}
-          onToggleChat={() => setIsChatOpen(!isChatOpen)}
-          onNewUnreadMessage={handleNewUnreadMessage}
-          onClearUnreadMessages={handleClearUnreadMessages}
-          unreadChatCount={unreadChatCount}
+          onToggleChat={() => setIsChatOpen(!isChatOpen)} // Pass toggle function
+          unreadChatCount={unreadChatCount} // Pass unread count
           isMobile={isMobile}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         />
@@ -125,6 +123,17 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
         {isDashboard && <SimpleAudioPlayer isMobile={isMobile} />}
         <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
         <Toaster />
+        {/* ChatPanel rendered here */}
+        <ChatPanel
+          isOpen={isChatOpen}
+          onToggleOpen={() => setIsChatOpen(!isChatOpen)}
+          onNewUnreadMessage={handleNewUnreadMessage}
+          onClearUnreadMessages={handleClearUnreadMessages}
+          unreadCount={unreadChatCount}
+          currentRoomId={currentRoomId}
+          isCurrentRoomWritable={isCurrentRoomWritable}
+          isMobile={isMobile}
+        />
       </div>
     </WidgetProvider>
   );

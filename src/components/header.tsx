@@ -2,8 +2,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Bell, Search, Menu, LayoutGrid } from "lucide-react";
-import { ChatPanel } from "@/components/chat-panel";
+import { Home, Bell, Search, Menu, LayoutGrid, MessageSquare } from "lucide-react"; // Added MessageSquare
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -20,21 +19,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SpacesWidget } from "@/components/widget-content/spaces-widget";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown"; // Import NotificationsDropdown
-import { JoinRoomByIdHeader } from "@/components/join-room-by-id-header"; // Import new component
+import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
+import { JoinRoomByIdHeader } from "@/components/join-room-by-id-header";
 
 interface HeaderProps {
   onOpenUpgradeModal: () => void;
-  isChatOpen: boolean;
-  onToggleChat: () => void;
-  onNewUnreadMessage: () => void;
-  onClearUnreadMessages: () => void;
-  unreadChatCount: number;
+  onToggleChat: () => void; // Now just a toggle function
+  unreadChatCount: number; // Still need unread count for the button
   isMobile: boolean;
   onToggleSidebar: () => void;
 }
 
-export const Header = React.memo(({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnreadMessage, onClearUnreadMessages, unreadChatCount, isMobile, onToggleSidebar }: HeaderProps) => {
+export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChatCount, isMobile, onToggleSidebar }: HeaderProps) => {
   const { session } = useSupabase();
   const router = useRouter();
   const { currentRoomName, currentRoomId, isCurrentRoomWritable, setCurrentRoom } = useCurrentRoom();
@@ -53,11 +49,10 @@ export const Header = React.memo(({ onOpenUpgradeModal, isChatOpen, onToggleChat
             <span className="sr-only">Open Menu</span>
           </Button>
         )}
-        {/* Removed search input */}
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setCurrentRoom(null, "My Room")} // Navigate to personal room
+          onClick={() => setCurrentRoom(null, "My Room")}
           title="Go to My Room"
           className={isMobile ? "hidden" : ""}
         >
@@ -73,7 +68,7 @@ export const Header = React.memo(({ onOpenUpgradeModal, isChatOpen, onToggleChat
         <ClockDisplay className="hidden md:flex" />
         <BackgroundBlurSlider className="hidden md:flex" />
 
-        <JoinRoomByIdHeader /> {/* New component for joining by ID */}
+        <JoinRoomByIdHeader />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -93,22 +88,27 @@ export const Header = React.memo(({ onOpenUpgradeModal, isChatOpen, onToggleChat
         <ThemeToggle />
         {session && (
           <NotificationsDropdown
-            unreadCount={unreadChatCount} // Reusing unreadChatCount for general notifications for now
-            onClearUnread={onClearUnreadMessages}
-            onNewUnread={onNewUnreadMessage}
+            unreadCount={unreadChatCount}
+            onClearUnread={() => {}} // NotificationsDropdown will manage its own unread state
+            onNewUnread={() => {}} // NotificationsDropdown will manage its own unread state
           />
         )}
         {session && (
-          <ChatPanel
-            isOpen={isChatOpen}
-            onToggleOpen={onToggleChat}
-            onNewUnreadMessage={onNewUnreadMessage}
-            onClearUnreadMessages={onClearUnreadMessages}
-            unreadCount={unreadChatCount}
-            currentRoomId={currentRoomId}
-            isCurrentRoomWritable={isCurrentRoomWritable}
-            isMobile={isMobile}
-          />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleChat} // Use the passed toggle function
+            title="Open Chat"
+            className="relative"
+          >
+            <MessageSquare className="h-6 w-6" />
+            <span className="sr-only">Open Chat</span>
+            {unreadChatCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                {unreadChatCount}
+              </span>
+            )}
+          </Button>
         )}
         <UserNav />
       </div>
