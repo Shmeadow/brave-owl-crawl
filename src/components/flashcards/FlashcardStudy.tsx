@@ -102,8 +102,6 @@ export function FlashcardStudy({ flashcards, updateCardInteraction }: FlashcardS
         <div className="text-md text-muted-foreground mt-4 text-center">
           <p>Status: <span className="capitalize">{currentCard.status}</span></p>
           <p>Seen: {currentCard.seen_count} times</p>
-          <p>Correct Guesses: {currentCard.correct_guesses}</p>
-          <p>Incorrect Guesses: {currentCard.incorrect_guesses}</p>
         </div>
       </CardContent>
     </Card>

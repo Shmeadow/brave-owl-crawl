@@ -151,7 +151,7 @@ export function LearnMode({ flashcards, handleAnswerFeedback, updateCardInteract
             />
 
             <div className="text-md text-muted-foreground mt-4">
-              Status: <span className="capitalize">{currentCard.status}</span> | Seen: {currentCard.seen_count} | Correct: {currentCard.correct_guesses} | Incorrect: {currentCard.incorrect_guesses}
+              Status: <span className="capitalize">{currentCard.status}</span> | Seen: {currentCard.seen_count}
             </div>
 
             <div className="w-full max-w-md">

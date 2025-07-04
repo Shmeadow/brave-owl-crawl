@@ -139,7 +139,7 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary, isCurr
   const handleEndTest = () => {
     goToSummary({
       type: 'test',
-      totalQuestions: testQuestions.length,
+      totalQuestions: testSessionResults.length, // Count only questions that were actually attempted
       score: score,
       detailedResults: testSessionResults
     }, 'test');
@@ -197,7 +197,7 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary, isCurr
         ) : (
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4">Test Completed!</h2>
-            <p className="text-xl text-foreground mb-6">You scored {score} out of {testQuestions.length} questions.</p>
+            <p className="text-xl text-foreground mb-6">You scored {score} out of {testSessionResults.length} questions.</p>
             <Button onClick={handleEndTest}>
               View Test Summary
             </Button>
