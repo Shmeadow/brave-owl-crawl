@@ -17,63 +17,27 @@ interface UseFlashcardMutationsProps {
 
 export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session, supabase }: UseFlashcardMutationsProps) {
 
-  const incrementCardSeenCount = useCallback(async (cardId: string) => {
-    const cardToUpdate = cards.find(card => card.id === cardId);
-    if (!cardToUpdate) return;
-
-    const newSeenCount = cardToUpdate.seen_count + 1;
-    const now = new Date().toISOString();
-
-    if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase
-        .from('flashcards')
-        .update({
-          seen_count: newSeenCount,
-          last_reviewed_at: now,
-        })
-        .eq('id', cardId)
-        .eq('user_id', session.user.id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Error incrementing seen count (Supabase):", error);
-      } else if (data) {
-        setCards(prevCards => prevCards.map(card => card.id === cardId ? data as CardData : card));
-      }
-    } else {
-      setCards(prevCards => {
-        const updated = prevCards.map(card =>
-          card.id === cardId
-            ? { ...card, seen_count: newSeenCount, last_reviewed_at: now }
-            : card
-        );
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
-        return updated;
-      });
-    }
-  }, [cards, isLoggedInMode, session, supabase, setCards]);
-
   const handleAnswerFeedback = useCallback(async (cardId: string, isCorrect: boolean) => {
     const cardToUpdate = cards.find(card => card.id === cardId);
     if (!cardToUpdate) return;
 
-    await incrementCardSeenCount(cardId);
-
     const newCorrectGuesses = isCorrect ? cardToUpdate.correct_guesses + 1 : cardToUpdate.correct_guesses;
     const newIncorrectGuesses = isCorrect ? cardToUpdate.incorrect_guesses : cardToUpdate.incorrect_guesses + 1;
+    const totalGuesses = newCorrectGuesses + newIncorrectGuesses;
+    const correctRatio = totalGuesses > 0 ? newCorrectGuesses / totalGuesses : 0;
     const now = new Date().toISOString();
-    let newStatus: CardData['status'] = cardToUpdate.status;
-    let newIntervalDays = cardToUpdate.interval_days;
+    let newStatus: CardData['status'] = 'Learning';
 
     if (isCorrect) {
-      if (newStatus === 'Learning') {
+      if (totalGuesses < 3) {
+        newStatus = 'Learning';
+      } else if (correctRatio < 0.3) {
         newStatus = 'Beginner';
-      } else if (newStatus === 'Beginner') {
+      } else if (correctRatio < 0.6) {
         newStatus = 'Intermediate';
-      } else if (newStatus === 'Intermediate') {
+      } else if (correctRatio < 0.9) {
         newStatus = 'Advanced';
-      } else if (newStatus === 'Advanced') {
+      } else {
         newStatus = 'Mastered';
       }
     } else {
@@ -83,16 +47,18 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
       else newStatus = 'Learning';
     }
 
+    const updatedFields = {
+      last_reviewed_at: now,
+      status: newStatus,
+      correct_guesses: newCorrectGuesses,
+      incorrect_guesses: newIncorrectGuesses,
+      seen_count: cardToUpdate.seen_count + 1,
+    };
+
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase
         .from('flashcards')
-        .update({
-          last_reviewed_at: now,
-          status: newStatus,
-          interval_days: newIntervalDays,
-          correct_guesses: newCorrectGuesses,
-          incorrect_guesses: newIncorrectGuesses,
-        })
+        .update(updatedFields)
         .eq('id', cardId)
         .eq('user_id', session.user.id)
         .select()
@@ -101,41 +67,13 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
       if (error) console.error("Error updating card interaction (Supabase):", error);
       else if (data) setCards(prevCards => prevCards.map(card => card.id === cardId ? data as CardData : card));
     } else {
-      setCards(prevCards => {
-        const updated = prevCards.map(card =>
-          card.id === cardId
-            ? { ...card, last_reviewed_at: now, status: newStatus, interval_days: newIntervalDays, correct_guesses: newCorrectGuesses, incorrect_guesses: newIncorrectGuesses }
-            : card
-        );
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
-        return updated;
-      });
-    }
-  }, [cards, isLoggedInMode, session, supabase, incrementCardSeenCount, setCards]);
-
-  const markCardAsSeen = useCallback(async (cardId: string) => {
-    const cardToUpdate = cards.find(card => card.id === cardId);
-    if (!cardToUpdate || cardToUpdate.status !== 'Learning') return;
-
-    const now = new Date().toISOString();
-    const newStatus: CardData['status'] = 'Beginner';
-    const newSeenCount = 1;
-
-    if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase
-        .from('flashcards')
-        .update({ seen_count: newSeenCount, last_reviewed_at: now, status: newStatus })
-        .eq('id', cardId).eq('user_id', session.user.id).select().single();
-      if (error) console.error("Error marking card as seen (Supabase):", error);
-      else if (data) setCards(prevCards => prevCards.map(card => card.id === cardId ? data as CardData : card));
-    } else {
-      setCards(prevCards => {
-        const updated = prevCards.map(card =>
-          card.id === cardId ? { ...card, seen_count: newSeenCount, last_reviewed_at: now, status: newStatus } : card
-        );
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
-        return updated;
-      });
+      const updatedCards = cards.map(card =>
+        card.id === cardId
+          ? { ...card, ...updatedFields }
+          : card
+      );
+      setCards(updatedCards);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedCards));
     }
   }, [cards, isLoggedInMode, session, supabase, setCards]);
 
@@ -156,7 +94,7 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
       }).select().single();
       if (error) toast.error("Error adding flashcard (Supabase): " + error.message);
       else if (data) {
-        setCards(prev => [...prev, data as CardData]);
+        setCards([...cards, data as CardData]);
         toast.success("Flashcard added to your account!");
       }
     } else {
@@ -173,10 +111,44 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
         correct_guesses: 0,
         incorrect_guesses: 0,
       };
-      setCards(prev => [...prev, newCard]);
+      const updatedCards = [...cards, newCard];
+      setCards(updatedCards);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedCards));
       toast.success("Flashcard added (saved locally)!");
     }
-  }, [isLoggedInMode, session, supabase, setCards]);
+  }, [isLoggedInMode, session, supabase, setCards, cards]);
+
+  const handleUpdateCard = useCallback(async (cardId: string, updatedData: { front: string; back: string; category_id?: string | null }) => {
+    if (isLoggedInMode && session && supabase) {
+      const { data, error } = await supabase.from('flashcards').update(updatedData).eq('id', cardId).eq('user_id', session.user.id).select().single();
+      if (error) toast.error("Error updating flashcard (Supabase): " + error.message);
+      else if (data) {
+        setCards(cards.map(c => c.id === cardId ? data as CardData : c));
+        toast.success("Flashcard updated!");
+      }
+    } else {
+      const updatedCards = cards.map(c => c.id === cardId ? { ...c, ...updatedData } : c);
+      setCards(updatedCards);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedCards));
+      toast.success("Flashcard updated (locally)!");
+    }
+  }, [isLoggedInMode, session, supabase, setCards, cards]);
+
+  const handleDeleteCard = useCallback(async (cardId: string) => {
+    if (isLoggedInMode && session && supabase) {
+      const { error } = await supabase.from('flashcards').delete().eq('id', cardId).eq('user_id', session.user.id);
+      if (error) toast.error("Error deleting flashcard (Supabase): " + error.message);
+      else {
+        setCards(cards.filter(c => c.id !== cardId));
+        toast.success("Flashcard deleted from your account.");
+      }
+    } else {
+      const updatedCards = cards.filter(c => c.id !== cardId);
+      setCards(updatedCards);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedCards));
+      toast.success("Flashcard deleted (locally).");
+    }
+  }, [isLoggedInMode, session, supabase, setCards, cards]);
 
   const handleBulkAddCards = useCallback(async (newCards: { front: string; back:string }[], categoryId: string | null): Promise<number> => {
     const uniqueNewCards = newCards.filter(nc => !cards.some(ec => ec.front.toLowerCase() === nc.front.toLowerCase() && ec.back.toLowerCase() === nc.back.toLowerCase()));
@@ -194,7 +166,7 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
         toast.error("Error importing cards (Supabase): " + error.message);
         return 0;
       } else if (data) {
-        setCards(prev => [...prev, ...data as CardData[]]);
+        setCards([...cards, ...data as CardData[]]);
         return data.length;
       }
     } else {
@@ -202,73 +174,12 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
         id: crypto.randomUUID(), front: c.front, back: c.back, category_id: categoryId, starred: false, status: 'Learning',
         seen_count: 0, last_reviewed_at: null, interval_days: 0, correct_guesses: 0, incorrect_guesses: 0,
       }));
-      setCards(prev => [...prev, ...guestCards]);
+      const updatedCards = [...cards, ...guestCards];
+      setCards(updatedCards);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedCards));
       return guestCards.length;
     }
     return 0;
-  }, [cards, isLoggedInMode, session, supabase, setCards]);
-
-  const handleDeleteCard = useCallback(async (cardId: string) => {
-    if (isLoggedInMode && session && supabase) {
-      const { error } = await supabase.from('flashcards').delete().eq('id', cardId).eq('user_id', session.user.id);
-      if (error) toast.error("Error deleting flashcard (Supabase): " + error.message);
-      else {
-        setCards(prev => prev.filter(c => c.id !== cardId));
-        toast.success("Flashcard deleted from your account.");
-      }
-    } else {
-      setCards(prev => prev.filter(c => c.id !== cardId));
-      toast.success("Flashcard deleted (locally).");
-    }
-  }, [isLoggedInMode, session, supabase, setCards]);
-
-  const handleUpdateCard = useCallback(async (cardId: string, updatedData: { front: string; back: string; category_id?: string | null }) => {
-    if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase.from('flashcards').update(updatedData).eq('id', cardId).eq('user_id', session.user.id).select().single();
-      if (error) toast.error("Error updating flashcard (Supabase): " + error.message);
-      else if (data) {
-        setCards(prev => prev.map(c => c.id === cardId ? data as CardData : c));
-        toast.success("Flashcard updated!");
-      }
-    } else {
-      setCards(prev => prev.map(c => c.id === cardId ? { ...c, ...updatedData } : c));
-      toast.success("Flashcard updated (locally)!");
-    }
-  }, [isLoggedInMode, session, supabase, setCards]);
-
-  const handleToggleStar = useCallback(async (cardId: string) => {
-    const card = cards.find(c => c.id === cardId);
-    if (!card) return;
-    const newStarred = !card.starred;
-    if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase.from('flashcards').update({ starred: newStarred }).eq('id', cardId).eq('user_id', session.user.id).select().single();
-      if (error) toast.error("Error updating star status (Supabase): " + error.message);
-      else if (data) {
-        setCards(prev => prev.map(c => c.id === cardId ? data as CardData : c));
-        toast.info(newStarred ? "Card starred!" : "Card unstarred.");
-      }
-    } else {
-      setCards(prev => prev.map(c => c.id === cardId ? { ...c, starred: newStarred } : c));
-      toast.info(newStarred ? "Card starred (locally)!" : "Card unstarred (locally).");
-    }
-  }, [cards, isLoggedInMode, session, supabase, setCards]);
-
-  const handleMarkAsLearned = useCallback(async (cardId: string) => {
-    const card = cards.find(c => c.id === cardId);
-    if (!card) return;
-    const newStatus = card.status === 'Mastered' ? 'Learning' : 'Mastered';
-    const now = new Date().toISOString();
-    if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase.from('flashcards').update({ status: newStatus, last_reviewed_at: now }).eq('id', cardId).eq('user_id', session.user.id).select().single();
-      if (error) toast.error("Error updating card status (Supabase): " + error.message);
-      else if (data) {
-        setCards(prev => prev.map(c => c.id === cardId ? data as CardData : c));
-        toast.info(newStatus === 'Mastered' ? "Card marked as learned!" : "Card status reset to Learning.");
-      }
-    } else {
-      setCards(prev => prev.map(c => c.id === cardId ? { ...c, status: newStatus, last_reviewed_at: now } : c));
-      toast.info(newStatus === 'Mastered' ? "Card marked as learned (locally)!" : "Card status reset to Learning (locally).");
-    }
   }, [cards, isLoggedInMode, session, supabase, setCards]);
 
   const handleResetProgress = useCallback(async () => {
@@ -277,29 +188,23 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
       const { error } = await supabase.from('flashcards').update(resetData).eq('user_id', session.user.id);
       if (error) toast.error("Error resetting progress (Supabase): " + error.message);
       else {
-        setCards(prev => prev.map(c => ({ ...c, ...resetData })));
+        setCards(cards.map(c => ({ ...c, ...resetData })));
         toast.success("All card progress reset!");
       }
     } else {
-      setCards(prev => {
-        const updated = prev.map(c => ({ ...c, ...resetData }));
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
-        return updated;
-      });
+      const updatedCards = cards.map(c => ({ ...c, ...resetData }));
+      setCards(updatedCards);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedCards));
       toast.success("All card progress reset (locally)!");
     }
-  }, [isLoggedInMode, session, supabase, setCards]);
+  }, [isLoggedInMode, session, supabase, setCards, cards]);
 
   return {
     handleAddCard,
-    handleBulkAddCards,
-    handleDeleteCard,
     handleUpdateCard,
-    handleToggleStar,
-    handleMarkAsLearned,
+    handleDeleteCard,
+    handleBulkAddCards,
     handleResetProgress,
     handleAnswerFeedback,
-    markCardAsSeen,
-    incrementCardSeenCount,
   };
 }
