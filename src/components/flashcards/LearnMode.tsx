@@ -13,12 +13,12 @@ import { FlashCard } from '@/components/flash-card'; // Reusing existing FlashCa
 interface LearnModeProps {
   flashcards: CardData[];
   handleAnswerFeedback: (cardId: string, isCorrect: boolean) => void;
-  updateCardInteraction: (cardId: string) => void; // New prop for general interaction
+  markCardAsSeen: (cardId: string) => void; // New prop
   goToSummary: (data: any, source: 'learn' | 'test') => void;
   isCurrentRoomWritable: boolean;
 }
 
-export function LearnMode({ flashcards, handleAnswerFeedback, updateCardInteraction, goToSummary, isCurrentRoomWritable }: LearnModeProps) {
+export function LearnMode({ flashcards, handleAnswerFeedback, markCardAsSeen, goToSummary, isCurrentRoomWritable }: LearnModeProps) {
   const [shuffledCards, setShuffledCards] = useState<CardData[]>([]);
   const [currentCard, setCurrentCard] = useState<CardData | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -49,12 +49,12 @@ export function LearnMode({ flashcards, handleAnswerFeedback, updateCardInteract
     }
   }, [flashcards]);
 
-  // When currentCard changes, update its interaction (seen_count, status)
+  // When currentCard changes, mark it as seen (if 'new')
   useEffect(() => {
     if (currentCard) {
-      updateCardInteraction(currentCard.id);
+      markCardAsSeen(currentCard.id);
     }
-  }, [currentCard, updateCardInteraction]);
+  }, [currentCard, markCardAsSeen]);
 
   if (flashcards.length === 0) {
     return (
@@ -74,7 +74,7 @@ export function LearnMode({ flashcards, handleAnswerFeedback, updateCardInteract
     return (
       <Card className="text-center p-8 bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-lg">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold mb-4">Loading card...</CardTitle>
+          <CardTitle className="text-xl font-semibold mb-4">Generating card...</CardTitle>
         </CardHeader>
       </Card>
     );
@@ -98,7 +98,7 @@ export function LearnMode({ flashcards, handleAnswerFeedback, updateCardInteract
       toast.error("Keep practicing!", { duration: 1000 });
     }
 
-    handleAnswerFeedback(currentCard.id, isCorrect);
+    handleAnswerFeedback(currentCard.id, isCorrect); // This will now also increment seen count
 
     setSessionResults(prevResults => [
       ...prevResults,

@@ -26,82 +26,14 @@ export function useFlashcards() {
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
 
-  // Helper to update card interaction (seen_count, last_reviewed_at, status based on feedback)
-  const handleAnswerFeedback = useCallback(async (cardId: string, isCorrect: boolean) => {
+  // This function will only handle the 'new' to 'learning' status transition and initial seen_count
+  const markCardAsSeen = useCallback(async (cardId: string) => {
     const cardToUpdate = cards.find(card => card.id === cardId);
-    if (!cardToUpdate) return;
+    if (!cardToUpdate || cardToUpdate.status !== 'new') return; // Only act on 'new' cards
 
-    const newSeenCount = cardToUpdate.seen_count + 1;
-    const newCorrectGuesses = isCorrect ? cardToUpdate.correct_guesses + 1 : cardToUpdate.correct_guesses;
-    const newIncorrectGuesses = isCorrect ? cardToUpdate.incorrect_guesses : cardToUpdate.incorrect_guesses + 1;
     const now = new Date().toISOString();
-    let newStatus: CardData['status'] = cardToUpdate.status;
-    let newIntervalDays = cardToUpdate.interval_days;
-
-    if (isCorrect) {
-      if (newStatus === 'new') {
-        newStatus = 'learning';
-      } else if (newStatus === 'learning') {
-        // If already learning and correct, increase interval or mark mastered
-        newIntervalDays = Math.max(1, newIntervalDays * 2 || 1); // Double interval, min 1 day
-        if (newIntervalDays >= 7) { // Example: mark as mastered after 7 days interval
-          newStatus = 'mastered';
-        }
-      }
-    } else {
-      // If incorrect, reset status to new or learning, and reset interval
-      newStatus = 'new'; // Or 'learning' if you want to keep it in active learning
-      newIntervalDays = 0;
-    }
-
-    if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase
-        .from('flashcards')
-        .update({
-          seen_count: newSeenCount,
-          last_reviewed_at: now,
-          status: newStatus,
-          interval_days: newIntervalDays,
-          correct_guesses: newCorrectGuesses, // Update new field
-          incorrect_guesses: newIncorrectGuesses, // Update new field
-        })
-        .eq('id', cardId)
-        .eq('user_id', session.user.id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Error updating card interaction (Supabase):", error);
-      } else if (data) {
-        setCards(prevCards => prevCards.map(card => card.id === cardId ? data as CardData : card));
-      }
-    } else {
-      // Local storage update
-      setCards(prevCards => {
-        const updated = prevCards.map(card =>
-          card.id === cardId
-            ? { ...card, seen_count: newSeenCount, last_reviewed_at: now, status: newStatus, interval_days: newIntervalDays, correct_guesses: newCorrectGuesses, incorrect_guesses: newIncorrectGuesses }
-            : card
-        );
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
-        return updated;
-      });
-    }
-  }, [cards, isLoggedInMode, session, supabase]);
-
-  // New function to update seen_count and status when a card is simply viewed/flipped
-  const updateCardInteraction = useCallback(async (cardId: string) => {
-    const cardToUpdate = cards.find(card => card.id === cardId);
-    if (!cardToUpdate) return;
-
-    const newSeenCount = cardToUpdate.seen_count + 1;
-    const now = new Date().toISOString();
-    let newStatus: CardData['status'] = cardToUpdate.status;
-
-    // If a new card is seen, change its status to 'learning'
-    if (newStatus === 'new') {
-      newStatus = 'learning';
-    }
+    const newStatus: CardData['status'] = 'learning';
+    const newSeenCount = 1; // Mark as seen once
 
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase
@@ -117,12 +49,11 @@ export function useFlashcards() {
         .single();
 
       if (error) {
-        console.error("Error updating card interaction (Supabase):", error);
+        console.error("Error marking card as seen (Supabase):", error);
       } else if (data) {
         setCards(prevCards => prevCards.map(card => card.id === cardId ? data as CardData : card));
       }
     } else {
-      // Local storage update
       setCards(prevCards => {
         const updated = prevCards.map(card =>
           card.id === cardId
@@ -134,6 +65,105 @@ export function useFlashcards() {
       });
     }
   }, [cards, isLoggedInMode, session, supabase]);
+
+  // This function will increment seen_count on explicit interaction (flip/answer)
+  const incrementCardSeenCount = useCallback(async (cardId: string) => {
+    const cardToUpdate = cards.find(card => card.id === cardId);
+    if (!cardToUpdate) return;
+
+    const newSeenCount = cardToUpdate.seen_count + 1;
+    const now = new Date().toISOString();
+
+    if (isLoggedInMode && session && supabase) {
+      const { data, error } = await supabase
+        .from('flashcards')
+        .update({
+          seen_count: newSeenCount,
+          last_reviewed_at: now,
+        })
+        .eq('id', cardId)
+        .eq('user_id', session.user.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error incrementing seen count (Supabase):", error);
+      } else if (data) {
+        setCards(prevCards => prevCards.map(card => card.id === cardId ? data as CardData : card));
+      }
+    } else {
+      setCards(prevCards => {
+        const updated = prevCards.map(card =>
+          card.id === cardId
+            ? { ...card, seen_count: newSeenCount, last_reviewed_at: now }
+            : card
+        );
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+      });
+    }
+  }, [cards, isLoggedInMode, session, supabase]);
+
+  // Helper to update card interaction (seen_count, last_reviewed_at, status based on feedback)
+  const handleAnswerFeedback = useCallback(async (cardId: string, isCorrect: boolean) => {
+    const cardToUpdate = cards.find(card => card.id === cardId);
+    if (!cardToUpdate) return;
+
+    // Increment seen count here as well, since answering is an interaction
+    await incrementCardSeenCount(cardId); // Call the new function
+
+    const newCorrectGuesses = isCorrect ? cardToUpdate.correct_guesses + 1 : cardToUpdate.correct_guesses;
+    const newIncorrectGuesses = isCorrect ? cardToUpdate.incorrect_guesses : cardToUpdate.incorrect_guesses + 1;
+    const now = new Date().toISOString();
+    let newStatus: CardData['status'] = cardToUpdate.status;
+    let newIntervalDays = cardToUpdate.interval_days;
+
+    if (isCorrect) {
+      if (newStatus === 'new') {
+        newStatus = 'learning'; // Should ideally be handled by markCardAsSeen, but as a fallback
+      } else if (newStatus === 'learning') {
+        newIntervalDays = Math.max(1, newIntervalDays * 2 || 1);
+        if (newIntervalDays >= 7) {
+          newStatus = 'mastered';
+        }
+      }
+    } else {
+      newStatus = 'new';
+      newIntervalDays = 0;
+    }
+
+    if (isLoggedInMode && session && supabase) {
+      const { data, error } = await supabase
+        .from('flashcards')
+        .update({
+          last_reviewed_at: now,
+          status: newStatus,
+          interval_days: newIntervalDays,
+          correct_guesses: newCorrectGuesses,
+          incorrect_guesses: newIncorrectGuesses,
+        })
+        .eq('id', cardId)
+        .eq('user_id', session.user.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error updating card interaction (Supabase):", error);
+      } else if (data) {
+        setCards(prevCards => prevCards.map(card => card.id === cardId ? data as CardData : card));
+      }
+    } else {
+      setCards(prevCards => {
+        const updated = prevCards.map(card =>
+          card.id === cardId
+            ? { ...card, last_reviewed_at: now, status: newStatus, interval_days: newIntervalDays, correct_guesses: newCorrectGuesses, incorrect_guesses: newIncorrectGuesses }
+            : card
+        );
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+      });
+    }
+  }, [cards, isLoggedInMode, session, supabase, incrementCardSeenCount]); // Add incrementCardSeenCount to dependencies
 
   // Effect to handle initial load and auth state changes
   useEffect(() => {
@@ -445,8 +475,9 @@ export function useFlashcards() {
     cards,
     loading,
     isLoggedInMode,
-    handleAnswerFeedback, // New function for learn/test modes
-    updateCardInteraction, // New function for general card views/flips
+    handleAnswerFeedback,
+    markCardAsSeen, // Expose new function
+    incrementCardSeenCount, // Expose new function
     handleAddCard,
     handleDeleteCard,
     handleShuffleCards,

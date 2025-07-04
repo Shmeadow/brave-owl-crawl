@@ -6,14 +6,15 @@ import { ArrowLeft, ArrowRight, RefreshCcw } from 'lucide-react';
 import { CardData } from '@/hooks/use-flashcards';
 import { FlashCard } from '@/components/flash-card';
 import { cn } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // Added this import
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface FlashcardStudyProps {
   flashcards: CardData[];
-  updateCardInteraction: (cardId: string) => void; // New prop
+  markCardAsSeen: (cardId: string) => void; // New prop
+  incrementCardSeenCount: (cardId: string) => void; // New prop
 }
 
-export function FlashcardStudy({ flashcards, updateCardInteraction }: FlashcardStudyProps) {
+export function FlashcardStudy({ flashcards, markCardAsSeen, incrementCardSeenCount }: FlashcardStudyProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
 
@@ -23,12 +24,12 @@ export function FlashcardStudy({ flashcards, updateCardInteraction }: FlashcardS
     setIsFlipped(false);
   }, [flashcards]);
 
-  // When currentCard changes, update its interaction (seen_count, status)
+  // When currentCard changes, mark it as seen (if 'new')
   useEffect(() => {
     if (flashcards.length > 0 && flashcards[currentIndex]) {
-      updateCardInteraction(flashcards[currentIndex].id);
+      markCardAsSeen(flashcards[currentIndex].id);
     }
-  }, [currentIndex, flashcards, updateCardInteraction]);
+  }, [currentIndex, flashcards, markCardAsSeen]);
 
   if (flashcards.length === 0) {
     return (
@@ -50,13 +51,17 @@ export function FlashcardStudy({ flashcards, updateCardInteraction }: FlashcardS
     return (
       <Card className="text-center p-8 bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-lg">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold mb-4">Loading card...</CardTitle>
+          <CardTitle className="text-xl font-semibold mb-4">Generating card...</CardTitle>
         </CardHeader>
       </Card>
     );
   }
 
-  const handleFlip = () => setIsFlipped(!isFlipped);
+  const handleFlip = () => {
+    setIsFlipped(prev => !prev);
+    // Increment seen count only when the card is explicitly flipped
+    incrementCardSeenCount(currentCard.id);
+  };
 
   const handleNext = () => {
     setIsFlipped(false);
@@ -78,7 +83,7 @@ export function FlashcardStudy({ flashcards, updateCardInteraction }: FlashcardS
           front={currentCard.front}
           back={currentCard.back}
           isFlipped={isFlipped}
-          onClick={handleFlip}
+          onClick={handleFlip} // This will now also increment seen count
         />
 
         <div className="text-lg text-muted-foreground font-semibold">

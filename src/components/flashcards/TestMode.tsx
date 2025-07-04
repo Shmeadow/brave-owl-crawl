@@ -10,11 +10,12 @@ import { toast } from 'sonner';
 interface TestModeProps {
   flashcards: CardData[];
   handleAnswerFeedback: (cardId: string, isCorrect: boolean) => void; // Updated prop
+  markCardAsSeen: (cardId: string) => void; // New prop
   goToSummary: (data: any, source: 'learn' | 'test') => void;
   isCurrentRoomWritable: boolean;
 }
 
-export function TestMode({ flashcards, handleAnswerFeedback, goToSummary, isCurrentRoomWritable }: TestModeProps) {
+export function TestMode({ flashcards, handleAnswerFeedback, markCardAsSeen, goToSummary, isCurrentRoomWritable }: TestModeProps) {
   const [testQuestions, setTestQuestions] = useState<any[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -61,6 +62,13 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary, isCurr
     setTestQuestions(questions);
   };
 
+  // When currentQuestion changes, mark the card as seen (if 'new')
+  useEffect(() => {
+    if (testQuestions.length > 0 && testQuestions[currentQuestionIndex]) {
+      markCardAsSeen(testQuestions[currentQuestionIndex].id);
+    }
+  }, [currentQuestionIndex, testQuestions, markCardAsSeen]);
+
   if (flashcards.length === 0) {
     return (
       <Card className="text-center p-8 bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-lg">
@@ -106,10 +114,10 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary, isCurr
 
     if (isCorrect) {
       setScore(prev => prev + 1);
-      handleAnswerFeedback(currentQuestion.id, true); // Call new feedback handler
+      handleAnswerFeedback(currentQuestion.id, true); // This will now also increment seen count
       toast.success("Correct!", { duration: 1000 });
     } else {
-      handleAnswerFeedback(currentQuestion.id, false); // Call new feedback handler
+      handleAnswerFeedback(currentQuestion.id, false); // This will now also increment seen count
       toast.error("Incorrect.", { duration: 1000 });
     }
 

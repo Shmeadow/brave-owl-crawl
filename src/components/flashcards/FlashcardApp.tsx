@@ -20,7 +20,7 @@ interface FlashcardAppProps {
 }
 
 export function FlashcardApp({ isCurrentRoomWritable }: FlashcardAppProps) {
-  const { cards, loading, isLoggedInMode, handleAddCard, handleDeleteCard, handleUpdateCard, handleAnswerFeedback, updateCardInteraction } = useFlashcards(); // Updated hook and functions
+  const { cards, loading, isLoggedInMode, handleAddCard, handleDeleteCard, handleUpdateCard, handleAnswerFeedback, markCardAsSeen, incrementCardSeenCount } = useFlashcards(); // Updated hook and functions
   const [currentMode, setCurrentMode] = useState<FlashcardMode>('manage');
   const [editingCard, setEditingCard] = useState<CardData | null>(null);
   const [summaryData, setSummaryData] = useState<any>(null);
@@ -70,11 +70,11 @@ export function FlashcardApp({ isCurrentRoomWritable }: FlashcardAppProps) {
           </div>
         );
       case 'flashcards':
-        return <FlashcardStudy flashcards={cards} updateCardInteraction={updateCardInteraction} />; // Pass updateCardInteraction
+        return <FlashcardStudy flashcards={cards} markCardAsSeen={markCardAsSeen} incrementCardSeenCount={incrementCardSeenCount} />; // Pass new functions
       case 'learn':
-        return <LearnMode flashcards={cards} handleAnswerFeedback={handleAnswerFeedback} updateCardInteraction={updateCardInteraction} goToSummary={goToSummary} isCurrentRoomWritable={isCurrentRoomWritable} />;
+        return <LearnMode flashcards={cards} handleAnswerFeedback={handleAnswerFeedback} markCardAsSeen={markCardAsSeen} goToSummary={goToSummary} isCurrentRoomWritable={isCurrentRoomWritable} />; // Pass new functions
       case 'test':
-        return <TestMode flashcards={cards} handleAnswerFeedback={handleAnswerFeedback} goToSummary={goToSummary} isCurrentRoomWritable={isCurrentRoomWritable} />;
+        return <TestMode flashcards={cards} handleAnswerFeedback={handleAnswerFeedback} markCardAsSeen={markCardAsSeen} goToSummary={goToSummary} isCurrentRoomWritable={isCurrentRoomWritable} />; // Pass new functions
       case 'summary':
         return <SummaryMode summaryData={summaryData} summaryModeSource={summaryModeSource} />;
       default:
