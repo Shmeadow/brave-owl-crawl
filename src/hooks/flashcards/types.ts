@@ -1,13 +1,21 @@
 export interface CardData {
   id: string;
-  user_id?: string; // Optional for local storage cards
+  user_id?: string;
+  category_id?: string | null;
   front: string;
   back: string;
   starred: boolean;
-  status: 'new' | 'learning' | 'mastered';
+  status: 'Learning' | 'Beginner' | 'Intermediate' | 'Advanced' | 'Mastered';
   seen_count: number;
   last_reviewed_at: string | null;
   interval_days: number;
   correct_guesses: number;
   incorrect_guesses: number;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  user_id: string;
+  created_at: string;
 }

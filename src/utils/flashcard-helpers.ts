@@ -10,12 +10,13 @@ export const getWeightedRandomCard = (cards: CardData[]): CardData | null => {
   if (cards.length === 0) return null;
 
   // Assign base weights based on status
-  // 'new' cards are prioritized most, then 'learning', then 'mastered'
   const getBaseWeight = (status: CardData['status']): number => {
     switch (status) {
-      case 'new': return 3;
-      case 'learning': return 2;
-      case 'mastered': return 0.5; // Less likely to be picked
+      case 'Learning': return 3;
+      case 'Beginner': return 2.5;
+      case 'Intermediate': return 2;
+      case 'Advanced': return 1;
+      case 'Mastered': return 0.5;
       default: return 1;
     }
   };

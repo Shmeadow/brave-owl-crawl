@@ -54,7 +54,7 @@ export function FlashCardDeck({
 
   const currentCard = cards[currentCardIndex];
   const totalCards = cards.length;
-  const masteredCards = cards.filter(card => card.status === 'mastered').length;
+  const masteredCards = cards.filter(card => card.status === 'Mastered').length;
   const starredCards = cards.filter(card => card.starred).length;
   const seenCardsCount = cards.reduce((sum, card) => sum + card.seen_count, 0);
   const uniqueSeenCards = new Set(cards.filter(card => card.seen_count > 0).map(card => card.id)).size;
@@ -140,7 +140,7 @@ export function FlashCardDeck({
               <Star className="h-5 w-5 fill-current" />
               <span className="sr-only">Toggle Star</span>
             </Button>
-            <Button onClick={handleMarkAsLearnedCurrentCard} variant="ghost" size="icon" className={cn(currentCard.status === 'mastered' && "text-green-500")} disabled={!isCurrentRoomWritable}>
+            <Button onClick={handleMarkAsLearnedCurrentCard} variant="ghost" size="icon" className={cn(currentCard.status === 'Mastered' && "text-green-500")} disabled={!isCurrentRoomWritable}>
               <CheckCircle className="h-5 w-5 fill-current" />
               <span className="sr-only">Mark as Learned</span>
             </Button>

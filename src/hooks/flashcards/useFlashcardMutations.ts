@@ -67,14 +67,20 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
     let newIntervalDays = cardToUpdate.interval_days;
 
     if (isCorrect) {
-      if (newStatus === 'new') newStatus = 'learning';
-      else if (newStatus === 'learning') {
-        newIntervalDays = Math.max(1, newIntervalDays * 2 || 1);
-        if (newIntervalDays >= 7) newStatus = 'mastered';
+      if (newStatus === 'Learning') {
+        newStatus = 'Beginner';
+      } else if (newStatus === 'Beginner') {
+        newStatus = 'Intermediate';
+      } else if (newStatus === 'Intermediate') {
+        newStatus = 'Advanced';
+      } else if (newStatus === 'Advanced') {
+        newStatus = 'Mastered';
       }
     } else {
-      newStatus = 'new';
-      newIntervalDays = 0;
+      if (cardToUpdate.status === 'Mastered') newStatus = 'Advanced';
+      else if (cardToUpdate.status === 'Advanced') newStatus = 'Intermediate';
+      else if (cardToUpdate.status === 'Intermediate') newStatus = 'Beginner';
+      else newStatus = 'Learning';
     }
 
     if (isLoggedInMode && session && supabase) {
@@ -109,10 +115,10 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
 
   const markCardAsSeen = useCallback(async (cardId: string) => {
     const cardToUpdate = cards.find(card => card.id === cardId);
-    if (!cardToUpdate || cardToUpdate.status !== 'new') return;
+    if (!cardToUpdate || cardToUpdate.status !== 'Learning') return;
 
     const now = new Date().toISOString();
-    const newStatus: CardData['status'] = 'learning';
+    const newStatus: CardData['status'] = 'Beginner';
     const newSeenCount = 1;
 
     if (isLoggedInMode && session && supabase) {
@@ -133,12 +139,20 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
     }
   }, [cards, isLoggedInMode, session, supabase, setCards]);
 
-  const handleAddCard = useCallback(async (newCardData: { front: string; back: string }) => {
+  const handleAddCard = useCallback(async (newCardData: { front: string; back: string; category_id?: string | null }) => {
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase.from('flashcards').insert({
-        user_id: session.user.id, front: newCardData.front, back: newCardData.back,
-        starred: false, status: 'new', seen_count: 0, last_reviewed_at: null, interval_days: 0,
-        correct_guesses: 0, incorrect_guesses: 0,
+        user_id: session.user.id,
+        front: newCardData.front,
+        back: newCardData.back,
+        category_id: newCardData.category_id,
+        starred: false,
+        status: 'Learning',
+        seen_count: 0,
+        last_reviewed_at: null,
+        interval_days: 0,
+        correct_guesses: 0,
+        incorrect_guesses: 0,
       }).select().single();
       if (error) toast.error("Error adding flashcard (Supabase): " + error.message);
       else if (data) {
@@ -147,16 +161,24 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
       }
     } else {
       const newCard: CardData = {
-        id: crypto.randomUUID(), front: newCardData.front, back: newCardData.back,
-        starred: false, status: 'new', seen_count: 0, last_reviewed_at: null, interval_days: 0,
-        correct_guesses: 0, incorrect_guesses: 0,
+        id: crypto.randomUUID(),
+        front: newCardData.front,
+        back: newCardData.back,
+        category_id: newCardData.category_id,
+        starred: false,
+        status: 'Learning',
+        seen_count: 0,
+        last_reviewed_at: null,
+        interval_days: 0,
+        correct_guesses: 0,
+        incorrect_guesses: 0,
       };
       setCards(prev => [...prev, newCard]);
       toast.success("Flashcard added (saved locally)!");
     }
   }, [isLoggedInMode, session, supabase, setCards]);
 
-  const handleBulkAddCards = useCallback(async (newCards: { front: string; back:string }[]): Promise<number> => {
+  const handleBulkAddCards = useCallback(async (newCards: { front: string; back:string }[], categoryId: string | null): Promise<number> => {
     const uniqueNewCards = newCards.filter(nc => !cards.some(ec => ec.front.toLowerCase() === nc.front.toLowerCase() && ec.back.toLowerCase() === nc.back.toLowerCase()));
     if (uniqueNewCards.length === 0) {
       toast.info("No new cards to import.");
@@ -164,7 +186,7 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
     }
     if (isLoggedInMode && session && supabase) {
       const toInsert = uniqueNewCards.map(c => ({
-        user_id: session.user.id, front: c.front, back: c.back, starred: false, status: 'new' as const,
+        user_id: session.user.id, front: c.front, back: c.back, category_id: categoryId, starred: false, status: 'Learning' as const,
         seen_count: 0, last_reviewed_at: null, interval_days: 0, correct_guesses: 0, incorrect_guesses: 0,
       }));
       const { data, error } = await supabase.from('flashcards').insert(toInsert).select();
@@ -177,7 +199,7 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
       }
     } else {
       const guestCards: CardData[] = uniqueNewCards.map(c => ({
-        id: crypto.randomUUID(), front: c.front, back: c.back, starred: false, status: 'new',
+        id: crypto.randomUUID(), front: c.front, back: c.back, category_id: categoryId, starred: false, status: 'Learning',
         seen_count: 0, last_reviewed_at: null, interval_days: 0, correct_guesses: 0, incorrect_guesses: 0,
       }));
       setCards(prev => [...prev, ...guestCards]);
@@ -200,7 +222,7 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
     }
   }, [isLoggedInMode, session, supabase, setCards]);
 
-  const handleUpdateCard = useCallback(async (cardId: string, updatedData: { front: string; back: string }) => {
+  const handleUpdateCard = useCallback(async (cardId: string, updatedData: { front: string; back: string; category_id?: string | null }) => {
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase.from('flashcards').update(updatedData).eq('id', cardId).eq('user_id', session.user.id).select().single();
       if (error) toast.error("Error updating flashcard (Supabase): " + error.message);
@@ -234,24 +256,23 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
   const handleMarkAsLearned = useCallback(async (cardId: string) => {
     const card = cards.find(c => c.id === cardId);
     if (!card) return;
-    const newStatus = card.status === 'mastered' ? 'new' : 'mastered';
-    const newInterval = newStatus === 'mastered' ? 7 : 0;
+    const newStatus = card.status === 'Mastered' ? 'Learning' : 'Mastered';
     const now = new Date().toISOString();
     if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase.from('flashcards').update({ status: newStatus, last_reviewed_at: now, interval_days: newInterval }).eq('id', cardId).eq('user_id', session.user.id).select().single();
+      const { data, error } = await supabase.from('flashcards').update({ status: newStatus, last_reviewed_at: now }).eq('id', cardId).eq('user_id', session.user.id).select().single();
       if (error) toast.error("Error updating card status (Supabase): " + error.message);
       else if (data) {
         setCards(prev => prev.map(c => c.id === cardId ? data as CardData : c));
-        toast.info(newStatus === 'mastered' ? "Card marked as learned!" : "Card marked as new.");
+        toast.info(newStatus === 'Mastered' ? "Card marked as learned!" : "Card status reset to Learning.");
       }
     } else {
-      setCards(prev => prev.map(c => c.id === cardId ? { ...c, status: newStatus, last_reviewed_at: now, interval_days: newInterval } : c));
-      toast.info(newStatus === 'mastered' ? "Card marked as learned (locally)!" : "Card marked as new (locally).");
+      setCards(prev => prev.map(c => c.id === cardId ? { ...c, status: newStatus, last_reviewed_at: now } : c));
+      toast.info(newStatus === 'Mastered' ? "Card marked as learned (locally)!" : "Card status reset to Learning (locally).");
     }
   }, [cards, isLoggedInMode, session, supabase, setCards]);
 
   const handleResetProgress = useCallback(async () => {
-    const resetData = { seen_count: 0, status: 'new' as CardData['status'], last_reviewed_at: null, interval_days: 0, correct_guesses: 0, incorrect_guesses: 0 };
+    const resetData = { seen_count: 0, status: 'Learning' as CardData['status'], last_reviewed_at: null, interval_days: 0, correct_guesses: 0, incorrect_guesses: 0 };
     if (isLoggedInMode && session && supabase) {
       const { error } = await supabase.from('flashcards').update(resetData).eq('user_id', session.user.id);
       if (error) toast.error("Error resetting progress (Supabase): " + error.message);

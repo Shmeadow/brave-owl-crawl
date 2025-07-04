@@ -101,7 +101,7 @@ export function SummaryMode({ summaryData, summaryModeSource }: SummaryModeProps
     </ul>
   );
 
-  const getCategoryAccuracy = (category: 'new' | 'learning' | 'mastered' | 'starred' | 'unstarred') => {
+  const getCategoryAccuracy = (category: CardData['status'] | 'starred' | 'unstarred') => {
     let filteredCards: DetailedResult[] = [];
     if (category === 'starred') {
       filteredCards = detailedResults.filter(r => r.cardData.starred);
@@ -140,8 +140,8 @@ export function SummaryMode({ summaryData, summaryModeSource }: SummaryModeProps
           <TabsContent value="by-status" className="mt-4">
             <h3 className="text-xl font-bold text-foreground mb-4 text-center">Accuracy by Card Status</h3>
             <div className="space-y-4">
-              {['new', 'learning', 'mastered'].map(status => {
-                const { correct, total, accuracy, results } = getCategoryAccuracy(status as 'new' | 'learning' | 'mastered');
+              {(['Learning', 'Beginner', 'Intermediate', 'Advanced', 'Mastered'] as const).map(status => {
+                const { correct, total, accuracy, results } = getCategoryAccuracy(status);
                 return (
                   <div key={status} className="p-4 rounded-lg border bg-muted backdrop-blur-xl">
                     <h4 className="font-semibold text-lg capitalize mb-2">{status} Cards</h4>
@@ -164,8 +164,8 @@ export function SummaryMode({ summaryData, summaryModeSource }: SummaryModeProps
           <TabsContent value="by-starred" className="mt-4">
             <h3 className="text-xl font-bold text-foreground mb-4 text-center">Accuracy by Starred Status</h3>
             <div className="space-y-4">
-              {['starred', 'unstarred'].map(status => {
-                const { correct, total, accuracy, results } = getCategoryAccuracy(status as 'starred' | 'unstarred');
+              {(['starred', 'unstarred'] as const).map(status => {
+                const { correct, total, accuracy, results } = getCategoryAccuracy(status);
                 return (
                   <div key={status} className="p-4 rounded-lg border bg-muted backdrop-blur-xl">
                     <h4 className="font-semibold text-lg capitalize mb-2">{status} Cards</h4>
