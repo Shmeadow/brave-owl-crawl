@@ -178,7 +178,9 @@ export function ManageMode({
           <CardContent className="p-0">
             <ImportExport
               cards={cards}
-              onBulkImport={(newCards) => onBulkImport(newCards, selectedCategoryId === 'all' ? null : selectedCategoryId)}
+              onBulkImport={onBulkImport}
+              categories={categories}
+              onAddCategory={onAddCategory}
             />
           </CardContent>
         </Card>
