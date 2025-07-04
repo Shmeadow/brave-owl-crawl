@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Bell, Search, Menu, LayoutGrid, MessageSquare, Copy } from "lucide-react"; // Added Copy icon
+import { Home, Bell, Search, Menu, LayoutGrid, MessageSquare, Copy } from "lucide-react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -89,6 +89,19 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
           <span className="sr-only">Go to My Room</span>
         </Button>
         <h1 className="text-xl font-semibold hidden sm:flex items-center gap-2">
+          {session?.user?.id && (
+            <span
+              className="text-sm font-mono text-muted-foreground cursor-pointer flex items-center gap-1 hover:text-foreground transition-colors"
+              onClick={() => {
+                navigator.clipboard.writeText(session.user.id);
+                toast.success("Your User ID copied to clipboard!");
+              }}
+              title="Copy Your User ID"
+            >
+              ({session.user.id.substring(0, 6)})
+              <Copy className="h-3 w-3" />
+            </span>
+          )}
           {currentRoomName}
           {currentRoomId && (
             <span
