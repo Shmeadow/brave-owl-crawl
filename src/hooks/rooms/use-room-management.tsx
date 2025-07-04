@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
 import { RoomData } from "./types";
-import { getRandomBackground } from "@/lib/backgrounds";
+import { getRandomBackground, DEFAULT_BACKGROUND_FOR_NEW_USERS } from "@/lib/backgrounds";
 
 interface UseRoomManagementProps {
   setRooms: React.Dispatch<React.SetStateAction<RoomData[]>>;
@@ -20,7 +20,7 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
       return;
     }
 
-    const randomBg = getRandomBackground();
+    const defaultBg = DEFAULT_BACKGROUND_FOR_NEW_USERS;
 
     const { data, error } = await supabase
       .from('rooms')
@@ -30,8 +30,8 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
         is_public: isPublic,
         allow_guest_write: false,
         password_hash: null,
-        background_url: randomBg.url,
-        is_video_background: randomBg.isVideo,
+        background_url: defaultBg.url,
+        is_video_background: defaultBg.isVideo,
       })
       .select('*, creator:profiles(first_name, last_name)')
       .single();

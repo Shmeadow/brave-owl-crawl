@@ -29,6 +29,7 @@ export function useGoals() {
 
     const loadGoals = async () => {
       setLoading(true);
+      console.log(`useGoals: Loading goals for room ID: ${currentRoomId || 'personal space'}`);
       if (session && supabase) {
         setIsLoggedInMode(true);
         

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { useSupabase } from "@/integrations/supabase/auth";
-import { getRandomBackground } from "@/lib/backgrounds"; // Import getRandomBackground
+import { getRandomBackground, DEFAULT_BACKGROUND_FOR_NEW_USERS } from "@/lib/backgrounds"; // Import DEFAULT_BACKGROUND_FOR_NEW_USERS
 
 const LOCAL_STORAGE_CURRENT_ROOM_ID_KEY = 'current_room_id';
 const LOCAL_STORAGE_CURRENT_ROOM_NAME_KEY = 'current_room_name';
@@ -21,6 +21,7 @@ export function useCurrentRoom() {
   const [isCurrentRoomVideoBackground, setIsCurrentRoomVideoBackground] = useState<boolean>(false); // Initialize false
 
   const setCurrentRoom = useCallback(async (id: string | null, name: string) => {
+    console.log(`setCurrentRoom called: ID=${id}, Name=${name}`);
     setCurrentRoomIdState(id);
     setCurrentRoomNameState(name);
     toast.info(`Switched to room: ${name}`);
@@ -35,17 +36,17 @@ export function useCurrentRoom() {
       if (roomError || !roomData) {
         console.error("Error fetching room data for current room:", roomError);
         setCurrentRoomCreatorId(null);
-        const defaultBg = getRandomBackground();
+        const defaultBg = DEFAULT_BACKGROUND_FOR_NEW_USERS;
         setCurrentRoomBackgroundUrl(defaultBg.url);
         setIsCurrentRoomVideoBackground(defaultBg.isVideo);
       } else {
         setCurrentRoomCreatorId(roomData.creator_id);
-        setCurrentRoomBackgroundUrl(roomData.background_url || getRandomBackground().url);
-        setIsCurrentRoomVideoBackground(roomData.is_video_background ?? getRandomBackground().isVideo);
+        setCurrentRoomBackgroundUrl(roomData.background_url || DEFAULT_BACKGROUND_FOR_NEW_USERS.url);
+        setIsCurrentRoomVideoBackground(roomData.is_video_background ?? DEFAULT_BACKGROUND_FOR_NEW_USERS.isVideo);
       }
     } else {
       setCurrentRoomCreatorId(null); // No specific room or guest room
-      const defaultBg = getRandomBackground();
+      const defaultBg = DEFAULT_BACKGROUND_FOR_NEW_USERS;
       setCurrentRoomBackgroundUrl(defaultBg.url);
       setIsCurrentRoomVideoBackground(defaultBg.isVideo);
     }
@@ -56,6 +57,7 @@ export function useCurrentRoom() {
     if (authLoading) return;
 
     const initializeRoom = async () => {
+      console.log("Initializing room based on session and local storage...");
       let initialRoomId: string | null = null;
       let initialRoomName: string = "My Room";
       let initialRoomCreatorId: string | null = null;
@@ -85,8 +87,8 @@ export function useCurrentRoom() {
             initialRoomId = personalRoom.id;
             initialRoomName = personalRoom.name;
             initialRoomCreatorId = personalRoom.creator_id;
-            initialBgUrl = personalRoom.background_url || getRandomBackground().url; // Use random if Supabase has null
-            initialIsVideoBg = personalRoom.is_video_background ?? getRandomBackground().isVideo;
+            initialBgUrl = personalRoom.background_url || DEFAULT_BACKGROUND_FOR_NEW_USERS.url; // Use default if Supabase has null
+            initialIsVideoBg = personalRoom.is_video_background ?? DEFAULT_BACKGROUND_FOR_NEW_USERS.isVideo;
           } else if (error && error.code !== 'PGRST116') {
             console.error("Error fetching personal room:", error);
             toast.error("Could not find your personal room.");
@@ -94,7 +96,7 @@ export function useCurrentRoom() {
             initialRoomId = null;
             initialRoomName = "My Room";
             initialRoomCreatorId = null;
-            const defaultBg = getRandomBackground();
+            const defaultBg = DEFAULT_BACKGROUND_FOR_NEW_USERS;
             initialBgUrl = defaultBg.url;
             initialIsVideoBg = defaultBg.isVideo;
           }
@@ -111,20 +113,20 @@ export function useCurrentRoom() {
             initialRoomId = null;
             initialRoomName = "My Room";
             initialRoomCreatorId = null;
-            const defaultBg = getRandomBackground();
+            const defaultBg = DEFAULT_BACKGROUND_FOR_NEW_USERS;
             initialBgUrl = defaultBg.url;
             initialIsVideoBg = defaultBg.isVideo;
           } else {
             initialRoomName = roomData.name;
             initialRoomCreatorId = roomData.creator_id;
-            initialBgUrl = roomData.background_url || getRandomBackground().url;
-            initialIsVideoBg = roomData.is_video_background ?? getRandomBackground().isVideo;
+            initialBgUrl = roomData.background_url || DEFAULT_BACKGROUND_FOR_NEW_USERS.url;
+            initialIsVideoBg = roomData.is_video_background ?? DEFAULT_BACKGROUND_FOR_NEW_USERS.isVideo;
           }
         }
       } else {
         // Not logged in (guest mode)
-        if (!initialRoomId) { // If no local room saved, set a random default
-          const defaultBg = getRandomBackground();
+        if (!initialRoomId) { // If no local room saved, set a default
+          const defaultBg = DEFAULT_BACKGROUND_FOR_NEW_USERS;
           initialBgUrl = defaultBg.url;
           initialIsVideoBg = defaultBg.isVideo;
         }
@@ -137,8 +139,9 @@ export function useCurrentRoom() {
       setCurrentRoomIdState(initialRoomId);
       setCurrentRoomNameState(initialRoomName);
       setCurrentRoomCreatorId(initialRoomCreatorId);
-      setCurrentRoomBackgroundUrl(initialBgUrl || getRandomBackground().url); // Fallback to random if still empty
-      setIsCurrentRoomVideoBackground(initialIsVideoBg ?? getRandomBackground().isVideo); // Fallback to random if still null
+      setCurrentRoomBackgroundUrl(initialBgUrl || DEFAULT_BACKGROUND_FOR_NEW_USERS.url); // Fallback to default if still empty
+      setIsCurrentRoomVideoBackground(initialIsVideoBg ?? DEFAULT_BACKGROUND_FOR_NEW_USERS.isVideo); // Fallback to default if still null
+      console.log(`Initial room set: ID=${initialRoomId}, Name=${initialRoomName}, Background=${initialBgUrl}`);
     };
 
     initializeRoom();
