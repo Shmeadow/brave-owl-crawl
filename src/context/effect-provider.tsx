@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-type EffectType = 'none' | 'rain' | 'snow' | 'raindrops' | 'snow-accumulation'; // Updated effect types
+type EffectType = 'none' | 'rain' | 'snow' | 'raindrops';
 
 interface EffectContextType {
   activeEffect: EffectType;
@@ -18,7 +18,7 @@ export function EffectProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const savedEffect = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (savedEffect && ['none', 'rain', 'snow', 'raindrops', 'snow-accumulation'].includes(savedEffect)) { // Validate saved effect
+    if (savedEffect && ['none', 'rain', 'snow', 'raindrops'].includes(savedEffect)) {
       setActiveEffect(savedEffect as EffectType);
     }
   }, []);
