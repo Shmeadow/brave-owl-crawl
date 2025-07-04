@@ -10,11 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface FlashcardStudyProps {
   flashcards: CardData[];
-  markCardAsSeen: (cardId: string) => void; // New prop
-  incrementCardSeenCount: (cardId: string) => void; // New prop
 }
 
-export function FlashcardStudy({ flashcards, markCardAsSeen, incrementCardSeenCount }: FlashcardStudyProps) {
+export function FlashcardStudy({ flashcards }: FlashcardStudyProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
 
@@ -23,13 +21,6 @@ export function FlashcardStudy({ flashcards, markCardAsSeen, incrementCardSeenCo
     setCurrentIndex(0);
     setIsFlipped(false);
   }, [flashcards]);
-
-  // When currentCard changes, mark it as seen (if 'new')
-  useEffect(() => {
-    if (flashcards.length > 0 && flashcards[currentIndex]) {
-      markCardAsSeen(flashcards[currentIndex].id);
-    }
-  }, [currentIndex, flashcards, markCardAsSeen]);
 
   if (flashcards.length === 0) {
     return (
@@ -59,8 +50,6 @@ export function FlashcardStudy({ flashcards, markCardAsSeen, incrementCardSeenCo
 
   const handleFlip = () => {
     setIsFlipped(prev => !prev);
-    // Increment seen count only when the card is explicitly flipped
-    incrementCardSeenCount(currentCard.id);
   };
 
   const handleNext = () => {
@@ -83,7 +72,7 @@ export function FlashcardStudy({ flashcards, markCardAsSeen, incrementCardSeenCo
           front={currentCard.front}
           back={currentCard.back}
           isFlipped={isFlipped}
-          onClick={handleFlip} // This will now also increment seen count
+          onClick={handleFlip}
         />
 
         <div className="text-lg text-muted-foreground font-semibold">
