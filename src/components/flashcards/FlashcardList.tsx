@@ -13,9 +13,10 @@ interface FlashcardListProps {
   onEdit: (card: CardData) => void;
   onDelete: (id: string) => void;
   onOrganize: (card: CardData) => void;
+  columns: number;
 }
 
-export function FlashcardList({ flashcards, onEdit, onDelete, onOrganize }: FlashcardListProps) {
+export function FlashcardList({ flashcards, onEdit, onDelete, onOrganize, columns }: FlashcardListProps) {
   return (
     <Card className="w-full flex flex-col flex-1 bg-card backdrop-blur-xl border-white/20">
       <CardHeader>
@@ -26,7 +27,10 @@ export function FlashcardList({ flashcards, onEdit, onDelete, onOrganize }: Flas
           <p className="p-4 text-muted-foreground text-sm text-center">No flashcards yet. Use the form above to add your first flashcard!</p>
         ) : (
           <ScrollArea className="flex-1 h-full">
-            <ul className="p-4 space-y-4">
+            <ul
+              className="p-4 grid gap-4"
+              style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+            >
               {flashcards.map((card) => (
                 <li key={card.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-muted backdrop-blur-xl p-4 rounded-md shadow-sm border border-border transition-all duration-200 hover:shadow-md">
                   <div className="flex-1 mb-3 sm:mb-0 sm:mr-4">

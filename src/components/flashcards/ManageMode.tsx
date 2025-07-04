@@ -7,11 +7,13 @@ import { FlashcardForm } from './FlashcardForm';
 import { ImportExport } from './ImportExport';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCcw } from 'lucide-react';
+import { RefreshCcw, LayoutGrid } from 'lucide-react';
 import { CardData, Category } from '@/hooks/flashcards/types';
 import { OrganizeCardModal } from './OrganizeCardModal';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
 
 interface ManageModeProps {
   cards: CardData[];
@@ -48,6 +50,7 @@ export function ManageMode({
 }: ManageModeProps) {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all' | null>('all');
   const [organizingCard, setOrganizingCard] = useState<CardData | null>(null);
+  const [columns, setColumns] = useState(2);
 
   const filteredCards = useMemo(() => {
     if (selectedCategoryId === 'all') {
@@ -130,28 +133,39 @@ export function ManageMode({
           onUpdateCategory={onUpdateCategory}
         />
         <Card className="w-full bg-card backdrop-blur-xl border-white/20">
-          <CardHeader>
-            <CardTitle>Deck Options</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <Button
-              onClick={handleOrganizeTrueFalse}
-              variant="secondary"
-              className="w-full"
-            >
-              Organize 'True or False' Cards
-            </Button>
-            <div>
-              <Button
-                onClick={onResetProgress}
-                variant="destructive"
-                className="w-full"
-              >
-                <RefreshCcw className="mr-2 h-4 w-4" /> Reset All Progress & Stats
-              </Button>
-              <p className="text-xs text-muted-foreground mt-2">This will reset the status and guess statistics for all cards in this deck.</p>
-            </div>
-          </CardContent>
+          <Tabs defaultValue="options" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="options">Deck Options</TabsTrigger>
+              <TabsTrigger value="import-export">Import/Export</TabsTrigger>
+            </TabsList>
+            <TabsContent value="options" className="p-4">
+              <div className="flex flex-col gap-4">
+                <Button
+                  onClick={handleOrganizeTrueFalse}
+                  variant="secondary"
+                  className="w-full"
+                >
+                  Organize 'True or False' Cards
+                </Button>
+                <div>
+                  <Button
+                    onClick={onResetProgress}
+                    variant="destructive"
+                    className="w-full"
+                  >
+                    <RefreshCcw className="mr-2 h-4 w-4" /> Reset All Progress & Stats
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">This will reset the status and guess statistics for all cards in this deck.</p>
+                </div>
+              </div>
+            </TabsContent>
+            <TabsContent value="import-export" className="p-0">
+              <ImportExport
+                cards={cards}
+                onBulkImport={(newCards) => onBulkImport(newCards, selectedCategoryId === 'all' ? null : selectedCategoryId)}
+              />
+            </TabsContent>
+          </Tabs>
         </Card>
       </div>
       <div className="w-full md:w-2/3 flex flex-col gap-6">
@@ -160,26 +174,34 @@ export function ManageMode({
           editingCard={editingCard}
           onCancel={onCancelEdit}
         />
-        <Tabs defaultValue="deck" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="deck">Your Flashcards</TabsTrigger>
-            <TabsTrigger value="import-export">Import/Export</TabsTrigger>
-          </TabsList>
-          <TabsContent value="deck" className="mt-4">
-            <FlashcardList
-              flashcards={filteredCards}
-              onEdit={onEdit}
-              onDelete={onDeleteCard}
-              onOrganize={setOrganizingCard}
-            />
-          </TabsContent>
-          <TabsContent value="import-export" className="mt-4">
-            <ImportExport
-              cards={cards}
-              onBulkImport={(newCards) => onBulkImport(newCards, selectedCategoryId === 'all' ? null : selectedCategoryId)}
-            />
-          </TabsContent>
-        </Tabs>
+        <Card className="w-full bg-card backdrop-blur-xl border-white/20">
+          <CardHeader>
+            <CardTitle>View Options</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label htmlFor="columns-slider">Columns: {columns}</Label>
+              <div className="flex items-center gap-4">
+                <LayoutGrid className="h-5 w-5 text-muted-foreground" />
+                <Slider
+                  id="columns-slider"
+                  value={[columns]}
+                  onValueChange={(value) => setColumns(value[0])}
+                  min={1}
+                  max={4}
+                  step={1}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <FlashcardList
+          flashcards={filteredCards}
+          onEdit={onEdit}
+          onDelete={onDeleteCard}
+          onOrganize={setOrganizingCard}
+          columns={columns}
+        />
       </div>
       <OrganizeCardModal
         card={organizingCard}

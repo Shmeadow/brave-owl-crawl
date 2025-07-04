@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { CardData } from '@/hooks/use-flashcards';
@@ -97,55 +96,50 @@ export function ImportExport({ cards, onBulkImport }: ImportExportProps) {
   };
 
   return (
-    <Card className="w-full bg-card backdrop-blur-xl border-white/20 mt-6">
-      <CardHeader>
-        <CardTitle>Import / Export</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="import">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="import">Import</TabsTrigger>
-            <TabsTrigger value="export">Export</TabsTrigger>
-          </TabsList>
-          <TabsContent value="import" className="mt-4 space-y-4">
-            <div>
-              <label className="text-sm font-medium">Paste CSV Data</label>
-              <p className="text-xs text-muted-foreground mb-2">Format: "front text","back text"</p>
-              <Textarea
-                placeholder='"What is the capital of France?","Paris"'
-                value={textValue}
-                onChange={(e) => setTextValue(e.target.value)}
-                rows={5}
-              />
-              <Button onClick={() => handleImport(textValue)} className="mt-2 w-full" disabled={!textValue}>
-                Import from Text
-              </Button>
-            </div>
-            <div className="relative flex py-2 items-center">
-              <div className="flex-grow border-t border-border"></div>
-              <span className="flex-shrink mx-4 text-muted-foreground text-xs">OR</span>
-              <div className="flex-grow border-t border-border"></div>
-            </div>
-            <div>
-              <label className="text-sm font-medium">Import from File</label>
-              <p className="text-xs text-muted-foreground mb-2">Select a .csv file.</p>
-              <Input
-                type="file"
-                accept=".csv"
-                onChange={handleFileChange}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground pt-2">Note: Import from URL is not yet supported. Please paste text or upload a file.</p>
-          </TabsContent>
-          <TabsContent value="export" className="mt-4 space-y-4">
-            <p className="text-sm text-muted-foreground">Export your current flashcard deck to a file.</p>
-            <div className="flex gap-4">
-              <Button onClick={() => handleExport('csv')} className="flex-1">Export as CSV</Button>
-              <Button onClick={() => handleExport('json')} className="flex-1">Export as JSON</Button>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+    <div className="p-4">
+      <Tabs defaultValue="import">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="import">Import</TabsTrigger>
+          <TabsTrigger value="export">Export</TabsTrigger>
+        </TabsList>
+        <TabsContent value="import" className="mt-4 space-y-4">
+          <div>
+            <label className="text-sm font-medium">Paste CSV Data</label>
+            <p className="text-xs text-muted-foreground mb-2">Format: "front text","back text"</p>
+            <Textarea
+              placeholder='"What is the capital of France?","Paris"'
+              value={textValue}
+              onChange={(e) => setTextValue(e.target.value)}
+              rows={5}
+            />
+            <Button onClick={() => handleImport(textValue)} className="mt-2 w-full" disabled={!textValue}>
+              Import from Text
+            </Button>
+          </div>
+          <div className="relative flex py-2 items-center">
+            <div className="flex-grow border-t border-border"></div>
+            <span className="flex-shrink mx-4 text-muted-foreground text-xs">OR</span>
+            <div className="flex-grow border-t border-border"></div>
+          </div>
+          <div>
+            <label className="text-sm font-medium">Import from File</label>
+            <p className="text-xs text-muted-foreground mb-2">Select a .csv file.</p>
+            <Input
+              type="file"
+              accept=".csv"
+              onChange={handleFileChange}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground pt-2">Note: Import from URL is not yet supported. Please paste text or upload a file.</p>
+        </TabsContent>
+        <TabsContent value="export" className="mt-4 space-y-4">
+          <p className="text-sm text-muted-foreground">Export your current flashcard deck to a file.</p>
+          <div className="flex gap-4">
+            <Button onClick={() => handleExport('csv')} className="flex-1">Export as CSV</Button>
+            <Button onClick={() => handleExport('json')} className="flex-1">Export as JSON</Button>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }
