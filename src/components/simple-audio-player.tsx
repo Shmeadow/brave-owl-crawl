@@ -17,11 +17,13 @@ import { PlayerModeButtons } from './audio-player/player-mode-buttons';
 
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 
-// Constants for layout dimensions (no longer directly used for maximized player positioning, but kept for context if needed elsewhere).
-const HEADER_HEIGHT = 64; // px
-const POMODORO_WIDGET_HEIGHT_EST = 200; // px, estimated height when expanded
-const POMODORO_WIDGET_BOTTOM_OFFSET = 20; // px, from PomodoroWidget's fixed bottom-20
-const PLAYER_POMODORO_BUFFER = 40; // px - Increased buffer for more clearance
+// Removed fixed height constants as the player will now adapt to content aspect ratio
+// const HEADER_HEIGHT = 64; // px
+// const POMODORO_WIDGET_HEIGHT_EST = 200; // px, estimated height when expanded
+// const POMODORO_WIDGET_BOTTOM_OFFSET = 20; // px, from PomodoroWidget's fixed bottom-20
+// const PLAYER_POMODORO_BUFFER = 40; // px - Increased buffer for more clearance
+// const MAXIMIZED_PLAYER_TOP_POSITION = HEADER_HEIGHT + 40; // Moved down by 40px
+// const MAXIMIZED_PLAYER_BOTTOM_POSITION = POMODORO_WIDGET_BOTTOM_OFFSET + POMODORO_WIDGET_HEIGHT_EST + PLAYER_POMODORO_BUFFER + 20; // Added 20px buffer
 
 
 const SimpleAudioPlayer = () => {
@@ -201,11 +203,14 @@ const SimpleAudioPlayer = () => {
       "fixed z-[899] transition-all duration-300 ease-in-out",
       displayMode === 'normal' && 'top-20 right-4 w-80',
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-16',
-      displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 max-w-[500px] w-full flex flex-col items-center justify-center'
-    )}>
+      displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-[500px] flex flex-col items-center justify-center'
+    )}
+    // Removed the style prop that was setting fixed top/bottom
+    >
       {/* Normal/Maximized Player UI */}
       <div className={cn(
-        "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full", // Removed h-full here
+        "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full",
+        // Removed h-full from here to allow content to dictate height
         displayMode === 'normal' && 'p-1',
         displayMode === 'maximized' && 'p-4 items-center justify-center',
         displayMode === 'minimized' && 'hidden'
@@ -223,7 +228,7 @@ const SimpleAudioPlayer = () => {
           isMaximized={displayMode === 'maximized'}
           className={cn(
             displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : '',
-            'w-full' // Removed flex-grow here
+            'w-full' // Ensures PlayerDisplay takes full width, its aspect ratio will define height
           )}
         />
 
