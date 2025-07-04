@@ -31,7 +31,7 @@ interface HeaderProps {
   onToggleSidebar: () => void; // New prop
 }
 
-export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnreadMessage, onClearUnreadMessages, unreadChatCount, isMobile, onToggleSidebar }: HeaderProps) {
+export const Header = React.memo(({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnreadMessage, onClearUnreadMessages, unreadChatCount, isMobile, onToggleSidebar }: HeaderProps) => {
   const { session, profile } = useSupabase();
   const router = useRouter();
   const { currentRoomName, currentRoomId, isCurrentRoomWritable } = useCurrentRoom();
@@ -125,4 +125,6 @@ export function Header({ onOpenUpgradeModal, isChatOpen, onToggleChat, onNewUnre
       </div>
     </header>
   );
-}
+});
+
+Header.displayName = 'Header';
