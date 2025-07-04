@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Lock, Unlock, Trash2, LogIn, Share2, LogOut } from "lucide-react";
+import { Lock, Unlock, Trash2, LogIn, Share2, LogOut, DoorOpen } from "lucide-react"; // Added DoorOpen
 import { useRooms, RoomData } from "@/hooks/use-rooms";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
@@ -34,6 +34,11 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
       return;
     }
     setCurrentRoom(room.id, room.name);
+  };
+
+  const handleExitRoom = () => {
+    setCurrentRoom(null, "My Room"); // Set current room to null for personal/guest space
+    toast.info("You have exited the room and returned to your personal space.");
   };
 
   const handleGenerateCodeClick = async (roomId: string) => {
@@ -70,6 +75,38 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
       <CardContent className="p-0">
         <ScrollArea className="max-h-[300px] pr-4">
           <div className="space-y-3">
+            {/* "My Room" / Exit Room option */}
+            {currentRoomId && (
+              <div
+                className={cn(
+                  "flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 border rounded-md bg-muted backdrop-blur-xl",
+                  !currentRoomId && "ring-2 ring-primary"
+                )}
+              >
+                <div className="flex items-center flex-1 min-w-0">
+                  <div className="relative w-16 h-10 rounded-md overflow-hidden mr-3 flex-shrink-0 bg-muted flex items-center justify-center text-muted-foreground">
+                    <DoorOpen className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1 pr-2 mb-2 sm:mb-0">
+                    <p className="font-medium text-sm">My Personal Space</p>
+                    <p className="text-xs text-muted-foreground">Private workspace</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-1 sm:ml-auto">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleExitRoom}
+                    title="Exit Current Room"
+                    disabled={!currentRoomId}
+                  >
+                    <LogIn className="h-4 w-4" />
+                    <span className="sr-only">Exit Room</span>
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {myCreatedRooms.map((room) => (
               <div
                 key={room.id}

@@ -1,6 +1,7 @@
 export interface CardData {
   id: string;
-  user_id?: string;
+  user_id: string;
+  room_id: string | null; // New: Can be null for personal flashcards
   category_id?: string | null;
   front: string;
   back: string;
@@ -17,5 +18,6 @@ export interface Category {
   id: string;
   name: string;
   user_id: string;
+  room_id: string | null; // New: Can be null for personal categories
   created_at: string;
 }
