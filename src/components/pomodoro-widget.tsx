@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Play, Pause, RotateCcw, Coffee, Brain, Home, ChevronDown, Settings, ChevronUp } from "lucide-react"; // Import ChevronUp
+import { Play, Pause, RotateCcw, Coffee, Brain, Home, ChevronDown, Settings, ChevronUp } from "lucide-react";
 import { usePomodoroState, formatTime, parseTimeToSeconds, PomodoroMode } from "@/hooks/use-pomodoro-state";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,7 @@ interface PomodoroWidgetProps {
   isMinimized: boolean;
   setIsMinimized: (minimized: boolean) => void;
   chatPanelWidth: number;
-  isMobile: boolean; // New prop
+  isMobile: boolean;
 }
 
 export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, isMobile }: PomodoroWidgetProps) {
@@ -84,7 +84,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
                 <span className="sr-only">Collapse Pomodoro</span>
               </Button>
             </CardHeader>
-            <CardContent className="flex flex-col items-center gap-3 w-full p-1">
+            <CardContent className="flex flex-col items-center gap-3 w-full p-2">
               <div className="flex gap-1 justify-center w-full">
                 <Button
                   variant={mode === 'focus' ? 'default' : 'outline'}
@@ -122,7 +122,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
                   onChange={(e) => setEditableTimeString(e.target.value)}
                   onBlur={handleTimeInputBlur}
                   onKeyDown={handleTimeInputKeyDown}
-                  className="text-3xl font-bold font-mono text-center w-full max-w-[180px] h-10"
+                  className="text-3xl font-bold font-mono text-center w-full h-10"
                   disabled={!isCurrentRoomWritable}
                 />
               ) : (
