@@ -6,7 +6,7 @@ import { usePomodoroSettings } from "./pomodoro/use-pomodoro-settings";
 import { usePomodoroTimer } from "./pomodoro/use-pomodoro-timer";
 import { usePomodoroModes } from "./pomodoro/use-pomodoro-modes";
 import { usePomodoroTimeInput } from "./pomodoro/use-pomodoro-time-input";
-import { formatTime, parseTimeToSeconds, PomodoroMode } from "@/lib/pomodoro-utils"; // Updated import path
+import { formatTime, parseTimeToSeconds, PomodoroMode } from "@/lib/pomodoro-utils";
 
 export function usePomodoroState() {
   // 1. Settings hook (provides customTimes, loading, isLoggedInMode)
@@ -15,19 +15,19 @@ export function usePomodoroState() {
   // State for the current mode's time, initialized with focus time from settings
   const [currentModeTime, setCurrentModeTime] = useState(DEFAULT_TIMES.focus);
 
-  // 2. Modes hook (provides mode, switchMode)
-  // This needs to be declared before handleModeChange, which it depends on.
-  const { mode, switchMode } = usePomodoroModes({ onModeChange: handleModeChange });
+  // Refs to hold the latest versions of the callbacks to avoid circular dependencies
+  const handleTimerEndRef = useRef<() => void>(() => {});
+  const handleModeChangeRef = useRef<(newMode: PomodoroMode) => void>(() => {});
+  const handleSaveParsedTimeRef = useRef<(newTimeInSeconds: number) => void>(() => {});
 
-  // 3. Timer hook (provides timeLeft, isRunning, startTimer, pauseTimer, resetTimerState, setTime)
-  // This needs to be declared before handleTimerEnd and handleModeChange, which depend on its outputs.
+  // 2. Declare modular hooks, passing the refs' current values as props
+  const { mode, switchMode } = usePomodoroModes({ onModeChange: (newMode) => handleModeChangeRef.current(newMode) });
+
   const { timeLeft, isRunning, startTimer, pauseTimer, resetTimerState, setTime } = usePomodoroTimer({
     initialTime: currentModeTime,
-    onTimerEnd: handleTimerEnd, // handleTimerEnd is defined below, but its dependencies are resolved.
+    onTimerEnd: () => handleTimerEndRef.current(),
   });
 
-  // 4. Time Input hook (provides editing state and handlers)
-  // This needs to be declared before handleModeChange and handleSaveParsedTime, which depend on its outputs.
   const {
     isEditingTime,
     editableTimeString,
@@ -37,10 +37,10 @@ export function usePomodoroState() {
     setIsEditingTime,
   } = usePomodoroTimeInput({
     currentTime: timeLeft,
-    onSaveTime: handleSaveParsedTime, // handleSaveParsedTime is defined below, but its dependencies are resolved.
+    onSaveTime: (newTime) => handleSaveParsedTimeRef.current(newTime),
   });
 
-  // Callbacks that depend on outputs from hooks declared above
+  // 3. Define the actual callbacks and update their refs
   const handleTimerEnd = useCallback(() => {
     let nextMode: PomodoroMode;
     if (mode === 'focus') {
@@ -50,21 +50,33 @@ export function usePomodoroState() {
       nextMode = 'focus';
       toast.success("Break complete! Time to focus again.");
     }
-    switchMode(nextMode); // This will also reset the timer via onModeChange
+    switchMode(nextMode);
   }, [mode, switchMode]); // Dependencies are now correctly ordered
+
+  useEffect(() => {
+    handleTimerEndRef.current = handleTimerEnd;
+  }, [handleTimerEnd]);
 
   const handleModeChange = useCallback((newMode: PomodoroMode) => {
     setCurrentModeTime(customTimes[newMode]);
-    setTime(customTimes[newMode]); // setTime is from usePomodoroTimer
-    pauseTimer(); // pauseTimer is from usePomodoroTimer
-    setIsEditingTime(false); // setIsEditingTime is from usePomodoroTimeInput
-  }, [customTimes, setTime, pauseTimer, setIsEditingTime]); // Dependencies are now correctly ordered
+    setTime(customTimes[newMode]);
+    pauseTimer();
+    setIsEditingTime(false);
+  }, [customTimes, setTime, pauseTimer, setIsEditingTime]);
+
+  useEffect(() => {
+    handleModeChangeRef.current = handleModeChange;
+  }, [handleModeChange]);
 
   const handleSaveParsedTime = useCallback((newTimeInSeconds: number) => {
-    setCustomTime(mode, newTimeInSeconds); // setCustomTime is from usePomodoroSettings, mode is from usePomodoroModes
-    setTime(newTimeInSeconds); // setTime is from usePomodoroTimer
+    setCustomTime(mode, newTimeInSeconds);
+    setTime(newTimeInSeconds);
     toast.success("Timer time updated!");
-  }, [mode, setCustomTime, setTime]); // Dependencies are now correctly ordered
+  }, [mode, setCustomTime, setTime]);
+
+  useEffect(() => {
+    handleSaveParsedTimeRef.current = handleSaveParsedTime;
+  }, [handleSaveParsedTime]);
 
   // Sync currentModeTime with the active mode's time from settings
   useEffect(() => {
