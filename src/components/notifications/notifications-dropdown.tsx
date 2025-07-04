@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,25 +12,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useNotifications } from "@/hooks/use-notifications"; // Import the new hook
+import { cn } from "@/lib/utils"; // Import cn for styling
 
 interface NotificationsDropdownProps {
-  unreadCount: number;
-  onClearUnread: () => void;
-  onNewUnread: () => void;
+  // Removed unreadCount, onClearUnread, onNewUnread as they will be managed by the hook
 }
 
-export function NotificationsDropdown({ unreadCount, onClearUnread, onNewUnread }: NotificationsDropdownProps) {
-  // This is a placeholder component.
-  // In a real implementation, you would fetch notifications from a backend
-  // and manage their read/unread status.
+export function NotificationsDropdown({}: NotificationsDropdownProps) {
+  const { notifications, loading, unreadCount, markAsRead, markAllAsRead, addNotification } = useNotifications();
 
-  const notifications = [
-    { id: "1", message: "Welcome to Productivity Hub!", read: true },
-    { id: "2", message: "New feature: Flashcards are here!", read: false },
-    { id: "3", message: "Your daily goals summary is ready.", read: true },
-  ];
-
-  const hasUnread = notifications.some(n => !n.read) || unreadCount > 0;
+  // Example: Add a welcome notification if there are no notifications
+  useEffect(() => {
+    if (!loading && notifications.length === 0) {
+      addNotification("Welcome to Productivity Hub! Explore your new workspace.");
+    }
+  }, [loading, notifications.length, addNotification]);
 
   return (
     <DropdownMenu>
@@ -38,30 +35,41 @@ export function NotificationsDropdown({ unreadCount, onClearUnread, onNewUnread 
         <Button variant="ghost" size="icon" title="Notifications" className="relative">
           <Bell className="h-6 w-6" />
           <span className="sr-only">Notifications</span>
-          {hasUnread && (
-            <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-              {/* This dot indicates unread notifications, actual count can be shown in chat icon */}
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+              {unreadCount}
             </span>
           )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-72 z-[1003] bg-popover/80 backdrop-blur-lg" align="end" forceMount>
-        <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+        <DropdownMenuLabel>Notifications ({unreadCount} unread)</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <ScrollArea className="h-48">
-          {notifications.length === 0 ? (
-            <p className="p-2 text-sm text-muted-foreground text-center">No new notifications.</p>
+          {loading ? (
+            <p className="p-2 text-sm text-muted-foreground text-center">Loading notifications...</p>
+          ) : notifications.length === 0 ? (
+            <p className="p-2 text-sm text-muted-foreground text-center">No notifications yet.</p>
           ) : (
             notifications.map((notification) => (
-              <DropdownMenuItem key={notification.id} className="flex flex-col items-start p-2">
+              <DropdownMenuItem
+                key={notification.id}
+                className={cn(
+                  "flex flex-col items-start p-2 cursor-pointer",
+                  !notification.is_read ? "bg-accent/50" : "opacity-80"
+                )}
+                onClick={() => markAsRead(notification.id)}
+              >
                 <p className="text-sm font-medium">{notification.message}</p>
-                <p className="text-xs text-muted-foreground">Just now</p>
+                <p className="text-xs text-muted-foreground">
+                  {new Date(notification.created_at).toLocaleString()}
+                </p>
               </DropdownMenuItem>
             ))
           )}
         </ScrollArea>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => alert("Mark all as read functionality would go here.")}>
+        <DropdownMenuItem onClick={markAllAsRead} disabled={unreadCount === 0}>
           Mark all as read
         </DropdownMenuItem>
       </DropdownMenuContent>

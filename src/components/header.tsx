@@ -161,11 +161,7 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
         <UpgradeButton onOpenUpgradeModal={onOpenUpgradeModal} />
         <ThemeToggle />
         {session && (
-          <NotificationsDropdown
-            unreadCount={unreadChatCount}
-            onClearUnread={onClearUnreadMessages}
-            onNewUnread={onNewUnreadMessage}
-          />
+          <NotificationsDropdown />
         )}
         {session && (
           <Button
