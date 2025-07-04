@@ -20,12 +20,14 @@ export function PublicRoomsSection({ publicRooms }: PublicRoomsSectionProps) {
   const { currentRoomId, setCurrentRoom } = useCurrentRoom();
 
   const handleEnterRoom = (room: RoomData) => {
+    console.log(`Attempting to enter room: ${room.name} (ID: ${room.id})`);
     if (!session && !room.is_public && !room.password_hash) {
       // This check is mostly for consistency, public rooms shouldn't have password_hash
       toast.error("You must be logged in to enter a private room.");
       return;
     }
     setCurrentRoom(room.id, room.name);
+    console.log(`setCurrentRoom called for room: ${room.name} (ID: ${room.id})`);
   };
 
   const getRoomCreatorName = (room: RoomData) => {

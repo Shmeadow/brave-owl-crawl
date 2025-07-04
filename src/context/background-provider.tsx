@@ -22,6 +22,7 @@ function BackgroundManager({ url, isVideo, isMirrored }: { url: string; isVideo:
   const [isVideoVisible, setIsVideoVisible] = useState(isVideo);
 
   useEffect(() => {
+    console.log(`BackgroundManager: URL changed to ${url}, isVideo: ${isVideo}`);
     setIsImageVisible(!isVideo);
     setIsVideoVisible(isVideo);
   }, [url, isVideo]);
@@ -89,6 +90,7 @@ export function BackgroundProvider({ children }: { children: React.ReactNode }) 
 
   // Update background state when currentRoomBackgroundUrl or isCurrentRoomVideoBackground changes
   useEffect(() => {
+    console.log(`BackgroundProvider: Updating background from current room. URL: ${currentRoomBackgroundUrl}, isVideo: ${isCurrentRoomVideoBackground}`);
     setBackgroundState({
       url: currentRoomBackgroundUrl,
       isVideo: isCurrentRoomVideoBackground,
