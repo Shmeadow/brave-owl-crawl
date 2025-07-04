@@ -7,11 +7,10 @@ import { FlashcardForm } from './FlashcardForm';
 import { ImportExport } from './ImportExport';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCcw, LayoutGrid, Rows3 } from 'lucide-react';
+import { RefreshCcw, LayoutGrid } from 'lucide-react';
 import { CardData, Category } from '@/hooks/flashcards/types';
 import { OrganizeCardModal } from './OrganizeCardModal';
 import { toast } from 'sonner';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 
@@ -51,7 +50,16 @@ export function ManageMode({
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all' | null>('all');
   const [organizingCard, setOrganizingCard] = useState<CardData | null>(null);
   const [columns, setColumns] = useState(2);
-  const [rowHeight, setRowHeight] = useState(120);
+  const [sizePreset, setSizePreset] = useState<'default' | 'small' | 'big'>('default');
+
+  const rowHeight = useMemo(() => {
+    switch (sizePreset) {
+      case 'small': return 80;
+      case 'big': return 160;
+      case 'default':
+      default: return 120;
+    }
+  }, [sizePreset]);
 
   const filteredCards = useMemo(() => {
     if (selectedCategoryId === 'all') {
@@ -133,92 +141,85 @@ export function ManageMode({
           onDeleteCategory={onDeleteCategory}
           onUpdateCategory={onUpdateCategory}
         />
+        <Card>
+          <CardHeader>
+            <CardTitle>View Options</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="columns-slider">Columns: {columns}</Label>
+              <div className="flex items-center gap-4">
+                <LayoutGrid className="h-5 w-5 text-muted-foreground" />
+                <Slider
+                  id="columns-slider"
+                  value={[columns]}
+                  onValueChange={(value) => setColumns(value[0])}
+                  min={1}
+                  max={4}
+                  step={1}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Card Size</Label>
+              <div className="flex gap-2">
+                <Button className="flex-1" variant={sizePreset === 'small' ? 'default' : 'outline'} onClick={() => setSizePreset('small')}>Small</Button>
+                <Button className="flex-1" variant={sizePreset === 'default' ? 'default' : 'outline'} onClick={() => setSizePreset('default')}>Default</Button>
+                <Button className="flex-1" variant={sizePreset === 'big' ? 'default' : 'outline'} onClick={() => setSizePreset('big')}>Big</Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Deck Options</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <Button
+              onClick={handleOrganizeTrueFalse}
+              variant="secondary"
+              className="w-full"
+            >
+              Organize 'True or False' Cards
+            </Button>
+            <div>
+              <Button
+                onClick={onResetProgress}
+                variant="destructive"
+                className="w-full"
+              >
+                <RefreshCcw className="mr-2 h-4 w-4" /> Reset All Progress & Stats
+              </Button>
+              <p className="text-xs text-muted-foreground mt-2">This will reset the status and guess statistics for all cards in this deck.</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Import/Export</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <ImportExport
+              cards={cards}
+              onBulkImport={(newCards) => onBulkImport(newCards, selectedCategoryId === 'all' ? null : selectedCategoryId)}
+            />
+          </CardContent>
+        </Card>
+      </div>
+      <div className="w-full md:w-2/3 flex flex-col gap-6">
         <FlashcardForm
           onSave={handleSave}
           editingCard={editingCard}
           onCancel={onCancelEdit}
         />
-      </div>
-      <div className="w-full md:w-2/3 flex flex-col gap-6">
-        <Tabs defaultValue="deck" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="deck">Your Flashcards</TabsTrigger>
-            <TabsTrigger value="options">Deck Options</TabsTrigger>
-            <TabsTrigger value="import-export">Import/Export</TabsTrigger>
-          </TabsList>
-          <TabsContent value="deck" className="mt-4">
-            <Card className="w-full bg-card backdrop-blur-xl border-white/20 mb-6">
-              <CardHeader>
-                <CardTitle>View Options</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="columns-slider">Columns: {columns}</Label>
-                  <div className="flex items-center gap-4">
-                    <LayoutGrid className="h-5 w-5 text-muted-foreground" />
-                    <Slider
-                      id="columns-slider"
-                      value={[columns]}
-                      onValueChange={(value) => setColumns(value[0])}
-                      min={1}
-                      max={4}
-                      step={1}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="rows-slider">Row Height: {rowHeight}px</Label>
-                  <div className="flex items-center gap-4">
-                    <Rows3 className="h-5 w-5 text-muted-foreground" />
-                    <Slider
-                      id="rows-slider"
-                      value={[rowHeight]}
-                      onValueChange={(value) => setRowHeight(value[0])}
-                      min={80}
-                      max={240}
-                      step={10}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <FlashcardList
-              flashcards={filteredCards}
-              onEdit={onEdit}
-              onDelete={onDeleteCard}
-              onOrganize={setOrganizingCard}
-              columns={columns}
-              rowHeight={rowHeight}
-            />
-          </TabsContent>
-          <TabsContent value="options" className="p-4">
-            <div className="flex flex-col gap-4">
-              <Button
-                onClick={handleOrganizeTrueFalse}
-                variant="secondary"
-                className="w-full"
-              >
-                Organize 'True or False' Cards
-              </Button>
-              <div>
-                <Button
-                  onClick={onResetProgress}
-                  variant="destructive"
-                  className="w-full"
-                >
-                  <RefreshCcw className="mr-2 h-4 w-4" /> Reset All Progress & Stats
-                </Button>
-                <p className="text-xs text-muted-foreground mt-2">This will reset the status and guess statistics for all cards in this deck.</p>
-              </div>
-            </div>
-          </TabsContent>
-          <TabsContent value="import-export" className="p-0">
-            <ImportExport
-              cards={cards}
-              onBulkImport={(newCards) => onBulkImport(newCards, selectedCategoryId === 'all' ? null : selectedCategoryId)}
-            />
-          </TabsContent>
-        </Tabs>
+        <FlashcardList
+          flashcards={filteredCards}
+          onEdit={onEdit}
+          onDelete={onDeleteCard}
+          onOrganize={setOrganizingCard}
+          columns={columns}
+          rowHeight={rowHeight}
+        />
       </div>
       <OrganizeCardModal
         card={organizingCard}
