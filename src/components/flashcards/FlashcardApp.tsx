@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
-import { useFirebaseFlashcards, CardData } from '@/hooks/use-firebase-flashcards';
+import { useFlashcards, CardData } from '@/hooks/use-flashcards'; // Updated import
 import { FlashcardForm } from './FlashcardForm';
 import { FlashcardList } from './FlashcardList';
 import { FlashcardStudy } from './FlashcardStudy';
@@ -20,7 +20,7 @@ interface FlashcardAppProps {
 }
 
 export function FlashcardApp({ isCurrentRoomWritable }: FlashcardAppProps) {
-  const { flashcards, loading, userId, firebaseError, addOrUpdateCard, deleteCard, updateCardCorrectCount } = useFirebaseFlashcards();
+  const { cards, loading, isLoggedInMode, handleAddCard, handleDeleteCard, handleUpdateCard, handleAnswerFeedback } = useFlashcards(); // Updated hook and functions
   const [currentMode, setCurrentMode] = useState<FlashcardMode>('manage');
   const [editingCard, setEditingCard] = useState<CardData | null>(null);
   const [summaryData, setSummaryData] = useState<any>(null);
@@ -51,44 +51,45 @@ export function FlashcardApp({ isCurrentRoomWritable }: FlashcardAppProps) {
       );
     }
 
-    if (firebaseError) {
-      return (
-        <div className="text-center text-destructive p-8 bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-lg">
-          <h3 className="text-xl font-bold mb-4">Firebase Connection Error!</h3>
-          <p className="mb-6">
-            There was an issue connecting to the Firebase database or authenticating. Please ensure your Firebase environment variables are correctly set.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Check `NEXT_PUBLIC_FIREBASE_CONFIG` and `NEXT_PUBLIC_FIREBASE_APP_ARTIFACT_ID` in your `.env.local` file.
-          </p>
-        </div>
-      );
-    }
+    // No firebaseError state needed anymore, use isLoggedInMode for guest messaging
+    // if (firebaseError) {
+    //   return (
+    //     <div className="text-center text-destructive p-8 bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-lg">
+    //       <h3 className="text-xl font-bold mb-4">Firebase Connection Error!</h3>
+    //       <p className="mb-6">
+    //         There was an issue connecting to the Firebase database or authenticating. Please ensure your Firebase environment variables are correctly set.
+    //       </p>
+    //       <p className="text-sm text-muted-foreground">
+    //         Check `NEXT_PUBLIC_FIREBASE_CONFIG` and `NEXT_PUBLIC_FIREBASE_APP_ARTIFACT_ID` in your `.env.local` file.
+    //       </p>
+    //     </div>
+    //   );
+    // }
 
     switch (currentMode) {
       case 'manage':
         return (
           <div className="space-y-6">
             <FlashcardForm
-              onSave={addOrUpdateCard}
+              onSave={handleAddCard} // Use handleAddCard from useFlashcards
               editingCard={editingCard}
               onCancel={handleCancelEdit}
               isCurrentRoomWritable={isCurrentRoomWritable}
             />
             <FlashcardList
-              flashcards={flashcards}
+              flashcards={cards} // Use cards from useFlashcards
               onEdit={handleEditClick}
-              onDelete={deleteCard}
+              onDelete={handleDeleteCard} // Use handleDeleteCard from useFlashcards
               isCurrentRoomWritable={isCurrentRoomWritable}
             />
           </div>
         );
       case 'flashcards':
-        return <FlashcardStudy flashcards={flashcards} />;
+        return <FlashcardStudy flashcards={cards} />; // Use cards from useFlashcards
       case 'learn':
-        return <LearnMode flashcards={flashcards} updateCardCorrectCount={updateCardCorrectCount} goToSummary={goToSummary} isCurrentRoomWritable={isCurrentRoomWritable} />;
+        return <LearnMode flashcards={cards} handleAnswerFeedback={handleAnswerFeedback} goToSummary={goToSummary} isCurrentRoomWritable={isCurrentRoomWritable} />;
       case 'test':
-        return <TestMode flashcards={flashcards} updateCardCorrectCount={updateCardCorrectCount} goToSummary={goToSummary} isCurrentRoomWritable={isCurrentRoomWritable} />;
+        return <TestMode flashcards={cards} handleAnswerFeedback={handleAnswerFeedback} goToSummary={goToSummary} isCurrentRoomWritable={isCurrentRoomWritable} />;
       case 'summary':
         return <SummaryMode summaryData={summaryData} summaryModeSource={summaryModeSource} />;
       default:
@@ -100,10 +101,10 @@ export function FlashcardApp({ isCurrentRoomWritable }: FlashcardAppProps) {
     <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto py-4">
       <h1 className="text-3xl font-bold text-foreground text-center">Flashcard Widget</h1>
 
-      {userId && (
+      {!isLoggedInMode && ( // Display guest mode message if not logged in
         <Card className="w-full bg-card backdrop-blur-xl border-white/20">
           <CardContent className="text-center text-sm text-muted-foreground p-2">
-            Your Flashcard User ID: <span className="font-mono text-primary break-all">{userId}</span>
+            You are currently browsing flashcards as a guest. Your cards are saved locally in your browser. Log in to save them to your account!
           </CardContent>
         </Card>
       )}

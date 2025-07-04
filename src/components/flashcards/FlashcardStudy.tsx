@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { CardData } from '@/hooks/use-firebase-flashcards';
+import { CardData } from '@/hooks/use-flashcards'; // Updated import
 import { FlashCard } from '@/components/flash-card'; // Reusing existing FlashCard component
 
 interface FlashcardStudyProps {
@@ -55,8 +55,8 @@ export function FlashcardStudy({ flashcards }: FlashcardStudyProps) {
   return (
     <div className="flex flex-col items-center space-y-6 w-full">
       <FlashCard
-        front={currentCard.term}
-        back={currentCard.definition}
+        front={currentCard.front}
+        back={currentCard.back}
         isFlipped={isFlipped}
         onClick={handleFlip}
       />

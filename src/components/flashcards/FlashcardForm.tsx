@@ -17,15 +17,15 @@ import {
 } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { CardData } from '@/hooks/use-firebase-flashcards';
+import { CardData } from '@/hooks/use-flashcards'; // Updated import
 
 const formSchema = z.object({
-  term: z.string().min(1, { message: "Term cannot be empty." }),
-  definition: z.string().min(1, { message: "Definition cannot be empty." }),
+  front: z.string().min(1, { message: "Front of card cannot be empty." }),
+  back: z.string().min(1, { message: "Back of card cannot be empty." }),
 });
 
 interface FlashcardFormProps {
-  onSave: (card: { id?: string; term: string; definition: string }) => void;
+  onSave: (card: { id?: string; front: string; back: string }) => void;
   editingCard: CardData | null;
   onCancel: () => void;
   isCurrentRoomWritable: boolean;
@@ -35,15 +35,15 @@ export function FlashcardForm({ onSave, editingCard, onCancel, isCurrentRoomWrit
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      term: editingCard?.term || '',
-      definition: editingCard?.definition || '',
+      front: editingCard?.front || '',
+      back: editingCard?.back || '',
     },
   });
 
   useEffect(() => {
     form.reset({
-      term: editingCard?.term || '',
-      definition: editingCard?.definition || '',
+      front: editingCard?.front || '',
+      back: editingCard?.back || '',
     });
   }, [editingCard, form]);
 
@@ -67,12 +67,12 @@ export function FlashcardForm({ onSave, editingCard, onCancel, isCurrentRoomWrit
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="term"
+              name="front"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Term</FormLabel>
+                  <FormLabel>Card Front (Question)</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Photosynthesis" {...field} disabled={!isCurrentRoomWritable} />
+                    <Input placeholder="e.g., What is the capital of France?" {...field} disabled={!isCurrentRoomWritable} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -80,12 +80,12 @@ export function FlashcardForm({ onSave, editingCard, onCancel, isCurrentRoomWrit
             />
             <FormField
               control={form.control}
-              name="definition"
+              name="back"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Definition</FormLabel>
+                  <FormLabel>Card Back (Answer)</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="e.g., The process by which green plants and some other organisms use sunlight to synthesize foods." {...field} rows={4} disabled={!isCurrentRoomWritable} />
+                    <Textarea placeholder="e.g., Paris" {...field} rows={4} disabled={!isCurrentRoomWritable} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

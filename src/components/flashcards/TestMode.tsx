@@ -4,17 +4,17 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle } from 'lucide-react';
-import { CardData } from '@/hooks/use-firebase-flashcards';
+import { CardData } from '@/hooks/use-flashcards'; // Updated import
 import { toast } from 'sonner';
 
 interface TestModeProps {
   flashcards: CardData[];
-  updateCardCorrectCount: (cardId: string, increment: number) => void;
+  handleAnswerFeedback: (cardId: string, isCorrect: boolean) => void; // Updated prop
   goToSummary: (data: any, source: 'learn' | 'test') => void;
   isCurrentRoomWritable: boolean;
 }
 
-export function TestMode({ flashcards, updateCardCorrectCount, goToSummary, isCurrentRoomWritable }: TestModeProps) {
+export function TestMode({ flashcards, handleAnswerFeedback, goToSummary, isCurrentRoomWritable }: TestModeProps) {
   const [testQuestions, setTestQuestions] = useState<any[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -42,18 +42,18 @@ export function TestMode({ flashcards, updateCardCorrectCount, goToSummary, isCu
     const questions = cards.map(card => {
       const otherDefinitions = cards
         .filter(c => c.id !== card.id)
-        .map(c => c.definition);
+        .map(c => c.back); // Use card.back for definitions
 
       const shuffledOtherDefinitions = otherDefinitions.sort(() => Math.random() - 0.5);
       const fakeDefinitions = shuffledOtherDefinitions.slice(0, Math.min(3, otherDefinitions.length)); // Ensure max 3 fake definitions
 
-      const options = [card.definition, ...fakeDefinitions];
+      const options = [card.back, ...fakeDefinitions]; // Use card.back for correct option
       const shuffledOptions = options.sort(() => Math.random() - 0.5);
 
       return {
         id: card.id,
-        term: card.term,
-        correctDefinition: card.definition,
+        term: card.front, // Use card.front for term
+        correctDefinition: card.back, // Use card.back for correct definition
         options: shuffledOptions,
       };
     }).sort(() => Math.random() - 0.5);
@@ -100,10 +100,10 @@ export function TestMode({ flashcards, updateCardCorrectCount, goToSummary, isCu
 
     if (isCorrect) {
       setScore(prev => prev + 1);
-      updateCardCorrectCount(currentQuestion.id, 1);
+      handleAnswerFeedback(currentQuestion.id, true); // Call new feedback handler
       toast.success("Correct!", { duration: 1000 });
     } else {
-      updateCardCorrectCount(currentQuestion.id, -1);
+      handleAnswerFeedback(currentQuestion.id, false); // Call new feedback handler
       toast.error("Incorrect.", { duration: 1000 });
     }
 

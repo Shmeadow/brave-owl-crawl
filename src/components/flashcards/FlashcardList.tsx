@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Edit, Trash2 } from 'lucide-react';
-import { CardData } from '@/hooks/use-firebase-flashcards';
+import { CardData } from '@/hooks/use-flashcards'; // Updated import
 import { toast } from 'sonner';
 
 interface FlashcardListProps {
@@ -46,9 +46,11 @@ export function FlashcardList({ flashcards, onEdit, onDelete, isCurrentRoomWrita
               {flashcards.map((card) => (
                 <li key={card.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-muted backdrop-blur-xl p-4 rounded-md shadow-sm border border-border transition-all duration-200 hover:shadow-md">
                   <div className="flex-1 mb-3 sm:mb-0 sm:mr-4">
-                    <p className="font-semibold text-foreground text-lg mb-1">{card.term}</p>
-                    <p className="text-muted-foreground text-sm">{card.definition}</p>
-                    <p className="text-muted-foreground text-xs mt-1">Mastery: {card.correctCount}</p>
+                    <p className="font-semibold text-foreground text-lg mb-1">{card.front}</p> {/* Use card.front */}
+                    <p className="text-muted-foreground text-sm">{card.back}</p> {/* Use card.back */}
+                    <p className="text-muted-foreground text-xs mt-1">
+                      Status: <span className="capitalize">{card.status}</span> | Seen: {card.seen_count}
+                    </p>
                   </div>
                   <div className="flex gap-2">
                     <Button

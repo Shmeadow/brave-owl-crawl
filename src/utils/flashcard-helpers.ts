@@ -1,4 +1,4 @@
-import { CardData } from "@/hooks/use-firebase-flashcards";
+import { CardData } from "@/hooks/use-flashcards"; // Updated import
 
 /**
  * Selects a flashcard based on a weighted random distribution,
@@ -9,12 +9,38 @@ import { CardData } from "@/hooks/use-firebase-flashcards";
 export const getWeightedRandomCard = (cards: CardData[]): CardData | null => {
   if (cards.length === 0) return null;
 
-  // Calculate weights: lower correctCount means higher weight
-  // Using 1 / (correctCount + 1) to ensure cards with 0 correctCount have max weight
-  const weightedCards = cards.map(card => ({
-    card,
-    weight: 1 / (card.correctCount + 1)
-  }));
+  // Assign base weights based on status
+  // 'new' cards are prioritized most, then 'learning', then 'mastered'
+  const getBaseWeight = (status: CardData['status']): number => {
+    switch (status) {
+      case 'new': return 3;
+      case 'learning': return 2;
+      case 'mastered': return 0.5; // Less likely to be picked
+      default: return 1;
+    }
+  };
+
+  const weightedCards = cards.map(card => {
+    let weight = getBaseWeight(card.status);
+
+    // Further adjust weight based on seen_count (less seen = higher weight)
+    // Avoid division by zero if seen_count is 0
+    weight *= (1 / (card.seen_count + 1));
+
+    // Further adjust weight based on last_reviewed_at (older review = higher weight)
+    if (card.last_reviewed_at) {
+      const lastReviewedDate = new Date(card.last_reviewed_at);
+      const now = new Date();
+      const daysSinceReview = (now.getTime() - lastReviewedDate.getTime()) / (1000 * 60 * 60 * 24);
+      // Exponential increase for older cards, but cap it to prevent extreme weights
+      weight *= Math.min(5, Math.exp(daysSinceReview / 30)); // e.g., double weight every 30 days
+    } else {
+      // New cards or cards never reviewed get a boost
+      weight *= 2;
+    }
+
+    return { card, weight };
+  });
 
   const totalWeight = weightedCards.reduce((sum, wc) => sum + wc.weight, 0);
   let random = Math.random() * totalWeight;

@@ -24,13 +24,31 @@ export function useFlashcards() {
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
 
-  // Helper to update card interaction (seen_count, last_reviewed_at)
-  const updateCardInteraction = useCallback(async (cardId: string) => {
+  // Helper to update card interaction (seen_count, last_reviewed_at, status based on feedback)
+  const handleAnswerFeedback = useCallback(async (cardId: string, isCorrect: boolean) => {
     const cardToUpdate = cards.find(card => card.id === cardId);
     if (!cardToUpdate) return;
 
     const newSeenCount = cardToUpdate.seen_count + 1;
     const now = new Date().toISOString();
+    let newStatus: CardData['status'] = cardToUpdate.status;
+    let newIntervalDays = cardToUpdate.interval_days;
+
+    if (isCorrect) {
+      if (newStatus === 'new') {
+        newStatus = 'learning';
+      } else if (newStatus === 'learning') {
+        // If already learning and correct, increase interval or mark mastered
+        newIntervalDays = Math.max(1, newIntervalDays * 2 || 1); // Double interval, min 1 day
+        if (newIntervalDays >= 7) { // Example: mark as mastered after 7 days interval
+          newStatus = 'mastered';
+        }
+      }
+    } else {
+      // If incorrect, reset status to new or learning, and reset interval
+      newStatus = 'new'; // Or 'learning' if you want to keep it in active learning
+      newIntervalDays = 0;
+    }
 
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase
@@ -38,6 +56,8 @@ export function useFlashcards() {
         .update({
           seen_count: newSeenCount,
           last_reviewed_at: now,
+          status: newStatus,
+          interval_days: newIntervalDays,
         })
         .eq('id', cardId)
         .eq('user_id', session.user.id)
@@ -54,7 +74,7 @@ export function useFlashcards() {
       setCards(prevCards => {
         const updated = prevCards.map(card =>
           card.id === cardId
-            ? { ...card, seen_count: newSeenCount, last_reviewed_at: now }
+            ? { ...card, seen_count: newSeenCount, last_reviewed_at: now, status: newStatus, interval_days: newIntervalDays }
             : card
         );
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
@@ -367,7 +387,7 @@ export function useFlashcards() {
     cards,
     loading,
     isLoggedInMode,
-    updateCardInteraction,
+    handleAnswerFeedback, // New function for learn/test modes
     handleAddCard,
     handleDeleteCard,
     handleShuffleCards,

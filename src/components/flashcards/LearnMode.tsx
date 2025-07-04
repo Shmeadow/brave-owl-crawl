@@ -5,18 +5,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
-import { CardData } from '@/hooks/use-firebase-flashcards';
+import { CardData } from '@/hooks/use-flashcards'; // Updated import
 import { getWeightedRandomCard, calculateCloseness } from '@/utils/flashcard-helpers';
 import { toast } from 'sonner';
 
 interface LearnModeProps {
   flashcards: CardData[];
-  updateCardCorrectCount: (cardId: string, increment: number) => void;
+  handleAnswerFeedback: (cardId: string, isCorrect: boolean) => void; // Updated prop
   goToSummary: (data: any, source: 'learn' | 'test') => void;
   isCurrentRoomWritable: boolean;
 }
 
-export function LearnMode({ flashcards, updateCardCorrectCount, goToSummary, isCurrentRoomWritable }: LearnModeProps) {
+export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary, isCurrentRoomWritable }: LearnModeProps) {
   const [shuffledCards, setShuffledCards] = useState<CardData[]>([]);
   const [currentCard, setCurrentCard] = useState<CardData | null>(null);
   const [userAnswer, setUserAnswer] = useState('');
@@ -80,25 +80,25 @@ export function LearnMode({ flashcards, updateCardCorrectCount, goToSummary, isC
     }
     setTotalAttempted(prev => prev + 1);
 
-    const isCorrect = userAnswer.trim().toLowerCase() === currentCard.definition.trim().toLowerCase();
-    const closeness = calculateCloseness(userAnswer, currentCard.definition);
+    const isCorrect = userAnswer.trim().toLowerCase() === currentCard.back.trim().toLowerCase(); // Use card.back for definition
+    const closeness = calculateCloseness(userAnswer, currentCard.back);
 
     if (isCorrect) {
       setFeedback('correct');
       setScore(prev => prev + 1);
-      updateCardCorrectCount(currentCard.id, 1); // Increment mastery
+      handleAnswerFeedback(currentCard.id, true); // Call new feedback handler
       toast.success("Correct!", { duration: 1000 });
     } else {
       setFeedback('incorrect');
-      updateCardCorrectCount(currentCard.id, -1); // Decrement mastery
+      handleAnswerFeedback(currentCard.id, false); // Call new feedback handler
       toast.error("Incorrect.", { duration: 1000 });
     }
 
     setSessionResults(prevResults => [
       ...prevResults,
       {
-        term: currentCard.term,
-        correctDefinition: currentCard.definition,
+        term: currentCard.front, // Use card.front for term
+        correctDefinition: currentCard.back, // Use card.back for definition
         userAnswer: userAnswer,
         isCorrect: isCorrect,
         closeness: closeness,
@@ -135,8 +135,8 @@ export function LearnMode({ flashcards, updateCardCorrectCount, goToSummary, isC
           <>
             <div className="w-full max-w-md bg-muted p-6 rounded-lg shadow-md text-center border border-border">
               <p className="text-xl font-semibold text-foreground mb-3">Term:</p>
-              <p className="text-3xl font-bold text-primary">{currentCard.term}</p>
-              <p className="text-muted-foreground text-sm mt-2">Mastery: {currentCard.correctCount}</p>
+              <p className="text-3xl font-bold text-primary">{currentCard.front}</p> {/* Use card.front */}
+              <p className="text-muted-foreground text-sm mt-2">Status: {currentCard.status} | Seen: {currentCard.seen_count}</p>
             </div>
 
             <div className="w-full max-w-md">
@@ -182,7 +182,7 @@ export function LearnMode({ flashcards, updateCardCorrectCount, goToSummary, isC
                   </p>
                 )}
                 <p className="text-foreground text-lg mb-4">
-                  The correct answer was: <span className="font-semibold text-primary">{currentCard.definition}</span>
+                  The correct answer was: <span className="font-semibold text-primary">{currentCard.back}</span> {/* Use card.back */}
                 </p>
                 <Button
                   onClick={handleNextCard}
