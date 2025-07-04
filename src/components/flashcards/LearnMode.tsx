@@ -4,24 +4,27 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
-import { CardData } from '@/hooks/use-flashcards'; // Updated import
+import { CheckCircle, XCircle, AlertTriangle, RefreshCcw } from 'lucide-react';
+import { CardData } from '@/hooks/use-flashcards';
 import { getWeightedRandomCard, calculateCloseness } from '@/utils/flashcard-helpers';
 import { toast } from 'sonner';
+import { FlashCard } from '@/components/flash-card'; // Reusing existing FlashCard component
 
 interface LearnModeProps {
   flashcards: CardData[];
-  handleAnswerFeedback: (cardId: string, isCorrect: boolean) => void; // Updated prop
+  handleAnswerFeedback: (cardId: string, isCorrect: boolean) => void;
+  updateCardInteraction: (cardId: string) => void; // New prop for general interaction
   goToSummary: (data: any, source: 'learn' | 'test') => void;
   isCurrentRoomWritable: boolean;
 }
 
-export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary, isCurrentRoomWritable }: LearnModeProps) {
+export function LearnMode({ flashcards, handleAnswerFeedback, updateCardInteraction, goToSummary, isCurrentRoomWritable }: LearnModeProps) {
   const [shuffledCards, setShuffledCards] = useState<CardData[]>([]);
   const [currentCard, setCurrentCard] = useState<CardData | null>(null);
+  const [isFlipped, setIsFlipped] = useState(false);
   const [userAnswer, setUserAnswer] = useState('');
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'empty' | null>(null);
-  const [showAnswer, setShowAnswer] = useState(false);
+  const [showSelfAssessButtons, setShowSelfAssessButtons] = useState(false);
   const [score, setScore] = useState(0);
   const [totalAttempted, setTotalAttempted] = useState(0);
   const [sessionResults, setSessionResults] = useState<any[]>([]);
@@ -34,7 +37,8 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary, isCur
       setShuffledCards(flashcards); // Keep all cards for weighted selection
       setUserAnswer('');
       setFeedback(null);
-      setShowAnswer(false);
+      setIsFlipped(false);
+      setShowSelfAssessButtons(false);
       setScore(0);
       setTotalAttempted(0);
       setSessionResults([]); // Reset session results
@@ -44,6 +48,13 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary, isCur
       setSessionResults([]);
     }
   }, [flashcards]);
+
+  // When currentCard changes, update its interaction (seen_count, status)
+  useEffect(() => {
+    if (currentCard) {
+      updateCardInteraction(currentCard.id);
+    }
+  }, [currentCard, updateCardInteraction]);
 
   if (flashcards.length === 0) {
     return (
@@ -69,49 +80,48 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary, isCur
     );
   }
 
-  const handleCheckAnswer = () => {
+  const handleFlipCard = () => {
+    setIsFlipped(prev => !prev);
+    setShowSelfAssessButtons(true); // Show self-assess buttons after flip
+  };
+
+  const handleSelfAssess = (isCorrect: boolean) => {
     if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to take tests in this room.");
-      return;
-    }
-    if (!userAnswer.trim()) {
-      setFeedback('empty');
+      toast.error("You do not have permission to record progress in this room.");
       return;
     }
     setTotalAttempted(prev => prev + 1);
-
-    const isCorrect = userAnswer.trim().toLowerCase() === currentCard.back.trim().toLowerCase(); // Use card.back for definition
-    const closeness = calculateCloseness(userAnswer, currentCard.back);
-
     if (isCorrect) {
-      setFeedback('correct');
       setScore(prev => prev + 1);
-      handleAnswerFeedback(currentCard.id, true); // Call new feedback handler
-      toast.success("Correct!", { duration: 1000 });
+      toast.success("Great job!", { duration: 1000 });
     } else {
-      setFeedback('incorrect');
-      handleAnswerFeedback(currentCard.id, false); // Call new feedback handler
-      toast.error("Incorrect.", { duration: 1000 });
+      toast.error("Keep practicing!", { duration: 1000 });
     }
+
+    handleAnswerFeedback(currentCard.id, isCorrect);
 
     setSessionResults(prevResults => [
       ...prevResults,
       {
-        term: currentCard.front, // Use card.front for term
-        correctDefinition: currentCard.back, // Use card.back for definition
-        userAnswer: userAnswer,
+        term: currentCard.front,
+        correctDefinition: currentCard.back,
+        userAnswer: userAnswer, // Capture user's typed answer for summary
         isCorrect: isCorrect,
-        closeness: closeness,
-        cardId: currentCard.id
+        closeness: calculateCloseness(userAnswer, currentCard.back),
+        cardId: currentCard.id,
+        cardData: currentCard, // Pass full card data for summary
       }
     ]);
-    setShowAnswer(true);
+
+    // Move to next card after self-assessment
+    handleNextCard();
   };
 
   const handleNextCard = () => {
     setUserAnswer('');
     setFeedback(null);
-    setShowAnswer(false);
+    setIsFlipped(false);
+    setShowSelfAssessButtons(false);
     const nextCard = getWeightedRandomCard(shuffledCards);
     setCurrentCard(nextCard);
   };
@@ -133,67 +143,57 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary, isCur
       <CardContent className="flex flex-col items-center space-y-6 w-full">
         {currentCard && (
           <>
-            <div className="w-full max-w-md bg-muted p-6 rounded-lg shadow-md text-center border border-border">
-              <p className="text-xl font-semibold text-foreground mb-3">Term:</p>
-              <p className="text-3xl font-bold text-primary">{currentCard.front}</p> {/* Use card.front */}
-              <p className="text-muted-foreground text-sm mt-2">Status: {currentCard.status} | Seen: {currentCard.seen_count}</p>
+            <FlashCard
+              front={currentCard.front}
+              back={currentCard.back}
+              isFlipped={isFlipped}
+              onClick={handleFlipCard}
+            />
+
+            <div className="text-md text-muted-foreground mt-4">
+              Status: <span className="capitalize">{currentCard.status}</span> | Seen: {currentCard.seen_count} | Correct: {currentCard.correct_guesses} | Incorrect: {currentCard.incorrect_guesses}
             </div>
 
             <div className="w-full max-w-md">
-              <label htmlFor="answer" className="block text-sm font-medium text-foreground mb-2">Your Answer:</label>
+              <label htmlFor="answer" className="block text-sm font-medium text-foreground mb-2">Your Answer (Optional for self-check):</label>
               <Input
                 type="text"
                 id="answer"
                 value={userAnswer}
                 onChange={(e) => setUserAnswer(e.target.value)}
                 className="w-full"
-                placeholder="Type the definition here"
-                disabled={showAnswer || !isCurrentRoomWritable}
+                placeholder="Type what you think the answer is"
+                disabled={!isCurrentRoomWritable}
               />
             </div>
 
-            {!showAnswer && (
-              <Button
-                onClick={handleCheckAnswer}
-                disabled={!isCurrentRoomWritable}
-              >
-                Check Answer
+            {!isFlipped && (
+              <Button onClick={handleFlipCard}>
+                Flip Card
               </Button>
             )}
 
-            {showAnswer && (
-              <div className="text-center mt-4">
-                {feedback === 'correct' && (
-                  <p className="text-green-500 text-xl font-bold mb-2 flex items-center justify-center gap-2">
-                    <CheckCircle className="h-6 w-6" />
-                    Correct!
-                  </p>
-                )}
-                {feedback === 'incorrect' && (
-                  <p className="text-red-500 text-xl font-bold mb-2 flex items-center justify-center gap-2">
-                    <XCircle className="h-6 w-6" />
-                    Incorrect.
-                  </p>
-                )}
-                {feedback === 'empty' && (
-                  <p className="text-yellow-500 text-xl font-bold mb-2 flex items-center justify-center gap-2">
-                    <AlertTriangle className="h-6 w-6" />
-                    Please enter an answer.
-                  </p>
-                )}
-                <p className="text-foreground text-lg mb-4">
-                  The correct answer was: <span className="font-semibold text-primary">{currentCard.back}</span> {/* Use card.back */}
-                </p>
+            {isFlipped && showSelfAssessButtons && (
+              <div className="flex gap-4 mt-4">
                 <Button
-                  onClick={handleNextCard}
+                  onClick={() => handleSelfAssess(true)}
+                  className="bg-green-500 hover:bg-green-600 text-white"
                   disabled={!isCurrentRoomWritable}
                 >
-                  Next Card
+                  <CheckCircle className="mr-2 h-5 w-5" /> I Got It!
+                </Button>
+                <Button
+                  onClick={() => handleSelfAssess(false)}
+                  className="bg-red-500 hover:bg-red-600 text-white"
+                  disabled={!isCurrentRoomWritable}
+                >
+                  <XCircle className="mr-2 h-5 w-5" /> Try Again
                 </Button>
               </div>
             )}
+
             <div className="text-md text-muted-foreground mt-4">
-              Score: {score} / {totalAttempted}
+              Session Score: {score} / {totalAttempted}
             </div>
             <Button
               onClick={handleEndSession}

@@ -19,10 +19,10 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary, isCurr
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [score, setScore] = useState(0);
-  const [showResults, setShowResults] = useState(false);
   const [testSessionResults, setTestSessionResults] = useState<any[]>([]);
   const [showFeedbackOverlay, setShowFeedbackOverlay] = useState(false);
   const [isCorrectAnswer, setIsCorrectAnswer] = useState(false);
+  const [testCompleted, setTestCompleted] = useState(false);
 
   useEffect(() => {
     if (flashcards.length > 0) {
@@ -30,8 +30,8 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary, isCurr
       setCurrentQuestionIndex(0);
       setSelectedAnswer(null);
       setScore(0);
-      setShowResults(false);
       setTestSessionResults([]);
+      setTestCompleted(false);
     } else {
       setTestQuestions([]);
       setTestSessionResults([]);
@@ -55,6 +55,7 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary, isCurr
         term: card.front, // Use card.front for term
         correctDefinition: card.back, // Use card.back for correct definition
         options: shuffledOptions,
+        cardData: card, // Pass full card data for summary
       };
     }).sort(() => Math.random() - 0.5);
     setTestQuestions(questions);
@@ -94,6 +95,11 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary, isCurr
       toast.error("You do not have permission to take tests in this room.");
       return;
     }
+    if (selectedAnswer === null) {
+      toast.error("Please select an answer.");
+      return;
+    }
+
     const isCorrect = selectedAnswer === currentQuestion.correctDefinition;
     setIsCorrectAnswer(isCorrect);
     setShowFeedbackOverlay(true);
@@ -114,7 +120,8 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary, isCurr
         correctDefinition: currentQuestion.correctDefinition,
         userAnswer: selectedAnswer,
         isCorrect: isCorrect,
-        cardId: currentQuestion.id
+        cardId: currentQuestion.id,
+        cardData: currentQuestion.cardData, // Pass full card data
       }
     ]);
 
@@ -124,7 +131,7 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary, isCurr
         setCurrentQuestionIndex(prev => prev + 1);
         setSelectedAnswer(null);
       } else {
-        setShowResults(true);
+        setTestCompleted(true);
       }
     }, 1000); // Show feedback for 1 second
   };
@@ -144,47 +151,57 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary, isCurr
         <CardTitle className="text-3xl font-bold text-foreground">Test Mode</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col items-center space-y-6 w-full">
-        <div className="text-lg text-muted-foreground font-semibold">
-          Question {currentQuestionIndex + 1} / {testQuestions.length}
-        </div>
+        {!testCompleted ? (
+          <>
+            <div className="text-lg text-muted-foreground font-semibold">
+              Question {currentQuestionIndex + 1} / {testQuestions.length}
+            </div>
 
-        <div className="w-full max-w-md bg-muted p-6 rounded-lg shadow-md text-center border border-border">
-          <p className="text-xl font-semibold text-foreground mb-3">Term:</p>
-          <p className="text-3xl font-bold text-primary">{currentQuestion.term}</p>
-        </div>
+            <div className="w-full max-w-md bg-muted p-6 rounded-lg shadow-md text-center border border-border">
+              <p className="text-xl font-semibold text-foreground mb-3">Term:</p>
+              <p className="text-3xl font-bold text-primary">{currentQuestion.term}</p>
+            </div>
 
-        <div className="w-full max-w-md space-y-3">
-          {currentQuestion.options.map((option: string, index: number) => (
+            <div className="w-full max-w-md space-y-3">
+              {currentQuestion.options.map((option: string, index: number) => (
+                <Button
+                  key={index}
+                  onClick={() => handleAnswerSelect(option)}
+                  className={`w-full text-left justify-start px-5 py-3 rounded-md border transition-all duration-200
+                    ${selectedAnswer === option
+                      ? 'bg-primary text-primary-foreground shadow-md'
+                      : 'bg-background text-foreground border-border hover:bg-muted'
+                    }
+                  `}
+                  disabled={showFeedbackOverlay || !isCurrentRoomWritable}
+                >
+                  {option}
+                </Button>
+              ))}
+            </div>
+
             <Button
-              key={index}
-              onClick={() => handleAnswerSelect(option)}
-              className={`w-full text-left justify-start px-5 py-3 rounded-md border transition-all duration-200
-                ${selectedAnswer === option
-                  ? 'bg-primary text-primary-foreground shadow-md'
-                  : 'bg-background text-foreground border-border hover:bg-muted'
-                }
-              `}
-              disabled={showFeedbackOverlay || !isCurrentRoomWritable}
+              onClick={handleSubmitAnswer}
+              disabled={selectedAnswer === null || showFeedbackOverlay || !isCurrentRoomWritable}
             >
-              {option}
+              Submit Answer
             </Button>
-          ))}
-        </div>
-
-        <Button
-          onClick={handleSubmitAnswer}
-          disabled={selectedAnswer === null || showFeedbackOverlay || !isCurrentRoomWritable}
-        >
-          {currentQuestionIndex < testQuestions.length - 1 ? 'Next Question' : 'Finish Test'}
-        </Button>
-
-        {showResults && (
-          <Button
-            onClick={handleEndTest}
-            variant="outline"
-          >
-            View Test Summary
-          </Button>
+            <Button
+              onClick={handleEndTest}
+              variant="outline"
+              disabled={showFeedbackOverlay}
+            >
+              End Test Early
+            </Button>
+          </>
+        ) : (
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-4">Test Completed!</h2>
+            <p className="text-xl text-foreground mb-6">You scored {score} out of {testQuestions.length} questions.</p>
+            <Button onClick={handleEndTest}>
+              View Test Summary
+            </Button>
+          </div>
         )}
 
         {showFeedbackOverlay && (

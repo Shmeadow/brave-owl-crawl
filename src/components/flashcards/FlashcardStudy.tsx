@@ -2,15 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { CardData } from '@/hooks/use-flashcards'; // Updated import
-import { FlashCard } from '@/components/flash-card'; // Reusing existing FlashCard component
+import { ArrowLeft, ArrowRight, RefreshCcw } from 'lucide-react';
+import { CardData } from '@/hooks/use-flashcards';
+import { FlashCard } from '@/components/flash-card';
+import { cn } from '@/lib/utils';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // Added this import
 
 interface FlashcardStudyProps {
   flashcards: CardData[];
+  updateCardInteraction: (cardId: string) => void; // New prop
 }
 
-export function FlashcardStudy({ flashcards }: FlashcardStudyProps) {
+export function FlashcardStudy({ flashcards, updateCardInteraction }: FlashcardStudyProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
 
@@ -20,12 +23,23 @@ export function FlashcardStudy({ flashcards }: FlashcardStudyProps) {
     setIsFlipped(false);
   }, [flashcards]);
 
+  // When currentCard changes, update its interaction (seen_count, status)
+  useEffect(() => {
+    if (flashcards.length > 0 && flashcards[currentIndex]) {
+      updateCardInteraction(flashcards[currentIndex].id);
+    }
+  }, [currentIndex, flashcards, updateCardInteraction]);
+
   if (flashcards.length === 0) {
     return (
-      <div className="text-center text-muted-foreground p-8 bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-lg">
-        <p className="text-xl font-semibold mb-4">No flashcards to study!</p>
-        <p>Go to "Manage Flashcards" to add some.</p>
-      </div>
+      <Card className="text-center p-8 bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold mb-4">No flashcards to study!</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Go to "Manage Flashcards" to add some.</p>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -34,9 +48,11 @@ export function FlashcardStudy({ flashcards }: FlashcardStudyProps) {
   // Safeguard: Ensure currentCard is defined before rendering its properties
   if (!currentCard) {
     return (
-      <div className="text-center text-muted-foreground p-8 bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-lg">
-        <p className="text-xl font-semibold mb-4">Loading card...</p>
-      </div>
+      <Card className="text-center p-8 bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold mb-4">Loading card...</CardTitle>
+        </CardHeader>
+      </Card>
     );
   }
 
@@ -53,31 +69,43 @@ export function FlashcardStudy({ flashcards }: FlashcardStudyProps) {
   };
 
   return (
-    <div className="flex flex-col items-center space-y-6 w-full">
-      <FlashCard
-        front={currentCard.front}
-        back={currentCard.back}
-        isFlipped={isFlipped}
-        onClick={handleFlip}
-      />
+    <Card className="flex flex-col items-center space-y-6 bg-card backdrop-blur-xl border-white/20 p-8 rounded-xl shadow-lg w-full">
+      <CardHeader>
+        <CardTitle className="text-3xl font-bold text-foreground">Study Mode</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col items-center space-y-6 w-full">
+        <FlashCard
+          front={currentCard.front}
+          back={currentCard.back}
+          isFlipped={isFlipped}
+          onClick={handleFlip}
+        />
 
-      <div className="text-lg text-muted-foreground font-semibold">
-        Card {currentIndex + 1} / {flashcards.length}
-      </div>
+        <div className="text-lg text-muted-foreground font-semibold">
+          Card {currentIndex + 1} / {flashcards.length}
+        </div>
 
-      <div className="flex space-x-4">
-        <Button onClick={handlePrevious} disabled={flashcards.length <= 1}>
-          <ArrowLeft className="mr-2 h-5 w-5" />
-          Prev
-        </Button>
-        <Button onClick={handleFlip}>
-          Flip
-        </Button>
-        <Button onClick={handleNext} disabled={flashcards.length <= 1}>
-          Next
-          <ArrowRight className="ml-2 h-5 w-5" />
-        </Button>
-      </div>
-    </div>
+        <div className="flex space-x-4">
+          <Button onClick={handlePrevious} disabled={flashcards.length <= 1}>
+            <ArrowLeft className="mr-2 h-5 w-5" />
+            Prev
+          </Button>
+          <Button onClick={handleFlip}>
+            Flip
+          </Button>
+          <Button onClick={handleNext} disabled={flashcards.length <= 1}>
+            Next
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+        </div>
+
+        <div className="text-md text-muted-foreground mt-4 text-center">
+          <p>Status: <span className="capitalize">{currentCard.status}</span></p>
+          <p>Seen: {currentCard.seen_count} times</p>
+          <p>Correct Guesses: {currentCard.correct_guesses}</p>
+          <p>Incorrect Guesses: {currentCard.incorrect_guesses}</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

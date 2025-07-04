@@ -20,7 +20,7 @@ interface FlashcardAppProps {
 }
 
 export function FlashcardApp({ isCurrentRoomWritable }: FlashcardAppProps) {
-  const { cards, loading, isLoggedInMode, handleAddCard, handleDeleteCard, handleUpdateCard, handleAnswerFeedback } = useFlashcards(); // Updated hook and functions
+  const { cards, loading, isLoggedInMode, handleAddCard, handleDeleteCard, handleUpdateCard, handleAnswerFeedback, updateCardInteraction } = useFlashcards(); // Updated hook and functions
   const [currentMode, setCurrentMode] = useState<FlashcardMode>('manage');
   const [editingCard, setEditingCard] = useState<CardData | null>(null);
   const [summaryData, setSummaryData] = useState<any>(null);
@@ -51,25 +51,10 @@ export function FlashcardApp({ isCurrentRoomWritable }: FlashcardAppProps) {
       );
     }
 
-    // No firebaseError state needed anymore, use isLoggedInMode for guest messaging
-    // if (firebaseError) {
-    //   return (
-    //     <div className="text-center text-destructive p-8 bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-lg">
-    //       <h3 className="text-xl font-bold mb-4">Firebase Connection Error!</h3>
-    //       <p className="mb-6">
-    //         There was an issue connecting to the Firebase database or authenticating. Please ensure your Firebase environment variables are correctly set.
-    //       </p>
-    //       <p className="text-sm text-muted-foreground">
-    //         Check `NEXT_PUBLIC_FIREBASE_CONFIG` and `NEXT_PUBLIC_FIREBASE_APP_ARTIFACT_ID` in your `.env.local` file.
-    //       </p>
-    //     </div>
-    //   );
-    // }
-
     switch (currentMode) {
       case 'manage':
         return (
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
             <FlashcardForm
               onSave={handleAddCard} // Use handleAddCard from useFlashcards
               editingCard={editingCard}
@@ -85,9 +70,9 @@ export function FlashcardApp({ isCurrentRoomWritable }: FlashcardAppProps) {
           </div>
         );
       case 'flashcards':
-        return <FlashcardStudy flashcards={cards} />; // Use cards from useFlashcards
+        return <FlashcardStudy flashcards={cards} updateCardInteraction={updateCardInteraction} />; // Pass updateCardInteraction
       case 'learn':
-        return <LearnMode flashcards={cards} handleAnswerFeedback={handleAnswerFeedback} goToSummary={goToSummary} isCurrentRoomWritable={isCurrentRoomWritable} />;
+        return <LearnMode flashcards={cards} handleAnswerFeedback={handleAnswerFeedback} updateCardInteraction={updateCardInteraction} goToSummary={goToSummary} isCurrentRoomWritable={isCurrentRoomWritable} />;
       case 'test':
         return <TestMode flashcards={cards} handleAnswerFeedback={handleAnswerFeedback} goToSummary={goToSummary} isCurrentRoomWritable={isCurrentRoomWritable} />;
       case 'summary':

@@ -14,6 +14,8 @@ export interface CardData {
   seen_count: number;
   last_reviewed_at: string | null;
   interval_days: number;
+  correct_guesses: number; // New field
+  incorrect_guesses: number; // New field
 }
 
 const LOCAL_STORAGE_KEY = 'guest_flashcards';
@@ -30,6 +32,8 @@ export function useFlashcards() {
     if (!cardToUpdate) return;
 
     const newSeenCount = cardToUpdate.seen_count + 1;
+    const newCorrectGuesses = isCorrect ? cardToUpdate.correct_guesses + 1 : cardToUpdate.correct_guesses;
+    const newIncorrectGuesses = isCorrect ? cardToUpdate.incorrect_guesses : cardToUpdate.incorrect_guesses + 1;
     const now = new Date().toISOString();
     let newStatus: CardData['status'] = cardToUpdate.status;
     let newIntervalDays = cardToUpdate.interval_days;
@@ -58,6 +62,8 @@ export function useFlashcards() {
           last_reviewed_at: now,
           status: newStatus,
           interval_days: newIntervalDays,
+          correct_guesses: newCorrectGuesses, // Update new field
+          incorrect_guesses: newIncorrectGuesses, // Update new field
         })
         .eq('id', cardId)
         .eq('user_id', session.user.id)
@@ -74,7 +80,53 @@ export function useFlashcards() {
       setCards(prevCards => {
         const updated = prevCards.map(card =>
           card.id === cardId
-            ? { ...card, seen_count: newSeenCount, last_reviewed_at: now, status: newStatus, interval_days: newIntervalDays }
+            ? { ...card, seen_count: newSeenCount, last_reviewed_at: now, status: newStatus, interval_days: newIntervalDays, correct_guesses: newCorrectGuesses, incorrect_guesses: newIncorrectGuesses }
+            : card
+        );
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+      });
+    }
+  }, [cards, isLoggedInMode, session, supabase]);
+
+  // New function to update seen_count and status when a card is simply viewed/flipped
+  const updateCardInteraction = useCallback(async (cardId: string) => {
+    const cardToUpdate = cards.find(card => card.id === cardId);
+    if (!cardToUpdate) return;
+
+    const newSeenCount = cardToUpdate.seen_count + 1;
+    const now = new Date().toISOString();
+    let newStatus: CardData['status'] = cardToUpdate.status;
+
+    // If a new card is seen, change its status to 'learning'
+    if (newStatus === 'new') {
+      newStatus = 'learning';
+    }
+
+    if (isLoggedInMode && session && supabase) {
+      const { data, error } = await supabase
+        .from('flashcards')
+        .update({
+          seen_count: newSeenCount,
+          last_reviewed_at: now,
+          status: newStatus,
+        })
+        .eq('id', cardId)
+        .eq('user_id', session.user.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error updating card interaction (Supabase):", error);
+      } else if (data) {
+        setCards(prevCards => prevCards.map(card => card.id === cardId ? data as CardData : card));
+      }
+    } else {
+      // Local storage update
+      setCards(prevCards => {
+        const updated = prevCards.map(card =>
+          card.id === cardId
+            ? { ...card, seen_count: newSeenCount, last_reviewed_at: now, status: newStatus }
             : card
         );
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
@@ -139,6 +191,8 @@ export function useFlashcards() {
                     seen_count: localCard.seen_count,
                     last_reviewed_at: localCard.last_reviewed_at,
                     interval_days: localCard.interval_days,
+                    correct_guesses: localCard.correct_guesses || 0, // Include new field
+                    incorrect_guesses: localCard.incorrect_guesses || 0, // Include new field
                   })
                   .select()
                   .single();
@@ -200,6 +254,8 @@ export function useFlashcards() {
           seen_count: 0,
           last_reviewed_at: null,
           interval_days: 0,
+          correct_guesses: 0, // Initialize new field
+          incorrect_guesses: 0, // Initialize new field
         })
         .select()
         .single();
@@ -221,6 +277,8 @@ export function useFlashcards() {
         seen_count: 0,
         last_reviewed_at: null,
         interval_days: 0,
+        correct_guesses: 0,
+        incorrect_guesses: 0,
       };
       setCards((prevCards) => [...prevCards, newCard]);
       toast.success("Flashcard added successfully (saved locally)!");
@@ -363,19 +421,19 @@ export function useFlashcards() {
     if (isLoggedInMode && session && supabase) {
       const { error } = await supabase
         .from('flashcards')
-        .update({ seen_count: 0, status: 'new' as CardData['status'], last_reviewed_at: null, interval_days: 0 })
+        .update({ seen_count: 0, status: 'new' as CardData['status'], last_reviewed_at: null, interval_days: 0, correct_guesses: 0, incorrect_guesses: 0 })
         .eq('user_id', session.user.id);
 
       if (error) {
         toast.error("Error resetting progress (Supabase): " + error.message);
         console.error("Error resetting progress (Supabase):", error);
       } else {
-        setCards(prevCards => prevCards.map(card => ({ ...card, seen_count: 0, status: 'new' as CardData['status'], last_reviewed_at: null, interval_days: 0 })));
+        setCards(prevCards => prevCards.map(card => ({ ...card, seen_count: 0, status: 'new' as CardData['status'], last_reviewed_at: null, interval_days: 0, correct_guesses: 0, incorrect_guesses: 0 })));
         toast.success("All card progress reset!");
       }
     } else {
       setCards(prevCards => {
-        const updated = prevCards.map(card => ({ ...card, seen_count: 0, status: 'new' as CardData['status'], last_reviewed_at: null, interval_days: 0 }));
+        const updated = prevCards.map(card => ({ ...card, seen_count: 0, status: 'new' as CardData['status'], last_reviewed_at: null, interval_days: 0, correct_guesses: 0, incorrect_guesses: 0 }));
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
         return updated;
       });
@@ -388,6 +446,7 @@ export function useFlashcards() {
     loading,
     isLoggedInMode,
     handleAnswerFeedback, // New function for learn/test modes
+    updateCardInteraction, // New function for general card views/flips
     handleAddCard,
     handleDeleteCard,
     handleShuffleCards,
