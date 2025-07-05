@@ -72,10 +72,8 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
     stateSettersRef.current.setYoutubeDuration(event.target.getDuration());
     stateSettersRef.current.setYoutubeCurrentTime(event.target.getCurrentTime());
     
-    event.target.playVideo()?.catch((error: any) => {
-      console.warn("Autoplay was prevented:", error);
-      stateSettersRef.current.setIsPlaying(false);
-    });
+    // Removed .catch() as playVideo does not return a Promise
+    event.target.playVideo(); 
 
     clearTimeUpdateInterval();
     timeUpdateIntervalRef.current = setInterval(() => {
@@ -192,7 +190,8 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
       if (isPlaying) {
         playerRef.current.pauseVideo();
       } else {
-        playerRef.current.playVideo()?.catch((error: any) => console.warn("Play command failed:", error));
+        // Removed .catch() as playVideo does not return a Promise
+        playerRef.current.playVideo();
       }
     }
   }, [isPlaying, playerReady]);
