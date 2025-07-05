@@ -111,7 +111,7 @@ export function Widget({
         position: 'absolute', // Ensure positioning
       }}
       className={cn(
-        "bg-card border-white/20 shadow-lg rounded-lg flex flex-col",
+        "bg-background/40 border-white/20 shadow-lg rounded-lg flex flex-col", // Changed bg-card to bg-background/40
         "transition-all duration-300 ease-in-out",
         isTopmost ? "backdrop-blur-2xl" : "backdrop-blur-xl",
         isResizable ? "resize" : "",
@@ -134,7 +134,7 @@ export function Widget({
         className="w-full h-full"
         resizeHandles={isResizable ? ["se"] : []}
       >
-        <Card className="w-full h-full flex flex-col overflow-hidden">
+        <Card className="w-full h-full flex flex-col overflow-hidden bg-transparent"> {/* Added bg-transparent */}
           <CardHeader
             className={cn(
               "flex flex-row items-center justify-between space-y-0",
