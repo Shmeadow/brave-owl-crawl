@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { Session, SupabaseClient } from '@supabase/supabase-js';
 import { createBrowserClient } from './client'; // Import the function
-import { useNotifications } from '@/hooks/use-notifications'; // Import useNotifications
+// Removed: import { useNotifications } from '@/hooks/use-notifications'; // Import useNotifications
 
 export interface UserProfile {
   id: string;
@@ -29,7 +29,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const { addNotification } = useNotifications(); // Use the notifications hook
+  // Removed: const { addNotification } = useNotifications(); // Use the notifications hook
 
   // Effect to initialize Supabase client once on mount
   useEffect(() => {
@@ -90,14 +90,14 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
 
     console.log("SessionContextProvider: Supabase client is ready. Setting up auth state listener.");
     const handleAuthStateChange = async (_event: string, currentSession: Session | null) => {
-      const wasLoggedIn = session?.user?.id;
+      // const wasLoggedIn = session?.user?.id; // Keep this if needed for other logic, but not for notification here
       setSession(currentSession);
       if (currentSession) {
         console.log("Auth state changed: User is logged in. Fetching profile...");
         await fetchProfile(currentSession.user.id, supabaseClient);
-        if (!wasLoggedIn) { // Only show welcome if just logged in
-          addNotification("Welcome to Productivity Hub! Explore your new workspace.");
-        }
+        // Removed: if (!wasLoggedIn) { // Only show welcome if just logged in
+        // Removed:   addNotification("Welcome to Productivity Hub! Explore your new workspace.");
+        // Removed: }
       } else {
         console.log("Auth state changed: User is logged out. Clearing profile.");
         setProfile(null);
@@ -120,7 +120,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
       console.log("Cleaning up Supabase auth state listener.");
       subscription.unsubscribe();
     };
-  }, [supabaseClient, fetchProfile, loading, addNotification, session]); // Added addNotification and session to dependencies
+  }, [supabaseClient, fetchProfile, loading]); // Removed addNotification and session from dependencies
 
   const value = useMemo(() => ({
     supabase: supabaseClient,

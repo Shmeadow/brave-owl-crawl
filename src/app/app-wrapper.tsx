@@ -20,19 +20,21 @@ import { RainEffect } from "@/components/effects/rain-effect";
 import { SnowEffect } from "@/components/effects/snow-effect";
 import { RaindropsEffect } from "@/components/effects/raindrops-effect";
 import { useIsMobile } from "@/hooks/use-mobile"; // Import useIsMobile
+import { useNotifications } from "@/hooks/use-notifications"; // Import useNotifications
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
 
 export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
-  const { loading } = useSupabase();
+  const { loading, session } = useSupabase(); // Get session here
   const pathname = usePathname();
   const { isSidebarOpen, setIsSidebarOpen } = useSidebar(); // Get setIsSidebarOpen
   const { isAlwaysOpen, mounted } = useSidebarPreference();
   const { isCurrentRoomWritable } = useCurrentRoom();
   const { activeEffect } = useEffects();
   const isMobile = useIsMobile(); // Use the mobile hook
+  const { addNotification } = useNotifications(); // Use the notifications hook
 
   const [sidebarCurrentWidth, setSidebarCurrentWidth] = useState(0);
   const [mainContentArea, setMainContentArea] = useState({ left: 0, top: 0, width: 0, height: 0 });
@@ -53,6 +55,22 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const handleClearUnreadMessages = () => {
     setUnreadChatCount(0);
   };
+
+  // State to track if the welcome notification has been shown for the current session
+  const [welcomeNotificationShown, setWelcomeNotificationShown] = useState(false);
+
+  useEffect(() => {
+    // Show welcome notification only once per session after user logs in
+    if (session && !loading && !welcomeNotificationShown) {
+      addNotification("Welcome to Productivity Hub! Explore your new workspace.");
+      setWelcomeNotificationShown(true);
+    }
+    // Reset if session changes (e.g., user logs out and then logs in again)
+    if (!session && welcomeNotificationShown) {
+      setWelcomeNotificationShown(false);
+    }
+  }, [session, loading, welcomeNotificationShown, addNotification]);
+
 
   useEffect(() => {
     // On mobile, sidebar is always off-canvas, so content starts at 0.
