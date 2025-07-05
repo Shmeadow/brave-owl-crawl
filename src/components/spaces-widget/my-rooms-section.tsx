@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Lock, Unlock, Trash2, LogIn, Share2, LogOut, Copy } from "lucide-react"; // Added Copy icon
+import { Lock, Unlock, Trash2, LogIn, LogOut, Copy } from "lucide-react"; // Removed Share2 icon
 import { useRooms, RoomData } from "@/hooks/use-rooms";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
@@ -20,13 +20,13 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
   const { session } = useSupabase();
   const {
     handleToggleRoomPublicStatus,
-    handleGenerateInviteCode,
+    // Removed handleGenerateInviteCode
     handleLeaveRoom,
     handleDeleteRoom,
   } = useRooms();
   const { currentRoomId, setCurrentRoom } = useCurrentRoom();
 
-  const [generatedInviteCodes, setGeneratedInviteCodes] = useState<{ [roomId: string]: string | null }>({});
+  // Removed generatedInviteCodes state
 
   const handleEnterRoom = (room: RoomData) => {
     if (!session && !room.is_public && !room.password_hash) {
@@ -36,20 +36,9 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
     setCurrentRoom(room.id, room.name);
   };
 
-  const handleGenerateCodeClick = async (roomId: string) => {
-    if (!session) {
-      toast.error("You must be logged in to generate an invite code.");
-      return;
-    }
-    const code = await handleGenerateInviteCode(roomId);
-    if (code) {
-      setGeneratedInviteCodes(prev => ({ ...prev, [roomId]: code }));
-    }
-  };
-
-  const handleCopyCode = (code: string) => {
-    navigator.clipboard.writeText(code);
-    toast.success("Invite code copied to clipboard!");
+  const handleCopyRoomId = (id: string) => { // Renamed function
+    navigator.clipboard.writeText(id);
+    toast.success("Room ID copied to clipboard!");
   };
 
   const getRoomCreatorName = (room: RoomData) => {
@@ -99,39 +88,24 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
                       {room.is_public ? "Public" : "Private"}
                       {room.password_hash && " (Password Protected)"}
                     </p>
-                    {/* Display invite code and copy button */}
-                    {!room.is_public && (
-                      <div className="flex items-center mt-1">
-                        <p className="text-xs text-primary">Invite Code: <span className="font-bold">{generatedInviteCodes[room.id] || 'Generating...'}</span></p>
-                        {generatedInviteCodes[room.id] && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-5 w-5 ml-1 text-primary hover:bg-primary/10"
-                            onClick={(e) => { e.stopPropagation(); handleCopyCode(generatedInviteCodes[room.id]!); }}
-                            title="Copy Invite Code"
-                          >
-                            <Copy className="h-3 w-3" />
-                            <span className="sr-only">Copy Invite Code</span>
-                          </Button>
-                        )}
-                      </div>
-                    )}
+                    {/* Display Room ID and copy button */}
+                    <div className="flex items-center mt-1">
+                      <p className="text-xs text-primary">Room ID: <span className="font-bold">{room.id.substring(0, 8)}...</span></p>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5 ml-1 text-primary hover:bg-primary/10"
+                        onClick={(e) => { e.stopPropagation(); handleCopyRoomId(room.id); }}
+                        title="Copy Room ID"
+                      >
+                        <Copy className="h-3 w-3" />
+                        <span className="sr-only">Copy Room ID</span>
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-1 sm:ml-auto">
-                  {!room.is_public && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleGenerateCodeClick(room.id)}
-                      title="Generate Invite Code"
-                      disabled={!session}
-                    >
-                      <Share2 className="h-4 w-4" />
-                      <span className="sr-only">Generate Invite Code</span>
-                    </Button>
-                  )}
+                  {/* Removed Generate Invite Code button */}
                   <Button
                     variant="ghost"
                     size="icon"

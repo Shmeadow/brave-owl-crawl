@@ -17,8 +17,8 @@ export function useRooms() {
     handleDeleteRoom,
   } = useRoomManagement({ setRooms: (newRooms) => {}, fetchRooms }); // Pass a dummy setRooms, as fetchRooms will update the state in useRoomFetching
   const {
-    handleGenerateInviteCode,
-    handleJoinRoomByCode,
+    // Removed handleGenerateInviteCode
+    handleJoinRoomByRoomId, // Updated name
     handleJoinRoomByPassword,
     handleLeaveRoom,
     handleKickUser,
@@ -32,8 +32,8 @@ export function useRooms() {
     handleToggleGuestWriteAccess,
     handleSetRoomPassword,
     handleDeleteRoom,
-    handleGenerateInviteCode,
-    handleJoinRoomByCode,
+    // Removed handleGenerateInviteCode
+    handleJoinRoomByRoomId, // Updated name
     handleJoinRoomByPassword,
     handleLeaveRoom,
     handleKickUser,

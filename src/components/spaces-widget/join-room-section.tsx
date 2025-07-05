@@ -13,23 +13,23 @@ import { toast } from "sonner";
 
 export function JoinRoomSection() {
   const { session } = useSupabase();
-  const { handleJoinRoomByCode, handleJoinRoomByPassword } = useRooms();
+  const { handleJoinRoomByRoomId, handleJoinRoomByPassword } = useRooms();
   const { currentRoomId } = useCurrentRoom();
 
-  const [inviteCodeInput, setInviteCodeInput] = useState("");
+  const [roomIdInput, setRoomIdInput] = useState(""); // Changed from inviteCodeInput
   const [joinPasswordInput, setJoinPasswordInput] = useState("");
 
-  const handleJoinCodeSubmit = async () => {
+  const handleJoinRoomIdSubmit = async () => { // Changed function name
     if (!session) {
       toast.error("You must be logged in to join a room.");
       return;
     }
-    if (!inviteCodeInput.trim()) {
-      toast.error("Please enter an invite code.");
+    if (!roomIdInput.trim()) {
+      toast.error("Please enter a Room ID."); // Changed error message
       return;
     }
-    await handleJoinRoomByCode(inviteCodeInput.trim());
-    setInviteCodeInput("");
+    await handleJoinRoomByRoomId(roomIdInput.trim()); // Changed function call
+    setRoomIdInput("");
   };
 
   const handleJoinPasswordSubmit = async () => {
@@ -56,17 +56,17 @@ export function JoinRoomSection() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="invite-code">Invite Code</Label>
+          <Label htmlFor="room-id-input">Room ID</Label> {/* Changed label */}
           <Input
-            id="invite-code"
-            placeholder="Enter invite code"
-            value={inviteCodeInput}
-            onChange={(e) => setInviteCodeInput(e.target.value)}
+            id="room-id-input" // Changed id
+            placeholder="Enter Room ID" // Changed placeholder
+            value={roomIdInput}
+            onChange={(e) => setRoomIdInput(e.target.value)}
             disabled={!session}
           />
         </div>
-        <Button onClick={handleJoinCodeSubmit} className="w-full" disabled={!session}>
-          <LogIn className="mr-2 h-4 w-4" /> Join by Code
+        <Button onClick={handleJoinRoomIdSubmit} className="w-full" disabled={!session}> {/* Changed function call */}
+          <LogIn className="mr-2 h-4 w-4" /> Join by Room ID {/* Changed button text */}
         </Button>
         <div className="relative flex py-2 items-center">
           <div className="flex-grow border-t border-border"></div>

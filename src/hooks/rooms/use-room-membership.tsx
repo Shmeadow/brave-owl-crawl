@@ -10,132 +10,41 @@ interface UseRoomMembershipProps {
   fetchRooms: () => Promise<void>;
 }
 
-export function generateRandomCode() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase(); // 6 alphanumeric characters
-}
+// Removed generateRandomCode as it's no longer needed
 
 export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps) {
   const { supabase, session } = useSupabase();
 
-  const handleGenerateInviteCode = useCallback(async (roomId: string) => {
-    if (!session?.user?.id || !supabase) {
-      toast.error("You must be logged in to generate an invite code.");
-      return null;
-    }
+  // Removed handleGenerateInviteCode
 
-    const { data: roomData, error: roomError } = await supabase
-      .from('rooms')
-      .select('creator_id, is_public')
-      .eq('id', roomId)
-      .single();
-
-    if (roomError || !roomData || roomData.creator_id !== session.user.id) {
-      toast.error("You can only generate invite codes for rooms you own.");
-      return null;
-    }
-
-    if (roomData.is_public) {
-      toast.info("Public rooms do not need invite codes.");
-      return null;
-    }
-
-    // Check for an existing active invite code for this room
-    const { data: existingInvites, error: existingInvitesError } = await supabase
-      .from('room_invites')
-      .select('code')
-      .eq('room_id', roomId)
-      .eq('creator_id', session.user.id)
-      .is('expires_at', null); // Only consider non-expired invites
-
-    if (existingInvitesError) {
-      console.error("Error checking existing invites:", existingInvitesError);
-      toast.error("Error checking existing invites.");
-      return null;
-    }
-
-    if (existingInvites && existingInvites.length > 0) {
-      toast.info(`An active invite code already exists for this room: ${existingInvites[0].code}`);
-      return existingInvites[0].code;
-    }
-
-    let newCode = generateRandomCode();
-    let isCodeUnique = false;
-    let attempts = 0;
-    const MAX_ATTEMPTS = 5;
-
-    while (!isCodeUnique && attempts < MAX_ATTEMPTS) {
-      const { data: existingCode, error: codeCheckError } = await supabase
-        .from('room_invites')
-        .select('id')
-        .eq('code', newCode)
-        .single();
-
-      if (codeCheckError && codeCheckError.code === 'PGRST116') { // PGRST116 means no rows found
-        isCodeUnique = true;
-      } else if (codeCheckError) {
-        console.error("Error checking code uniqueness:", codeCheckError);
-        toast.error("Error generating invite code.");
-        return null;
-      } else {
-        newCode = generateRandomCode(); // Generate a new code if it's not unique
-        attempts++;
-      }
-    }
-
-    if (!isCodeUnique) {
-      toast.error("Failed to generate a unique invite code after multiple attempts.");
-      return null;
-    }
-
-    const { data: inviteData, error: insertError } = await supabase
-      .from('room_invites')
-      .insert({
-        room_id: roomId,
-        code: newCode,
-        creator_id: session.user.id,
-        expires_at: null, // No expiration for now
-      })
-      .select()
-      .single();
-
-    if (insertError) {
-      toast.error("Error creating invite code: " + insertError.message);
-      console.error("Error creating invite code:", insertError);
-      return null;
-    } else if (inviteData) {
-      toast.success(`Invite code "${inviteData.code}" generated!`);
-      return inviteData.code;
-    }
-    return null;
-  }, [session, supabase]);
-
-  const handleJoinRoomByCode = useCallback(async (code: string) => {
+  const handleJoinRoomByRoomId = useCallback(async (roomId: string) => {
     if (!session?.user?.id || !supabase) {
       toast.error("You must be logged in to join a room.");
       return;
     }
 
-    const { data: invite, error: inviteError } = await supabase
-      .from('room_invites')
-      .select('room_id, expires_at')
-      .eq('code', code)
+    // Check if the room exists and is public, or if it has a password (handled by password join)
+    const { data: roomData, error: roomError } = await supabase
+      .from('rooms')
+      .select('id, is_public, password_hash')
+      .eq('id', roomId)
       .single();
 
-    if (inviteError || !invite) {
-      toast.error("Invalid or expired invite code.");
-      console.error("Error fetching invite:", inviteError);
+    if (roomError || !roomData) {
+      toast.error("Room not found or inaccessible.");
+      console.error("Error fetching room for join:", roomError);
       return;
     }
 
-    if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
-      toast.error("This invite code has expired.");
+    if (!roomData.is_public && !roomData.password_hash) {
+      toast.error("This is a private room and requires a password to join.");
       return;
     }
 
     const { data: existingMembership, error: membershipError } = await supabase
       .from('room_members')
       .select('id')
-      .eq('room_id', invite.room_id)
+      .eq('room_id', roomId)
       .eq('user_id', session.user.id)
       .single();
 
@@ -147,7 +56,7 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
     const { data: newMembership, error: insertError } = await supabase
       .from('room_members')
       .insert({
-        room_id: invite.room_id,
+        room_id: roomId,
         user_id: session.user.id,
       })
       .select()
@@ -290,8 +199,8 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
   }, [session, supabase, fetchRooms]);
 
   return {
-    handleGenerateInviteCode,
-    handleJoinRoomByCode,
+    // Removed handleGenerateInviteCode
+    handleJoinRoomByRoomId, // Renamed and updated
     handleJoinRoomByPassword,
     handleLeaveRoom,
     handleKickUser,

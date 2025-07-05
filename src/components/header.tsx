@@ -38,24 +38,24 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
   const { session } = useSupabase();
   const router = useRouter();
   const { currentRoomName, currentRoomId, isCurrentRoomWritable, setCurrentRoom } = useCurrentRoom();
-  const { handleJoinRoomByCode } = useRooms(); // Use the hook for joining rooms
+  const { handleJoinRoomByRoomId } = useRooms(); // Use the hook for joining rooms (renamed)
 
-  const [roomCodeInput, setRoomCodeInput] = useState("");
+  const [roomInput, setRoomInput] = useState(""); // Changed from roomCodeInput
 
   const handleJoinRoom = async () => {
     if (!session) {
       toast.error("You must be logged in to join a room.");
       return;
     }
-    if (!roomCodeInput.trim()) {
-      toast.error("Please enter a room code.");
+    if (!roomInput.trim()) { // Changed from roomCodeInput
+      toast.error("Please enter a Room ID."); // Changed message
       return;
     }
-    await handleJoinRoomByCode(roomCodeInput.trim());
-    setRoomCodeInput(""); // Clear input after attempt
+    await handleJoinRoomByRoomId(roomInput.trim()); // Changed function call
+    setRoomInput(""); // Clear input after attempt
   };
 
-  const handleCopyRoomCode = () => {
+  const handleCopyRoomId = () => { // Renamed function
     if (currentRoomId) {
       navigator.clipboard.writeText(currentRoomId);
       toast.success("Room ID copied to clipboard!");
@@ -90,7 +90,7 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
         {currentRoomId && (
           <span
             className="text-sm font-mono text-muted-foreground cursor-pointer flex items-center gap-1 hover:text-foreground transition-colors"
-            onClick={handleCopyRoomCode}
+            onClick={handleCopyRoomId}
             title="Copy Room ID"
           >
             ({currentRoomId.substring(0, 8)}...)
@@ -121,12 +121,12 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
         <div className="flex items-center space-x-2">
           <Input
             type="text"
-            placeholder="Room Code"
+            placeholder="Room ID" // Changed placeholder
             className="w-32 text-sm h-9"
-            value={roomCodeInput}
-            onChange={(e) => setRoomCodeInput(e.target.value)}
+            value={roomInput} // Changed value
+            onChange={(e) => setRoomInput(e.target.value)} // Changed onChange
             onKeyPress={(e) => {
-              if (e.key === 'Enter' && roomCodeInput.trim()) {
+              if (e.key === 'Enter' && roomInput.trim()) { // Changed condition
                 handleJoinRoom();
               }
             }}
@@ -135,7 +135,7 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
             onClick={handleJoinRoom}
             size="sm"
             className="h-9"
-            disabled={!session || !roomCodeInput.trim()}
+            disabled={!session || !roomInput.trim()} // Changed condition
           >
             Join
           </Button>

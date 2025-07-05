@@ -5,7 +5,7 @@ import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
 import { RoomData } from "./types";
 import { getRandomBackground } from "@/lib/backgrounds";
-import { generateRandomCode } from "./use-room-membership"; // Import the helper
+// Removed import for generateRandomCode as it's no longer used here
 
 interface UseRoomManagementProps {
   setRooms: React.Dispatch<React.SetStateAction<RoomData[]>>;
@@ -22,7 +22,7 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
     }
 
     const randomBg = getRandomBackground();
-    const newInviteCode = generateRandomCode(); // Generate a new code
+    // Removed newInviteCode generation
 
     const { data, error } = await supabase
       .from('rooms')
@@ -42,23 +42,8 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
       toast.error("Error creating room: " + error.message);
       console.error("Error creating room:", error);
     } else if (data) {
-      // Insert the invite code into the room_invites table
-      const { error: inviteError } = await supabase
-        .from('room_invites')
-        .insert({
-          room_id: data.id,
-          code: newInviteCode,
-          creator_id: session.user.id,
-          expires_at: null, // No expiration for now
-        });
-
-      if (inviteError) {
-        console.error("Error inserting invite code:", inviteError);
-        toast.error("Room created, but failed to generate invite code: " + inviteError.message);
-      } else {
-        toast.success(`Room "${data.name}" created successfully! Invite code: ${newInviteCode}`);
-      }
-
+      // Removed invite code insertion logic
+      toast.success(`Room "${data.name}" created successfully!`);
       setRooms((prevRooms) => [...prevRooms, { ...data, is_member: true } as RoomData]);
     }
   }, [session, supabase, setRooms]);
