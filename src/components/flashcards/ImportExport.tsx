@@ -46,13 +46,22 @@ const SeparatorOptions = ({
 
 export function ImportExport({ cards, onBulkImport, categories, onAddCategory }: ImportExportProps) {
   const [textValue, setTextValue] = useState('');
-  const [importTarget, setImportTarget] = useState<string>('uncategorized');
+  const [importTarget, setImportTarget] = useState<string>('new'); // Default to 'new' or first category
   const [newCategoryName, setNewCategoryName] = useState('');
   const [colSep, setColSep] = useState(',');
   const [rowSep, setRowSep] = useState('\\n');
   const [customColSep, setCustomColSep] = useState('');
   const [customRowSep, setCustomRowSep] = useState('');
   const [generatedText, setGeneratedText] = useState('');
+
+  useEffect(() => {
+    // Set initial import target to the first category if available, otherwise 'new'
+    if (categories.length > 0 && importTarget === 'new') {
+      setImportTarget(categories[0].id);
+    } else if (categories.length === 0 && importTarget !== 'new') {
+      setImportTarget('new');
+    }
+  }, [categories, importTarget]);
 
   const getSeparatorValue = (sep: string, customSep: string) => {
     if (sep === 'custom') return customSep;
@@ -111,7 +120,7 @@ export function ImportExport({ cards, onBulkImport, categories, onAddCategory }:
       } else {
         return;
       }
-    } else if (importTarget !== 'uncategorized') {
+    } else { // If a specific category is selected
       categoryId = importTarget;
     }
 
@@ -163,7 +172,6 @@ export function ImportExport({ cards, onBulkImport, categories, onAddCategory }:
             <Select value={importTarget} onValueChange={setImportTarget}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="uncategorized">Uncategorized</SelectItem>
                 <SelectItem value="new">New Category...</SelectItem>
                 {categories.map(cat => <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>)}
               </SelectContent>

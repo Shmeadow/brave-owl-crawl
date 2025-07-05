@@ -41,7 +41,7 @@ export function OrganizeCardModal({ card, categories, isOpen, onClose, onUpdateC
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="null">Uncategorized</SelectItem>
+              {/* Removed SelectItem for "Uncategorized" */}
               {categories.map((cat) => (
                 <SelectItem key={cat.id} value={cat.id}>
                   {cat.name}

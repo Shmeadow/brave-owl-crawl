@@ -112,7 +112,7 @@ export function FlashcardForm({ onSave, editingCard, onCancel, categories, selec
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="null">Uncategorized</SelectItem>
+                      {/* Removed SelectItem for "Uncategorized" */}
                       {categories.map((cat) => (
                         <SelectItem key={cat.id} value={cat.id}>
                           {cat.name}

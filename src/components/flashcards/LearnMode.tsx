@@ -104,6 +104,7 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: Lea
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Cards</SelectItem>
+                {/* Removed SelectItem for "Uncategorized" */}
                 {categories.map(cat => (
                   <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                 ))}

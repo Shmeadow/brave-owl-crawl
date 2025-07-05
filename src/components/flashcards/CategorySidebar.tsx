@@ -97,16 +97,7 @@ export function CategorySidebar({
               >
                 <Folder className="mr-2 h-4 w-4" /> All Cards
               </Button>
-              <Button
-                variant="ghost"
-                className={cn(
-                  'w-full justify-start text-left',
-                  selectedCategoryId === null && 'bg-accent text-accent-foreground'
-                )}
-                onClick={() => onSelectCategory(null)}
-              >
-                <Folder className="mr-2 h-4 w-4" /> Uncategorized
-              </Button>
+              {/* Removed explicit "Uncategorized" button */}
               {categories.map((category) => (
                 <div
                   key={category.id}
