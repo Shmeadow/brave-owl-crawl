@@ -43,7 +43,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
-  const [isPomodoroMinimized, setIsPomodoroMinimized] = useState(false);
+  const [isPomodoroMinimized, setIsPomodoroMinimized] = useState(true); // Changed to true
 
   const chatPanelWidth = isChatOpen ? 320 : 56;
   const isDashboard = pathname === '/dashboard';
