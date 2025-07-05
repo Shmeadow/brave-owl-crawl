@@ -1,25 +1,25 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Music, ListMusic, Youtube, VolumeX, Volume2, ChevronLeft, ChevronUp, ChevronDown } from 'lucide-react'; // Added ChevronDown
+import { Music, ListMusic, Youtube, VolumeX, Volume2, ChevronLeft, ChevronUp, ChevronDown } from 'lucide-react';
 import { useYouTubePlayer } from '@/hooks/use-youtube-player';
 import { useHtmlAudioPlayer } from '@/hooks/use-html-audio-player';
 import { useSpotifyPlayer } from '@/hooks/use-spotify-player';
 import { cn, getYouTubeEmbedUrl } from '@/lib/utils';
 import { useSupabase } from '@/integrations/supabase/auth';
-import { Button } from '@/components/ui/button'; // Added Button import
+import { Button } from '@/components/ui/button';
 
 // Import new modular components
 import { PlayerDisplay } from './audio-player/player-display';
 import { MediaInput } from './audio-player/media-input';
 import { PlayerControls } from './audio-player/player-controls';
 import { ProgressBar } from './audio-player/progress-bar';
-// Removed: import { PlayerModeButtons } from './audio-player/player-mode-buttons'; // PlayerModeButtons is now integrated
+import { MinimizedPlayerControls } from './audio-player/minimized-player-controls'; // New import
 
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 
 interface SimpleAudioPlayerProps {
-  isMobile: boolean; // New prop
+  isMobile: boolean;
 }
 
 const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
@@ -318,12 +318,12 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
     );
   }
 
-  // Desktop rendering (original logic)
+  // Desktop rendering
   return (
     <div className={cn(
       "fixed z-[900] transition-all duration-300 ease-in-out",
       displayMode === 'normal' && 'top-20 right-4 w-80',
-      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-40 h-12', // Adjusted size
+      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-40 h-12',
       displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-[500px] flex flex-col items-center justify-center'
     )}>
       <div className={cn(
@@ -379,8 +379,8 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
             handleVolumeChange={handleVolumeChange}
             canPlayPause={canPlayPause}
             canSeek={canSeek}
-            displayMode={displayMode} // Pass displayMode
-            setDisplayMode={setDisplayMode} // Pass setDisplayMode
+            displayMode={displayMode}
+            setDisplayMode={setDisplayMode}
           />
         </div>
 
@@ -406,35 +406,21 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
       {displayMode === 'minimized' && (
         <div
           className={cn(
-            "bg-card/40 backdrop-blur-xl border-white/20 p-2 rounded-lg shadow-sm flex items-center justify-between w-full h-full" // Increased padding
+            "bg-card/40 backdrop-blur-xl border-white/20 p-2 rounded-lg shadow-sm flex items-center justify-between w-full h-full"
           )}
           title="Expand Player"
-          // Removed onClick from here to prevent accidental expansion
         >
-          <PlayerControls
+          <MinimizedPlayerControls
             playerType={playerType}
             playerIsReady={playerIsReady}
             currentIsPlaying={currentIsPlaying}
             togglePlayPause={togglePlayPause}
-            skipBackward={skipBackward}
-            skipForward={skipForward}
             currentVolume={currentVolume}
             currentIsMuted={currentIsMuted}
             toggleMute={toggleMute}
             handleVolumeChange={handleVolumeChange}
-            canPlayPause={canPlayPause}
-            canSeek={canSeek}
-            displayMode={displayMode} // Pass displayMode
-            setDisplayMode={setDisplayMode} // Pass setDisplayMode
+            setDisplayMode={setDisplayMode}
           />
-
-          <button
-            onClick={(e) => { e.stopPropagation(); setDisplayMode('normal'); }}
-            className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 ml-2 flex-shrink-0" // Increased ml
-            title="Expand Player"
-          >
-            <ChevronLeft size={16} />
-          </button>
         </div>
       )}
     </div>

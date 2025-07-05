@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Play, Pause, Volume2, VolumeX, FastForward, Rewind, Maximize, Minimize, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, FastForward, Rewind, Maximize, Minimize, ChevronRight } from 'lucide-react';
 
 interface PlayerControlsProps {
   playerType: 'audio' | 'youtube' | 'spotify' | null;
@@ -16,8 +16,8 @@ interface PlayerControlsProps {
   handleVolumeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   canPlayPause: boolean;
   canSeek: boolean;
-  displayMode: 'normal' | 'maximized' | 'minimized'; // New prop
-  setDisplayMode: (mode: 'normal' | 'maximized' | 'minimized') => void; // New prop
+  displayMode: 'normal' | 'maximized' | 'minimized'; // Keep for now, but will be removed if this component is only for normal/maximized
+  setDisplayMode: (mode: 'normal' | 'maximized' | 'minimized') => void; // Keep for now
 }
 
 export function PlayerControls({
@@ -33,8 +33,8 @@ export function PlayerControls({
   handleVolumeChange,
   canPlayPause,
   canSeek,
-  displayMode,
-  setDisplayMode,
+  displayMode, // Destructure
+  setDisplayMode, // Destructure
 }: PlayerControlsProps) {
 
   const isVolumeControlDisabled = !playerIsReady || playerType === 'spotify';
