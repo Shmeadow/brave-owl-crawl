@@ -9,7 +9,7 @@ import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, BookOpen, Goal, ChevronLeft, ChevronRight, WandSparkles } from "lucide-react";
 
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
-const SIDEBAR_WIDTH_EXPANDED = 180; // px - New width for expanded desktop sidebar
+const SIDEBAR_WIDTH_EXPANDED = 120; // px - New width for expanded desktop sidebar (reduced from 180)
 const SIDEBAR_WIDTH_MOBILE = 200; // px for the off-canvas menu
 const HOT_ZONE_WIDTH = 20; // px (includes the 4px visible strip)
 const UNDOCK_DELAY = 500; // ms
