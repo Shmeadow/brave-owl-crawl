@@ -104,20 +104,22 @@ export function useNotifications() {
     }
   }, [notifications, isLoggedInMode, loading]);
 
-  const addNotification = useCallback(async (message: string) => {
-    if (isLoggedInMode && session && supabase) {
+  const addNotification = useCallback(async (message: string, targetUserId?: string) => {
+    const userId = targetUserId || session?.user?.id || null;
+
+    if (isLoggedInMode && supabase && userId) {
       const { data, error } = await supabase
         .from('notifications')
-        .insert({ user_id: session.user.id, message, is_read: false })
+        .insert({ user_id: userId, message, is_read: false })
         .select()
         .single();
       if (error) {
         toast.error("Error adding notification: " + error.message);
         console.error("Error adding notification (Supabase):", error);
-      } else if (data) {
+      } else if (data && userId === session?.user?.id) { // Only add to current state if it's for the current user
         setNotifications(prev => [data as NotificationData, ...prev]);
       }
-    } else {
+    } else if (!isLoggedInMode && !targetUserId) { // Only add to local storage if guest and no specific target
       const newNotification: NotificationData = {
         id: crypto.randomUUID(),
         user_id: null,

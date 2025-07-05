@@ -5,9 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { KeyRound, UserMinus } from "lucide-react";
+import { UserMinus, UserPlus } from "lucide-react"; // Added UserPlus
 import { useRooms, RoomData, RoomMember } from "@/hooks/use-rooms";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
@@ -20,13 +19,12 @@ interface RoomOwnerControlsSectionProps {
 export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: RoomOwnerControlsSectionProps) {
   const { supabase, session, profile } = useSupabase();
   const {
-    handleToggleGuestWriteAccess,
-    handleSetRoomPassword,
+    handleAddRoomMember, // New function
     handleKickUser,
     fetchRooms, // To re-fetch members after kick
   } = useRooms();
 
-  const [setPasswordInput, setSetPasswordInput] = useState("");
+  const [memberUserIdInput, setMemberUserIdInput] = useState(""); // For adding new member
   const [selectedUserToKick, setSelectedUserToKick] = useState<string | null>(null);
   const [roomMembers, setRoomMembers] = useState<RoomMember[]>([]);
 
@@ -64,26 +62,17 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
     fetchRoomMembers();
   }, [supabase, currentRoom.id, isOwnerOfCurrentRoom, fetchRooms]);
 
-  const handleSetPassword = async () => {
+  const handleAddMember = async () => {
     if (!currentRoom.id || !isOwnerOfCurrentRoom) {
-      toast.error("You must be the owner of the current room to set its password.");
+      toast.error("You must be the owner of the current room to add members.");
       return;
     }
-    if (!setPasswordInput.trim()) {
-      toast.error("Password cannot be empty. To remove, click 'Remove Password'.");
+    if (!memberUserIdInput.trim()) {
+      toast.error("User ID cannot be empty.");
       return;
     }
-    await handleSetRoomPassword(currentRoom.id, setPasswordInput.trim());
-    setSetPasswordInput("");
-  };
-
-  const handleRemovePassword = async () => {
-    if (!currentRoom.id || !isOwnerOfCurrentRoom) {
-      toast.error("You must be the owner of the current room to remove its password.");
-      return;
-    }
-    await handleSetRoomPassword(currentRoom.id, undefined); // Pass undefined to remove password
-    setSetPasswordInput("");
+    await handleAddRoomMember(currentRoom.id, memberUserIdInput.trim());
+    setMemberUserIdInput("");
   };
 
   const handleKickSelectedUser = async () => {
@@ -105,46 +94,25 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
         <CardTitle className="text-xl">Current Room Owner Controls</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* 1. Allow Guest Write Access */}
-        <div className="flex items-center justify-between">
-          <Label htmlFor="allow-guest-write" className="text-base">
-            Allow Guests to Write
-          </Label>
-          <Switch
-            id="allow-guest-write"
-            checked={currentRoom.allow_guest_write}
-            onCheckedChange={(checked) => handleToggleGuestWriteAccess(currentRoom.id, currentRoom.allow_guest_write)}
-          />
-        </div>
-        <p className="text-sm text-muted-foreground">
-          When enabled, members of this room (who are not the creator) will be able to add/edit content in widgets.
-        </p>
-
-        {/* 2. Set/Remove Room Password */}
+        {/* Add Member */}
         <div className="space-y-2">
-          <Label htmlFor="set-room-password">Set Room Password</Label>
+          <Label htmlFor="add-member-user-id">Add Member (by User ID)</Label>
           <Input
-            id="set-room-password"
-            type="password"
-            placeholder="Enter new password"
-            value={setPasswordInput}
-            onChange={(e) => setSetPasswordInput(e.target.value)}
+            id="add-member-user-id"
+            placeholder="Enter User ID"
+            value={memberUserIdInput}
+            onChange={(e) => setMemberUserIdInput(e.target.value)}
           />
-          <div className="flex gap-2">
-            <Button onClick={handleSetPassword} className="flex-1">
-              <KeyRound className="mr-2 h-4 w-4" /> Set Password
-            </Button>
-            <Button onClick={handleRemovePassword} variant="outline" className="flex-1" disabled={!currentRoom.password_hash}>
-              Remove Password
-            </Button>
-          </div>
+          <Button onClick={handleAddMember} className="w-full">
+            <UserPlus className="mr-2 h-4 w-4" /> Add Member
+          </Button>
         </div>
         <p className="text-sm text-muted-foreground">
-          Set a password for this room. Users will need this to join if it&apos;s private.
+          Add users to this room by their unique User ID. They will then be able to join.
         </p>
 
-        {/* 3. Kick Users */}
-        {roomMembers.length > 0 && (
+        {/* Kick Users */}
+        {roomMembers.filter(member => member.user_id !== session?.user?.id).length > 0 ? (
           <div className="space-y-2">
             <Label htmlFor="kick-user-select">Kick a User</Label>
             <Select onValueChange={setSelectedUserToKick} value={selectedUserToKick || ""}>
@@ -163,8 +131,7 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
               <UserMinus className="mr-2 h-4 w-4" /> Kick User
             </Button>
           </div>
-        )}
-        {roomMembers.length === 0 && (
+        ) : (
           <p className="text-sm text-muted-foreground text-center">No other members in this room to kick.</p>
         )}
       </CardContent>

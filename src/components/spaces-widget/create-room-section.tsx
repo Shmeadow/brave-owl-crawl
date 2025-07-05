@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { PlusCircle } from "lucide-react";
 import { useRooms } from "@/hooks/use-rooms";
 import { useSupabase } from "@/integrations/supabase/auth";
@@ -16,7 +15,6 @@ export function CreateRoomSection() {
   const { handleCreateRoom } = useRooms();
 
   const [newRoomName, setNewRoomName] = useState("");
-  const [isNewRoomPublic, setIsNewRoomPublic] = useState(false);
 
   const handleCreateNewRoom = async () => {
     if (!session) {
@@ -27,9 +25,8 @@ export function CreateRoomSection() {
       toast.error("Room name cannot be empty.");
       return;
     }
-    await handleCreateRoom(newRoomName.trim(), isNewRoomPublic);
+    await handleCreateRoom(newRoomName.trim()); // Removed isPublic parameter
     setNewRoomName("");
-    setIsNewRoomPublic(false);
   };
 
   return (
@@ -45,15 +42,6 @@ export function CreateRoomSection() {
             placeholder="e.g., Cozy Study Nook"
             value={newRoomName}
             onChange={(e) => setNewRoomName(e.target.value)}
-            disabled={!session}
-          />
-        </div>
-        <div className="flex items-center justify-between">
-          <Label htmlFor="new-room-public">Make Public</Label>
-          <Switch
-            id="new-room-public"
-            checked={isNewRoomPublic}
-            onCheckedChange={setIsNewRoomPublic}
             disabled={!session}
           />
         </div>

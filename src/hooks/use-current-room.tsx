@@ -124,19 +124,10 @@ export function useCurrentRoom() {
       return;
     }
 
-    // If user is the creator, they can always write
+    // In the new system, only the creator has write access
     if (session.user.id === room.creator_id) {
       setIsCurrentRoomWritable(true);
       return;
-    }
-
-    // If not creator, check if guest write is allowed AND user is a member
-    if (room.allow_guest_write) {
-      const isMember = room.room_members?.some(member => member.user_id === session.user.id);
-      if (isMember) {
-        setIsCurrentRoomWritable(true); // Guest write allowed and user is a member
-        return;
-      }
     }
     
     // Default to false if no conditions met

@@ -13,40 +13,24 @@ import { toast } from "sonner";
 
 export function JoinRoomSection() {
   const { session } = useSupabase();
-  const { handleJoinRoomByRoomId, handleJoinRoomByPassword } = useRooms();
-  const { currentRoomId } = useCurrentRoom();
+  const { handleJoinRoomByRoomId } = useRooms(); // Only Room ID join is available
+  const { currentRoomId } = useCurrentRoom(); // Keep currentRoomId for context if needed
 
-  const [roomIdInput, setRoomIdInput] = useState(""); // Changed from inviteCodeInput
-  const [joinPasswordInput, setJoinPasswordInput] = useState("");
+  const [roomIdInput, setRoomIdInput] = useState("");
 
-  const handleJoinRoomIdSubmit = async () => { // Changed function name
+  const handleJoinRoomIdSubmit = async () => {
     if (!session) {
       toast.error("You must be logged in to join a room.");
       return;
     }
     if (!roomIdInput.trim()) {
-      toast.error("Please enter a Room ID."); // Changed error message
+      toast.error("Please enter a Room ID.");
       return;
     }
-    await handleJoinRoomByRoomId(roomIdInput.trim()); // Changed function call
+    // In the new system, handleJoinRoomByRoomId will only allow joining if the user is already a member.
+    // If the user is not a member, it will show an error.
+    await handleJoinRoomByRoomId(roomIdInput.trim());
     setRoomIdInput("");
-  };
-
-  const handleJoinPasswordSubmit = async () => {
-    if (!session) {
-      toast.error("You must be logged in to join a room.");
-      return;
-    }
-    if (!joinPasswordInput.trim()) {
-      toast.error("Please enter the room password.");
-      return;
-    }
-    if (currentRoomId) {
-      await handleJoinRoomByPassword(currentRoomId, joinPasswordInput.trim());
-      setJoinPasswordInput("");
-    } else {
-      toast.error("Please select a room to join by password.");
-    }
   };
 
   return (
@@ -56,37 +40,21 @@ export function JoinRoomSection() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="room-id-input">Room ID</Label> {/* Changed label */}
+          <Label htmlFor="room-id-input">Room ID</Label>
           <Input
-            id="room-id-input" // Changed id
-            placeholder="Enter Room ID" // Changed placeholder
+            id="room-id-input"
+            placeholder="Enter Room ID"
             value={roomIdInput}
             onChange={(e) => setRoomIdInput(e.target.value)}
             disabled={!session}
           />
         </div>
-        <Button onClick={handleJoinRoomIdSubmit} className="w-full" disabled={!session}> {/* Changed function call */}
-          <LogIn className="mr-2 h-4 w-4" /> Join by Room ID {/* Changed button text */}
+        <Button onClick={handleJoinRoomIdSubmit} className="w-full" disabled={!session}>
+          <LogIn className="mr-2 h-4 w-4" /> Join Room
         </Button>
-        <div className="relative flex py-2 items-center">
-          <div className="flex-grow border-t border-border"></div>
-          <span className="flex-shrink mx-4 text-muted-foreground text-sm">OR</span>
-          <div className="flex-grow border-t border-border"></div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="join-password">Room Password</Label>
-          <Input
-            id="join-password"
-            type="password"
-            placeholder="Enter room password"
-            value={joinPasswordInput}
-            onChange={(e) => setJoinPasswordInput(e.target.value)}
-            disabled={!session || !currentRoomId}
-          />
-        </div>
-        <Button onClick={handleJoinPasswordSubmit} className="w-full" disabled={!session || !currentRoomId}>
-          <LogIn className="mr-2 h-4 w-4" /> Join by Password
-        </Button>
+        <p className="text-sm text-muted-foreground text-center">
+          You can only join rooms you have been invited to by the creator.
+        </p>
       </CardContent>
     </Card>
   );

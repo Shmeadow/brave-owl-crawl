@@ -5,7 +5,7 @@ import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
 import { RoomData } from "./types";
 import { getRandomBackground } from "@/lib/backgrounds";
-// Removed import for generateRandomCode as it's no longer used here
+import { useNotifications } from "@/hooks/use-notifications"; // Import useNotifications
 
 interface UseRoomManagementProps {
   setRooms: React.Dispatch<React.SetStateAction<RoomData[]>>;
@@ -14,24 +14,21 @@ interface UseRoomManagementProps {
 
 export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementProps) {
   const { supabase, session } = useSupabase();
+  const { addNotification } = useNotifications(); // Use the notifications hook
 
-  const handleCreateRoom = useCallback(async (name: string, isPublic: boolean = false) => {
+  const handleCreateRoom = useCallback(async (name: string) => { // Removed isPublic parameter
     if (!session?.user?.id || !supabase) {
       toast.error("You must be logged in to create a room.");
       return;
     }
 
     const randomBg = getRandomBackground();
-    // Removed newInviteCode generation
 
     const { data, error } = await supabase
       .from('rooms')
       .insert({
         creator_id: session.user.id,
         name: name,
-        is_public: isPublic,
-        allow_guest_write: false,
-        password_hash: null,
         background_url: randomBg.url,
         is_video_background: randomBg.isVideo,
       })
@@ -42,96 +39,94 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
       toast.error("Error creating room: " + error.message);
       console.error("Error creating room:", error);
     } else if (data) {
-      // Removed invite code insertion logic
       toast.success(`Room "${data.name}" created successfully!`);
       setRooms((prevRooms) => [...prevRooms, { ...data, is_member: true } as RoomData]);
+      addNotification(`You created a new room: "${data.name}".`);
     }
-  }, [session, supabase, setRooms]);
+  }, [session, supabase, setRooms, addNotification]);
 
-  const handleToggleRoomPublicStatus = useCallback(async (roomId: string, currentStatus: boolean) => {
+  // Removed handleToggleRoomPublicStatus
+  // Removed handleToggleGuestWriteAccess
+  // Removed handleSetRoomPassword
+
+  const handleAddRoomMember = useCallback(async (roomId: string, userIdToAdd: string) => {
     if (!session?.user?.id || !supabase) {
-      toast.error("You must be logged in to change room status.");
+      toast.error("You must be logged in to add members.");
       return;
     }
 
-    const { data, error } = await supabase
+    // Verify room ownership
+    const { data: room, error: roomError } = await supabase
       .from('rooms')
-      .update({ is_public: !currentStatus })
+      .select('creator_id, name')
       .eq('id', roomId)
-      .eq('creator_id', session.user.id)
-      .select('*, creator:profiles(first_name, last_name)')
       .single();
 
-    if (error) {
-      toast.error("Error updating room status: " + error.message);
-      console.error("Error updating room status:", error);
-    } else if (data) {
-      setRooms(prevRooms => prevRooms.map(room => room.id === roomId ? data as RoomData : room));
-      toast.success(`Room "${data.name}" is now ${data.is_public ? 'public' : 'private'}.`);
-    } else {
-      toast.error("Failed to update room status. You might not be the owner.");
-    }
-  }, [session, supabase, setRooms]);
-
-  const handleToggleGuestWriteAccess = useCallback(async (roomId: string, currentStatus: boolean) => {
-    if (!session?.user?.id || !supabase) {
-      toast.error("You must be logged in to change room settings.");
+    if (roomError || !room) {
+      toast.error("Room not found or access denied.");
+      console.error("Error fetching room for adding member:", roomError);
       return;
     }
 
-    const { data, error } = await supabase
-      .from('rooms')
-      .update({ allow_guest_write: !currentStatus })
-      .eq('id', roomId)
-      .eq('creator_id', session.user.id)
-      .select('*, creator:profiles(first_name, last_name)')
+    if (room.creator_id !== session.user.id) {
+      toast.error("Forbidden: You are not the room creator.");
+      return;
+    }
+
+    if (userIdToAdd === session.user.id) {
+      toast.info("You are already the creator of this room.");
+      return;
+    }
+
+    // Check if user is already a member
+    const { data: existingMember, error: memberCheckError } = await supabase
+      .from('room_members')
+      .select('id')
+      .eq('room_id', roomId)
+      .eq('user_id', userIdToAdd)
       .single();
 
-    if (error) {
-      toast.error("Error updating guest write access: " + error.message);
-      console.error("Error updating guest write access:", error);
-    } else if (data) {
-      setRooms(prevRooms => prevRooms.map(room => room.id === roomId ? data as RoomData : room));
-      toast.success(`Guest write access for "${data.name}" is now ${data.allow_guest_write ? 'enabled' : 'disabled'}.`);
-    } else {
-      toast.error("Failed to update guest write access. You might not be the owner.");
-    }
-  }, [session, supabase, setRooms]);
-
-  const handleSetRoomPassword = useCallback(async (roomId: string, password?: string) => {
-    if (!session?.user?.id || !supabase) {
-      toast.error("You must be logged in to set a room password.");
+    if (existingMember) {
+      toast.info("User is already a member of this room.");
       return;
     }
 
-    try {
-      const response = await fetch('https://mrdupsekghsnbooyrdmj.supabase.co/functions/v1/set-room-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ roomId, password }),
-      });
+    const { data: newMember, error: insertError } = await supabase
+      .from('room_members')
+      .insert({ room_id: roomId, user_id: userIdToAdd })
+      .select()
+      .single();
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error("Error setting password: " + (data.error || "Unknown error"));
-        console.error("Error setting password:", data.error);
-      } else {
-        toast.success(password ? "Room password set successfully!" : "Room password removed.");
-        fetchRooms(); // Re-fetch to get the actual state
-      }
-    } catch (error) {
-      toast.error("Failed to set password due to network error.");
-      console.error("Network error setting password:", error);
+    if (insertError) {
+      toast.error("Error adding member: " + insertError.message);
+      console.error("Error adding member:", insertError);
+    } else if (newMember) {
+      toast.success("Member added successfully!");
+      fetchRooms(); // Re-fetch to update room_members list
+      addNotification(`You were added to the room: "${room.name}".`, userIdToAdd); // Notify the added user
     }
-  }, [session, supabase, fetchRooms]);
+  }, [session, supabase, fetchRooms, addNotification]);
 
   const handleDeleteRoom = useCallback(async (roomId: string) => {
     if (!session?.user?.id || !supabase) {
       toast.error("You must be logged in to delete a room.");
+      return;
+    }
+
+    const { data: roomToDelete, error: fetchRoomError } = await supabase
+      .from('rooms')
+      .select('name, creator_id')
+      .eq('id', roomId)
+      .single();
+
+    if (fetchRoomError || !roomToDelete) {
+      toast.error("Room not found or you don't have permission.");
+      console.error("Error fetching room for deletion:", fetchRoomError);
+      return;
+    }
+
+    if (roomToDelete.creator_id !== session.user.id) {
+      toast.error("You can only delete rooms you created.");
       return;
     }
 
@@ -147,14 +142,13 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
     } else {
       setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId));
       toast.success("Room deleted successfully.");
+      addNotification(`You deleted the room: "${roomToDelete.name}".`);
     }
-  }, [session, supabase, setRooms]);
+  }, [session, supabase, setRooms, addNotification]);
 
   return {
     handleCreateRoom,
-    handleToggleRoomPublicStatus,
-    handleToggleGuestWriteAccess,
-    handleSetRoomPassword,
+    handleAddRoomMember,
     handleDeleteRoom,
   };
 }

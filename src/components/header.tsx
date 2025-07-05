@@ -38,24 +38,24 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
   const { session } = useSupabase();
   const router = useRouter();
   const { currentRoomName, currentRoomId, isCurrentRoomWritable, setCurrentRoom } = useCurrentRoom();
-  const { handleJoinRoomByRoomId } = useRooms(); // Use the hook for joining rooms (renamed)
+  const { handleJoinRoomByRoomId } = useRooms(); // Use the hook for joining rooms
 
-  const [roomInput, setRoomInput] = useState(""); // Changed from roomCodeInput
+  const [roomInput, setRoomInput] = useState("");
 
   const handleJoinRoom = async () => {
     if (!session) {
       toast.error("You must be logged in to join a room.");
       return;
     }
-    if (!roomInput.trim()) { // Changed from roomCodeInput
-      toast.error("Please enter a Room ID."); // Changed message
+    if (!roomInput.trim()) {
+      toast.error("Please enter a Room ID.");
       return;
     }
-    await handleJoinRoomByRoomId(roomInput.trim()); // Changed function call
+    await handleJoinRoomByRoomId(roomInput.trim());
     setRoomInput(""); // Clear input after attempt
   };
 
-  const handleCopyRoomId = () => { // Renamed function
+  const handleCopyRoomId = () => {
     if (currentRoomId) {
       navigator.clipboard.writeText(currentRoomId);
       toast.success("Room ID copied to clipboard!");
@@ -121,12 +121,12 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
         <div className="flex items-center space-x-2">
           <Input
             type="text"
-            placeholder="Room ID" // Changed placeholder
+            placeholder="Room ID"
             className="w-32 text-sm h-9"
-            value={roomInput} // Changed value
-            onChange={(e) => setRoomInput(e.target.value)} // Changed onChange
+            value={roomInput}
+            onChange={(e) => setRoomInput(e.target.value)}
             onKeyPress={(e) => {
-              if (e.key === 'Enter' && roomInput.trim()) { // Changed condition
+              if (e.key === 'Enter' && roomInput.trim()) {
                 handleJoinRoom();
               }
             }}
@@ -135,7 +135,7 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
             onClick={handleJoinRoom}
             size="sm"
             className="h-9"
-            disabled={!session || !roomInput.trim()} // Changed condition
+            disabled={!session || !roomInput.trim()}
           >
             Join
           </Button>

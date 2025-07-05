@@ -17,87 +17,33 @@ export function useRoomFetching() {
     }
 
     setLoading(true);
-    let allRooms: RoomData[] = [];
+    let userRooms: RoomData[] = [];
 
-    // Fetch public rooms
-    const { data: publicRooms, error: publicError } = await supabase
-      .from('rooms')
-      .select('*, room_members(user_id), creator:profiles!creator_id(first_name, last_name)')
-      .eq('is_public', true)
-      .order('created_at', { ascending: true });
-
-    if (publicError) {
-      toast.error("Error fetching public rooms: " + publicError.message);
-      console.error("Error fetching public rooms:", publicError);
-    } else {
-      allRooms = publicRooms.map(room => ({
-        ...room,
-        is_member: session?.user?.id ? room.room_members.some((m: any) => m.user_id === session.user.id) : false,
-      })) as RoomData[];
-    }
-
-    // If logged in, fetch rooms created by user and rooms user is a member of
     if (session?.user?.id) {
-      // Fetch rooms created by the user
-      const { data: userCreatedRooms, error: createdError } = await supabase
+      // Fetch rooms created by the user OR rooms the user is a member of
+      const { data, error } = await supabase
         .from('rooms')
-        .select('*, room_members(user_id), creator:profiles!creator_id(first_name, last_name)')
-        .eq('creator_id', session.user.id)
+        .select(`
+          *,
+          room_members(user_id),
+          creator:profiles!creator_id(first_name, last_name)
+        `)
+        .or(`creator_id.eq.${session.user.id},room_members.user_id.eq.${session.user.id}`)
         .order('created_at', { ascending: true });
 
-      if (createdError) {
-        toast.error("Error fetching your created rooms: " + createdError.message);
-        console.error("Error fetching created rooms:", createdError);
+      if (error) {
+        toast.error("Error fetching your rooms: " + error.message);
+        console.error("Error fetching rooms:", error);
+        userRooms = [];
       } else {
-        userCreatedRooms.forEach(room => {
-          if (!allRooms.some(r => r.id === room.id)) {
-            allRooms.push({
-              ...room,
-              is_member: true,
-            } as RoomData);
-          } else {
-            const existingRoom = allRooms.find(r => r.id === room.id);
-            if (existingRoom) existingRoom.is_member = true;
-          }
-        });
-      }
-
-      // Fetch rooms the user is a member of (excluding their own created rooms)
-      const { data: memberships, error: memberError } = await supabase
-        .from('room_members')
-        .select('room_id')
-        .eq('user_id', session.user.id);
-
-      if (memberError) {
-        toast.error("Error fetching room memberships: " + memberError.message);
-        console.error("Error fetching memberships:", memberError);
-      } else if (memberships) {
-        const memberRoomIds = new Set(memberships.map(m => m.room_id));
-        
-        const { data: memberRooms, error: memberRoomsError } = await supabase
-          .from('rooms')
-          .select('*, room_members(user_id), creator:profiles!creator_id(first_name, last_name)')
-          .in('id', Array.from(memberRoomIds))
-          .order('created_at', { ascending: true });
-
-        if (memberRoomsError) {
-          toast.error("Error fetching member rooms: " + memberRoomsError.message);
-          console.error("Error fetching member rooms:", memberRoomsError);
-        } else if (memberRooms) {
-          memberRooms.forEach(room => {
-            if (!allRooms.some(r => r.id === room.id)) {
-              allRooms.push({ ...room, is_member: true } as RoomData);
-            } else {
-              const existingRoom = allRooms.find(r => r.id === room.id);
-              if (existingRoom) existingRoom.is_member = true;
-            }
-          });
-        }
+        userRooms = data.map(room => ({
+          ...room,
+          is_member: room.room_members.some((m: any) => m.user_id === session.user.id) || room.creator_id === session.user.id,
+        })) as RoomData[];
       }
     }
-
-    allRooms.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-    setRooms(allRooms);
+    
+    setRooms(userRooms);
     setLoading(false);
   }, [supabase, session, authLoading]);
 

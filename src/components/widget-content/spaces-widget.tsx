@@ -7,7 +7,6 @@ import { useSupabase } from "@/integrations/supabase/auth";
 import { CreateRoomSection } from "@/components/spaces-widget/create-room-section";
 import { MyRoomsSection } from "@/components/spaces-widget/my-rooms-section";
 import { JoinRoomSection } from "@/components/spaces-widget/join-room-section";
-import { PublicRoomsSection } from "@/components/spaces-widget/public-rooms-section";
 import { RoomOwnerControlsSection } from "@/components/spaces-widget/room-owner-controls-section";
 
 interface SpacesWidgetProps {
@@ -32,7 +31,7 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
 
   const myCreatedRooms = rooms.filter(room => room.creator_id === session?.user?.id);
   const myJoinedRooms = rooms.filter(room => room.is_member && room.creator_id !== session?.user?.id);
-  const publicRooms = rooms.filter(room => room.is_public && room.creator_id !== session?.user?.id && !room.is_member);
+  // PublicRoomsSection is removed as there are no public rooms anymore.
 
   return (
     <div className="h-full w-full overflow-y-auto p-4">
@@ -50,9 +49,7 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
 
         {session && <JoinRoomSection />}
 
-        {publicRooms.length > 0 && (
-          <PublicRoomsSection publicRooms={publicRooms} />
-        )}
+        {/* PublicRoomsSection removed */}
 
         {isOwnerOfCurrentRoom && currentRoomId && currentRoom && (
           <RoomOwnerControlsSection
@@ -63,7 +60,7 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
 
         {!session && (
           <p className="text-sm text-muted-foreground mt-4 text-center">
-            Log in to create your own rooms, manage their privacy settings, and join private rooms via invite codes.
+            Log in to create your own rooms and manage their members.
           </p>
         )}
       </div>
