@@ -41,7 +41,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
 
   // State for Header and related components
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(0); // Changed to number for unread count
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [isPomodoroMinimized, setIsPomodoroMinimized] = useState(true); // Changed to true
 
@@ -89,11 +89,15 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
 
+      // Get the computed value of --header-top-offset
+      const rootStyles = getComputedStyle(document.documentElement);
+      const headerTopOffsetPx = parseFloat(rootStyles.getPropertyValue('--header-top-offset')) || 0;
+
       setMainContentArea({
         left: isMobile ? 0 : sidebarCurrentWidth, // On mobile, content always starts at left 0
-        top: HEADER_HEIGHT,
+        top: HEADER_HEIGHT + headerTopOffsetPx, // Adjust top based on header offset
         width: isMobile ? windowWidth : windowWidth - sidebarCurrentWidth, // On mobile, content is full width
-        height: windowHeight - HEADER_HEIGHT,
+        height: windowHeight - (HEADER_HEIGHT + headerTopOffsetPx), // Adjust height
       });
     };
 
@@ -114,8 +118,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
         {activeEffect === 'raindrops' && <RaindropsEffect />}
         <Header
           onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
-          isChatOpen={isChatOpen}
-          onToggleChat={() => setIsChatOpen(!isChatOpen)}
+          isChatOpen={isChatOpen > 0} // Pass boolean based on unread count
+          onToggleChat={() => setIsChatOpen(prev => prev > 0 ? 0 : 1)} // Toggle based on unread count
           onNewUnreadMessage={handleNewUnreadMessage}
           onClearUnreadMessages={handleClearUnreadMessages}
           unreadChatCount={unreadChatCount}
@@ -124,8 +128,11 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
         />
         <Sidebar isMobile={isMobile} /> {/* Pass isMobile */}
         <div
-          className="absolute top-16 right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
-          style={{ left: `${sidebarCurrentWidth}px` }}
+          className="absolute right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
+          style={{ 
+            left: `${sidebarCurrentWidth}px`,
+            top: `calc(var(--header-top-offset) + ${HEADER_HEIGHT}px)` // Use CSS variable for top
+          }}
         >
           <main className="flex-1 relative overflow-y-auto bg-transparent">
             <div className="p-4 sm:p-6 lg:p-8 h-full">

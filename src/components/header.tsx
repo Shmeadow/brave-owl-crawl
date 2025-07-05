@@ -65,7 +65,7 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
   };
 
   return (
-    <header className="sticky top-0 z-[1002] w-full border-b bg-transparent backdrop-blur-xl flex items-center h-16">
+    <header className="sticky top-[var(--header-top-offset)] z-[1002] w-full border-b bg-transparent backdrop-blur-xl flex items-center h-16">
       <div className="flex items-center gap-2 pl-4">
         {isMobile && (
           <Button
