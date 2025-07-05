@@ -14,7 +14,7 @@ import { DeleteCategoryDialog } from './DeleteCategoryDialog';
 interface CategorySidebarProps {
   categories: Category[];
   selectedCategoryId: string | 'all' | null;
-  onSelectCategory: (id: string | 'all' | null) => void;
+  onSelectCategory: (id: string | 'all') => void;
   onAddCategory: (name: string) => Promise<Category | null>;
   onDeleteCategory: (id: string, deleteContents: boolean) => void;
   onUpdateCategory: (id: string, name: string) => void;
@@ -97,7 +97,6 @@ export function CategorySidebar({
               >
                 <Folder className="mr-2 h-4 w-4" /> All Cards
               </Button>
-              {/* Removed explicit "Uncategorized" button */}
               {categories.map((category) => (
                 <div
                   key={category.id}
