@@ -33,7 +33,7 @@ interface SummaryModeProps {
 export function SummaryMode({ summaryData, summaryModeSource }: SummaryModeProps) {
   const [activeTab, setActiveTab] = useState('overall');
 
-  if (!summaryData) {
+  if (!summaryData || summaryData.detailedResults.length === 0) {
     return (
       <Card className="text-center p-8 bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-lg">
         <CardHeader>
@@ -59,13 +59,13 @@ export function SummaryMode({ summaryData, summaryModeSource }: SummaryModeProps
           <p className="text-lg font-semibold text-foreground">Total Questions</p>
           <p className="text-4xl font-bold text-primary">{totalItems}</p>
         </div>
-        <div className="bg-green-100/70 p-4 rounded-lg shadow-sm border border-green-200/50">
-          <p className="text-lg font-semibold text-green-800">Correct Answers</p>
-          <p className="text-4xl font-bold text-green-900">{correctCount}</p>
+        <div className="bg-green-100/70 dark:bg-green-900/30 p-4 rounded-lg shadow-sm border border-green-200/50 dark:border-green-800/50">
+          <p className="text-lg font-semibold text-green-800 dark:text-green-300">Correct Answers</p>
+          <p className="text-4xl font-bold text-green-900 dark:text-green-200">{correctCount}</p>
         </div>
-        <div className="bg-red-100/70 p-4 rounded-lg shadow-sm border border-red-200/50">
-          <p className="text-lg font-semibold text-red-800">Incorrect Answers</p>
-          <p className="text-4xl font-bold text-red-900">{incorrectCount}</p>
+        <div className="bg-red-100/70 dark:bg-red-900/30 p-4 rounded-lg shadow-sm border border-red-200/50 dark:border-red-800/50">
+          <p className="text-lg font-semibold text-red-800 dark:text-red-300">Incorrect Answers</p>
+          <p className="text-4xl font-bold text-red-900 dark:text-red-200">{incorrectCount}</p>
         </div>
       </div>
 
@@ -80,13 +80,13 @@ export function SummaryMode({ summaryData, summaryModeSource }: SummaryModeProps
       {filteredResults.map((result, index) => (
         <li key={index} className={cn(
           "p-4 rounded-lg shadow-sm border",
-          result.isCorrect ? 'bg-green-50/70 border-green-200/50' : 'bg-red-50/70 border-red-200/50'
+          result.isCorrect ? 'bg-green-50/70 dark:bg-green-900/20 border-green-200/50 dark:border-green-800/30' : 'bg-red-50/70 dark:bg-red-900/20 border-red-200/50 dark:border-red-800/30'
         )}>
           <div className="flex items-center justify-between mb-2">
             <p className="font-semibold text-lg text-foreground">Term: <span className="text-primary">{result.term}</span></p>
             {result.cardData.starred && <Star className="h-5 w-5 text-yellow-500 fill-current" />}
           </div>
-          <p className="text-muted-foreground">Your Answer: <span className={cn(result.isCorrect ? 'text-green-700' : 'text-red-700')}>{result.userAnswer || '[No Answer]'}</span></p>
+          <p className="text-muted-foreground">Your Answer: <span className={cn(result.isCorrect ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400')}>{result.userAnswer || '[No Answer]'}</span></p>
           <p className="text-muted-foreground">Correct Answer: <span className="font-medium text-primary">{result.correctDefinition}</span></p>
           {summaryModeSource === 'learn' && result.closeness !== undefined && (
             <p className="text-muted-foreground text-sm mt-1">Closeness: {result.closeness}%</p>
@@ -142,6 +142,7 @@ export function SummaryMode({ summaryData, summaryModeSource }: SummaryModeProps
             <div className="space-y-4">
               {(['Learning', 'Beginner', 'Intermediate', 'Advanced', 'Mastered'] as const).map(status => {
                 const { correct, total, accuracy, results } = getCategoryAccuracy(status);
+                if (total === 0) return null;
                 return (
                   <div key={status} className="p-4 rounded-lg border bg-muted backdrop-blur-xl">
                     <h4 className="font-semibold text-lg capitalize mb-2">{status} Cards</h4>
@@ -166,6 +167,7 @@ export function SummaryMode({ summaryData, summaryModeSource }: SummaryModeProps
             <div className="space-y-4">
               {(['starred', 'unstarred'] as const).map(status => {
                 const { correct, total, accuracy, results } = getCategoryAccuracy(status);
+                if (total === 0) return null;
                 return (
                   <div key={status} className="p-4 rounded-lg border bg-muted backdrop-blur-xl">
                     <h4 className="font-semibold text-lg capitalize mb-2">{status} Cards</h4>

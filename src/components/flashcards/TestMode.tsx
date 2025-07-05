@@ -62,9 +62,21 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
 
   const currentQuestion = testQuestions[currentQuestionIndex];
 
-  if (!currentQuestion) {
-    return <Card className="text-center p-8"><CardContent>Generating test...</CardContent></Card>;
-  }
+  const handleEndTest = () => {
+    goToSummary({
+      type: 'test',
+      totalQuestions: testSessionResults.length,
+      score: score,
+      detailedResults: testSessionResults
+    }, 'test');
+  };
+
+  // Automatically navigate to summary when test is completed
+  useEffect(() => {
+    if (testCompleted) {
+      handleEndTest();
+    }
+  }, [testCompleted]);
 
   const handleSubmitAnswer = () => {
     if (selectedAnswer === null) {
@@ -104,52 +116,39 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
     }, 1500);
   };
 
-  const handleEndTest = () => {
-    goToSummary({
-      type: 'test',
-      totalQuestions: testSessionResults.length,
-      score: score,
-      detailedResults: testSessionResults
-    }, 'test');
-  };
+  if (!currentQuestion) {
+    return <Card className="text-center p-8"><CardContent>Generating test...</CardContent></Card>;
+  }
 
   return (
     <Card className="flex flex-col items-center space-y-6 bg-card backdrop-blur-xl border-white/20 p-8 rounded-xl shadow-lg w-full relative">
       <CardContent className="flex flex-col items-center space-y-6 w-full">
-        {!testCompleted ? (
-          <>
-            <div className="text-lg text-muted-foreground font-semibold">
-              Question {currentQuestionIndex + 1} / {testQuestions.length}
-            </div>
-            <div className="w-full max-w-md bg-muted p-6 rounded-lg shadow-md text-center border">
-              <p className="text-xl font-semibold text-foreground mb-3">Term:</p>
-              <p className="text-3xl font-bold text-primary">{currentQuestion.term}</p>
-            </div>
-            <div className="w-full max-w-md space-y-3">
-              {currentQuestion.options.map((option: string, index: number) => (
-                <Button
-                  key={index}
-                  onClick={() => setSelectedAnswer(option)}
-                  className={cn('w-full text-left justify-start px-5 py-3 rounded-md border transition-all duration-200',
-                    selectedAnswer === option ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted'
-                  )}
-                  disabled={showFeedback}
-                >
-                  {option}
-                </Button>
-              ))}
-            </div>
-            <Button onClick={handleSubmitAnswer} disabled={selectedAnswer === null || showFeedback}>
-              Submit Answer
-            </Button>
-          </>
-        ) : (
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">Test Completed!</h2>
-            <p className="text-xl text-foreground mb-6">You scored {score} out of {testSessionResults.length} questions.</p>
-            <Button onClick={handleEndTest}>View Test Summary</Button>
+        <>
+          <div className="text-lg text-muted-foreground font-semibold">
+            Question {currentQuestionIndex + 1} / {testQuestions.length}
           </div>
-        )}
+          <div className="w-full max-w-md bg-muted p-6 rounded-lg shadow-md text-center border">
+            <p className="text-xl font-semibold text-foreground mb-3">Term:</p>
+            <p className="text-3xl font-bold text-primary">{currentQuestion.term}</p>
+          </div>
+          <div className="w-full max-w-md space-y-3">
+            {currentQuestion.options.map((option: string, index: number) => (
+              <Button
+                key={index}
+                onClick={() => setSelectedAnswer(option)}
+                className={cn('w-full text-left justify-start px-5 py-3 rounded-md border transition-all duration-200 h-auto',
+                  selectedAnswer === option ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted'
+                )}
+                disabled={showFeedback}
+              >
+                {option}
+              </Button>
+            ))}
+          </div>
+          <Button onClick={handleSubmitAnswer} disabled={selectedAnswer === null || showFeedback} className="w-full max-w-md">
+            Submit Answer
+          </Button>
+        </>
       </CardContent>
       {showFeedback && (
         <div className={cn(
