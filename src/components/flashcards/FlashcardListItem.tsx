@@ -1,91 +1,89 @@
 "use client";
 
 import React from 'react';
-import { CardData } from '@/hooks/flashcards/types';
 import { Button } from '@/components/ui/button';
-import { Pencil, Star, Trash2 } from 'lucide-react';
+import { Edit, Trash2, FolderCog } from 'lucide-react';
+import { CardData } from '@/hooks/use-flashcards';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 
 interface FlashcardListItemProps {
   card: CardData;
   onEdit: (card: CardData) => void;
   onDelete: (id: string) => void;
+  onOrganize: (card: CardData) => void;
+  rowHeight: number;
   selectionMode: boolean;
   isSelected: boolean;
-  onToggleSelect: (id: string) => void;
-  onOrganize?: (card: CardData) => void;
-  rowHeight?: number; // Fix: Add optional prop
+  onToggleSelection: (id: string) => void;
 }
 
-export const FlashcardListItem: React.FC<FlashcardListItemProps> = ({
+export function FlashcardListItem({
   card,
   onEdit,
   onDelete,
+  onOrganize,
+  rowHeight,
   selectionMode,
   isSelected,
-  onToggleSelect,
-}) => {
-  const handleCardClick = (e: React.MouseEvent) => {
-    // Prevent click from propagating to buttons inside
-    if ((e.target as HTMLElement).closest('button')) {
-      return;
-    }
+  onToggleSelection,
+}: FlashcardListItemProps) {
+  const handleClick = () => {
     if (selectionMode) {
-      onToggleSelect(card.id);
+      onToggleSelection(card.id);
     }
   };
 
   return (
     <li
       className={cn(
-        "flex flex-col justify-between bg-muted/50 backdrop-blur-xl p-4 rounded-lg shadow-sm border border-border transition-all duration-200",
-        selectionMode ? "cursor-pointer" : "hover:shadow-md hover:border-primary/50",
+        "flex flex-col justify-between bg-muted backdrop-blur-xl p-4 rounded-lg shadow-sm border border-border transition-all duration-200",
+        selectionMode ? "cursor-pointer" : "hover:shadow-lg hover:border-primary/50",
         isSelected && "ring-2 ring-primary border-primary"
       )}
-      onClick={handleCardClick}
+      style={{ minHeight: `${rowHeight}px` }}
+      onClick={handleClick}
     >
-      <div className="flex-grow flex justify-between gap-4">
-        <div className="flex-1">
-          <p className="font-semibold text-foreground">{card.front}</p>
-          <p className="text-sm text-muted-foreground mt-1">{card.back}</p>
-        </div>
-        <div className="flex items-start gap-2">
-          {card.starred && <Star className="h-5 w-5 text-yellow-400 fill-current" />}
-          {selectionMode && (
-            <Checkbox
-              checked={isSelected}
-              onCheckedChange={() => onToggleSelect(card.id)}
-              aria-label={`Select card ${card.front}`}
-            />
-          )}
-        </div>
+      <div className="flex-grow overflow-hidden mb-3">
+        <p className="font-semibold text-foreground text-base mb-2 truncate" title={card.front}>{card.front}</p>
+        <p className="text-muted-foreground text-sm line-clamp-3">{card.back}</p>
       </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 mt-4 pt-2 border-t border-border/50">
-        <div className="flex items-center gap-x-4 gap-y-2 flex-wrap text-xs text-muted-foreground">
-          <Badge variant="outline" className="capitalize">
-            {card.status}
-          </Badge>
-          <span>Seen: {card.seen_count}</span>
-          <span className="text-green-500">Correct: {card.correct_guesses}</span>
-          <span className="text-red-500">Incorrect: {card.incorrect_guesses}</span>
+      <div className="flex items-center justify-between mt-auto pt-3 border-t border-border/50">
+        <p className="text-muted-foreground text-xs">
+          Status: <span className="capitalize font-medium">{card.status}</span>
+        </p>
+        <div className="flex gap-1">
+          <Button
+            onClick={(e) => { e.stopPropagation(); onOrganize(card); }}
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7 text-muted-foreground hover:text-primary"
+            title="Organize flashcard"
+            disabled={selectionMode}
+          >
+            <FolderCog className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={(e) => { e.stopPropagation(); onEdit(card); }}
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7 text-muted-foreground hover:text-primary"
+            title="Edit flashcard"
+            disabled={selectionMode}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={(e) => { e.stopPropagation(); onDelete(card.id); }}
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+            title="Delete flashcard"
+            disabled={selectionMode}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
-        
-        {!selectionMode && (
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => onEdit(card)}>
-              <Pencil className="h-4 w-4" />
-              <span className="sr-only">Edit</span>
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => onDelete(card.id)}>
-              <Trash2 className="h-4 w-4 text-destructive" />
-              <span className="sr-only">Delete</span>
-            </Button>
-          </div>
-        )}
       </div>
     </li>
   );
-};
+}

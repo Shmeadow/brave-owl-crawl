@@ -1,156 +1,142 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { CardData, Category } from '@/hooks/flashcards/types';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
+import { CardData, Category } from '@/hooks/flashcards/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const formSchema = z.object({
+  front: z.string().min(1, { message: "Front of card cannot be empty." }),
+  back: z.string().min(1, { message: "Back of card cannot be empty." }),
+  category_id: z.string().nullable().optional(),
+});
 
 interface FlashcardFormProps {
+  onSave: (card: { id?: string; front: string; back: string; category_id?: string | null }) => void;
   editingCard: CardData | null;
-  onAddCard: (data: Omit<CardData, 'id' | 'user_id' | 'created_at' | 'status' | 'seen_count' | 'last_reviewed_at' | 'interval_days' | 'correct_guesses' | 'incorrect_guesses'>) => void;
-  onUpdateCard: (id: string, data: Partial<CardData>) => void;
-  onCancelEdit: () => void;
+  onCancel: () => void;
   categories: Category[];
-  onAddCategory: (name: string) => void;
+  selectedCategoryId: string | 'all' | null;
 }
 
-export const FlashcardForm: React.FC<FlashcardFormProps> = ({
-  editingCard,
-  onAddCard,
-  onUpdateCard,
-  onCancelEdit,
-  categories,
-  onAddCategory,
-}) => {
-  const [front, setFront] = useState('');
-  const [back, setBack] = useState('');
-  const [categoryId, setCategoryId] = useState<string | undefined>(undefined);
-  const [starred, setStarred] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
+export function FlashcardForm({ onSave, editingCard, onCancel, categories, selectedCategoryId }: FlashcardFormProps) {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      front: '',
+      back: '',
+      category_id: null,
+    },
+  });
 
   useEffect(() => {
-    if (editingCard) {
-      setFront(editingCard.front);
-      setBack(editingCard.back);
-      setCategoryId(editingCard.category_id ?? undefined);
-      setStarred(editingCard.starred ?? false);
-    } else {
-      setFront('');
-      setBack('');
-      setCategoryId(undefined);
-      setStarred(false);
-    }
-  }, [editingCard]);
+    const defaultCategoryId = editingCard
+      ? editingCard.category_id
+      : (selectedCategoryId === 'all' ? null : selectedCategoryId);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!front.trim() || !back.trim()) {
-      toast.error("Both front and back fields are required.");
-      return;
-    }
+    form.reset({
+      front: editingCard?.front || '',
+      back: editingCard?.back || '',
+      category_id: defaultCategoryId,
+    });
+  }, [editingCard, selectedCategoryId, form]);
 
-    const cardData = {
-      front,
-      back,
-      category_id: categoryId === 'none' ? null : (categoryId || null),
-      starred,
-    };
-
-    if (editingCard) {
-      onUpdateCard(editingCard.id, cardData);
-      toast.success("Card updated successfully!");
-    } else {
-      onAddCard(cardData);
-      toast.success("Card added successfully!");
-    }
-    
-    setFront('');
-    setBack('');
-    setCategoryId(undefined);
-    setStarred(false);
-    onCancelEdit();
-  };
-
-  const handleAddNewCategory = () => {
-    if (newCategoryName.trim()) {
-      onAddCategory(newCategoryName.trim());
-      setNewCategoryName('');
-    }
-  };
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    onSave({ id: editingCard?.id, ...values });
+    form.reset({ front: '', back: '', category_id: values.category_id });
+    toast.success(editingCard ? "Flashcard updated successfully!" : "Flashcard added successfully!");
+  }
 
   return (
-    <Card>
+    <Card className="w-full bg-card backdrop-blur-xl border-white/20">
       <CardHeader>
         <CardTitle>{editingCard ? 'Edit Flashcard' : 'Add New Flashcard'}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="front">Front</Label>
-            <Textarea
-              id="front"
-              value={front}
-              onChange={(e) => setFront(e.target.value)}
-              placeholder="e.g., ¿Cómo te llamas?"
-              required
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="front"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Card Front (Question)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., What is the capital of France?" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <div>
-            <Label htmlFor="back">Back</Label>
-            <Textarea
-              id="back"
-              value={back}
-              onChange={(e) => setBack(e.target.value)}
-              placeholder="e.g., What is your name?"
-              required
+            <FormField
+              control={form.control}
+              name="back"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Card Back (Answer)</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="e.g., Paris" {...field} rows={4} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <div>
-            <Label htmlFor="category">Category</Label>
-            <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger id="category">
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Uncategorized</SelectItem>
-                {categories.map(cat => (
-                  <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Switch id="starred" checked={starred} onCheckedChange={setStarred} />
-            <Label htmlFor="starred">Star this card</Label>
-          </div>
-          <div className="flex gap-2">
-            <Button type="submit" className="flex-grow">{editingCard ? 'Update Card' : 'Add Card'}</Button>
-            {editingCard && (
-              <Button type="button" variant="outline" onClick={onCancelEdit}>
-                Cancel
+            <FormField
+              control={form.control}
+              name="category_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <Select
+                    onValueChange={(value) => field.onChange(value === 'null' ? null : value)}
+                    defaultValue={field.value || 'null'}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {/* Removed SelectItem for "Uncategorized" */}
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="flex justify-end gap-2">
+              {editingCard && (
+                <Button type="button" variant="outline" onClick={onCancel}>
+                  Cancel
+                </Button>
+              )}
+              <Button type="submit">
+                {editingCard ? 'Update Card' : 'Add Card'}
               </Button>
-            )}
-          </div>
-        </form>
-        <div className="mt-4 pt-4 border-t">
-          <Label htmlFor="new-category">Add New Category</Label>
-          <div className="flex gap-2 mt-1">
-            <Input
-              id="new-category"
-              value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
-              placeholder="e.g., Spanish Verbs"
-            />
-            <Button onClick={handleAddNewCategory} variant="secondary">Add</Button>
-          </div>
-        </div>
+            </div>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );
-};
+}
