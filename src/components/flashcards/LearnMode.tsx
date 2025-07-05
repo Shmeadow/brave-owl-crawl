@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, ArrowRight, Check, Send, XCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Send, XCircle, Repeat, Shuffle, CheckCircle } from 'lucide-react';
 import { CardData, Category } from '@/hooks/flashcards/types';
 import { getWeightedRandomCard } from '@/utils/flashcard-helpers';
 import { toast } from 'sonner';
@@ -13,10 +13,11 @@ import { useFlashcardCategories } from '@/hooks/flashcards/useFlashcardCategorie
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 interface LearnModeProps {
   flashcards: CardData[];
-  handleAnswerFeedback: (cardId: string, isCorrect: boolean) => void;
+  handleAnswerFeedback: (cardId: string, isCorrect: boolean, userAnswer: string | null, source: 'learn' | 'test') => void;
   goToSummary: (data: any, source: 'learn' | 'test') => void;
 }
 
@@ -29,6 +30,8 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: Lea
   const [isFlipped, setIsFlipped] = useState(false);
   const [userAnswer, setUserAnswer] = useState('');
   const [trackProgress, setTrackProgress] = useState(true);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [isCorrectAnswer, setIsCorrectAnswer] = useState(false);
 
   useEffect(() => {
     const filtered = selectedCategoryId === 'all'
@@ -44,12 +47,22 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: Lea
     } else {
       setCurrentCard(null);
     }
-    // Reset state when active cards change
     setIsFlipped(false);
     setUserAnswer('');
   }, [activeCards]);
 
   const currentCardData = activeCards[currentIndex];
+
+  const handleShuffle = () => {
+    if (activeCards.length > 1) {
+      const shuffled = [...activeCards].sort(() => Math.random() - 0.5);
+      setActiveCards(shuffled);
+      setCurrentIndex(0);
+      setIsFlipped(false);
+      setUserAnswer('');
+      toast.success("Cards shuffled!");
+    }
+  };
 
   const handleNext = () => {
     if (activeCards.length === 0) return;
@@ -77,15 +90,16 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: Lea
     const isCorrect = userAnswer.trim().toLowerCase() === currentCardData.back.trim().toLowerCase();
     
     if (trackProgress) {
-      handleAnswerFeedback(currentCardData.id, isCorrect);
-      toast(isCorrect ? "Correct!" : "Incorrect, try again!", {
-        icon: isCorrect ? <Check className="text-green-500" /> : <XCircle className="text-red-500" />,
-      });
-    } else {
-      toast.info(isCorrect ? "You got it right! (Progress not tracked)" : "That's not quite right. (Progress not tracked)");
+      handleAnswerFeedback(currentCardData.id, isCorrect, userAnswer, 'learn');
     }
 
-    setIsFlipped(true);
+    setIsCorrectAnswer(isCorrect);
+    setShowFeedback(true);
+    
+    setTimeout(() => {
+      setShowFeedback(false);
+      setIsFlipped(true);
+    }, 1500);
   };
 
   if (flashcards.length === 0) {
@@ -104,7 +118,6 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: Lea
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Cards</SelectItem>
-                {/* Removed SelectItem for "Uncategorized" */}
                 {categories.map(cat => (
                   <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                 ))}
@@ -118,10 +131,13 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: Lea
           <p className="text-xs text-muted-foreground">
             When off, your answers won't affect card statuses. Good for casual studying.
           </p>
+          <Button onClick={handleShuffle} variant="secondary" className="w-full">
+            <Shuffle className="mr-2 h-4 w-4" /> Shuffle Cards
+          </Button>
         </CardContent>
       </Card>
 
-      <div className="w-full md:w-3/4 flex flex-col items-center space-y-4">
+      <div className="w-full md:w-3/4 flex flex-col items-center space-y-4 relative">
         {currentCardData ? (
           <>
             <FlashCard
@@ -129,6 +145,8 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: Lea
               back={currentCardData.back}
               isFlipped={isFlipped}
               onClick={() => setIsFlipped(p => !p)}
+              status={currentCardData.status}
+              seen_count={currentCardData.seen_count}
             />
             <div className="w-full max-w-md flex gap-2">
               <Input
@@ -143,11 +161,14 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: Lea
                 <Send className="mr-2 h-4 w-4" /> Submit
               </Button>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-2">
               <Button onClick={handleBack} variant="outline">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back
               </Button>
-              <Button onClick={handleNext}>
+              <Button onClick={() => setIsFlipped(p => !p)} variant="outline">
+                <Repeat className="mr-2 h-4 w-4" /> Flip
+              </Button>
+              <Button onClick={handleNext} variant="outline">
                 Next <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
@@ -157,6 +178,15 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: Lea
           </>
         ) : (
           <Card className="text-center p-8"><CardContent>No cards in this category.</CardContent></Card>
+        )}
+        {showFeedback && (
+          <div className={cn(
+            "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-6 rounded-lg text-white text-2xl font-bold flex items-center gap-4 shadow-2xl z-10",
+            isCorrectAnswer ? 'bg-green-600' : 'bg-red-600'
+          )}>
+            {isCorrectAnswer ? <CheckCircle size={32} /> : <XCircle size={32} />}
+            {isCorrectAnswer ? 'Correct!' : 'Incorrect!'}
+          </div>
         )}
       </div>
     </div>

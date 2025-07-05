@@ -126,6 +126,8 @@ export function FlashCardDeck({
             back={currentCard.back}
             isFlipped={isFlipped}
             onClick={onFlip}
+            status={currentCard.status}
+            seen_count={currentCard.seen_count}
           />
           <div className="flex gap-2 w-full justify-center">
             <Button onClick={onPrevious} variant="outline" disabled={totalCards <= 1}>

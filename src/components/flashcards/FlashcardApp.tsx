@@ -9,19 +9,57 @@ import { useSupabase } from '@/integrations/supabase/auth';
 import { ManageMode } from './ManageMode';
 import { LearnMode } from './LearnMode';
 import { TestMode } from './TestMode';
-import { SummaryMode } from './SummaryMode';
+import { SummaryMode, DetailedResult, SummaryData } from './SummaryMode';
 import { useFlashcardCategories } from '@/hooks/flashcards/useFlashcardCategories';
 
 type FlashcardMode = 'manage' | 'learn' | 'test' | 'summary';
 
 export function FlashcardApp() {
-  const { cards, loading, isLoggedInMode, handleAddCard, handleDeleteCard, handleUpdateCard, handleAnswerFeedback, handleResetProgress, handleBulkAddCards, handleUpdateCardCategory } = useFlashcards();
+  const { cards, loading, isLoggedInMode, handleAddCard, handleDeleteCard, handleUpdateCard, handleAnswerFeedback: baseHandleAnswerFeedback, handleResetProgress, handleBulkAddCards, handleUpdateCardCategory } = useFlashcards();
   const { categories, addCategory, deleteCategory, updateCategory } = useFlashcardCategories();
   const { session } = useSupabase();
   const [currentMode, setCurrentMode] = useState<FlashcardMode>('manage');
   const [editingCard, setEditingCard] = useState<CardData | null>(null);
   const [summaryData, setSummaryData] = useState<any>(null);
   const [summaryModeSource, setSummaryModeSource] = useState<'learn' | 'test' | null>(null);
+  const [sessionHistory, setSessionHistory] = useState<DetailedResult[]>([]);
+
+  const augmentedHandleAnswerFeedback = useCallback((cardId: string, isCorrect: boolean, userAnswer: string | null, source: 'learn' | 'test') => {
+    baseHandleAnswerFeedback(cardId, isCorrect);
+
+    const card = cards.find(c => c.id === cardId);
+    if (card) {
+        const result: DetailedResult = {
+            term: card.front,
+            correctDefinition: card.back,
+            userAnswer: userAnswer,
+            isCorrect: isCorrect,
+            cardId: card.id,
+            cardData: card,
+        };
+        setSessionHistory(prev => [...prev, result]);
+    }
+  }, [baseHandleAnswerFeedback, cards]);
+
+  const generateSummaryData = useCallback((): SummaryData | null => {
+    if (sessionHistory.length === 0) return null;
+    const correctCount = sessionHistory.filter(r => r.isCorrect).length;
+    
+    const detailedResultsWithLatestCardData = sessionHistory.map(result => {
+        const latestCardData = cards.find(c => c.id === result.cardId);
+        return {
+            ...result,
+            cardData: latestCardData || result.cardData,
+        };
+    }).reverse();
+
+    return {
+        type: 'test',
+        totalAttempted: sessionHistory.length,
+        score: correctCount,
+        detailedResults: detailedResultsWithLatestCardData,
+    };
+  }, [sessionHistory, cards]);
 
   const goToSummary = useCallback((data: any, source: 'learn' | 'test') => {
     setSummaryData(data);
@@ -68,11 +106,11 @@ export function FlashcardApp() {
           />
         );
       case 'learn':
-        return <LearnMode flashcards={cards} handleAnswerFeedback={handleAnswerFeedback} goToSummary={goToSummary} />;
+        return <LearnMode flashcards={cards} handleAnswerFeedback={augmentedHandleAnswerFeedback} goToSummary={goToSummary} />;
       case 'test':
-        return <TestMode flashcards={cards} handleAnswerFeedback={handleAnswerFeedback} goToSummary={goToSummary} />;
+        return <TestMode flashcards={cards} handleAnswerFeedback={augmentedHandleAnswerFeedback} goToSummary={goToSummary} />;
       case 'summary':
-        return <SummaryMode summaryData={summaryData} summaryModeSource={summaryModeSource} />;
+        return <SummaryMode summaryData={generateSummaryData()} summaryModeSource={summaryModeSource} />;
       default:
         return null;
     }
@@ -113,7 +151,7 @@ export function FlashcardApp() {
           onClick={() => setCurrentMode('summary')}
           variant={currentMode === 'summary' ? 'default' : 'outline'}
         >
-          Session Summary
+          Summary
         </Button>
       </div>
 

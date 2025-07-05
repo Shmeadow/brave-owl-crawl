@@ -5,19 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CardData } from '@/hooks/use-flashcards'; // Import CardData for type safety
+import { CardData } from '@/hooks/use-flashcards';
 
-interface DetailedResult {
+export interface DetailedResult {
   term: string;
   correctDefinition: string;
   userAnswer: string | null;
   isCorrect: boolean;
   closeness?: number;
   cardId: string;
-  cardData: CardData; // Include full card data for detailed stats
+  cardData: CardData;
 }
 
-interface SummaryData {
+export interface SummaryData {
   type: 'learn' | 'test';
   totalAttempted?: number;
   totalQuestions?: number;
