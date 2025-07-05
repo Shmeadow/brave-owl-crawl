@@ -1,37 +1,30 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
-import { CategorySidebar } from './CategorySidebar';
-import { FlashcardList } from './FlashcardList';
-import { FlashcardForm } from './FlashcardForm';
-import { ImportExport } from './ImportExport';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { RefreshCcw, LayoutGrid, FolderInput, Trash, X } from 'lucide-react';
+import React, { useState, useMemo, useRef } from 'react';
 import { CardData, Category } from '@/hooks/flashcards/types';
-import { OrganizeCardModal } from './OrganizeCardModal';
-import { toast } from 'sonner';
-import { Slider } from '@/components/ui/slider';
-import { Label } from '@/components/ui/label';
-import { useFlashcards } from '@/hooks/use-flashcards';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Trash2, Move, Upload, RefreshCcw } from 'lucide-react';
+import { FlashcardForm } from './FlashcardForm';
+import { FlashcardListItem } from './FlashcardListItem';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
 
 interface ManageModeProps {
   cards: CardData[];
   editingCard: CardData | null;
-  onAddCard: (card: { front: string; back: string; category_id?: string | null }) => void;
-  onUpdateCard: (id: string, card: { front: string; back: string; category_id?: string | null }) => void;
-  onDeleteCard: (id: string) => void;
+  onAddCard: (data: Omit<CardData, 'id' | 'user_id' | 'created_at' | 'status' | 'seen_count' | 'last_reviewed_at' | 'interval_days' | 'correct_guesses' | 'incorrect_guesses'>) => void;
+  onUpdateCard: (id: string, data: Partial<CardData>) => void;
+  onDeleteCard: (id:string) => void;
   onEdit: (card: CardData) => void;
   onCancelEdit: () => void;
   onResetProgress: () => void;
-  onBulkImport: (cards: { front: string; back: string }[], categoryId: string | null) => Promise<number>;
+  onBulkImport: (file: File) => void;
   categories: Category[];
-  onAddCategory: (name: string) => Promise<Category | null>;
-  onDeleteCategory: (id: string, deleteContents: boolean) => Promise<boolean>;
+  onAddCategory: (name: string) => void;
+  onDeleteCategory: (id: string) => void;
   onUpdateCategory: (id: string, name: string) => void;
-  onUpdateCardCategory: (cardId: string, newCategoryId: string | null) => void;
+  onUpdateCardCategory: (cardId: string, categoryId: string | null) => void;
 }
 
 export function ManageMode({
@@ -46,147 +39,162 @@ export function ManageMode({
   onBulkImport,
   categories,
   onAddCategory,
-  onDeleteCategory,
-  onUpdateCategory,
-  onUpdateCardCategory,
+  onUpdateCardCategory
 }: ManageModeProps) {
-  const { fetchCards, handleBulkDelete, handleBulkMove } = useFlashcards();
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all' | null>('all');
-  const [organizingCard, setOrganizingCard] = useState<CardData | null>(null);
-  const [columns, setColumns] = useState(3);
-  const [selectionMode, setSelectionMode] = useState(false);
-  const [selectedCardIds, setSelectedCardIds] = useState<Set<string>>(new Set());
-  const [isBulkMoveOpen, setIsBulkMoveOpen] = useState(false);
-  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
-  const [bulkMoveCategoryId, setBulkMoveCategoryId] = useState<string | null>(null);
+  const [selectedCards, setSelectedCards] = useState<string[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all'>('all');
+  const [targetCategoryId, setTargetCategoryId] = useState<string>('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const selectionMode = selectedCards.length > 0;
 
   const filteredCards = useMemo(() => {
     if (selectedCategoryId === 'all') return cards;
     return cards.filter(card => card.category_id === selectedCategoryId);
   }, [cards, selectedCategoryId]);
 
-  const handleSave = async (cardData: { id?: string; front: string; back: string; category_id?: string | null }) => {
-    if (cardData.id) onUpdateCard(cardData.id, cardData);
-    else onAddCard(cardData);
-    onCancelEdit();
+  const handleToggleSelect = (id: string) => {
+    setSelectedCards(prev =>
+      prev.includes(id) ? prev.filter(cardId => cardId !== id) : [...prev, id]
+    );
   };
 
-  const handleDeleteCategoryWrapper = async (id: string, deleteContents: boolean) => {
-    const success = await onDeleteCategory(id, deleteContents);
-    if (success) fetchCards();
+  const handleSelectAll = () => {
+    if (selectedCards.length === filteredCards.length) {
+      setSelectedCards([]);
+    } else {
+      setSelectedCards(filteredCards.map(c => c.id));
+    }
   };
 
-  const toggleSelection = (cardId: string) => {
-    setSelectedCardIds(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(cardId)) newSet.delete(cardId);
-      else newSet.add(cardId);
-      return newSet;
-    });
+  const handleBulkDelete = () => {
+    if (selectedCards.length === 0) return;
+    selectedCards.forEach(id => onDeleteCard(id));
+    toast.success(`Deleted ${selectedCards.length} cards.`);
+    setSelectedCards([]);
   };
 
-  const handleToggleSelectionMode = () => {
-    setSelectionMode(!selectionMode);
-    setSelectedCardIds(new Set());
+  const handleBulkMove = () => {
+    if (selectedCards.length === 0 || !targetCategoryId) return;
+    selectedCards.forEach(id => onUpdateCardCategory(id, targetCategoryId === 'none' ? null : targetCategoryId));
+    toast.success(`Moved ${selectedCards.length} cards.`);
+    setSelectedCards([]);
   };
 
-  const handleConfirmBulkDelete = async () => {
-    await handleBulkDelete(Array.from(selectedCardIds));
-    setIsBulkDeleteOpen(false);
-    handleToggleSelectionMode();
-  };
-
-  const handleConfirmBulkMove = async () => {
-    await handleBulkMove(Array.from(selectedCardIds), bulkMoveCategoryId);
-    setIsBulkMoveOpen(false);
-    handleToggleSelectionMode();
+  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      onBulkImport(file);
+    }
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-6 w-full">
-      <div className="w-full md:w-1/3 flex flex-col gap-6">
-        <CategorySidebar
+    <div className="grid md:grid-cols-3 gap-6 w-full">
+      <div className="md:col-span-1 space-y-6">
+        <FlashcardForm
+          key={editingCard?.id ?? 'new'}
+          editingCard={editingCard}
+          onAddCard={onAddCard}
+          onUpdateCard={onUpdateCard}
+          onCancelEdit={onCancelEdit}
           categories={categories}
-          selectedCategoryId={selectedCategoryId}
-          onSelectCategory={setSelectedCategoryId}
           onAddCategory={onAddCategory}
-          onDeleteCategory={handleDeleteCategoryWrapper}
-          onUpdateCategory={onUpdateCategory}
         />
         <Card>
-          <CardHeader><CardTitle>View Options</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Deck Actions</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="columns-slider">Columns: {columns}</Label>
-              <div className="flex items-center gap-4">
-                <LayoutGrid className="h-5 w-5 text-muted-foreground" />
-                <Slider id="columns-slider" value={[columns]} onValueChange={(v) => setColumns(v[0])} min={1} max={3} step={1} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Deck Options</CardTitle></CardHeader>
-          <CardContent>
+            {selectionMode && (
+              <>
+                <p className="text-sm text-muted-foreground">{selectedCards.length} cards selected.</p>
+                <div className="flex items-center gap-2">
+                  <Select value={targetCategoryId} onValueChange={setTargetCategoryId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Move to category..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Uncategorized</SelectItem>
+                      {categories.map(cat => (
+                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button onClick={handleBulkMove} size="icon" variant="outline" disabled={!targetCategoryId}>
+                    <Move className="h-4 w-4" />
+                  </Button>
+                </div>
+                <Button onClick={handleBulkDelete} variant="destructive" className="w-full">
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete Selected
+                </Button>
+                <Button onClick={() => setSelectedCards([])} variant="ghost" className="w-full">
+                  Clear Selection
+                </Button>
+                <hr className="my-2" />
+              </>
+            )}
+            
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileImport}
+              className="hidden"
+              accept=".csv, text/csv"
+            />
+            <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="w-full">
+              <Upload className="mr-2 h-4 w-4" /> Import from CSV
+            </Button>
             <Button onClick={onResetProgress} variant="destructive" className="w-full">
               <RefreshCcw className="mr-2 h-4 w-4" /> Reset All Progress
             </Button>
-            <p className="text-xs text-muted-foreground mt-2">This resets status and guess stats for all cards.</p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Resetting progress will clear all learning stats for every card.
+            </p>
           </CardContent>
         </Card>
+      </div>
+      <div className="md:col-span-2">
         <Card>
-          <CardHeader><CardTitle>Import/Export</CardTitle></CardHeader>
-          <CardContent className="p-0">
-            <ImportExport cards={cards} onBulkImport={onBulkImport} categories={categories} onAddCategory={onAddCategory} />
+          <CardHeader>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <CardTitle>My Deck ({filteredCards.length})</CardTitle>
+              <div className="flex items-center gap-2">
+                <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map(cat => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button onClick={handleSelectAll} variant="outline">
+                  {filteredCards.length > 0 && selectedCards.length === filteredCards.length ? 'Deselect All' : 'Select All'}
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {filteredCards.length > 0 ? (
+              <ul className="space-y-3">
+                {filteredCards.map(card => (
+                  <FlashcardListItem
+                    key={card.id}
+                    card={card}
+                    onEdit={onEdit}
+                    onDelete={onDeleteCard}
+                    selectionMode={selectionMode || selectedCards.includes(card.id)}
+                    isSelected={selectedCards.includes(card.id)}
+                    onToggleSelect={handleToggleSelect}
+                  />
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-muted-foreground py-8">No cards in this category. Add one to get started!</p>
+            )}
           </CardContent>
         </Card>
       </div>
-      <div className="w-full md:w-2/3 flex flex-col gap-6">
-        <FlashcardForm onSave={handleSave} editingCard={editingCard} onCancel={onCancelEdit} categories={categories} selectedCategoryId={selectedCategoryId} />
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Your Flashcards ({filteredCards.length})</h2>
-          {selectionMode ? (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">{selectedCardIds.size} selected</span>
-              <Button variant="outline" size="sm" onClick={() => setIsBulkMoveOpen(true)} disabled={selectedCardIds.size === 0}><FolderInput className="mr-2 h-4 w-4" /> Move</Button>
-              <Button variant="destructive" size="sm" onClick={() => setIsBulkDeleteOpen(true)} disabled={selectedCardIds.size === 0}><Trash className="mr-2 h-4 w-4" /> Delete</Button>
-              <Button variant="ghost" size="icon" onClick={handleToggleSelectionMode}><X className="h-4 w-4" /></Button>
-            </div>
-          ) : (
-            <Button variant="outline" onClick={handleToggleSelectionMode}>Select Cards</Button>
-          )}
-        </div>
-        <FlashcardList flashcards={filteredCards} onEdit={onEdit} onDelete={onDeleteCard} onOrganize={setOrganizingCard} columns={columns} rowHeight={120} selectionMode={selectionMode} selectedCardIds={selectedCardIds} onToggleSelection={toggleSelection} />
-      </div>
-      <OrganizeCardModal card={organizingCard} categories={categories} isOpen={!!organizingCard} onClose={() => setOrganizingCard(null)} onUpdateCategory={onUpdateCardCategory} />
-      <Dialog open={isBulkMoveOpen} onOpenChange={setIsBulkMoveOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Move {selectedCardIds.size} Cards</DialogTitle></DialogHeader>
-          <div className="py-4">
-            <Label>Move to Category</Label>
-            <Select onValueChange={(value) => setBulkMoveCategoryId(value === 'null' ? null : value)} defaultValue="null">
-              <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="null">Uncategorized</SelectItem>
-                {categories.map((cat) => <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsBulkMoveOpen(false)}>Cancel</Button>
-            <Button onClick={handleConfirmBulkMove}>Move Cards</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      <Dialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Are you sure?</DialogTitle><DialogDescription>This will permanently delete {selectedCardIds.size} selected flashcards. This action cannot be undone.</DialogDescription></DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsBulkDeleteOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleConfirmBulkDelete}>Delete Cards</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

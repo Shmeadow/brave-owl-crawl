@@ -11,11 +11,12 @@ import { LearnMode } from './LearnMode';
 import { TestMode } from './TestMode';
 import { SummaryMode, DetailedResult, SummaryData } from './SummaryMode';
 import { useFlashcardCategories } from '@/hooks/flashcards/useFlashcardCategories';
+import { toast } from 'sonner';
 
 type FlashcardMode = 'manage' | 'learn' | 'test' | 'summary';
 
 export function FlashcardApp() {
-  const { cards, loading, isLoggedInMode, handleAddCard, handleDeleteCard, handleUpdateCard, handleAnswerFeedback: baseHandleAnswerFeedback, handleResetProgress, handleBulkAddCards, handleUpdateCardCategory, handleBulkDelete, handleBulkMove } = useFlashcards();
+  const { cards, loading, isLoggedInMode, handleAddCard, handleDeleteCard, handleUpdateCard, handleAnswerFeedback: baseHandleAnswerFeedback, handleResetProgress, handleBulkAddCards, handleUpdateCardCategory } = useFlashcards();
   const { categories, addCategory, deleteCategory, updateCategory } = useFlashcardCategories();
   const { session } = useSupabase();
   const [currentMode, setCurrentMode] = useState<FlashcardMode>('manage');
@@ -89,6 +90,44 @@ export function FlashcardApp() {
     setEditingCard(null);
   };
 
+  // Wrapper to fix type mismatch for onUpdateCard
+  const onUpdateCardWrapper = (id: string, data: Partial<CardData>) => {
+    // The form ensures front and back are present on update.
+    // We create a new object to satisfy the stricter type of the hook.
+    if (data.front && data.back) {
+      handleUpdateCard(id, { ...data, front: data.front, back: data.back });
+    }
+  };
+
+  // Wrapper to fix type mismatch for onBulkImport
+  const onBulkImportWrapper = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const text = e.target?.result as string;
+      const lines = text.split('\n').filter(line => line.trim() !== '');
+      const newCards = lines.map(line => {
+        const [front, ...backParts] = line.split(',');
+        const back = backParts.join(',');
+        return { front: front?.trim(), back: back?.trim() };
+      }).filter(card => card.front && card.back);
+
+      if (newCards.length > 0) {
+        await handleBulkAddCards(newCards as { front: string; back: string }[], null);
+        toast.success(`Successfully imported ${newCards.length} cards.`);
+      } else {
+        toast.error("Could not parse any cards from the file.");
+      }
+    };
+    reader.onerror = () => toast.error("Failed to read the file.");
+    reader.readAsText(file);
+  };
+
+  // Wrapper to fix type mismatch for onDeleteCategory
+  const onDeleteCategoryWrapper = (id: string) => {
+    // Default to not deleting cards within the category
+    deleteCategory(id, false);
+  };
+
   const renderContent = () => {
     if (loading) {
       return (
@@ -105,15 +144,15 @@ export function FlashcardApp() {
             cards={cards}
             editingCard={editingCard}
             onAddCard={handleAddCard}
-            onUpdateCard={handleUpdateCard}
+            onUpdateCard={onUpdateCardWrapper}
             onDeleteCard={handleDeleteCard}
             onEdit={handleEditClick}
             onCancelEdit={handleCancelEdit}
             onResetProgress={handleResetProgress}
-            onBulkImport={handleBulkAddCards}
+            onBulkImport={onBulkImportWrapper}
             categories={categories}
             onAddCategory={addCategory}
-            onDeleteCategory={deleteCategory}
+            onDeleteCategory={onDeleteCategoryWrapper}
             onUpdateCategory={updateCategory}
             onUpdateCardCategory={handleUpdateCardCategory}
           />
