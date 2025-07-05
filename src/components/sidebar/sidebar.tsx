@@ -6,7 +6,7 @@ import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
 import { useWidget } from "@/components/widget/widget-context";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
-import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, BookOpen, Goal, ChevronLeft, ChevronRight, WandSparkles } from "lucide-react";
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Gamepad2, BookOpen, Goal, ChevronLeft, ChevronRight, WandSparkles } from "lucide-react";
 
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
 const SIDEBAR_WIDTH_EXPANDED = 120; // px - New width for expanded desktop sidebar (reduced from 180)
@@ -96,7 +96,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
     { id: "tasks", label: "Tasks", icon: ListTodo },
     { id: "notes", label: "Notes", icon: NotebookPen },
     { id: "media", label: "Media", icon: Image },
-    { id: "fortune", label: "Fortune", icon: Sparkles },
+    { id: "games", label: "Games", icon: Gamepad2 },
     { id: "flash-cards", label: "Flash Cards", icon: BookOpen },
     { id: "goal-focus", label: "Goal Focus", icon: Goal },
   ];
