@@ -3,12 +3,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { useSupabase } from "@/integrations/supabase/auth";
+import { useRooms } from "./use-rooms"; // Import useRooms
 
 const LOCAL_STORAGE_CURRENT_ROOM_ID_KEY = 'current_room_id';
 const LOCAL_STORAGE_CURRENT_ROOM_NAME_KEY = 'current_room_name';
 
 export function useCurrentRoom() {
   const { supabase, session, loading: authLoading } = useSupabase();
+  const { rooms, loading: roomsLoading } = useRooms(); // Get rooms and their loading state
+  
   const [currentRoomId, setCurrentRoomIdState] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem(LOCAL_STORAGE_CURRENT_ROOM_ID_KEY);
@@ -31,36 +34,53 @@ export function useCurrentRoom() {
     toast.info(`Switched to room: ${name}`);
   }, []);
 
+  // Effect to synchronize current room with session and available rooms
   useEffect(() => {
-    if (authLoading) return;
-
-    // If the user is logged in but they are currently in the "guest" room (no ID),
-    // find their personal room and switch to it.
-    if (session && !currentRoomId && supabase) {
-      const findAndSetPersonalRoom = async () => {
-        const { data: personalRoom, error } = await supabase
-          .from('rooms')
-          .select('id, name')
-          .eq('creator_id', session.user.id)
-          .order('created_at', { ascending: true })
-          .limit(1)
-          .single();
-
-        if (personalRoom) {
-          setCurrentRoom(personalRoom.id, personalRoom.name);
-        } else if (error && error.code !== 'PGRST116') {
-          console.error("Error fetching personal room:", error);
-          toast.error("Could not find your personal room.");
-        }
-      };
-
-      findAndSetPersonalRoom();
-    } else if (!session && !currentRoomId) {
-      // This is a new guest session. Set their default room.
-      setCurrentRoom(null, "My Room");
+    if (authLoading || roomsLoading) {
+      // Still loading auth or rooms, defer logic
+      return;
     }
-  }, [authLoading, session, currentRoomId, supabase, setCurrentRoom]);
 
+    if (!session) {
+      // User is a guest
+      if (currentRoomId !== null || currentRoomName !== "My Room") {
+        setCurrentRoomIdState(null);
+        setCurrentRoomNameState("My Room");
+      }
+      setIsCurrentRoomWritable(true); // Guest's "My Room" is always writable
+      return;
+    }
+
+    // User is logged in
+    const storedRoomId = currentRoomId;
+    const foundRoom = rooms.find(room => room.id === storedRoomId);
+
+    if (foundRoom && (foundRoom.is_member || foundRoom.creator_id === session.user.id)) {
+      // The stored room is valid and accessible, keep it.
+      // Ensure name is up-to-date in case it changed in DB
+      if (foundRoom.name !== currentRoomName) {
+        setCurrentRoomNameState(foundRoom.name);
+      }
+    } else {
+      // Stored room is invalid, inaccessible, or no room was stored.
+      // Try to find the user's personal room (the first room they created).
+      const personalRoom = rooms.find(room => room.creator_id === session.user.id);
+
+      if (personalRoom) {
+        setCurrentRoomIdState(personalRoom.id);
+        setCurrentRoomNameState(personalRoom.name);
+        toast.info(`Switched to your personal room: ${personalRoom.name}`);
+      } else {
+        // Fallback: If no personal room found (shouldn't happen if trigger works),
+        // or if rooms array is empty for some reason, default to "My Room" (guest-like state).
+        setCurrentRoomIdState(null);
+        setCurrentRoomNameState("My Room");
+        toast.info("Could not find your personal room. Defaulting to 'My Room'.");
+      }
+    }
+  }, [authLoading, roomsLoading, session, rooms, currentRoomId, currentRoomName, setCurrentRoom]);
+
+  // Effect to persist current room ID to local storage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       if (currentRoomId) {
@@ -71,65 +91,57 @@ export function useCurrentRoom() {
     }
   }, [currentRoomId]);
 
+  // Effect to persist current room name to local storage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(LOCAL_STORAGE_CURRENT_ROOM_NAME_KEY, currentRoomName);
     }
   }, [currentRoomName]);
 
+  // Effect to determine writability of the current room
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading || roomsLoading) {
+      // Still loading auth or rooms, defer logic
+      return;
+    }
 
-    const checkWriteAccess = async () => {
-      if (!currentRoomId) {
-        setIsCurrentRoomWritable(true); // "My Room" is always writable for the user
+    if (!currentRoomId) {
+      setIsCurrentRoomWritable(true); // "My Room" (guest mode or no room selected) is always writable
+      return;
+    }
+
+    const room = rooms.find(r => r.id === currentRoomId);
+
+    if (!room) {
+      // Room not found in the fetched list, assume not writable
+      setIsCurrentRoomWritable(false);
+      return;
+    }
+
+    if (!session?.user?.id) {
+      // Not logged in, cannot write to any persistent room
+      setIsCurrentRoomWritable(false);
+      return;
+    }
+
+    // If user is the creator, they can always write
+    if (session.user.id === room.creator_id) {
+      setIsCurrentRoomWritable(true);
+      return;
+    }
+
+    // If not creator, check if guest write is allowed AND user is a member
+    if (room.allow_guest_write) {
+      const isMember = room.room_members?.some(member => member.user_id === session.user.id);
+      if (isMember) {
+        setIsCurrentRoomWritable(true); // Guest write allowed and user is a member
         return;
       }
-
-      if (!session?.user?.id || !supabase) {
-        setIsCurrentRoomWritable(false); // Not logged in, cannot write to any room
-        return;
-      }
-
-      // Fetch room details including creator_id and allow_guest_write
-      const { data: roomData, error: roomError } = await supabase
-        .from('rooms')
-        .select('creator_id, allow_guest_write')
-        .eq('id', currentRoomId)
-        .single();
-
-      if (roomError || !roomData) {
-        console.error("Error fetching room data for write access check:", roomError);
-        setIsCurrentRoomWritable(false);
-        return;
-      }
-
-      // Check if user is the creator
-      if (session.user.id === roomData.creator_id) {
-        setIsCurrentRoomWritable(true);
-        return;
-      }
-
-      // If not creator, check if guest write is allowed AND user is a member
-      if (roomData.allow_guest_write) {
-        const { data: membership, error: membershipError } = await supabase
-          .from('room_members')
-          .select('id')
-          .eq('room_id', currentRoomId)
-          .eq('user_id', session.user.id)
-          .single();
-
-        if (!membershipError && membership) {
-          setIsCurrentRoomWritable(true); // Guest write allowed and user is a member
-          return;
-        }
-      }
-      
-      setIsCurrentRoomWritable(false); // Default to false if no conditions met
-    };
-
-    checkWriteAccess();
-  }, [currentRoomId, session, supabase, authLoading]);
+    }
+    
+    // Default to false if no conditions met
+    setIsCurrentRoomWritable(false);
+  }, [currentRoomId, session, rooms, authLoading, roomsLoading]);
 
 
   return {
