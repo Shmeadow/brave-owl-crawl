@@ -11,6 +11,7 @@ export interface CardData {
   interval_days: number;
   correct_guesses: number;
   incorrect_guesses: number;
+  created_at: string;
 }
 
 export interface Category {

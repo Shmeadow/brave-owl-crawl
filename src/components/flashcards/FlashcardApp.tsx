@@ -11,6 +11,8 @@ import { LearnMode } from './LearnMode';
 import { TestMode } from './TestMode';
 import { SummaryMode, DetailedResult, SummaryData } from './SummaryMode';
 import { useFlashcardCategories } from '@/hooks/flashcards/useFlashcardCategories';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { FlashcardForm } from './FlashcardForm';
 
 type FlashcardMode = 'manage' | 'learn' | 'test' | 'summary';
 
@@ -80,12 +82,10 @@ export function FlashcardApp() {
     setCurrentMode('summary');
   }, []);
 
-  const handleEditClick = (card: CardData) => {
-    setEditingCard(card);
-    setCurrentMode('manage');
-  };
-
-  const handleCancelEdit = () => {
+  const handleUpdateAndClose = (cardData: { id?: string; front: string; back: string; category_id?: string | null }) => {
+    if (cardData.id) {
+      handleUpdateCard(cardData.id, cardData);
+    }
     setEditingCard(null);
   };
 
@@ -103,12 +103,9 @@ export function FlashcardApp() {
         return (
           <ManageMode
             cards={cards}
-            editingCard={editingCard}
             onAddCard={handleAddCard}
-            onUpdateCard={handleUpdateCard}
             onDeleteCard={handleDeleteCard}
-            onEdit={handleEditClick}
-            onCancelEdit={handleCancelEdit}
+            onEdit={setEditingCard}
             onBulkImport={handleBulkAddCards}
             categories={categories}
             onAddCategory={addCategory}
@@ -168,6 +165,23 @@ export function FlashcardApp() {
       </div>
 
       {renderContent()}
+
+      <Dialog open={!!editingCard} onOpenChange={(isOpen) => !isOpen && setEditingCard(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Flashcard</DialogTitle>
+          </DialogHeader>
+          {editingCard && (
+            <FlashcardForm
+              onSave={handleUpdateAndClose}
+              editingCard={editingCard}
+              onCancel={() => setEditingCard(null)}
+              categories={categories}
+              selectedCategoryId={null}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

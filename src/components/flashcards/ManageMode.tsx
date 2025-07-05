@@ -7,10 +7,9 @@ import { FlashcardForm } from './FlashcardForm';
 import { ImportExport } from './ImportExport';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCcw, LayoutGrid, FolderInput, Trash, X } from 'lucide-react';
+import { LayoutGrid, FolderInput, Trash, X } from 'lucide-react';
 import { CardData, Category } from '@/hooks/flashcards/types';
 import { OrganizeCardModal } from './OrganizeCardModal';
-import { toast } from 'sonner';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { useFlashcards } from '@/hooks/use-flashcards';
@@ -19,12 +18,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 interface ManageModeProps {
   cards: CardData[];
-  editingCard: CardData | null;
   onAddCard: (card: { front: string; back: string; category_id?: string | null }) => void;
-  onUpdateCard: (id: string, card: { front: string; back: string; category_id?: string | null }) => void;
   onDeleteCard: (id: string) => void;
   onEdit: (card: CardData) => void;
-  onCancelEdit: () => void;
   onBulkImport: (cards: { front: string; back: string }[], categoryId: string | null) => Promise<number>;
   categories: Category[];
   onAddCategory: (name: string) => Promise<Category | null>;
@@ -35,12 +31,9 @@ interface ManageModeProps {
 
 export function ManageMode({
   cards,
-  editingCard,
   onAddCard,
-  onUpdateCard,
   onDeleteCard,
   onEdit,
-  onCancelEdit,
   onBulkImport,
   categories,
   onAddCategory,
@@ -62,12 +55,6 @@ export function ManageMode({
     if (selectedCategoryId === 'all') return cards;
     return cards.filter(card => card.category_id === selectedCategoryId);
   }, [cards, selectedCategoryId]);
-
-  const handleSave = async (cardData: { id?: string; front: string; back: string; category_id?: string | null }) => {
-    if (cardData.id) onUpdateCard(cardData.id, cardData);
-    else onAddCard(cardData);
-    onCancelEdit();
-  };
 
   const handleDeleteCategoryWrapper = async (id: string, deleteContents: boolean) => {
     const success = await onDeleteCategory(id, deleteContents);
@@ -131,7 +118,13 @@ export function ManageMode({
         </Card>
       </div>
       <div className="w-full md:w-2/3 flex flex-col gap-6">
-        <FlashcardForm onSave={handleSave} editingCard={editingCard} onCancel={onCancelEdit} categories={categories} selectedCategoryId={selectedCategoryId} />
+        <FlashcardForm
+          onSave={(cardData) => onAddCard(cardData)}
+          editingCard={null}
+          onCancel={() => {}}
+          categories={categories}
+          selectedCategoryId={selectedCategoryId}
+        />
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Your Flashcards ({filteredCards.length})</h2>
           {selectionMode ? (
@@ -145,7 +138,17 @@ export function ManageMode({
             <Button variant="outline" onClick={handleToggleSelectionMode}>Select Cards</Button>
           )}
         </div>
-        <FlashcardList flashcards={filteredCards} onEdit={onEdit} onDelete={onDeleteCard} onOrganize={setOrganizingCard} columns={columns} rowHeight={120} selectionMode={selectionMode} selectedCardIds={selectedCardIds} onToggleSelection={toggleSelection} />
+        <FlashcardList
+          flashcards={filteredCards}
+          onEdit={onEdit}
+          onDelete={onDeleteCard}
+          onOrganize={setOrganizingCard}
+          columns={columns}
+          rowHeight={120}
+          selectionMode={selectionMode}
+          selectedCardIds={selectedCardIds}
+          onToggleSelection={toggleSelection}
+        />
       </div>
       <OrganizeCardModal card={organizingCard} categories={categories} isOpen={!!organizingCard} onClose={() => setOrganizingCard(null)} onUpdateCategory={onUpdateCardCategory} />
       <Dialog open={isBulkMoveOpen} onOpenChange={setIsBulkMoveOpen}>

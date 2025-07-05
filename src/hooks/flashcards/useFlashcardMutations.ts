@@ -110,6 +110,7 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
         interval_days: 0,
         correct_guesses: 0,
         incorrect_guesses: 0,
+        created_at: new Date().toISOString(),
       };
       const updatedCards = [...cards, newCard];
       setCards(updatedCards);
@@ -173,6 +174,7 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
       const guestCards: CardData[] = uniqueNewCards.map(c => ({
         id: crypto.randomUUID(), front: c.front, back: c.back, category_id: categoryId, starred: false, status: 'Learning',
         seen_count: 0, last_reviewed_at: null, interval_days: 0, correct_guesses: 0, incorrect_guesses: 0,
+        created_at: new Date().toISOString(),
       }));
       const updatedCards = [...cards, ...guestCards];
       setCards(updatedCards);
