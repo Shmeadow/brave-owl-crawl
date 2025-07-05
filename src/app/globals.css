@@ -35,7 +35,6 @@
     --day-start: 210 80% 70%;
     --day-end: 220 60% 30%;
     --background-blur-px: 0px; /* New blur variable */
-    --header-top-offset: 1rem; /* New header offset variable */
   }
 
   .dark {
