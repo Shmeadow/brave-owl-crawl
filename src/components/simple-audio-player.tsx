@@ -402,7 +402,7 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
       {displayMode === 'minimized' && (
         <div
           className={cn(
-            "bg-card/40 backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex items-center justify-between w-full h-full"
+            "bg-card/40 backdrop-blur-xl border-white/20 p-2 rounded-lg shadow-sm flex items-center justify-between w-full h-full" // Increased padding
           )}
           title="Expand Player"
           // Removed onClick from here to prevent accidental expansion
@@ -424,7 +424,7 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
 
           <button
             onClick={(e) => { e.stopPropagation(); setDisplayMode('normal'); }}
-            className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 ml-1 flex-shrink-0"
+            className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 ml-2 flex-shrink-0" // Increased ml
             title="Expand Player"
           >
             <ChevronLeft size={16} />

@@ -37,49 +37,49 @@ export function PlayerControls({
   const isVolumeControlDisabled = !playerIsReady || playerType === 'spotify';
 
   return (
-    <div className="flex items-center space-x-0.5 flex-shrink-0">
+    <div className="flex items-center space-x-2 flex-shrink-0"> {/* Increased space-x */}
       {playerType !== 'spotify' && (
         <>
           <button
             onClick={skipBackward}
-            className="p-0 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6"
+            className="p-0 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-7 w-7" // Increased size
             aria-label="Skip backward 10 seconds"
             title="Skip Backward"
             disabled={!canSeek} // Use canSeek
           >
-            <Rewind size={14} />
+            <Rewind size={16} /> {/* Increased icon size */}
           </button>
           <button
             onClick={togglePlayPause}
-            className="p-0.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105 h-8 w-8"
+            className="p-0.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105 h-9 w-9" // Increased size
             aria-label={currentIsPlaying ? "Pause" : "Play"}
             title={currentIsPlaying ? "Pause" : "Play"}
             disabled={!canPlayPause} // Use canPlayPause
           >
-            {currentIsPlaying ? <Pause size={18} /> : <Play size={18} />}
+            {currentIsPlaying ? <Pause size={20} /> : <Play size={20} />} {/* Increased icon size */}
           </button>
           <button
             onClick={skipForward}
-            className="p-0 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6"
+            className="p-0 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-7 w-7" // Increased size
             aria-label="Skip forward 10 seconds"
             title="Skip Forward"
             disabled={!canSeek} // Use canSeek
           >
-            <FastForward size={14} />
+            <FastForward size={16} /> {/* Increased icon size */}
           </button>
         </>
       )}
 
       {/* Volume Control */}
-      <div className="flex items-center space-x-0.5 ml-1">
+      <div className="flex items-center space-x-1 ml-3"> {/* Increased space-x and ml */}
         <button
           onClick={toggleMute}
-          className="p-0 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300 h-6 w-6"
+          className="p-0 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300 h-7 w-7" // Increased size
           aria-label={currentIsMuted ? "Unmute" : "Mute"}
           title={currentIsMuted ? "Unmute" : "Mute"}
           disabled={isVolumeControlDisabled} // Use isVolumeControlDisabled
         >
-          {currentIsMuted || currentVolume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
+          {currentIsMuted || currentVolume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />} {/* Increased icon size */}
         </button>
         <input
           type="range"
@@ -88,7 +88,7 @@ export function PlayerControls({
           step="0.01"
           value={currentVolume}
           onChange={handleVolumeChange}
-          className="w-6 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
+          className="w-10 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary" // Increased width
           disabled={isVolumeControlDisabled} // Use isVolumeControlDisabled
         />
       </div>
