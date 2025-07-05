@@ -42,30 +42,30 @@ export function PlayerControls({
         <>
           <button
             onClick={skipBackward}
-            className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
+            className="p-0 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6"
             aria-label="Skip backward 10 seconds"
             title="Skip Backward"
             disabled={!canSeek} // Use canSeek
           >
-            <Rewind size={12} />
+            <Rewind size={10} />
           </button>
           <button
             onClick={togglePlayPause}
-            className="p-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105"
+            className="p-0.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105 h-8 w-8"
             aria-label={currentIsPlaying ? "Pause" : "Play"}
             title={currentIsPlaying ? "Pause" : "Play"}
             disabled={!canPlayPause} // Use canPlayPause
           >
-            {currentIsPlaying ? <Pause size={14} /> : <Play size={14} />}
+            {currentIsPlaying ? <Pause size={12} /> : <Play size={12} />}
           </button>
           <button
             onClick={skipForward}
-            className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300"
+            className="p-0 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6"
             aria-label="Skip forward 10 seconds"
             title="Skip Forward"
             disabled={!canSeek} // Use canSeek
           >
-            <FastForward size={12} />
+            <FastForward size={10} />
           </button>
         </>
       )}
@@ -74,12 +74,12 @@ export function PlayerControls({
       <div className="flex items-center space-x-0.5 ml-1">
         <button
           onClick={toggleMute}
-          className="p-0.5 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300"
+          className="p-0 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300 h-6 w-6"
           aria-label={currentIsMuted ? "Unmute" : "Mute"}
           title={currentIsMuted ? "Unmute" : "Mute"}
           disabled={isVolumeControlDisabled} // Use isVolumeControlDisabled
         >
-          {currentIsMuted || currentVolume === 0 ? <VolumeX size={10} /> : <Volume2 size={10} />}
+          {currentIsMuted || currentVolume === 0 ? <VolumeX size={8} /> : <Volume2 size={8} />}
         </button>
         <input
           type="range"
@@ -88,7 +88,7 @@ export function PlayerControls({
           step="0.01"
           value={currentVolume}
           onChange={handleVolumeChange}
-          className="w-8 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
+          className="w-6 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
           disabled={isVolumeControlDisabled} // Use isVolumeControlDisabled
         />
       </div>

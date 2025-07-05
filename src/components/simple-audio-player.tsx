@@ -319,7 +319,7 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
     <div className={cn(
       "fixed z-[900] transition-all duration-300 ease-in-out",
       displayMode === 'normal' && 'top-20 right-4 w-80',
-      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-16',
+      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-40 h-12', // Adjusted size
       displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-[500px] flex flex-col items-center justify-center'
     )}>
       <div className={cn(
@@ -376,6 +376,8 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
             canPlayPause={canPlayPause}
             canSeek={canSeek}
           />
+          {/* PlayerModeButtons moved here */}
+          <PlayerModeButtons displayMode={displayMode} setDisplayMode={setDisplayMode} />
         </div>
 
         <ProgressBar
@@ -395,8 +397,6 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
             </Button>
           </div>
         )}
-
-        <PlayerModeButtons displayMode={displayMode} setDisplayMode={setDisplayMode} />
       </div>
 
       {displayMode === 'minimized' && (
@@ -405,7 +405,7 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
             "bg-card/40 backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex items-center justify-between w-full h-full"
           )}
           title="Expand Player"
-          onClick={(e) => { e.stopPropagation(); setDisplayMode('normal'); }}
+          // Removed onClick from here to prevent accidental expansion
         >
           <PlayerControls
             playerType={playerType}
