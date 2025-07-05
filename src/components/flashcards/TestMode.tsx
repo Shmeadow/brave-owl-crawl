@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle, Shuffle, RefreshCw, Timer } from 'lucide-react';
@@ -49,7 +49,7 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
     setTestQuestions(questions);
   };
 
-  const resetTestState = () => {
+  const resetTestState = useCallback(() => {
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
     setScore(0);
@@ -58,7 +58,7 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
     setShowFeedback(false);
     if (timerRef.current) clearInterval(timerRef.current);
     setCountdown(stressTime);
-  };
+  }, [stressTime]);
 
   useEffect(() => {
     if (flashcards.length > 3) {
@@ -67,41 +67,42 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
     } else {
       setTestQuestions([]);
     }
-  }, [flashcards]);
+  }, [flashcards, resetTestState]);
 
-  const handleShuffleTest = () => {
+  const handleShuffleTest = useCallback(() => {
     if (flashcards.length > 3) {
       generateTestQuestions(flashcards);
       resetTestState();
       toast.success("Test questions have been shuffled!");
     }
-  };
+  }, [flashcards, resetTestState]);
 
-  const handleRestartTest = () => {
+  const handleRestartTest = useCallback(() => {
     if (testQuestions.length > 0) {
       resetTestState();
       toast.success("Test restarted!");
     }
-  };
+  }, [testQuestions, resetTestState]);
 
-  const handleEndTest = () => {
+  const handleEndTest = useCallback(() => {
     goToSummary({
       type: 'test',
       totalQuestions: testSessionResults.length,
       score: score,
       detailedResults: testSessionResults
     }, 'test');
-  };
+  }, [goToSummary, testSessionResults, score]);
 
   useEffect(() => {
     if (testCompleted) {
       handleEndTest();
     }
-  }, [testCompleted]);
+  }, [testCompleted, handleEndTest]);
 
   const currentQuestion = testQuestions[currentQuestionIndex];
 
-  const processAnswer = (isCorrect: boolean, answer: string | null) => {
+  const processAnswer = useCallback((isCorrect: boolean, answer: string | null) => {
+    if (!currentQuestion) return;
     if (timerRef.current) clearInterval(timerRef.current);
     
     setIsCorrectAnswer(isCorrect);
@@ -133,7 +134,7 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
         setTestCompleted(true);
       }
     }, 1500);
-  };
+  }, [currentQuestion, currentQuestionIndex, testQuestions.length, handleAnswerFeedback]);
 
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -155,10 +156,11 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
   }, [currentQuestionIndex, isStressMode, testCompleted, showFeedback, stressTime, currentQuestion]);
 
   useEffect(() => {
-    if (countdown === 0 && isStressMode && !showFeedback) {
-      processAnswer(false, "[Time Ran Out]");
+    if (countdown === 0 && isStressMode && !showFeedback && !testCompleted) {
+      toast.error("Time's up! Restarting the test.");
+      handleRestartTest();
     }
-  }, [countdown, isStressMode, showFeedback]);
+  }, [countdown, isStressMode, showFeedback, testCompleted, handleRestartTest]);
 
   const handleSubmitAnswer = () => {
     if (selectedAnswer === null) {
