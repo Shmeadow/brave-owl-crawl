@@ -14,7 +14,7 @@ import { PlayerDisplay } from './audio-player/player-display';
 import { MediaInput } from './audio-player/media-input';
 import { PlayerControls } from './audio-player/player-controls';
 import { ProgressBar } from './audio-player/progress-bar';
-import { PlayerModeButtons } from './audio-player/player-mode-buttons';
+// Removed: import { PlayerModeButtons } from './audio-player/player-mode-buttons'; // PlayerModeButtons is now integrated
 
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 
@@ -255,6 +255,8 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
                 handleVolumeChange={handleVolumeChange}
                 canPlayPause={canPlayPause}
                 canSeek={canSeek}
+                displayMode={displayMode} // Pass displayMode
+                setDisplayMode={setDisplayMode} // Pass setDisplayMode
               />
             </div>
 
@@ -299,6 +301,8 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
               handleVolumeChange={handleVolumeChange}
               canPlayPause={canPlayPause}
               canSeek={canSeek}
+              displayMode={displayMode} // Pass displayMode
+              setDisplayMode={setDisplayMode} // Pass setDisplayMode
             />
 
             <button
@@ -375,9 +379,9 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
             handleVolumeChange={handleVolumeChange}
             canPlayPause={canPlayPause}
             canSeek={canSeek}
+            displayMode={displayMode} // Pass displayMode
+            setDisplayMode={setDisplayMode} // Pass setDisplayMode
           />
-          {/* PlayerModeButtons moved here */}
-          <PlayerModeButtons displayMode={displayMode} setDisplayMode={setDisplayMode} />
         </div>
 
         <ProgressBar
@@ -420,6 +424,8 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
             handleVolumeChange={handleVolumeChange}
             canPlayPause={canPlayPause}
             canSeek={canSeek}
+            displayMode={displayMode} // Pass displayMode
+            setDisplayMode={setDisplayMode} // Pass setDisplayMode
           />
 
           <button
