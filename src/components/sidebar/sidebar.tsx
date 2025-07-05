@@ -9,6 +9,7 @@ import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Sparkles, BookOpen, Goal, ChevronLeft, ChevronRight, WandSparkles } from "lucide-react";
 
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
+const SIDEBAR_WIDTH_EXPANDED = 180; // px - New width for expanded desktop sidebar
 const SIDEBAR_WIDTH_MOBILE = 200; // px for the off-canvas menu
 const HOT_ZONE_WIDTH = 20; // px (includes the 4px visible strip)
 const UNDOCK_DELAY = 500; // ms
@@ -121,8 +122,10 @@ export function Sidebar({ isMobile }: SidebarProps) {
         "rounded-r-lg",
         isMobile
           ? `w-[${SIDEBAR_WIDTH_MOBILE}px] ${actualSidebarOpen ? "translate-x-0" : "-translate-x-full"}` // Mobile off-canvas
-          : `w-[${SIDEBAR_WIDTH_DESKTOP}px] ${actualSidebarOpen ? "translate-x-0" : "-translate-x-full"}` // Desktop fixed
+          : `w-[${actualSidebarOpen ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_DESKTOP}px] ${actualSidebarOpen ? "translate-x-0" : "-translate-x-full"}` // Desktop fixed
       )}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div className="flex flex-col gap-2 overflow-y-auto">
         {navItems.map((item) => (
@@ -132,6 +135,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
             label={item.label}
             isActive={activePanel === item.id}
             onClick={() => handleSidebarItemClick(item.id, item.label)}
+            isExpanded={actualSidebarOpen} // Pass the expanded state
           />
         ))}
       </div>
@@ -142,6 +146,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
             label={mounted && isAlwaysOpen ? "Undock Sidebar" : "Dock Sidebar"}
             isActive={false}
             onClick={toggleAlwaysOpen}
+            isExpanded={actualSidebarOpen} // Pass the expanded state
           />
         )}
       </div>
