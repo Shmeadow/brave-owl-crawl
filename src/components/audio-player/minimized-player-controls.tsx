@@ -30,11 +30,11 @@ export function MinimizedPlayerControls({
   const isVolumeControlDisabled = !playerIsReady || playerType === 'spotify';
 
   return (
-    <div className="flex items-center justify-between w-full h-full px-1"> {/* Added px-1 for internal padding */}
+    <div className="flex items-center justify-center w-full h-full space-x-2 px-1">
       {/* Play/Pause Button */}
       <button
         onClick={togglePlayPause}
-        className="p-0.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105 h-9 w-9 flex-shrink-0"
+        className="p-0.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105 h-9 w-9 flex-shrink-0 flex items-center justify-center"
         aria-label={currentIsPlaying ? "Pause" : "Play"}
         title={currentIsPlaying ? "Pause" : "Play"}
         disabled={!playerIsReady}
@@ -43,10 +43,10 @@ export function MinimizedPlayerControls({
       </button>
 
       {/* Volume Control */}
-      <div className="flex items-center space-x-1 flex-grow justify-center mx-2"> {/* Added mx-2 for spacing */}
+      <div className="flex items-center space-x-1 flex-grow justify-center">
         <button
           onClick={toggleMute}
-          className="p-0 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300 h-7 w-7 flex-shrink-0"
+          className="p-0 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300 h-7 w-7 flex-shrink-0 flex items-center justify-center"
           aria-label={currentIsMuted ? "Unmute" : "Mute"}
           title={currentIsMuted ? "Unmute" : "Mute"}
           disabled={isVolumeControlDisabled}
@@ -60,7 +60,7 @@ export function MinimizedPlayerControls({
           step="0.01"
           value={currentVolume}
           onChange={handleVolumeChange}
-          className="w-16 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary flex-grow" // Increased width, added flex-grow
+          className="w-16 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary flex-grow"
           disabled={isVolumeControlDisabled}
         />
       </div>
@@ -68,7 +68,7 @@ export function MinimizedPlayerControls({
       {/* Undock Button */}
       <button
         onClick={() => setDisplayMode('normal')}
-        className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 flex-shrink-0 h-9 w-9" // Increased size
+        className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 flex-shrink-0 h-9 w-9 flex items-center justify-center"
         title="Expand Player"
       >
         <ChevronLeft size={20} />
