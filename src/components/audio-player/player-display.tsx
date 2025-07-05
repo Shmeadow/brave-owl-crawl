@@ -16,7 +16,7 @@ interface PlayerDisplayProps {
   onTimeUpdate: () => void;
   onEnded: () => void;
   className?: string;
-  isMaximized: boolean; // New prop
+  isMaximized: boolean;
 }
 
 export function PlayerDisplay({
@@ -47,7 +47,7 @@ export function PlayerDisplay({
           onTimeUpdate={onTimeUpdate}
           onEnded={onEnded}
           preload="metadata"
-          className={cn(className, 'w-full h-full', isMaximized ? 'object-contain' : 'object-cover')}
+          className={cn(className, 'w-full h-full')}
         >
           Your browser does not support the audio element.
         </audio>
@@ -56,8 +56,7 @@ export function PlayerDisplay({
         <div className={cn(
           "relative w-full overflow-hidden",
           className,
-          aspectRatioClass,
-          isMaximized ? 'flex-grow' : '' // Allow YouTube iframe to grow in maximized mode
+          aspectRatioClass
         )}>
           <iframe
             ref={youtubeIframeRef}
@@ -74,15 +73,14 @@ export function PlayerDisplay({
         <div className={cn(
           "relative w-full overflow-hidden bg-black rounded-lg",
           className,
-          aspectRatioClass,
-          isMaximized ? 'flex-grow' : '' // Allow Spotify display to grow in maximized mode
+          aspectRatioClass
         )}>
           {albumArtUrl ? (
             <Image
               src={albumArtUrl}
               alt={spotifyCurrentTrack?.album?.name || 'Album Art'}
               fill
-              className={cn("object-contain", isMaximized ? 'object-contain' : 'object-cover')} // Ensure object-contain for maximized
+              className="object-contain"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted/20">

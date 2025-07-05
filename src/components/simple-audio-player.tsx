@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Music, ListMusic, Youtube, VolumeX, Volume2, ChevronLeft, ChevronUp, ChevronDown, PanelBottomClose, PanelBottomOpen, Maximize, Minimize } from 'lucide-react'; // Added ChevronDown
+import { Music, ListMusic, Youtube, VolumeX, Volume2, ChevronLeft, ChevronUp, ChevronDown } from 'lucide-react'; // Added ChevronDown
 import { useYouTubePlayer } from '@/hooks/use-youtube-player';
 import { useHtmlAudioPlayer } from '@/hooks/use-html-audio-player';
 import { useSpotifyPlayer } from '@/hooks/use-spotify-player';
@@ -16,8 +16,6 @@ import { PlayerControls } from './audio-player/player-controls';
 import { ProgressBar } from './audio-player/progress-bar';
 import { PlayerModeButtons } from './audio-player/player-mode-buttons';
 
-type PlayerDisplayMode = 'normal' | 'maximized' | 'docked';
-
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 
 interface SimpleAudioPlayerProps {
@@ -30,13 +28,10 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
   const [committedMediaUrl, setCommittedMediaUrl] = useState('');
   const [playerType, setPlayerType] = useState<'audio' | 'youtube' | 'spotify' | null>(null);
   const [showUrlInput, setShowUrlInput] = useState(false);
-  const [displayMode, setDisplayMode] = useState<PlayerDisplayMode>(() => {
+  const [displayMode, setDisplayMode] = useState<'normal' | 'maximized' | 'minimized'>(() => {
     if (typeof window !== 'undefined') {
       const savedMode = localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY);
-      // Ensure saved mode is one of the valid types, default to 'normal'
-      if (savedMode === 'normal' || savedMode === 'maximized' || savedMode === 'docked') {
-        return savedMode as PlayerDisplayMode;
-      }
+      return savedMode === 'minimized' ? 'minimized' : 'normal';
     }
     return 'normal';
   });
@@ -289,7 +284,7 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
             </Button>
           </>
         ) : (
-          // Minimized mobile view (compact bar)
+          // Minimized mobile view
           <>
             <PlayerControls
               playerType={playerType}
@@ -319,87 +314,54 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
     );
   }
 
-  // Desktop rendering
+  // Desktop rendering (original logic)
   return (
     <div className={cn(
       "fixed z-[900] transition-all duration-300 ease-in-out",
-      "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col",
-      displayMode === 'normal' && 'top-20 right-4 w-80 p-1',
-      displayMode === 'maximized' && 'inset-0 m-auto w-[80vw] h-[80vh] p-4 items-center justify-center',
-      displayMode === 'docked' && 'bottom-4 right-4 w-64 h-16 p-2 flex-row items-center justify-between'
+      displayMode === 'normal' && 'top-20 right-4 w-80',
+      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-16',
+      displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-[500px] flex flex-col items-center justify-center'
     )}>
-      {displayMode !== 'docked' ? (
-        <>
-          <PlayerDisplay
-            playerType={playerType}
-            inputUrl={committedMediaUrl}
-            audioRef={audioRef}
-            youtubeIframeRef={youtubeIframeRef}
-            spotifyCurrentTrack={spotifyCurrentTrack}
-            onLoadedMetadata={htmlAudioOnLoadedMetadata}
-            onTimeUpdate={htmlAudioOnTimeUpdate}
-            onEnded={htmlAudioOnEnded}
-            isMaximized={displayMode === 'maximized'}
-            className="w-full"
-          />
-
-          {playerType === 'spotify' && spotifyCurrentTrack && (
-            <div className="text-center p-1 flex-shrink-0">
-              <p className="text-sm font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
-              <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map(a => a.name).join(', ')}</p>
-            </div>
+      <div className={cn(
+        "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full",
+        displayMode === 'normal' && 'p-1',
+        displayMode === 'maximized' && 'p-4 items-center justify-center',
+        displayMode === 'minimized' && 'hidden'
+      )}>
+        <PlayerDisplay
+          playerType={playerType}
+          inputUrl={committedMediaUrl}
+          audioRef={audioRef}
+          youtubeIframeRef={youtubeIframeRef}
+          spotifyCurrentTrack={spotifyCurrentTrack}
+          onLoadedMetadata={htmlAudioOnLoadedMetadata}
+          onTimeUpdate={htmlAudioOnTimeUpdate}
+          onEnded={htmlAudioOnEnded}
+          isMaximized={displayMode === 'maximized'}
+          className={cn(
+            displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : '',
+            'w-full'
           )}
+        />
 
-          <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
-            <div className="flex-grow min-w-0">
-              <MediaInput
-                inputUrl={stagedInputUrl}
-                setInputUrl={setStagedInputUrl}
-                showUrlInput={showUrlInput}
-                setShowUrlInput={setShowUrlInput}
-                onLoadMedia={loadNewMedia}
-              />
-            </div>
+        {playerType === 'spotify' && spotifyCurrentTrack && (
+          <div className="text-center p-1 flex-shrink-0">
+            <p className="text-sm font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
+            <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map(a => a.name).join(', ')}</p>
+          </div>
+        )}
 
-            <PlayerControls
-              playerType={playerType}
-              playerIsReady={playerIsReady}
-              currentIsPlaying={currentIsPlaying}
-              togglePlayPause={togglePlayPause}
-              skipBackward={skipBackward}
-              skipForward={skipForward}
-              currentVolume={currentVolume}
-              currentIsMuted={currentIsMuted}
-              toggleMute={toggleMute}
-              handleVolumeChange={handleVolumeChange}
-              canPlayPause={canPlayPause}
-              canSeek={canSeek}
+        <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
+          <div className="flex-grow min-w-0">
+            <MediaInput
+              inputUrl={stagedInputUrl}
+              setInputUrl={setStagedInputUrl}
+              showUrlInput={showUrlInput}
+              setShowUrlInput={setShowUrlInput}
+              onLoadMedia={loadNewMedia}
             />
           </div>
 
-          <ProgressBar
-            playerType={playerType}
-            playerIsReady={playerIsReady}
-            currentPlaybackTime={currentPlaybackTime}
-            totalDuration={totalDuration}
-            handleProgressBarChange={handleProgressBarChange}
-            formatTime={formatTime}
-          />
-
-          {playerType === 'spotify' && !spotifyPlayerReady && (
-            <div className="text-center text-sm text-muted-foreground mt-2">
-              <p>Connect to Spotify to enable playback.</p>
-              <Button onClick={connectToSpotify} className="text-primary hover:underline mt-1">
-                Connect to Spotify
-              </Button>
-            </div>
-          )}
-
-          <PlayerModeButtons displayMode={displayMode} setDisplayMode={setDisplayMode} />
-        </>
-      ) : (
-        // Docked mode content
-        <>
           <PlayerControls
             playerType={playerType}
             playerIsReady={playerIsReady}
@@ -414,14 +376,60 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
             canPlayPause={canPlayPause}
             canSeek={canSeek}
           />
+        </div>
+
+        <ProgressBar
+          playerType={playerType}
+          playerIsReady={playerIsReady}
+          currentPlaybackTime={currentPlaybackTime}
+          totalDuration={totalDuration}
+          handleProgressBarChange={handleProgressBarChange}
+          formatTime={formatTime}
+        />
+
+        {playerType === 'spotify' && !spotifyPlayerReady && (
+          <div className="text-center text-sm text-muted-foreground mt-2">
+            <p>Connect to Spotify to enable playback.</p>
+            <Button onClick={connectToSpotify} className="text-primary hover:underline mt-1">
+              Connect to Spotify
+            </Button>
+          </div>
+        )}
+
+        <PlayerModeButtons displayMode={displayMode} setDisplayMode={setDisplayMode} />
+      </div>
+
+      {displayMode === 'minimized' && (
+        <div
+          className={cn(
+            "bg-card/40 backdrop-blur-xl border-white/20 p-1 rounded-lg shadow-sm flex items-center justify-between w-full h-full"
+          )}
+          title="Expand Player"
+          onClick={(e) => { e.stopPropagation(); setDisplayMode('normal'); }}
+        >
+          <PlayerControls
+            playerType={playerType}
+            playerIsReady={playerIsReady}
+            currentIsPlaying={currentIsPlaying}
+            togglePlayPause={togglePlayPause}
+            skipBackward={skipBackward}
+            skipForward={skipForward}
+            currentVolume={currentVolume}
+            currentIsMuted={currentIsMuted}
+            toggleMute={toggleMute}
+            handleVolumeChange={handleVolumeChange}
+            canPlayPause={canPlayPause}
+            canSeek={canSeek}
+          />
+
           <button
-            onClick={() => setDisplayMode('normal')}
+            onClick={(e) => { e.stopPropagation(); setDisplayMode('normal'); }}
             className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 ml-1 flex-shrink-0"
             title="Expand Player"
           >
-            <PanelBottomOpen size={16} />
+            <ChevronLeft size={16} />
           </button>
-        </>
+        </div>
       )}
     </div>
   );
