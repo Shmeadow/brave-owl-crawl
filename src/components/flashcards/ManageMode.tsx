@@ -1,36 +1,30 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { CardData, Category } from '@/hooks/flashcards/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, Move, MoreVertical, Upload, RefreshCcw } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Trash2, Move, Upload, RefreshCcw } from 'lucide-react';
+import { FlashcardForm } from './FlashcardForm';
+import { FlashcardListItem } from './FlashcardListItem';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { CategorySidebar } from './CategorySidebar';
-import { FlashcardList } from './FlashcardList';
-import { AddFlashCardForm } from '../add-flash-card-form';
-import { EditFlashCardForm } from '../edit-flash-card-form';
-import { ImportExport } from './ImportExport';
 
 interface ManageModeProps {
   cards: CardData[];
   editingCard: CardData | null;
-  onAddCard: (data: { front: string; back: string; category_id?: string | null }) => void;
-  onUpdateCard: (id: string, data: { front: string; back: string; category_id?: string | null }) => void;
-  onDeleteCard: (id: string) => void;
+  onAddCard: (data: Omit<CardData, 'id' | 'user_id' | 'created_at' | 'status' | 'seen_count' | 'last_reviewed_at' | 'interval_days' | 'correct_guesses' | 'incorrect_guesses'>) => void;
+  onUpdateCard: (id: string, data: Partial<CardData>) => void;
+  onDeleteCard: (id:string) => void;
   onEdit: (card: CardData) => void;
   onCancelEdit: () => void;
   onResetProgress: () => void;
-  onBulkImport: (newCards: { front: string; back: string }[], categoryId: string | null) => Promise<number>;
-  onBulkDelete: (cardIds: string[]) => void;
-  onBulkMove: (cardIds: string[], newCategoryId: string | null) => void;
+  onBulkImport: (file: File) => void;
   categories: Category[];
-  onAddCategory: (name: string) => Promise<Category | null>;
-  onDeleteCategory: (id: string, deleteContents: boolean) => void;
+  onAddCategory: (name: string) => void;
+  onDeleteCategory: (id: string) => void;
   onUpdateCategory: (id: string, name: string) => void;
+  onUpdateCardCategory: (cardId: string, categoryId: string | null) => void;
 }
 
 export function ManageMode({
@@ -43,120 +37,79 @@ export function ManageMode({
   onCancelEdit,
   onResetProgress,
   onBulkImport,
-  onBulkDelete,
-  onBulkMove,
   categories,
   onAddCategory,
-  onDeleteCategory,
-  onUpdateCategory,
+  onUpdateCardCategory
 }: ManageModeProps) {
+  const [selectedCards, setSelectedCards] = useState<string[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all'>('all');
-  const [selectedCardIds, setSelectedCardIds] = useState<Set<string>>(new Set());
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isImportExportOpen, setIsImportExportOpen] = useState(false);
-  const [targetMoveCategoryId, setTargetMoveCategoryId] = useState<string>('');
+  const [targetCategoryId, setTargetCategoryId] = useState<string>('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const selectionMode = selectedCardIds.size > 0;
+  const selectionMode = selectedCards.length > 0;
 
   const filteredCards = useMemo(() => {
     if (selectedCategoryId === 'all') return cards;
     return cards.filter(card => card.category_id === selectedCategoryId);
   }, [cards, selectedCategoryId]);
 
-  const handleToggleSelection = (id: string) => {
-    setSelectedCardIds(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
+  const handleToggleSelect = (id: string) => {
+    setSelectedCards(prev =>
+      prev.includes(id) ? prev.filter(cardId => cardId !== id) : [...prev, id]
+    );
   };
 
   const handleSelectAll = () => {
-    if (selectedCardIds.size === filteredCards.length) {
-      setSelectedCardIds(new Set());
+    if (selectedCards.length === filteredCards.length) {
+      setSelectedCards([]);
     } else {
-      setSelectedCardIds(new Set(filteredCards.map(c => c.id)));
+      setSelectedCards(filteredCards.map(c => c.id));
     }
   };
 
-  const handleBulkDeleteClick = () => {
-    if (selectionMode) {
-      onBulkDelete(Array.from(selectedCardIds));
-      setSelectedCardIds(new Set());
-    }
+  const handleBulkDelete = () => {
+    if (selectedCards.length === 0) return;
+    selectedCards.forEach(id => onDeleteCard(id));
+    toast.success(`Deleted ${selectedCards.length} cards.`);
+    setSelectedCards([]);
   };
 
-  const handleBulkMoveClick = () => {
-    if (selectionMode && targetMoveCategoryId) {
-      onBulkMove(Array.from(selectedCardIds), targetMoveCategoryId === 'none' ? null : targetMoveCategoryId);
-      setSelectedCardIds(new Set());
-    }
+  const handleBulkMove = () => {
+    if (selectedCards.length === 0 || !targetCategoryId) return;
+    selectedCards.forEach(id => onUpdateCardCategory(id, targetCategoryId === 'none' ? null : targetCategoryId));
+    toast.success(`Moved ${selectedCards.length} cards.`);
+    setSelectedCards([]);
   };
 
-  const handleAddCardSubmit = (data: { front: string; back: string }) => {
-    onAddCard({ ...data, category_id: selectedCategoryId === 'all' ? null : selectedCategoryId });
-    setIsAddDialogOpen(false);
-  };
-
-  const handleUpdateCardSubmit = (data: { front: string; back: string }) => {
-    if (editingCard) {
-      onUpdateCard(editingCard.id, { ...data, category_id: editingCard.category_id });
-      onCancelEdit();
+  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      onBulkImport(file);
     }
   };
 
   return (
-    <div className="grid md:grid-cols-12 gap-6 w-full">
-      <div className="md:col-span-4 lg:col-span-3">
-        <CategorySidebar
+    <div className="grid md:grid-cols-3 gap-6 w-full">
+      <div className="md:col-span-1 space-y-6">
+        <FlashcardForm
+          key={editingCard?.id ?? 'new'}
+          editingCard={editingCard}
+          onAddCard={onAddCard}
+          onUpdateCard={onUpdateCard}
+          onCancelEdit={onCancelEdit}
           categories={categories}
-          selectedCategoryId={selectedCategoryId}
-          onSelectCategory={setSelectedCategoryId}
           onAddCategory={onAddCategory}
-          onDeleteCategory={onDeleteCategory}
-          onUpdateCategory={onUpdateCategory}
         />
-      </div>
-
-      <div className="md:col-span-8 lg:col-span-9">
-        <Card className="w-full flex flex-col flex-1 bg-card backdrop-blur-xl border-white/20">
-          <CardHeader>
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <CardTitle>
-                {selectedCategoryId === 'all' ? 'All Cards' : categories.find(c => c.id === selectedCategoryId)?.name || 'Category'} ({filteredCards.length})
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                <Button onClick={() => setIsAddDialogOpen(true)} size="sm">
-                  <Plus className="mr-2 h-4 w-4" /> Add Card
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon" className="h-9 w-9">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setIsImportExportOpen(true)}>
-                      <Upload className="mr-2 h-4 w-4" /> Import / Export
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onResetProgress} className="text-destructive">
-                      <RefreshCcw className="mr-2 h-4 w-4" /> Reset All Progress
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
+        <Card>
+          <CardHeader><CardTitle>Deck Actions</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
             {selectionMode && (
-              <div className="mt-4 p-2 bg-muted rounded-lg flex flex-wrap items-center justify-between gap-2">
-                <span className="text-sm font-medium">{selectedCardIds.size} cards selected</span>
+              <>
+                <p className="text-sm text-muted-foreground">{selectedCards.length} cards selected.</p>
                 <div className="flex items-center gap-2">
-                  <Select onValueChange={setTargetMoveCategoryId}>
-                    <SelectTrigger className="h-8 w-[150px]">
-                      <SelectValue placeholder="Move to..." />
+                  <Select value={targetCategoryId} onValueChange={setTargetCategoryId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Move to category..." />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">Uncategorized</SelectItem>
@@ -165,61 +118,83 @@ export function ManageMode({
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button onClick={handleBulkMoveClick} size="sm" variant="outline" disabled={!targetMoveCategoryId}>
-                    <Move className="mr-2 h-4 w-4" /> Move
-                  </Button>
-                  <Button onClick={handleBulkDeleteClick} size="sm" variant="destructive">
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                  <Button onClick={handleBulkMove} size="icon" variant="outline" disabled={!targetCategoryId}>
+                    <Move className="h-4 w-4" />
                   </Button>
                 </div>
-              </div>
+                <Button onClick={handleBulkDelete} variant="destructive" className="w-full">
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete Selected
+                </Button>
+                <Button onClick={() => setSelectedCards([])} variant="ghost" className="w-full">
+                  Clear Selection
+                </Button>
+                <hr className="my-2" />
+              </>
             )}
-          </CardHeader>
-          <CardContent className="flex-1 p-0 flex flex-col">
-            <FlashcardList
-              flashcards={filteredCards}
-              onEdit={onEdit}
-              onDelete={onDeleteCard}
-              selectionMode={selectionMode}
-              selectedCardIds={selectedCardIds}
-              onToggleSelection={handleToggleSelection}
+            
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileImport}
+              className="hidden"
+              accept=".csv, text/csv"
             />
+            <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="w-full">
+              <Upload className="mr-2 h-4 w-4" /> Import from CSV
+            </Button>
+            <Button onClick={onResetProgress} variant="destructive" className="w-full">
+              <RefreshCcw className="mr-2 h-4 w-4" /> Reset All Progress
+            </Button>
+            <p className="text-xs text-muted-foreground mt-2">
+              Resetting progress will clear all learning stats for every card.
+            </p>
           </CardContent>
         </Card>
       </div>
-
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Add New Flashcard</DialogTitle></DialogHeader>
-          <AddFlashCardForm onAddCard={handleAddCardSubmit} isCurrentRoomWritable={true} />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={!!editingCard} onOpenChange={(open) => !open && onCancelEdit()}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Edit Flashcard</DialogTitle></DialogHeader>
-          {editingCard && (
-            <EditFlashCardForm
-              initialData={{ front: editingCard.front, back: editingCard.back }}
-              onSave={handleUpdateCardSubmit}
-              onCancel={onCancelEdit}
-              isCurrentRoomWritable={true}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isImportExportOpen} onOpenChange={setIsImportExportOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Import & Export</DialogTitle></DialogHeader>
-          <ImportExport
-            cards={cards}
-            onBulkImport={onBulkImport}
-            categories={categories}
-            onAddCategory={onAddCategory}
-          />
-        </DialogContent>
-      </Dialog>
+      <div className="md:col-span-2">
+        <Card>
+          <CardHeader>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <CardTitle>My Deck ({filteredCards.length})</CardTitle>
+              <div className="flex items-center gap-2">
+                <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map(cat => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button onClick={handleSelectAll} variant="outline">
+                  {filteredCards.length > 0 && selectedCards.length === filteredCards.length ? 'Deselect All' : 'Select All'}
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {filteredCards.length > 0 ? (
+              <ul className="space-y-3">
+                {filteredCards.map(card => (
+                  <FlashcardListItem
+                    key={card.id}
+                    card={card}
+                    onEdit={onEdit}
+                    onDelete={onDeleteCard}
+                    selectionMode={selectionMode || selectedCards.includes(card.id)}
+                    isSelected={selectedCards.includes(card.id)}
+                    onToggleSelect={handleToggleSelect}
+                  />
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-muted-foreground py-8">No cards in this category. Add one to get started!</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -55,6 +55,7 @@ export function ImportExport({ cards, onBulkImport, categories, onAddCategory }:
   const [generatedText, setGeneratedText] = useState('');
 
   useEffect(() => {
+    // Set initial import target to the first category if available, otherwise 'new'
     if (categories.length > 0 && importTarget === 'new') {
       setImportTarget(categories[0].id);
     } else if (categories.length === 0 && importTarget !== 'new') {
@@ -119,7 +120,7 @@ export function ImportExport({ cards, onBulkImport, categories, onAddCategory }:
       } else {
         return;
       }
-    } else { 
+    } else { // If a specific category is selected
       categoryId = importTarget;
     }
 
