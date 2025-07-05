@@ -1,11 +1,7 @@
 "use client";
 
-import { WowButton } from "@/components/wow-button";
-
+// This page is intentionally left blank to provide a clean canvas for widgets.
+// The main layout is handled by `AppWrapper`.
 export default function DashboardPage() {
-  return (
-    <div className="w-full h-full flex items-center justify-center">
-      <WowButton />
-    </div>
-  );
+  return null;
 }
