@@ -3,13 +3,12 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Gamepad2, Hash, Ghost, Blocks, Layers } from "lucide-react";
+import { ArrowLeft, Gamepad2, Hash, Layers } from "lucide-react";
 
 const games = [
-  { name: '2048', icon: Hash, url: 'https://play2048.co/' },
-  { name: 'Pac-Man', icon: Ghost, url: 'https://cdn.htmlgames.com/Pacman/' },
-  { name: 'Tetris', icon: Blocks, url: 'https://www.freetetris.org/game.php' },
-  { name: 'Solitaire', icon: Layers, url: 'https://www.solitr.com/' },
+  { name: 'Super Ness', icon: Gamepad2, url: 'https://itch.io/embed-html/2890980' },
+  { name: 'Tower Wizard', icon: Layers, url: 'https://itch.io/embed-html/2889981' },
+  { name: 'Retromine', icon: Hash, url: 'https://itch.io/embed-html/2889979' },
 ];
 
 export function GamesWidget() {
