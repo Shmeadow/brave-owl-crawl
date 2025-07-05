@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Gamepad2, Hash, Layers } from "lucide-react";
 
+// Updated URLs to point directly to the game content, bypassing the "Run Game" button.
 const games = [
-  { name: 'Super Ness', icon: Gamepad2, url: 'https://itch.io/embed-html/2890980' },
-  { name: 'Tower Wizard', icon: Layers, url: 'https://itch.io/embed-html/2889981' },
-  { name: 'Retromine', icon: Hash, url: 'https://itch.io/embed-html/2889979' },
+  { name: 'Super Ness', icon: Gamepad2, url: 'https://v6p9d9t4.ssl.hwcdn.net/html/9981985/index.html' },
+  { name: 'Tower Wizard', icon: Layers, url: 'https://v6p9d9t4.ssl.hwcdn.net/html/9979698/index.html' },
+  { name: 'Retromine', icon: Hash, url: 'https://v6p9d9t4.ssl.hwcdn.net/html/9979692/index.html' },
 ];
 
 export function GamesWidget() {
@@ -27,7 +28,8 @@ export function GamesWidget() {
           src={selectedGameUrl}
           className="w-full h-full border-0 flex-grow"
           title="Game"
-          sandbox="allow-scripts allow-same-origin" // Security for iframes
+          sandbox="allow-scripts allow-same-origin"
+          allow="autoplay" // Added to help games start automatically
         />
       </div>
     );
