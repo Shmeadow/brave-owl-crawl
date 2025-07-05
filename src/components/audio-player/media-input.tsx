@@ -2,48 +2,41 @@
 
 import React from 'react';
 import { Link } from 'lucide-react';
+import { Button } from '@/components/ui/button'; // Import Button for consistency
 
 interface MediaInputProps {
   inputUrl: string;
   setInputUrl: (url: string) => void;
-  showUrlInput: boolean;
-  setShowUrlInput: React.Dispatch<React.SetStateAction<boolean>>; // Corrected type
   onLoadMedia: () => void;
+  onClosePopover: () => void; // New prop to close the popover from within
 }
 
-export function MediaInput({ inputUrl, setInputUrl, showUrlInput, setShowUrlInput, onLoadMedia }: MediaInputProps) {
-  return (
-    <>
-      <button
-        onClick={() => setShowUrlInput((prev: boolean) => !prev)}
-        className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
-        title="Change Media URL"
-      >
-        <Link size={12} className="mr-0.5" />
-        {showUrlInput ? 'Hide URL' : 'Embed URL'}
-      </button>
+export function MediaInput({ inputUrl, setInputUrl, onLoadMedia, onClosePopover }: MediaInputProps) {
+  const handleLoadAndClose = () => {
+    onLoadMedia();
+    onClosePopover(); // Close popover after loading media
+  };
 
-      {showUrlInput && (
-        <div className="mt-1 p-1 bg-muted rounded-lg border border-border">
-          <label htmlFor="media-url" className="block text-xs font-medium text-muted-foreground mb-0.5">
-            Embed URL:
-          </label>
-          <input
-            type="text"
-            id="media-url"
-            value={inputUrl}
-            onChange={(e) => setInputUrl(e.target.value)}
-            placeholder="e.g., YouTube or Spotify link"
-            className="w-full p-0.5 text-xs border border-border rounded-md focus:ring-primary focus:border-primary mb-1 bg-background text-foreground placeholder-muted-foreground"
-          />
-          <button
-            onClick={onLoadMedia}
-            className="w-full bg-primary text-primary-foreground text-xs py-0.5 px-1 rounded-md hover:bg-primary/90 transition duration-300 shadow-xs"
-          >
-            Load Media
-          </button>
-        </div>
-      )}
-    </>
+  return (
+    <div className="p-2 bg-muted rounded-lg border border-border shadow-md">
+      <label htmlFor="media-url" className="block text-xs font-medium text-muted-foreground mb-1">
+        Embed URL:
+      </label>
+      <input
+        type="text"
+        id="media-url"
+        value={inputUrl}
+        onChange={(e) => setInputUrl(e.target.value)}
+        placeholder="e.g., YouTube or Spotify link"
+        className="w-full p-1 text-xs border border-border rounded-md focus:ring-primary focus:border-primary mb-2 bg-background text-foreground placeholder-muted-foreground"
+      />
+      <Button
+        onClick={handleLoadAndClose}
+        className="w-full text-xs py-1 px-2" // Use Shadcn Button
+        size="sm"
+      >
+        Load Media
+      </Button>
+    </div>
   );
 }

@@ -30,7 +30,7 @@ export function MinimizedPlayerControls({
   const isVolumeControlDisabled = !playerIsReady || playerType === 'spotify';
 
   return (
-    <div className="flex items-center justify-center w-full h-full space-x-2 px-1">
+    <div className="flex items-center justify-between w-full h-full gap-1"> {/* Changed px-1 to gap-1 */}
       {/* Play/Pause Button */}
       <button
         onClick={togglePlayPause}
@@ -43,7 +43,7 @@ export function MinimizedPlayerControls({
       </button>
 
       {/* Volume Control */}
-      <div className="flex items-center space-x-1 flex-grow justify-center">
+      <div className="flex items-center gap-1 flex-grow justify-center"> {/* Changed space-x-1 and mx-2 to gap-1 */}
         <button
           onClick={toggleMute}
           className="p-0 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300 h-7 w-7 flex-shrink-0 flex items-center justify-center"
