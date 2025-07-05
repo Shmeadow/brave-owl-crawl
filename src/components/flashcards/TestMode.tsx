@@ -86,7 +86,6 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
   const currentQuestion = testQuestions[currentQuestionIndex];
 
   const handleSubmitAnswer = () => {
-    if (!currentQuestion) return;
     if (selectedAnswer === null) {
       toast.error("Please select an answer.");
       return;
@@ -155,9 +154,13 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
             {currentQuestion.options.map((option: string, index: number) => (
               <Button
                 key={index}
+                variant="ghost"
                 onClick={() => setSelectedAnswer(option)}
-                className={cn('w-full text-left justify-start px-5 py-3 rounded-md border transition-all duration-200 h-auto',
-                  selectedAnswer === option ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted'
+                className={cn(
+                  'w-full text-left justify-start px-5 py-3 rounded-md border transition-all duration-200 h-auto',
+                  selectedAnswer === option
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    : 'bg-background text-white hover:bg-muted'
                 )}
                 disabled={showFeedback}
               >
