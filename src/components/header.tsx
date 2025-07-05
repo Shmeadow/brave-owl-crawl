@@ -83,7 +83,6 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
           size="icon"
           onClick={() => setCurrentRoom(null, "My Room")}
           title="Go to My Room"
-          className={isMobile ? "hidden" : ""}
         >
           <Home className="h-6 w-6" />
           <span className="sr-only">Go to My Room</span>
@@ -98,7 +97,8 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
             <Copy className="h-3 w-3" />
           </span>
         )}
-        <h1 className="text-xl font-semibold hidden sm:flex items-center gap-2">
+        {/* Adjusted h1 to be always visible and truncate if needed */}
+        <h1 className="text-xl font-semibold flex items-center gap-2 overflow-hidden whitespace-nowrap text-ellipsis">
           {session?.user?.id && (
             <span
               className="text-sm font-mono text-muted-foreground cursor-pointer flex items-center gap-1 hover:text-foreground transition-colors"
@@ -112,7 +112,7 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
               <Copy className="h-3 w-3" />
             </span>
           )}
-          {currentRoomName}
+          <span className="truncate">{currentRoomName}</span>
         </h1>
       </div>
 
