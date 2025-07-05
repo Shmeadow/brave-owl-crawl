@@ -88,6 +88,16 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
           <Home className="h-6 w-6" />
           <span className="sr-only">Go to My Room</span>
         </Button>
+        {currentRoomId && (
+          <span
+            className="text-sm font-mono text-muted-foreground cursor-pointer flex items-center gap-1 hover:text-foreground transition-colors"
+            onClick={handleCopyRoomCode}
+            title="Copy Room ID"
+          >
+            ({currentRoomId.substring(0, 8)}...)
+            <Copy className="h-3 w-3" />
+          </span>
+        )}
         <h1 className="text-xl font-semibold hidden sm:flex items-center gap-2">
           {session?.user?.id && (
             <span
@@ -103,16 +113,6 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
             </span>
           )}
           {currentRoomName}
-          {currentRoomId && (
-            <span
-              className="text-sm font-mono text-muted-foreground cursor-pointer flex items-center gap-1 hover:text-foreground transition-colors"
-              onClick={handleCopyRoomCode}
-              title="Copy Room ID"
-            >
-              ({currentRoomId.substring(0, 8)}...)
-              <Copy className="h-3 w-3" />
-            </span>
-          )}
         </h1>
       </div>
 

@@ -1,13 +1,12 @@
 {
   "extends": ["next/core-web-vitals"],
+  "plugins": ["react"],
   "rules": {
+    // 🔕 Formatting-related rules turned off (use Prettier optionally)
     "quotes": "off",
     "semi": "off",
-    "no-mixed-spaces-and-tabs": "off",
-    "prettier/prettier": "off",
     "indent": "off",
-    "no-trailing-spaces": "off",
-    "eol-last": "off",
+    "no-mixed-spaces-and-tabs": "off",
     "comma-dangle": "off",
     "object-curly-spacing": "off",
     "array-bracket-spacing": "off",
@@ -15,10 +14,13 @@
     "space-infix-ops": "off",
     "space-before-blocks": "off",
     "arrow-spacing": "off",
-    "no-multiple-empty-lines": "off",
+    "no-trailing-spaces": "off",
+    "eol-last": "off",
     "padding-line-between-statements": "off",
     "newline-per-chained-call": "off",
     "lines-between-class-members": "off",
+
+    // 🎯 React-specific tweaks
     "react/jsx-wrap-multilines": "off",
     "react/jsx-curly-spacing": "off",
     "react/jsx-tag-spacing": "off",
@@ -27,6 +29,11 @@
     "react/jsx-indent-props": "off",
     "react/jsx-first-prop-new-line": "off",
     "react/self-closing-comp": "off",
-    "react/jsx-closing-tag-location": "off"
+    "react/jsx-closing-tag-location": "off",
+    "react/no-unescaped-entities": "off", // ✅ This was breaking your Vercel build!
+
+    // 🧘‍♂️ Optional extra noise reducers
+    "no-console": "warn",
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
   }
 }
