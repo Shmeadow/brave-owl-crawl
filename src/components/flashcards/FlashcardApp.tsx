@@ -109,7 +109,6 @@ export function FlashcardApp() {
             onDeleteCard={handleDeleteCard}
             onEdit={handleEditClick}
             onCancelEdit={handleCancelEdit}
-            onResetProgress={handleResetProgress}
             onBulkImport={handleBulkAddCards}
             categories={categories}
             onAddCategory={addCategory}

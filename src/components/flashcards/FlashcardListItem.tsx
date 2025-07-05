@@ -47,10 +47,7 @@ export function FlashcardListItem({
         <p className="font-semibold text-foreground text-base mb-2 truncate" title={card.front}>{card.front}</p>
         <p className="text-muted-foreground text-sm line-clamp-3">{card.back}</p>
       </div>
-      <div className="flex items-center justify-between mt-auto pt-3 border-t border-border/50">
-        <p className="text-muted-foreground text-xs">
-          Status: <span className="capitalize font-medium">{card.status}</span>
-        </p>
+      <div className="flex items-center justify-end mt-auto pt-3 border-t border-border/50">
         <div className="flex gap-1">
           <Button
             onClick={(e) => { e.stopPropagation(); onOrganize(card); }}

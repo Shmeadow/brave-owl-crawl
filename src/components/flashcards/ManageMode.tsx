@@ -25,7 +25,6 @@ interface ManageModeProps {
   onDeleteCard: (id: string) => void;
   onEdit: (card: CardData) => void;
   onCancelEdit: () => void;
-  onResetProgress: () => void;
   onBulkImport: (cards: { front: string; back: string }[], categoryId: string | null) => Promise<number>;
   categories: Category[];
   onAddCategory: (name: string) => Promise<Category | null>;
@@ -42,7 +41,6 @@ export function ManageMode({
   onDeleteCard,
   onEdit,
   onCancelEdit,
-  onResetProgress,
   onBulkImport,
   categories,
   onAddCategory,
@@ -123,15 +121,6 @@ export function ManageMode({
                 <Slider id="columns-slider" value={[columns]} onValueChange={(v) => setColumns(v[0])} min={1} max={3} step={1} />
               </div>
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Deck Options</CardTitle></CardHeader>
-          <CardContent>
-            <Button onClick={onResetProgress} variant="destructive" className="w-full">
-              <RefreshCcw className="mr-2 h-4 w-4" /> Reset All Progress
-            </Button>
-            <p className="text-xs text-muted-foreground mt-2">This resets status and guess stats for all cards.</p>
           </CardContent>
         </Card>
         <Card>
