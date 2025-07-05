@@ -1,16 +1,22 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, XCircle, Shuffle, RefreshCw, Timer, Flag, Play } from 'lucide-react';
+import { CheckCircle, XCircle, Shuffle, RefreshCw, Flag } from 'lucide-react';
 import { CardData } from '@/hooks/flashcards/types';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
+
+// Define the structure for a single question in the test
+interface TestQuestion {
+  id: string;
+  term: string;
+  correctDefinition: string;
+  options: string[];
+  cardData: CardData;
+}
 
 interface TestModeProps {
   flashcards: CardData[];
@@ -19,21 +25,18 @@ interface TestModeProps {
 }
 
 export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: TestModeProps) {
-  const [testQuestions, setTestQuestions] = useState<any[]>([]);
+  const [testQuestions, setTestQuestions] = useState<TestQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
-  const [testSessionResults, setTestSessionResults] = useState<any[]>([]);
+  const [isAnswered, setIsAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [testCompleted, setTestCompleted] = useState(false);
-  const [submittedAnswer, setSubmittedAnswer] = useState<{ answer: string; isCorrect: boolean } | null>(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [isCorrectAnswer, setIsCorrectAnswer] = useState(false);
-  const [isStressMode, setIsStressMode] = useState(false);
-  const [stressTime, setStressTime] = useState(5);
-  const [isStressTestRunning, setIsStressTestRunning] = useState(false);
-  const [countdown, setCountdown] = useState(5);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Memoize question generation to avoid re-shuffling on every render
   const generateTestQuestions = useCallback((cards: CardData[]) => {
+    if (cards.length < 4) {
+      return [];
+    }
     const questions = cards.map(card => {
       const otherDefinitions = cards.filter(c => c.id !== card.id).map(c => c.back);
       const shuffledOtherDefinitions = otherDefinitions.sort(() => Math.random() - 0.5);
@@ -47,248 +50,165 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
         options: shuffledOptions,
         cardData: card,
       };
-    }).sort(() => Math.random() - 0.5);
-    setTestQuestions(questions);
+    });
+    return questions.sort(() => Math.random() - 0.5);
   }, []);
 
-  const resetTestState = useCallback(() => {
+  // Function to start or restart the test
+  const startTest = useCallback(() => {
+    const newQuestions = generateTestQuestions(flashcards);
+    setTestQuestions(newQuestions);
     setCurrentQuestionIndex(0);
     setScore(0);
-    setTestSessionResults([]);
+    setIsAnswered(false);
+    setSelectedAnswer(null);
     setTestCompleted(false);
-    setSubmittedAnswer(null);
-    setShowFeedback(false);
-    setIsStressTestRunning(false);
-    if (timerRef.current) clearInterval(timerRef.current);
-    setCountdown(stressTime);
-  }, [stressTime]);
+    if (newQuestions.length > 0) {
+      toast.success("Test started!");
+    }
+  }, [flashcards, generateTestQuestions]);
 
+  // Initialize the test when the component mounts or flashcards change
   useEffect(() => {
-    if (flashcards.length > 3) {
-      generateTestQuestions(flashcards);
-      resetTestState();
-    } else {
-      setTestQuestions([]);
-    }
-  }, [flashcards, generateTestQuestions, resetTestState]);
-
-  const handleShuffleTest = useCallback(() => {
-    if (flashcards.length > 3) {
-      generateTestQuestions(flashcards);
-      resetTestState();
-      toast.success("Test questions have been shuffled!");
-    }
-  }, [flashcards, generateTestQuestions, resetTestState]);
-
-  const handleRestartTest = useCallback(() => {
-    if (testQuestions.length > 0) {
-      resetTestState();
-      toast.success("Test restarted!");
-    }
-  }, [testQuestions, resetTestState]);
-
-  useEffect(() => {
-    if (testCompleted) {
-      goToSummary();
-    }
-  }, [testCompleted, goToSummary]);
-
-  const currentQuestion = testQuestions[currentQuestionIndex];
+    startTest();
+  }, [flashcards, startTest]);
 
   const handleSelectAnswer = (selectedOption: string) => {
-    if (submittedAnswer) return;
+    if (isAnswered) return; // Prevent changing answer after submission
 
-    if (timerRef.current) clearInterval(timerRef.current);
-
+    const currentQuestion = testQuestions[currentQuestionIndex];
     const isCorrect = selectedOption === currentQuestion.correctDefinition;
-    setSubmittedAnswer({ answer: selectedOption, isCorrect });
-    setIsCorrectAnswer(isCorrect);
-    setShowFeedback(true);
+
+    setSelectedAnswer(selectedOption);
+    setIsAnswered(true);
 
     if (isCorrect) {
       setScore(prev => prev + 1);
+      toast.success("Correct!");
+    } else {
+      toast.error("Incorrect!");
     }
+
+    // Log the feedback
     handleAnswerFeedback(currentQuestion.id, isCorrect, selectedOption, 'test');
 
-    setTestSessionResults(prevResults => [
-      ...prevResults,
-      {
-        term: currentQuestion.term,
-        correctDefinition: currentQuestion.correctDefinition,
-        userAnswer: selectedOption,
-        isCorrect: isCorrect,
-        cardId: currentQuestion.id,
-        cardData: currentQuestion.cardData,
-        source: 'test',
-      }
-    ]);
-
+    // Move to the next question or finish the test after a delay
     setTimeout(() => {
-      setShowFeedback(false);
       if (currentQuestionIndex < testQuestions.length - 1) {
         setCurrentQuestionIndex(prev => prev + 1);
-        setSubmittedAnswer(null);
+        setIsAnswered(false);
+        setSelectedAnswer(null);
       } else {
         setTestCompleted(true);
       }
-    }, 1500);
+    }, 1500); // 1.5 second delay for feedback
   };
-
-  const handleStartStressTest = () => {
-    setIsStressTestRunning(true);
-    setCountdown(stressTime);
-  };
-
-  useEffect(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (isStressMode && isStressTestRunning && !submittedAnswer && !testCompleted && currentQuestion) {
-      timerRef.current = setInterval(() => {
-        setCountdown(prev => {
-          if (prev <= 1) {
-            if (timerRef.current) clearInterval(timerRef.current);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [currentQuestionIndex, isStressMode, isStressTestRunning, testCompleted, submittedAnswer, currentQuestion]);
-
-  useEffect(() => {
-    if (countdown === 0 && isStressMode && !submittedAnswer && !testCompleted) {
-      toast.error("Time's up! Restarting the test.");
-      handleRestartTest();
-    }
-  }, [countdown, isStressMode, submittedAnswer, testCompleted, handleRestartTest]);
 
   if (flashcards.length < 4) {
-    return <Card className="text-center p-8"><CardContent>You need at least 4 cards to start a test.</CardContent></Card>;
+    return (
+      <Card className="text-center p-8 w-full">
+        <CardContent>
+          <p className="text-lg">You need at least 4 flashcards to start a test.</p>
+          <p className="text-muted-foreground">Please add more cards in the "Manage Deck" tab.</p>
+        </CardContent>
+      </Card>
+    );
   }
 
+  if (testCompleted) {
+    return (
+      <Card className="text-center p-8 w-full max-w-lg mx-auto">
+        <CardHeader>
+          <CardTitle className="text-3xl">Test Complete!</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <p className="text-xl">Your final score is:</p>
+          <p className="text-6xl font-bold text-primary">{score} / {testQuestions.length}</p>
+          <div className="flex justify-center gap-4">
+            <Button onClick={startTest} size="lg">
+              <RefreshCw className="mr-2 h-4 w-4" /> Restart Test
+            </Button>
+            <Button onClick={goToSummary} variant="secondary" size="lg">
+              <Flag className="mr-2 h-4 w-4" /> View Summary
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const currentQuestion = testQuestions[currentQuestionIndex];
   if (!currentQuestion) {
-    return <Card className="text-center p-8"><CardContent>Generating test...</CardContent></Card>;
+    return (
+      <Card className="text-center p-8 w-full">
+        <CardContent>Loading test...</CardContent>
+      </Card>
+    );
   }
 
   const progressPercentage = testQuestions.length > 0 ? ((currentQuestionIndex + 1) / testQuestions.length) * 100 : 0;
 
   return (
-    <div className="grid md:grid-cols-3 gap-6 w-full">
-      <div className="md:col-span-1 space-y-6">
-        <Card>
-          <CardHeader><CardTitle>Test Options</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="stress-mode" className="flex-grow">Stress Test Mode</Label>
-              <Switch id="stress-mode" checked={isStressMode} onCheckedChange={setIsStressMode} />
-            </div>
-            {isStressMode && (
-              <>
-                <div className="flex items-center gap-2">
-                  <Timer className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="number"
-                    value={stressTime}
-                    onChange={(e) => setStressTime(Math.max(5, parseInt(e.target.value, 10) || 5))}
-                    className="w-20 h-8"
-                  />
-                  <Label>seconds</Label>
-                </div>
-                {!isStressTestRunning && (
-                  <Button onClick={handleStartStressTest} className="w-full mt-2">
-                    <Play className="mr-2 h-4 w-4" /> Start Stress Test
-                  </Button>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Actions</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
-            <Button onClick={handleRestartTest} variant="outline" className="w-full">
-              <RefreshCw className="mr-2 h-4 w-4" /> Restart Test
-            </Button>
-            <Button onClick={handleShuffleTest} variant="outline" className="w-full">
-              <Shuffle className="mr-2 h-4 w-4" /> Shuffle Questions
-            </Button>
-            <Button onClick={goToSummary} variant="destructive" className="w-full">
-              <Flag className="mr-2 h-4 w-4" /> End Test & See Summary
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="md:col-span-2">
-        <Card className="flex flex-col space-y-6 bg-card backdrop-blur-xl border-white/20 p-8 rounded-xl shadow-lg w-full relative">
-          {showFeedback && (
-            <div className={cn(
-              "absolute inset-0 flex flex-col items-center justify-center rounded-xl z-20 transition-opacity duration-300",
-              isCorrectAnswer ? 'bg-green-500/90' : 'bg-red-500/90'
-            )}>
-              <div className="text-white text-4xl font-bold flex items-center gap-4">
-                {isCorrectAnswer ? <CheckCircle size={48} /> : <XCircle size={48} />}
-                {isCorrectAnswer ? 'Correct!' : 'Incorrect!'}
-              </div>
-            </div>
-          )}
-          <CardHeader className="w-full p-0">
-            <div className="flex justify-between items-center mb-2">
-              <CardTitle>Question {currentQuestionIndex + 1} of {testQuestions.length}</CardTitle>
-              <div className="text-lg font-semibold">Score: {score}</div>
-            </div>
-            <Progress value={progressPercentage} className="w-full" />
-            {isStressMode && isStressTestRunning && (
-              <div className="text-center mt-4">
-                <div className="text-2xl font-mono font-bold text-destructive">
-                  {countdown}
-                </div>
-              </div>
-            )}
-          </CardHeader>
-          <CardContent className="flex flex-col items-center space-y-6 w-full p-0">
-            <div className="w-full bg-muted p-6 rounded-lg shadow-inner text-center border">
-              <p className="text-xl font-semibold text-foreground mb-3">Which is the correct definition for:</p>
-              <p className="text-3xl font-bold text-primary">{currentQuestion.term}</p>
-            </div>
-            <div className="w-full space-y-3">
-              {currentQuestion.options.map((option: string, index: number) => {
-                const isSelected = submittedAnswer?.answer === option;
-                const isCorrectAnswer = option === currentQuestion.correctDefinition;
-                
-                let buttonStyle = 'bg-background hover:bg-muted';
-                if (submittedAnswer) {
-                  if (isCorrectAnswer) {
-                    buttonStyle = 'bg-green-600 hover:bg-green-700 text-white border-green-700';
-                  } else if (isSelected && !submittedAnswer.isCorrect) {
-                    buttonStyle = 'bg-red-600 hover:bg-red-700 text-white border-red-700';
-                  } else {
-                    buttonStyle = 'bg-muted opacity-50';
-                  }
+    <div className="w-full max-w-2xl mx-auto">
+      <Card className="flex flex-col space-y-6 bg-card backdrop-blur-xl border-white/20 p-8 rounded-xl shadow-lg w-full relative">
+        <CardHeader className="w-full p-0">
+          <div className="flex justify-between items-center mb-2">
+            <CardTitle>Question {currentQuestionIndex + 1} of {testQuestions.length}</CardTitle>
+            <div className="text-lg font-semibold">Score: {score}</div>
+          </div>
+          <Progress value={progressPercentage} className="w-full" />
+        </CardHeader>
+        <CardContent className="flex flex-col items-center space-y-6 w-full p-0">
+          <div className="w-full bg-muted p-6 rounded-lg shadow-inner text-center border">
+            <p className="text-xl font-semibold text-foreground mb-3">Which is the correct definition for:</p>
+            <p className="text-3xl font-bold text-primary">{currentQuestion.term}</p>
+          </div>
+          <div className="w-full space-y-3">
+            {currentQuestion.options.map((option: string, index: number) => {
+              const isTheSelectedAnswer = selectedAnswer === option;
+              const isTheCorrectAnswer = option === currentQuestion.correctDefinition;
+              
+              let buttonStyle = 'bg-background hover:bg-muted';
+              if (isAnswered) {
+                if (isTheCorrectAnswer) {
+                  // Style for the correct answer
+                  buttonStyle = 'bg-green-600 hover:bg-green-700 text-white border-green-700';
+                } else if (isTheSelectedAnswer && !isTheCorrectAnswer) {
+                  // Style for the selected incorrect answer
+                  buttonStyle = 'bg-red-600 hover:bg-red-700 text-white border-red-700';
+                } else {
+                  // Style for other non-selected, incorrect answers
+                  buttonStyle = 'bg-muted opacity-50';
                 }
+              }
 
-                return (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    onClick={() => handleSelectAnswer(option)}
-                    className={cn(
-                      'w-full text-left justify-start px-5 py-4 rounded-lg border-2 transition-all duration-200 h-auto text-base',
-                      buttonStyle
-                    )}
-                    disabled={!!submittedAnswer}
-                  >
-                    {submittedAnswer && isCorrectAnswer && <CheckCircle className="mr-3 h-5 w-5" />}
-                    {submittedAnswer && !isCorrectAnswer && isSelected && <XCircle className="mr-3 h-5 w-5" />}
-                    {option}
-                  </Button>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+              return (
+                <Button
+                  key={index}
+                  variant="outline"
+                  onClick={() => handleSelectAnswer(option)}
+                  className={cn(
+                    'w-full text-left justify-start px-5 py-4 rounded-lg border-2 transition-all duration-200 h-auto text-base',
+                    buttonStyle
+                  )}
+                  disabled={isAnswered}
+                >
+                  {isAnswered && isTheCorrectAnswer && <CheckCircle className="mr-3 h-5 w-5" />}
+                  {isAnswered && isTheSelectedAnswer && !isTheCorrectAnswer && <XCircle className="mr-3 h-5 w-5" />}
+                  {option}
+                </Button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+      <div className="mt-6 flex justify-center gap-4">
+        <Button onClick={startTest} variant="outline">
+          <RefreshCw className="mr-2 h-4 w-4" /> Restart Test
+        </Button>
+        <Button onClick={() => { startTest(); toast.success("Questions shuffled!"); }} variant="outline">
+          <Shuffle className="mr-2 h-4 w-4" /> Shuffle & Restart
+        </Button>
       </div>
     </div>
   );
