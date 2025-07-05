@@ -17,7 +17,7 @@ export function PlayerModeButtons({ displayMode, setDisplayMode }: PlayerModeBut
           className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6"
           title="Maximize Player"
         >
-          <Maximize size={12} /> {/* Adjusted size */}
+          <Maximize size={14} /> {/* Adjusted size */}
         </button>
       )}
       {displayMode === 'maximized' && (
@@ -26,7 +26,7 @@ export function PlayerModeButtons({ displayMode, setDisplayMode }: PlayerModeBut
           className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6"
           title="Shrink Player"
         >
-          <Minimize size={12} /> {/* Adjusted size */}
+          <Minimize size={14} /> {/* Adjusted size */}
         </button>
       )}
       <button
@@ -34,7 +34,7 @@ export function PlayerModeButtons({ displayMode, setDisplayMode }: PlayerModeBut
         className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6"
         title="Minimize Player"
       >
-        <ChevronRight size={12} /> {/* Adjusted size */}
+        <ChevronRight size={14} /> {/* Adjusted size */}
       </button>
     </div>
   );

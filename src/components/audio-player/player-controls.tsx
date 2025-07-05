@@ -47,7 +47,7 @@ export function PlayerControls({
             title="Skip Backward"
             disabled={!canSeek} // Use canSeek
           >
-            <Rewind size={10} />
+            <Rewind size={14} />
           </button>
           <button
             onClick={togglePlayPause}
@@ -56,7 +56,7 @@ export function PlayerControls({
             title={currentIsPlaying ? "Pause" : "Play"}
             disabled={!canPlayPause} // Use canPlayPause
           >
-            {currentIsPlaying ? <Pause size={12} /> : <Play size={12} />}
+            {currentIsPlaying ? <Pause size={18} /> : <Play size={18} />}
           </button>
           <button
             onClick={skipForward}
@@ -65,7 +65,7 @@ export function PlayerControls({
             title="Skip Forward"
             disabled={!canSeek} // Use canSeek
           >
-            <FastForward size={10} />
+            <FastForward size={14} />
           </button>
         </>
       )}
@@ -79,7 +79,7 @@ export function PlayerControls({
           title={currentIsMuted ? "Unmute" : "Mute"}
           disabled={isVolumeControlDisabled} // Use isVolumeControlDisabled
         >
-          {currentIsMuted || currentVolume === 0 ? <VolumeX size={8} /> : <Volume2 size={8} />}
+          {currentIsMuted || currentVolume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
         </button>
         <input
           type="range"
