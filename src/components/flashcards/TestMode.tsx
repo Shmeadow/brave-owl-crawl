@@ -251,11 +251,13 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
       </CardContent>
       {showFeedback && (
         <div className={cn(
-          "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-6 rounded-lg text-white text-2xl font-bold flex items-center gap-4 shadow-2xl z-10",
-          isCorrectAnswer ? 'bg-green-600' : 'bg-red-600'
+          "absolute inset-0 flex flex-col items-center justify-center rounded-xl z-10 transition-opacity duration-300",
+          isCorrectAnswer ? 'bg-green-500/90' : 'bg-red-500/90'
         )}>
-          {isCorrectAnswer ? <CheckCircle size={32} /> : <XCircle size={32} />}
-          {isCorrectAnswer ? 'Correct!' : 'Incorrect!'}
+          <div className="text-white text-4xl font-bold flex items-center gap-4">
+            {isCorrectAnswer ? <CheckCircle size={48} /> : <XCircle size={48} />}
+            {isCorrectAnswer ? 'Correct!' : 'Incorrect!'}
+          </div>
         </div>
       )}
     </Card>
