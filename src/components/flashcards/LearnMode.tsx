@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, ArrowRight, Check, Send, XCircle, Repeat, Shuffle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Send, XCircle, Repeat, Shuffle, CheckCircle, Flag } from 'lucide-react';
 import { CardData, Category } from '@/hooks/flashcards/types';
 import { getWeightedRandomCard } from '@/utils/flashcard-helpers';
 import { toast } from 'sonner';
@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 interface LearnModeProps {
   flashcards: CardData[];
   handleAnswerFeedback: (cardId: string, isCorrect: boolean, userAnswer: string | null, source: 'learn' | 'test') => void;
-  goToSummary: (data: any, source: 'learn' | 'test') => void;
+  goToSummary: () => void;
 }
 
 export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: LearnModeProps) {
@@ -133,6 +133,9 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: Lea
           </p>
           <Button onClick={handleShuffle} variant="secondary" className="w-full">
             <Shuffle className="mr-2 h-4 w-4" /> Shuffle Cards
+          </Button>
+          <Button onClick={goToSummary} variant="destructive" className="w-full">
+            <Flag className="mr-2 h-4 w-4" /> Finish & See Summary
           </Button>
         </CardContent>
       </Card>

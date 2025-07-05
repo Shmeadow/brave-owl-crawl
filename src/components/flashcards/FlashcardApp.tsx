@@ -15,13 +15,11 @@ import { useFlashcardCategories } from '@/hooks/flashcards/useFlashcardCategorie
 type FlashcardMode = 'manage' | 'learn' | 'test' | 'summary';
 
 export function FlashcardApp() {
-  const { cards, loading, isLoggedInMode, handleAddCard, handleDeleteCard, handleUpdateCard, handleAnswerFeedback: baseHandleAnswerFeedback, handleResetProgress, handleBulkAddCards, handleUpdateCardCategory } = useFlashcards();
+  const { cards, loading, isLoggedInMode, handleAddCard, handleDeleteCard, handleUpdateCard, handleAnswerFeedback: baseHandleAnswerFeedback, handleResetProgress, handleBulkAddCards, handleUpdateCardCategory, handleBulkDelete, handleBulkMove } = useFlashcards();
   const { categories, addCategory, deleteCategory, updateCategory } = useFlashcardCategories();
   const { session } = useSupabase();
   const [currentMode, setCurrentMode] = useState<FlashcardMode>('manage');
   const [editingCard, setEditingCard] = useState<CardData | null>(null);
-  const [summaryData, setSummaryData] = useState<any>(null);
-  const [summaryModeSource, setSummaryModeSource] = useState<'learn' | 'test' | null>(null);
   const [sessionHistory, setSessionHistory] = useState<DetailedResult[]>([]);
 
   const augmentedHandleAnswerFeedback = useCallback((cardId: string, isCorrect: boolean, userAnswer: string | null, source: 'learn' | 'test') => {
@@ -36,6 +34,7 @@ export function FlashcardApp() {
             isCorrect: isCorrect,
             cardId: card.id,
             cardData: card,
+            source: source,
         };
         setSessionHistory(prev => [...prev, result]);
     }
@@ -43,9 +42,16 @@ export function FlashcardApp() {
 
   const generateSummaryData = useCallback((): SummaryData | null => {
     if (sessionHistory.length === 0) return null;
-    const correctCount = sessionHistory.filter(r => r.isCorrect).length;
+
+    const lastResultsMap = new Map<string, DetailedResult>();
+    sessionHistory.forEach(result => {
+        lastResultsMap.set(result.cardId, result);
+    });
+    const uniqueDetailedResults = Array.from(lastResultsMap.values());
+
+    const correctCount = uniqueDetailedResults.filter(r => r.isCorrect).length;
     
-    const detailedResultsWithLatestCardData = sessionHistory.map(result => {
+    const detailedResultsWithLatestCardData = uniqueDetailedResults.map(result => {
         const latestCardData = cards.find(c => c.id === result.cardId);
         return {
             ...result,
@@ -53,17 +59,24 @@ export function FlashcardApp() {
         };
     }).reverse();
 
+    const testResults = sessionHistory.filter(r => r.source === 'test');
+    const testCorrectCount = testResults.filter(r => r.isCorrect).length;
+    const testAccuracy = testResults.length > 0 ? (testCorrectCount / testResults.length) * 100 : 0;
+
     return {
-        type: 'test',
-        totalAttempted: sessionHistory.length,
+        totalAttempted: uniqueDetailedResults.length,
         score: correctCount,
         detailedResults: detailedResultsWithLatestCardData,
+        testAnalysis: {
+            results: testResults,
+            accuracy: testAccuracy,
+            total: testResults.length,
+            correct: testCorrectCount,
+        }
     };
   }, [sessionHistory, cards]);
 
-  const goToSummary = useCallback((data: any, source: 'learn' | 'test') => {
-    setSummaryData(data);
-    setSummaryModeSource(source);
+  const goToSummary = useCallback(() => {
     setCurrentMode('summary');
   }, []);
 
@@ -110,7 +123,7 @@ export function FlashcardApp() {
       case 'test':
         return <TestMode flashcards={cards} handleAnswerFeedback={augmentedHandleAnswerFeedback} goToSummary={goToSummary} />;
       case 'summary':
-        return <SummaryMode summaryData={generateSummaryData()} summaryModeSource={summaryModeSource} />;
+        return <SummaryMode summaryData={generateSummaryData()} onResetProgress={handleResetProgress} />;
       default:
         return null;
     }

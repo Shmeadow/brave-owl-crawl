@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, XCircle, Shuffle, RefreshCw, Timer, Flag } from 'lucide-react';
-import { CardData } from '@/hooks/use-flashcards';
+import { CheckCircle, XCircle, Shuffle, RefreshCw, Timer, Flag, Play } from 'lucide-react';
+import { CardData } from '@/hooks/flashcards/types';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Switch } from '@/components/ui/switch';
@@ -15,7 +15,7 @@ import { Progress } from '@/components/ui/progress';
 interface TestModeProps {
   flashcards: CardData[];
   handleAnswerFeedback: (cardId: string, isCorrect: boolean, userAnswer: string | null, source: 'learn' | 'test') => void;
-  goToSummary: (data: any, source: 'learn' | 'test') => void;
+  goToSummary: () => void;
 }
 
 export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: TestModeProps) {
@@ -25,12 +25,15 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
   const [testSessionResults, setTestSessionResults] = useState<any[]>([]);
   const [testCompleted, setTestCompleted] = useState(false);
   const [submittedAnswer, setSubmittedAnswer] = useState<{ answer: string; isCorrect: boolean } | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [isCorrectAnswer, setIsCorrectAnswer] = useState(false);
   const [isStressMode, setIsStressMode] = useState(false);
-  const [stressTime, setStressTime] = useState(15);
-  const [countdown, setCountdown] = useState(15);
+  const [stressTime, setStressTime] = useState(5);
+  const [isStressTestRunning, setIsStressTestRunning] = useState(false);
+  const [countdown, setCountdown] = useState(5);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const generateTestQuestions = (cards: CardData[]) => {
+  const generateTestQuestions = useCallback((cards: CardData[]) => {
     const questions = cards.map(card => {
       const otherDefinitions = cards.filter(c => c.id !== card.id).map(c => c.back);
       const shuffledOtherDefinitions = otherDefinitions.sort(() => Math.random() - 0.5);
@@ -46,7 +49,7 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
       };
     }).sort(() => Math.random() - 0.5);
     setTestQuestions(questions);
-  };
+  }, []);
 
   const resetTestState = useCallback(() => {
     setCurrentQuestionIndex(0);
@@ -54,6 +57,8 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
     setTestSessionResults([]);
     setTestCompleted(false);
     setSubmittedAnswer(null);
+    setShowFeedback(false);
+    setIsStressTestRunning(false);
     if (timerRef.current) clearInterval(timerRef.current);
     setCountdown(stressTime);
   }, [stressTime]);
@@ -65,7 +70,7 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
     } else {
       setTestQuestions([]);
     }
-  }, [flashcards, resetTestState]);
+  }, [flashcards, generateTestQuestions, resetTestState]);
 
   const handleShuffleTest = useCallback(() => {
     if (flashcards.length > 3) {
@@ -73,7 +78,7 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
       resetTestState();
       toast.success("Test questions have been shuffled!");
     }
-  }, [flashcards, resetTestState]);
+  }, [flashcards, generateTestQuestions, resetTestState]);
 
   const handleRestartTest = useCallback(() => {
     if (testQuestions.length > 0) {
@@ -82,20 +87,11 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
     }
   }, [testQuestions, resetTestState]);
 
-  const handleEndTest = useCallback(() => {
-    goToSummary({
-      type: 'test',
-      totalQuestions: testSessionResults.length,
-      score: score,
-      detailedResults: testSessionResults
-    }, 'test');
-  }, [goToSummary, testSessionResults, score]);
-
   useEffect(() => {
     if (testCompleted) {
-      handleEndTest();
+      goToSummary();
     }
-  }, [testCompleted, handleEndTest]);
+  }, [testCompleted, goToSummary]);
 
   const currentQuestion = testQuestions[currentQuestionIndex];
 
@@ -106,6 +102,8 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
 
     const isCorrect = selectedOption === currentQuestion.correctDefinition;
     setSubmittedAnswer({ answer: selectedOption, isCorrect });
+    setIsCorrectAnswer(isCorrect);
+    setShowFeedback(true);
 
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -121,10 +119,12 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
         isCorrect: isCorrect,
         cardId: currentQuestion.id,
         cardData: currentQuestion.cardData,
+        source: 'test',
       }
     ]);
 
     setTimeout(() => {
+      setShowFeedback(false);
       if (currentQuestionIndex < testQuestions.length - 1) {
         setCurrentQuestionIndex(prev => prev + 1);
         setSubmittedAnswer(null);
@@ -134,10 +134,14 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
     }, 1500);
   };
 
+  const handleStartStressTest = () => {
+    setIsStressTestRunning(true);
+    setCountdown(stressTime);
+  };
+
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
-    if (isStressMode && !submittedAnswer && !testCompleted && currentQuestion) {
-      setCountdown(stressTime);
+    if (isStressMode && isStressTestRunning && !submittedAnswer && !testCompleted && currentQuestion) {
       timerRef.current = setInterval(() => {
         setCountdown(prev => {
           if (prev <= 1) {
@@ -151,7 +155,7 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [currentQuestionIndex, isStressMode, testCompleted, submittedAnswer, stressTime, currentQuestion]);
+  }, [currentQuestionIndex, isStressMode, isStressTestRunning, testCompleted, submittedAnswer, currentQuestion]);
 
   useEffect(() => {
     if (countdown === 0 && isStressMode && !submittedAnswer && !testCompleted) {
@@ -172,7 +176,6 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
 
   return (
     <div className="grid md:grid-cols-3 gap-6 w-full">
-      {/* Left Column: Controls & Stats */}
       <div className="md:col-span-1 space-y-6">
         <Card>
           <CardHeader><CardTitle>Test Options</CardTitle></CardHeader>
@@ -182,16 +185,23 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
               <Switch id="stress-mode" checked={isStressMode} onCheckedChange={setIsStressMode} />
             </div>
             {isStressMode && (
-              <div className="flex items-center gap-2">
-                <Timer className="h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="number"
-                  value={stressTime}
-                  onChange={(e) => setStressTime(Math.max(5, parseInt(e.target.value, 10) || 5))}
-                  className="w-20 h-8"
-                />
-                <Label>seconds</Label>
-              </div>
+              <>
+                <div className="flex items-center gap-2">
+                  <Timer className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="number"
+                    value={stressTime}
+                    onChange={(e) => setStressTime(Math.max(5, parseInt(e.target.value, 10) || 5))}
+                    className="w-20 h-8"
+                  />
+                  <Label>seconds</Label>
+                </div>
+                {!isStressTestRunning && (
+                  <Button onClick={handleStartStressTest} className="w-full mt-2">
+                    <Play className="mr-2 h-4 w-4" /> Start Stress Test
+                  </Button>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
@@ -204,23 +214,33 @@ export function TestMode({ flashcards, handleAnswerFeedback, goToSummary }: Test
             <Button onClick={handleShuffleTest} variant="outline" className="w-full">
               <Shuffle className="mr-2 h-4 w-4" /> Shuffle Questions
             </Button>
-            <Button onClick={handleEndTest} variant="destructive" className="w-full">
+            <Button onClick={goToSummary} variant="destructive" className="w-full">
               <Flag className="mr-2 h-4 w-4" /> End Test & See Summary
             </Button>
           </CardContent>
         </Card>
       </div>
 
-      {/* Right Column: Test Area */}
       <div className="md:col-span-2">
         <Card className="flex flex-col space-y-6 bg-card backdrop-blur-xl border-white/20 p-8 rounded-xl shadow-lg w-full relative">
+          {showFeedback && (
+            <div className={cn(
+              "absolute inset-0 flex flex-col items-center justify-center rounded-xl z-20 transition-opacity duration-300",
+              isCorrectAnswer ? 'bg-green-500/90' : 'bg-red-500/90'
+            )}>
+              <div className="text-white text-4xl font-bold flex items-center gap-4">
+                {isCorrectAnswer ? <CheckCircle size={48} /> : <XCircle size={48} />}
+                {isCorrectAnswer ? 'Correct!' : 'Incorrect!'}
+              </div>
+            </div>
+          )}
           <CardHeader className="w-full p-0">
             <div className="flex justify-between items-center mb-2">
               <CardTitle>Question {currentQuestionIndex + 1} of {testQuestions.length}</CardTitle>
               <div className="text-lg font-semibold">Score: {score}</div>
             </div>
             <Progress value={progressPercentage} className="w-full" />
-            {isStressMode && (
+            {isStressMode && isStressTestRunning && (
               <div className="text-center mt-4">
                 <div className="text-2xl font-mono font-bold text-destructive">
                   {countdown}
