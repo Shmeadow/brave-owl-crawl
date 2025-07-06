@@ -53,7 +53,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
 
   return (
     <header className="sticky top-0 z-[1002] w-full border-b bg-transparent backdrop-blur-xl flex items-center h-16">
-      <div className="flex items-center gap-2 pl-4">
+      <div className="flex items-center pl-4">
         {isMobile && (
           <Button
             variant="ghost"
@@ -65,42 +65,45 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
             <span className="sr-only">Open Menu</span>
           </Button>
         )}
-        <Link href="/dashboard" className="flex items-center space-x-2">
+        <Link href="/dashboard" className="flex items-center space-x-2 mr-4">
           <h1 className="text-2xl font-bold text-primary">CozyHub</h1>
         </Link>
-        <Link href="/dashboard" className="flex items-center space-x-2">
+        <Link href="/dashboard" className="flex items-center space-x-2 mr-4">
           <Button variant="ghost" size="icon" title="Home">
             <Home className="h-6 w-6" />
             <span className="sr-only">Home</span>
           </Button>
         </Link>
-        {currentRoomId && (
-          <span
-            className="text-sm font-mono text-muted-foreground cursor-pointer flex items-center gap-1 hover:text-foreground transition-colors"
-            onClick={handleCopyRoomId}
-            title="Copy Room ID"
-          >
-            ({currentRoomId.substring(0, 8)}...)
-            <Copy className="h-3 w-3" />
-          </span>
-        )}
-        {/* Adjusted h1 to be always visible and truncate if needed */}
-        <h1 className="text-xl font-semibold flex items-center gap-2 overflow-hidden whitespace-nowrap text-ellipsis">
-          {session?.user?.id && (
+
+        {/* This div will contain the dynamic room/user info and take flexible space */}
+        <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
+          {!isMobile && currentRoomId && (
             <span
-              className="text-sm font-mono text-muted-foreground cursor-pointer flex items-center gap-1 hover:text-foreground transition-colors"
-              onClick={() => {
-                navigator.clipboard.writeText(session.user.id);
-                toast.success("Your User ID copied to clipboard!");
-              }}
-              title="Copy Your User ID"
+              className="text-sm font-mono text-muted-foreground cursor-pointer flex items-center gap-1 hover:text-foreground transition-colors flex-shrink-0"
+              onClick={handleCopyRoomId}
+              title="Copy Room ID"
             >
-              ({session.user.id.substring(0, 6)})
+              ({currentRoomId.substring(0, 8)}...)
               <Copy className="h-3 w-3" />
             </span>
           )}
-          <span className="truncate">{currentRoomName}</span>
-        </h1>
+          <h1 className="text-xl font-semibold flex items-center gap-2 overflow-hidden whitespace-nowrap text-ellipsis flex-1 min-w-0">
+            {!isMobile && session?.user?.id && (
+              <span
+                className="text-sm font-mono text-muted-foreground cursor-pointer flex items-center gap-1 hover:text-foreground transition-colors flex-shrink-0"
+                onClick={() => {
+                  navigator.clipboard.writeText(session.user.id);
+                  toast.success("Your User ID copied to clipboard!");
+                }}
+                title="Copy Your User ID"
+              >
+                ({session.user.id.substring(0, 6)})
+                <Copy className="h-3 w-3" />
+              </span>
+            )}
+            <span className="truncate">{currentRoomName}</span>
+          </h1>
+        </div>
       </div>
 
       <div className="flex items-center gap-4 ml-auto pr-4">
