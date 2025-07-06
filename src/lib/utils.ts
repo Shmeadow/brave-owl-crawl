@@ -5,30 +5,53 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function getYouTubeVideoId(url: string): string | null {
-  const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/;
-  const match = url.match(youtubeRegex);
-  return match ? match[1] : null;
+export function getYouTubeContentIdAndType(url: string): { id: string | null, type: 'video' | 'playlist' | null } {
+  // Regex for YouTube video IDs
+  const videoRegex = /(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/;
+  const videoMatch = url.match(videoRegex);
+  if (videoMatch && videoMatch[1]) {
+    return { id: videoMatch[1], type: 'video' };
+  }
+
+  // Regex for YouTube playlist IDs
+  const playlistRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/playlist\?list=([\w-]{34})(?:\S+)?/;
+  const playlistMatch = url.match(playlistRegex);
+  if (playlistMatch && playlistMatch[1]) {
+    return { id: playlistMatch[1], type: 'playlist' };
+  }
+
+  return { id: null, type: null };
 }
 
 export function getYouTubeEmbedUrl(url: string): string | null {
-  const videoId = getYouTubeVideoId(url);
-  if (videoId) {
-    // Parameters for a minimalistic, looping background player with controls:
-    // autoplay=1: Starts playing automatically
-    // loop=1: Loops the video (requires playlist parameter with the same video ID)
-    // playlist=${videoId}: Required for loop=1 to work with a single video
-    // controls=0: Hides player controls for custom UI
-    // modestbranding=1: Shows a smaller YouTube logo
-    // rel=0: Prevents showing related videos at the end
-    // disablekb=1: Disables keyboard controls
-    // fs=0: Disables the fullscreen button
-    // iv_load_policy=3: Hides video annotations
-    // enablejsapi=1: Enables JavaScript API for programmatic control
-    // origin: Crucial for API to work, will be set by the player itself
-    // Note: The 'showinfo=0' parameter is deprecated and may not always hide the video title within the player.
-    return `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0&disablekb=1&fs=0&iv_load_policy=3&enablejsapi=1`;
+  const { id, type } = getYouTubeContentIdAndType(url);
+
+  if (!id || !type) {
+    return null;
   }
+
+  // Common player parameters for background playback:
+  // autoplay=1: Starts playing automatically
+  // loop=1: Loops the video/playlist (requires playlist parameter for single videos)
+  // controls=0: Hides player controls for custom UI
+  // modestbranding=1: Shows a smaller YouTube logo
+  // rel=0: Prevents showing related videos at the end
+  // disablekb=1: Disables keyboard controls
+  // fs=0: Disables the fullscreen button
+  // iv_load_policy=3: Hides video annotations
+  // enablejsapi=1: Enables JavaScript API for programmatic control
+  // origin: Crucial for API to work, will be set by the player itself
+
+  const commonParams = 'autoplay=1&loop=1&controls=0&modestbranding=1&rel=0&disablekb=1&fs=0&iv_load_policy=3&enablejsapi=1';
+
+  if (type === 'video') {
+    // For single videos, 'playlist' parameter with the same video ID is needed for looping.
+    return `https://www.youtube.com/embed/${id}?${commonParams}&playlist=${id}`;
+  } else if (type === 'playlist') {
+    // For playlists, 'list' and 'listType' parameters are used.
+    return `https://www.youtube.com/embed/videoseries?list=${id}&${commonParams}`;
+  }
+
   return null;
 }
 

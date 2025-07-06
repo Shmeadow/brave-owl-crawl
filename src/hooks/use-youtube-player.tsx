@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { getYouTubeContentIdAndType } from '@/lib/utils'; // Import the new utility
 
 // Declare global YT object for TypeScript
 declare global {
@@ -26,7 +27,7 @@ interface UseYouTubePlayerResult {
 export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefObject<HTMLIFrameElement | null>): UseYouTubePlayerResult {
   const playerRef = useRef<any>(null); // YT.Player instance
   const timeUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const currentVideoIdRef = useRef<string | null>(null);
+  const currentContentIdRef = useRef<string | null>(null); // Tracks videoId or playlistId
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState(50);
@@ -66,13 +67,11 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
   const onPlayerReady = useCallback((event: any) => {
     console.log("YouTube Player Ready:", event.target);
     stateSettersRef.current.setPlayerReady(true);
-    // We can read `volume` state here because it's only needed for the initial setup of the player instance.
     event.target.setVolume(volume);
     stateSettersRef.current.setIsMuted(event.target.isMuted());
     stateSettersRef.current.setYoutubeDuration(event.target.getDuration());
     stateSettersRef.current.setYoutubeCurrentTime(event.target.getCurrentTime());
     
-    // Removed .catch() as playVideo does not return a Promise
     event.target.playVideo(); 
 
     clearTimeUpdateInterval();
@@ -118,47 +117,59 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
   // Effect to manage player instance based on embedUrl and iframeRef
   useEffect(() => {
     const iframeElement = iframeRef.current;
-    const newVideoIdMatch = embedUrl?.match(/\/embed\/([\w-]+)/);
-    const newVideoId = newVideoIdMatch ? newVideoIdMatch[1] : null;
+    const { id: newContentId, type: newContentType } = embedUrl ? getYouTubeContentIdAndType(embedUrl) : { id: null, type: null };
 
     const createOrUpdatePlayer = () => {
-      if (!newVideoId || !iframeElement || !window.YT || !window.YT.Player) {
+      if (!newContentId || !newContentType || !iframeElement || !window.YT || !window.YT.Player) {
         return;
       }
 
+      // Define common playerVars
+      const commonPlayerVars = {
+        autoplay: 1,
+        loop: 1,
+        controls: 0,
+        modestbranding: 1,
+        rel: 0,
+        disablekb: 1,
+        fs: 0,
+        iv_load_policy: 3,
+        enablejsapi: 1,
+        origin: window.location.origin,
+      };
+
       if (playerRef.current) {
-        if (currentVideoIdRef.current !== newVideoId) {
-          console.log("YouTube player exists, loading new video:", newVideoId);
-          playerRef.current.loadVideoById(newVideoId);
-          currentVideoIdRef.current = newVideoId;
+        if (currentContentIdRef.current !== newContentId) {
+          console.log("YouTube player exists, loading new content:", newContentId, "Type:", newContentType);
+          if (newContentType === 'video') {
+            playerRef.current.loadVideoById(newContentId);
+          } else if (newContentType === 'playlist') {
+            playerRef.current.loadPlaylist({ list: newContentId, listType: 'playlist' });
+          }
+          currentContentIdRef.current = newContentId;
         }
       } else {
-        console.log("Creating new YouTube player for video:", newVideoId);
-        playerRef.current = new window.YT.Player(iframeElement, {
-          videoId: newVideoId,
-          playerVars: {
-            autoplay: 1,
-            loop: 1,
-            playlist: newVideoId,
-            controls: 0,
-            modestbranding: 1,
-            rel: 0,
-            disablekb: 1,
-            fs: 0,
-            iv_load_policy: 3,
-            enablejsapi: 1,
-            origin: window.location.origin,
-          },
+        console.log("Creating new YouTube player for content:", newContentId, "Type:", newContentType);
+        const playerOptions: any = {
           events: {
             'onReady': onPlayerReady,
             'onStateChange': onPlayerStateChange,
           },
-        });
-        currentVideoIdRef.current = newVideoId;
+        };
+
+        if (newContentType === 'video') {
+          playerOptions.videoId = newContentId;
+          playerOptions.playerVars = { ...commonPlayerVars, playlist: newContentId }; // playlist needed for looping single video
+        } else if (newContentType === 'playlist') {
+          playerOptions.playerVars = { ...commonPlayerVars, listType: 'playlist', list: newContentId };
+        }
+        
+        playerRef.current = new window.YT.Player(iframeElement, playerOptions);
+        currentContentIdRef.current = newContentId;
       }
     };
 
-    if (newVideoId && iframeElement) {
+    if (newContentId && newContentType && iframeElement) {
       if (window.YT && window.YT.Player) {
         createOrUpdatePlayer();
       } else {
@@ -174,7 +185,7 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
       setYoutubeCurrentTime(0);
       setYoutubeDuration(0);
       clearTimeUpdateInterval();
-      currentVideoIdRef.current = null;
+      currentContentIdRef.current = null;
     }
 
     return () => {
@@ -190,7 +201,6 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
       if (isPlaying) {
         playerRef.current.pauseVideo();
       } else {
-        // Removed .catch() as playVideo does not return a Promise
         playerRef.current.playVideo();
       }
     }
