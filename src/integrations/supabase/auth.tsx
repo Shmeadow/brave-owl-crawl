@@ -25,25 +25,25 @@ interface SupabaseContextType {
 const SupabaseContext = createContext<SupabaseContextType | undefined>(undefined);
 
 export function SessionContextProvider({ children }: { children: React.ReactNode }) {
-  const [supabaseClient, setSupabaseClient] = useState<SupabaseClient | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  // Removed the 'mounted' state and its useEffect.
-
-  useEffect(() => {
-    if (!supabaseClient) {
-      console.log("SessionContextProvider: Attempting to create Supabase client...");
+  // Create the Supabase client directly here, ensuring it's available immediately on the client.
+  // This runs only once per component instance on the client side.
+  const supabaseClient = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      console.log("SessionContextProvider: Creating Supabase client...");
       const client = createBrowserClient();
-      setSupabaseClient(client);
       if (!client) {
         console.error("SessionContextProvider: Supabase client failed to initialize.");
-        setLoading(false);
       } else {
         console.log("SessionContextProvider: Supabase client created successfully.");
       }
+      return client;
     }
-  }, [supabaseClient]);
+    return null; // Return null on server or if window is not defined
+  }, []); // Empty dependency array ensures it runs only once
+
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const fetchProfile = useCallback(async (userId: string, client: SupabaseClient) => {
     const { data, error } = await client
