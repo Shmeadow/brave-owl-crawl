@@ -34,7 +34,21 @@ export function TestMode({ flashcards, onGradeCard, onQuit }: TestModeProps) {
   const [sessionResults, setSessionResults] = useState<SessionResult[]>([]);
   const [isComplete, setIsComplete] = useState(false);
 
-  const startTest = useCallback(() => {
+  const restartTest = useCallback(() => {
+    const shuffled = [...flashcards].sort(() => Math.random() - 0.5);
+    setTestDeck(shuffled);
+    setCurrentIndex(0);
+    setUserAnswer('');
+    setIsAnswered(false);
+    setIsCorrect(null);
+    setSessionResults([]);
+    setIsComplete(false);
+    if (flashcards.length > 0) {
+      toast.success("Test restarted!");
+    }
+  }, [flashcards]);
+
+  useEffect(() => {
     const shuffled = [...flashcards].sort(() => Math.random() - 0.5);
     setTestDeck(shuffled);
     setCurrentIndex(0);
@@ -46,11 +60,8 @@ export function TestMode({ flashcards, onGradeCard, onQuit }: TestModeProps) {
     if (flashcards.length > 0) {
       toast.success("Test started!");
     }
-  }, [flashcards]);
-
-  useEffect(() => {
-    startTest();
-  }, [flashcards, startTest]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const currentCard = testDeck[currentIndex];
 
@@ -112,7 +123,7 @@ export function TestMode({ flashcards, onGradeCard, onQuit }: TestModeProps) {
           <p className="text-xl">Your final score is:</p>
           <p className="text-6xl font-bold text-primary">{correctCount} / {testDeck.length}</p>
           <div className="flex justify-center gap-4">
-            <Button onClick={startTest} size="lg">
+            <Button onClick={restartTest} size="lg">
               <RefreshCw className="mr-2 h-4 w-4" /> Restart Test
             </Button>
             <Button onClick={onQuit} variant="secondary" size="lg">
