@@ -147,9 +147,12 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" title="Manage Spaces" className="h-10 w-10"> {/* Increased size */}
-              <LayoutGrid className="h-6 w-6" /> {/* Increased icon size */}
-              <span className="sr-only">Manage Spaces</span>
+            <Button variant="ghost" size="icon" title="Manage Spaces" className="h-10 w-10">
+              {/* Wrap LayoutGrid and sr-only span in a single div */}
+              <div>
+                <LayoutGrid className="h-6 w-6" />
+                <span className="sr-only">Manage Spaces</span>
+              </div>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-[600px] z-[1003] p-0" align="end">
