@@ -33,7 +33,7 @@ export function SunProgress() {
 
   return (
     <div className="flex items-center space-x-2 h-8 cursor-pointer" onClick={() => setIsVisible(!isVisible)}>
-      <Sun className="h-6 w-6 text-yellow-500" /> {/* Increased icon size */}
+      <Sun className="h-5 w-5 text-yellow-500" />
       {isVisible && (
         <Progress value={progress} className="w-24 h-2" />
       )}

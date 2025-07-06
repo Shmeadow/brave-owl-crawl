@@ -19,7 +19,7 @@ export function BackgroundBlurSlider({ className }: BackgroundBlurSliderProps) {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Sun className="h-5 w-5 text-muted-foreground" /> {/* Increased icon size */}
+            <Sun className="h-4 w-4 text-muted-foreground" />
           </TooltipTrigger>
           <TooltipContent>
             Clear
@@ -37,7 +37,7 @@ export function BackgroundBlurSlider({ className }: BackgroundBlurSliderProps) {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Wind className="h-5 w-5 text-muted-foreground" /> {/* Increased icon size */}
+            <Wind className="h-4 w-4 text-muted-foreground" />
           </TooltipTrigger>
           <TooltipContent>
             Blurry

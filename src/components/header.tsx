@@ -21,7 +21,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
 import { useRooms } from "@/hooks/use-rooms"; // Import useRooms for join functionality
 import { toast } from "sonner"; // Import toast for notifications
-import { UpgradeButton } from "@/components/upgrade-button"; // Import UpgradeButton
 
 interface HeaderProps {
   onToggleChat: () => void;
@@ -64,17 +63,16 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
   };
 
   return (
-    <header className="sticky top-0 z-[1002] w-full border-b bg-transparent backdrop-blur-xl flex items-center h-16 px-4"> {/* Added px-4 */}
-      <div className="flex items-center gap-3"> {/* Increased gap from 2 to 3 */}
+    <header className="sticky top-0 z-[1002] w-full border-b bg-transparent backdrop-blur-xl flex items-center h-16">
+      <div className="flex items-center gap-2 pl-4">
         {isMobile && (
           <Button
             variant="ghost"
             size="icon"
             onClick={onToggleSidebar}
             title="Open Menu"
-            className="h-10 w-10" /* Increased size */
           >
-            <Menu className="h-6 w-6" /> {/* Increased icon size */}
+            <Menu className="h-6 w-6" />
             <span className="sr-only">Open Menu</span>
           </Button>
         )}
@@ -83,9 +81,8 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
           size="icon"
           onClick={() => router.push('/dashboard')}
           title="Go to Dashboard"
-          className="h-10 w-10" /* Increased size */
         >
-          <Home className="h-6 w-6" /> {/* Increased icon size */}
+          <Home className="h-6 w-6" />
           <span className="sr-only">Go to Dashboard</span>
         </Button>
         {currentRoomId && (
@@ -95,7 +92,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
             title="Copy Room ID"
           >
             ({currentRoomId.substring(0, 8)}...)
-            <Copy className="h-4 w-4" /> {/* Increased icon size */}
+            <Copy className="h-3 w-3" />
           </span>
         )}
         {/* Adjusted h1 to be always visible and truncate if needed */}
@@ -110,14 +107,14 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
               title="Copy Your User ID"
             >
               ({session.user.id.substring(0, 6)})
-              <Copy className="h-4 w-4" /> {/* Increased icon size */}
+              <Copy className="h-3 w-3" />
             </span>
           )}
           <span className="truncate">{currentRoomName}</span>
         </h1>
       </div>
 
-      <div className="flex items-center gap-4 ml-auto"> {/* Removed pr-4, adjusted gap */}
+      <div className="flex items-center gap-4 ml-auto pr-4">
         {/* Join Room Input and Button */}
         <div className="flex items-center space-x-2">
           <Input
@@ -147,8 +144,8 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" title="Manage Spaces" className="h-10 w-10"> {/* Increased size */}
-              <LayoutGrid className="h-6 w-6" /> {/* Increased icon size */}
+            <Button variant="ghost" size="icon" title="Manage Spaces">
+              <LayoutGrid className="h-6 w-6" />
               <span className="sr-only">Manage Spaces</span>
             </Button>
           </DropdownMenuTrigger>
@@ -159,7 +156,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <UpgradeButton className="h-10 w-10" /> {/* Moved here, increased size */}
+        {/* Removed UpgradeButton from here */}
         <ThemeToggle />
         {session && (
           <NotificationsDropdown />
@@ -170,9 +167,9 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
             size="icon"
             onClick={onToggleChat}
             title="Open Chat"
-            className="relative h-10 w-10" /* Increased size */
+            className="relative"
           >
-            <MessageSquare className="h-6 w-6" /> {/* Increased icon size */}
+            <MessageSquare className="h-6 w-6" />
             <span className="sr-only">Open Chat</span>
             {unreadChatCount > 0 && (
               <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">

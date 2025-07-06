@@ -189,7 +189,7 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="flex flex-col items-center gap-4">
           <div className="relative group">
-            <Avatar className="h-28 w-28"> {/* Increased size */}
+            <Avatar className="h-24 w-24">
               <AvatarImage src={form.watch("profile_image_url") || undefined} alt="Profile Image" />
               <AvatarFallback className="text-4xl font-bold">
                 {isUploading ? <Loader2 className="h-8 w-8 animate-spin" /> : userInitials}
@@ -207,7 +207,7 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
               htmlFor="profile-image-upload"
               className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
             >
-              <Camera className="h-10 w-10 text-white" /> {/* Increased icon size */}
+              <Camera className="h-8 w-8 text-white" />
               <span className="sr-only">Upload Profile Image</span>
             </label>
           </div>
