@@ -13,8 +13,11 @@ import { SummaryMode, DetailedResult, SummaryData } from './SummaryMode';
 import { useFlashcardCategories } from '@/hooks/flashcards/useFlashcardCategories';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FlashcardForm } from './FlashcardForm';
+import { toast } from 'sonner';
 
 type FlashcardMode = 'manage' | 'learn' | 'test' | 'summary';
+
+const SESSION_HISTORY_KEY = 'flashcard_session_history';
 
 export function FlashcardApp() {
   const { cards, loading, isLoggedInMode, handleAddCard, handleDeleteCard, handleUpdateCard, handleAnswerFeedback: baseHandleAnswerFeedback, handleResetProgress, handleBulkAddCards, handleUpdateCardCategory, handleBulkDelete, handleBulkMove, handleGradeCard } = useFlashcards();
@@ -23,6 +26,33 @@ export function FlashcardApp() {
   const [currentMode, setCurrentMode] = useState<FlashcardMode>('manage');
   const [editingCard, setEditingCard] = useState<CardData | null>(null);
   const [sessionHistory, setSessionHistory] = useState<DetailedResult[]>([]);
+
+  // Load session history from local storage on mount
+  useEffect(() => {
+    try {
+      const savedHistory = localStorage.getItem(SESSION_HISTORY_KEY);
+      if (savedHistory) {
+        setSessionHistory(JSON.parse(savedHistory));
+      }
+    } catch (error) {
+      console.error("Failed to load session history from local storage", error);
+    }
+  }, []);
+
+  // Save session history to local storage on change
+  useEffect(() => {
+    try {
+      localStorage.setItem(SESSION_HISTORY_KEY, JSON.stringify(sessionHistory));
+    } catch (error) {
+      console.error("Failed to save session history to local storage", error);
+    }
+  }, [sessionHistory]);
+
+  const handleClearSummary = useCallback(() => {
+    setSessionHistory([]);
+    localStorage.removeItem(SESSION_HISTORY_KEY);
+    toast.success("Session summary has been cleared.");
+  }, []);
 
   const augmentedHandleAnswerFeedback = useCallback((cardId: string, isCorrect: boolean, userAnswer: string | null, source: 'learn' | 'test') => {
     baseHandleAnswerFeedback(cardId, isCorrect);
@@ -119,7 +149,7 @@ export function FlashcardApp() {
       case 'test':
         return <TestMode flashcards={cards} onAnswer={(cardId, isCorrect, userAnswer) => augmentedHandleAnswerFeedback(cardId, isCorrect, userAnswer, 'test')} onQuit={() => setCurrentMode('manage')} />;
       case 'summary':
-        return <SummaryMode summaryData={generateSummaryData()} onResetProgress={handleResetProgress} />;
+        return <SummaryMode summaryData={generateSummaryData()} onResetProgress={handleResetProgress} onClearSummary={handleClearSummary} />;
       default:
         return null;
     }

@@ -34,9 +34,10 @@ export interface SummaryData {
 interface SummaryModeProps {
   summaryData: SummaryData | null;
   onResetProgress: () => void;
+  onClearSummary: () => void;
 }
 
-export function SummaryMode({ summaryData, onResetProgress }: SummaryModeProps) {
+export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: SummaryModeProps) {
   if (!summaryData || summaryData.detailedResults.length === 0) {
     return (
       <Card className="text-center p-8 bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-lg">
@@ -154,11 +155,15 @@ export function SummaryMode({ summaryData, onResetProgress }: SummaryModeProps) 
       </Card>
       <Card>
         <CardHeader><CardTitle>Deck Actions</CardTitle></CardHeader>
-        <CardContent>
+        <CardContent className="space-y-2">
           <Button onClick={onResetProgress} variant="destructive" className="w-full">
             <RefreshCcw className="mr-2 h-4 w-4" /> Reset All Card Progress
           </Button>
-          <p className="text-xs text-muted-foreground mt-2">This will reset the status, seen count, and guess stats for every card in your deck.</p>
+          <p className="text-xs text-muted-foreground">This will reset the status, seen count, and guess stats for every card in your deck.</p>
+          <Button onClick={onClearSummary} variant="outline" className="w-full">
+            Clear This Summary
+          </Button>
+          <p className="text-xs text-muted-foreground">This will clear the results from your last session(s), but will not affect card progress.</p>
         </CardContent>
       </Card>
     </div>
