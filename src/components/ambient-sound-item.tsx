@@ -43,18 +43,18 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable }: AmbientSo
   return (
     <div
       className={cn(
-        "flex items-center justify-between p-3 rounded-lg shadow-sm transition-all duration-200",
+        "flex items-center justify-between p-2 rounded-lg shadow-sm transition-all duration-200",
         "bg-muted backdrop-blur-xl border border-border",
         isPlaying ? "ring-2 ring-primary" : "",
         !isCurrentRoomWritable && "opacity-70 cursor-not-allowed"
       )}
     >
       <span className="font-medium text-sm text-foreground flex-1 truncate pr-2">{name}</span>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-7 w-7"
           onClick={handlePlayPause}
           disabled={!isCurrentRoomWritable}
         >
@@ -64,7 +64,7 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable }: AmbientSo
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-7 w-7"
           onClick={handleToggleMute}
           disabled={!isCurrentRoomWritable}
         >
@@ -79,7 +79,7 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable }: AmbientSo
           value={volume}
           onChange={handleVolumeChange}
           className={cn(
-            "w-20 h-1 rounded-lg appearance-none cursor-pointer accent-primary",
+            "w-16 h-1 rounded-lg appearance-none cursor-pointer accent-primary",
             !isCurrentRoomWritable && "opacity-50 cursor-not-allowed"
           )}
           disabled={!isCurrentRoomWritable}
