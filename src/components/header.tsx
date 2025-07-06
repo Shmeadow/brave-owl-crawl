@@ -7,6 +7,7 @@ import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { UserNav } from "@/components/user-nav";
+import { UpgradeButton } from "@/components/upgrade-button";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { ClockDisplay } from "@/components/clock-display";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -156,7 +157,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Removed UpgradeButton from here */}
+        <UpgradeButton />
         <ThemeToggle />
         {session && (
           <NotificationsDropdown />
