@@ -59,10 +59,10 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
             <p className="p-4 text-muted-foreground text-sm text-center">No ambient sounds available.</p>
           ) : (
             <ScrollArea className="flex-1 h-full">
-              <div className="p-4 space-y-3">
+              <div className="p-4 grid grid-cols-2 gap-3"> {/* Changed to grid layout */}
                 {allAmbientSounds.map((sound) => (
                   <AmbientSoundItem
-                    key={sound.url} // Use URL as key for uniqueness
+                    key={sound.url}
                     name={sound.name}
                     url={sound.url}
                     isCurrentRoomWritable={isCurrentRoomWritable}
