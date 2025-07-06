@@ -22,6 +22,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
 import { useRooms } from "@/hooks/use-rooms"; // Import useRooms for join functionality
 import { toast } from "sonner"; // Import toast for notifications
+import Link from "next/link"; // Import Link
 
 interface HeaderProps {
   onToggleChat: () => void;
@@ -64,15 +65,9 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
             <span className="sr-only">Open Menu</span>
           </Button>
         )}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.push('/dashboard')}
-          title="Go to Dashboard"
-        >
-          <Home className="h-6 w-6" />
-          <span className="sr-only">Go to Dashboard</span>
-        </Button>
+        <Link href="/dashboard" className="flex items-center space-x-2">
+          <h1 className="text-2xl font-bold text-primary">CozyHub</h1>
+        </Link>
         {currentRoomId && (
           <span
             className="text-sm font-mono text-muted-foreground cursor-pointer flex items-center gap-1 hover:text-foreground transition-colors"
