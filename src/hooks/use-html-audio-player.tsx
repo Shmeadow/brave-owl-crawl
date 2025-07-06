@@ -111,7 +111,7 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
   // Reset audio state when source changes
   useEffect(() => {
     if (audioRef.current && src !== audioRef.current.src) { // Only load if src actually changed
-      console.log(`[useHtmlAudioPlayer] Source changed to: ${src}. Resetting audio state.`);
+      console.log(`[useHtmlAudioPlayer] Attempting to load new source: ${src}`);
       setAudioIsPlaying(false); // Always pause when source changes
       setAudioCurrentTime(0);
       setAudioDuration(0);
