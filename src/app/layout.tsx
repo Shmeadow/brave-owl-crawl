@@ -9,6 +9,7 @@ import { SidebarProvider } from "@/components/sidebar/sidebar-context";
 import { BackgroundProvider } from "@/context/background-provider";
 import { BackgroundBlurProvider } from "@/context/background-blur-provider";
 import { EffectProvider } from "@/context/effect-provider";
+import { ClientOnlyWrapper } from '@/components/client-only-wrapper'; // Import the new component
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -101,9 +102,11 @@ export default async function RootLayout({
               >
                 <SessionContextProvider>
                   <SidebarProvider>
+                    <ClientOnlyWrapper> {/* Wrap AppWrapper with ClientOnlyWrapper */}
                       <AppWrapper initialWidgetConfigs={WIDGET_CONFIGS}>
                         {children}
                       </AppWrapper>
+                    </ClientOnlyWrapper>
                   </SidebarProvider>
                 </SessionContextProvider>
               </ThemeProvider>
