@@ -3,12 +3,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Check, X, RefreshCw, Flag, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowRight, Check, X, RefreshCw, Flag, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { CardData } from '@/hooks/flashcards/types';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Label } from '@/components/ui/label';
 
 interface TestModeProps {
   flashcards: CardData[];
@@ -33,6 +35,8 @@ export function TestMode({ flashcards, onAnswer, onQuit }: TestModeProps) {
   const [sessionResults, setSessionResults] = useState<SessionResult[]>([]);
   const [isComplete, setIsComplete] = useState(false);
   const [showFeedbackOverlay, setShowFeedbackOverlay] = useState(false);
+  const [testType, setTestType] = useState<'text' | 'choices'>('text');
+  const [choices, setChoices] = useState<string[]>([]);
 
   const startTest = useCallback(() => {
     const shuffled = [...flashcards].sort(() => Math.random() - 0.5);
@@ -54,20 +58,43 @@ export function TestMode({ flashcards, onAnswer, onQuit }: TestModeProps) {
 
   const currentCard = testDeck[currentIndex];
 
-  const handleSubmit = () => {
-    if (!currentCard) return;
-    if (!userAnswer.trim()) {
-      toast.error("Please enter an answer or skip.");
-      return;
+  useEffect(() => {
+    if (currentCard && testType === 'choices') {
+      const distractors = testDeck
+        .filter(card => card.id !== currentCard.id)
+        .map(card => card.back);
+
+      const uniqueDistractors = [...new Set(distractors)];
+      const shuffledDistractors = uniqueDistractors.sort(() => 0.5 - Math.random());
+      const selectedDistractors = shuffledDistractors.slice(0, 3);
+
+      const allChoices = [currentCard.back, ...selectedDistractors].sort(() => 0.5 - Math.random());
+      setChoices(allChoices);
     }
-    const correct = userAnswer.trim().toLowerCase() === currentCard.back.trim().toLowerCase();
+  }, [currentCard, testType, testDeck]);
+
+  const handleNext = useCallback(() => {
+    if (currentIndex < testDeck.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+      setIsAnswered(false);
+      setUserAnswer('');
+      setIsCorrect(null);
+    } else {
+      setIsComplete(true);
+    }
+  }, [currentIndex, testDeck.length]);
+
+  const handleSubmission = useCallback((answer: string) => {
+    if (!currentCard) return;
+    const correct = answer.trim().toLowerCase() === currentCard.back.trim().toLowerCase();
+    
     setIsCorrect(correct);
     setIsAnswered(true);
-    onAnswer(currentCard.id, correct, userAnswer);
+    onAnswer(currentCard.id, correct, answer);
     setSessionResults(prev => [...prev, {
       cardId: currentCard.id,
       term: currentCard.front,
-      userAnswer: userAnswer,
+      userAnswer: answer,
       correctAnswer: currentCard.back,
       isCorrect: correct,
     }]);
@@ -75,8 +102,9 @@ export function TestMode({ flashcards, onAnswer, onQuit }: TestModeProps) {
     setShowFeedbackOverlay(true);
     setTimeout(() => {
       setShowFeedbackOverlay(false);
+      handleNext();
     }, 1500);
-  };
+  }, [currentCard, onAnswer, handleNext]);
 
   const handleSkip = () => {
     if (!currentCard) return;
@@ -89,17 +117,6 @@ export function TestMode({ flashcards, onAnswer, onQuit }: TestModeProps) {
       isCorrect: false,
     }]);
     handleNext();
-  };
-
-  const handleNext = () => {
-    if (currentIndex < testDeck.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-      setIsAnswered(false);
-      setUserAnswer('');
-      setIsCorrect(null);
-    } else {
-      setIsComplete(true);
-    }
   };
 
   if (flashcards.length === 0) {
@@ -151,52 +168,64 @@ export function TestMode({ flashcards, onAnswer, onQuit }: TestModeProps) {
           <Button onClick={onQuit} variant="ghost" size="sm">Quit Test</Button>
         </CardHeader>
         <CardContent>
+          <div className="mb-4">
+            <Label>Test Type</Label>
+            <ToggleGroup type="single" value={testType} onValueChange={(value) => value && setTestType(value as 'text' | 'choices')} disabled={flashcards.length < 4} className="mt-1">
+              <ToggleGroupItem value="text">Text Input</ToggleGroupItem>
+              <ToggleGroupItem value="choices">Multiple Choice</ToggleGroupItem>
+            </ToggleGroup>
+            {flashcards.length < 4 && <p className="text-xs text-muted-foreground mt-1">Multiple choice requires at least 4 cards.</p>}
+          </div>
+
           <Progress value={progressPercentage} className="w-full mb-6" />
           
           <div className="bg-muted p-6 rounded-lg shadow-inner text-center border mb-4">
             <p className="text-2xl font-semibold text-foreground">{currentCard.front}</p>
           </div>
 
-          {!isAnswered ? (
-            <div className="space-y-4">
-              <Textarea
-                placeholder="Type your answer..."
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                rows={4}
-                className="text-base"
-              />
-              <div className="flex justify-end gap-2">
-                <Button onClick={handleSkip} variant="secondary">Skip</Button>
-                <Button onClick={handleSubmit}>Submit Answer</Button>
-              </div>
+          {isAnswered ? (
+            <div className="flex justify-center items-center h-48">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="ml-4 text-muted-foreground">Loading next card...</p>
             </div>
           ) : (
             <div className="space-y-4">
-              <div className={cn("p-4 rounded-lg border", isCorrect ? "bg-green-100/70 dark:bg-green-900/30 border-green-500" : "bg-red-100/70 dark:bg-red-900/30 border-red-500")}>
-                <div className="flex items-center gap-2 font-bold text-lg mb-2">
-                  {isCorrect ? <Check className="text-green-600" /> : <X className="text-red-600" />}
-                  <span>{isCorrect ? "Correct!" : "Incorrect"}</span>
+              {testType === 'text' ? (
+                <>
+                  <Textarea
+                    placeholder="Type your answer..."
+                    value={userAnswer}
+                    onChange={(e) => setUserAnswer(e.target.value)}
+                    rows={4}
+                    className="text-base"
+                  />
+                  <div className="flex justify-end gap-2">
+                    <Button onClick={handleSkip} variant="secondary">Skip</Button>
+                    <Button onClick={() => handleSubmission(userAnswer)}>Submit Answer</Button>
+                  </div>
+                </>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {choices.map((choice, index) => (
+                    <Button key={index} onClick={() => handleSubmission(choice)} className="h-auto py-4 text-base whitespace-normal">
+                      {choice}
+                    </Button>
+                  ))}
                 </div>
-                <p className="text-sm text-muted-foreground">Your answer: <span className="text-foreground">{userAnswer}</span></p>
-                {!isCorrect && <p className="text-sm text-muted-foreground">Correct answer: <span className="text-foreground">{currentCard.back}</span></p>}
-              </div>
-              <div className="flex justify-center">
-                <Button onClick={handleNext}>
-                  Next Card <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
+              )}
             </div>
           )}
         </CardContent>
       </Card>
       {showFeedbackOverlay && (
-        <div className={cn(
-            "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-6 rounded-lg text-white text-2xl font-bold flex items-center gap-4 shadow-2xl z-10",
-            isCorrect ? 'bg-green-600' : 'bg-red-600'
-        )}>
-            {isCorrect ? <CheckCircle size={32} /> : <XCircle size={32} />}
-            {isCorrect ? 'Correct!' : 'Incorrect!'}
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-center items-center animate-in fade-in-0">
+            <div className={cn(
+                "p-8 rounded-lg text-white text-4xl font-bold flex items-center gap-4 shadow-2xl animate-in zoom-in-95",
+                isCorrect ? 'bg-green-600' : 'bg-red-600'
+            )}>
+                {isCorrect ? <CheckCircle size={48} /> : <XCircle size={48} />}
+                {isCorrect ? 'Correct!' : 'Incorrect!'}
+            </div>
         </div>
       )}
     </div>
