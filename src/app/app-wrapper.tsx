@@ -21,7 +21,6 @@ import { RaindropsEffect } from "@/components/effects/raindrops-effect";
 import { useIsMobile } from "@/hooks/use-mobile"; // Import useIsMobile
 import { useNotifications } from "@/hooks/use-notifications"; // Import useNotifications
 import { cn } from "@/lib/utils"; // Import cn for styling
-import { AmbientSoundProvider } from "@/context/ambient-sound-context"; // Import AmbientSoundProvider
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
@@ -97,49 +96,47 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
 
   return (
     <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea}>
-      <AmbientSoundProvider> {/* New: AmbientSoundProvider wraps the main content */}
-        <div className="relative h-screen bg-transparent">
-          {activeEffect === 'rain' && <RainEffect />}
-          {activeEffect === 'snow' && <SnowEffect />}
-          {activeEffect === 'raindrops' && <RaindropsEffect />}
-          <Header
-            isChatOpen={isChatOpen}
-            onToggleChat={() => setIsChatOpen(!isChatOpen)}
-            onNewUnreadMessage={handleNewUnreadMessage}
-            onClearUnreadMessages={handleClearUnreadMessages}
-            unreadChatCount={unreadChatCount}
-            isMobile={isMobile} // Pass isMobile
-            onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} // Pass sidebar toggle
-          />
-          <Sidebar isMobile={isMobile} /> {/* Pass isMobile */}
-          <div
-            className="absolute top-16 right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
-            style={{ left: `${sidebarCurrentWidth}px` }}
-          >
-            <main className="flex-1 relative overflow-y-auto bg-transparent">
-              <div className="p-4 sm:p-6 lg:p-8 h-full">
-                {children}
-                {isDashboard && (
-                  <div className={cn(
-                    "w-full h-full",
-                    isMobile ? "flex flex-col items-center gap-4 py-4" : "fixed inset-0 z-[903] pointer-events-none"
-                  )}>
-                    <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} isMobile={isMobile} />
-                  </div>
-                )}
-              </div>
-            </main>
-          </div>
-          {isDashboard && <PomodoroWidget 
-            isMinimized={isPomodoroMinimized}
-            setIsMinimized={setIsPomodoroMinimized}
-            chatPanelWidth={chatPanelWidth}
-            isMobile={isMobile} // Pass isMobile
-          />}
-          {isDashboard && <SimpleAudioPlayer isMobile={isMobile} />} {/* Pass isMobile */}
-          <Toaster />
+      <div className="relative h-screen bg-transparent">
+        {activeEffect === 'rain' && <RainEffect />}
+        {activeEffect === 'snow' && <SnowEffect />}
+        {activeEffect === 'raindrops' && <RaindropsEffect />}
+        <Header
+          isChatOpen={isChatOpen}
+          onToggleChat={() => setIsChatOpen(!isChatOpen)}
+          onNewUnreadMessage={handleNewUnreadMessage}
+          onClearUnreadMessages={handleClearUnreadMessages}
+          unreadChatCount={unreadChatCount}
+          isMobile={isMobile} // Pass isMobile
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} // Pass sidebar toggle
+        />
+        <Sidebar isMobile={isMobile} /> {/* Pass isMobile */}
+        <div
+          className="absolute top-16 right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
+          style={{ left: `${sidebarCurrentWidth}px` }}
+        >
+          <main className="flex-1 relative overflow-y-auto bg-transparent">
+            <div className="p-4 sm:p-6 lg:p-8 h-full">
+              {children}
+              {isDashboard && (
+                <div className={cn(
+                  "w-full h-full",
+                  isMobile ? "flex flex-col items-center gap-4 py-4" : "fixed inset-0 z-[903] pointer-events-none"
+                )}>
+                  <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} isMobile={isMobile} />
+                </div>
+              )}
+            </div>
+          </main>
         </div>
-      </AmbientSoundProvider>
+        {isDashboard && <PomodoroWidget 
+          isMinimized={isPomodoroMinimized}
+          setIsMinimized={setIsPomodoroMinimized}
+          chatPanelWidth={chatPanelWidth}
+          isMobile={isMobile} // Pass isMobile
+        />}
+        {isDashboard && <SimpleAudioPlayer isMobile={isMobile} />} {/* Pass isMobile */}
+        <Toaster />
+      </div>
     </WidgetProvider>
   );
 }

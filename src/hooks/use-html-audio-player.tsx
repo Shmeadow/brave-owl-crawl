@@ -80,32 +80,6 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
     }
   }, [audioVolume, audioIsMuted]); // Dependencies for initial setup and event listeners
 
-  // Effect to manage the audio element's source
-  useEffect(() => {
-    if (audioRef.current) {
-      if (src) { // Only set src if it's a non-null/non-empty string
-        if (audioRef.current.src !== src) { // Avoid unnecessary reloads
-          console.log(`[useHtmlAudioPlayer] Setting audio source to: ${src}`);
-          audioRef.current.src = src;
-          audioRef.current.load(); // Reload media when src changes
-          setAudioIsPlaying(false); // Pause when source changes
-          setAudioCurrentTime(0);
-          setAudioDuration(0);
-        }
-      } else { // If src is null or empty, clear the audio source
-        if (audioRef.current.src) { // Only clear if there was a source
-          console.log("[useHtmlAudioPlayer] Clearing audio source.");
-          audioRef.current.pause(); // Pause before clearing
-          audioRef.current.src = '';
-          audioRef.current.removeAttribute('src'); // Ensure src is truly removed
-          setAudioIsPlaying(false);
-          setAudioCurrentTime(0);
-          setAudioDuration(0);
-        }
-      }
-    }
-  }, [src]); // Depend only on src
-
   // Sync play/pause state with the audio element
   useEffect(() => {
     if (audioRef.current) {
@@ -133,6 +107,18 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
       audioRef.current.volume = audioIsMuted ? 0 : audioVolume;
     }
   }, [audioVolume, audioIsMuted]);
+
+  // Reset audio state when source changes
+  useEffect(() => {
+    if (audioRef.current && src !== audioRef.current.src) { // Only load if src actually changed
+      console.log(`[useHtmlAudioPlayer] Source changed to: ${src}. Resetting audio state.`);
+      setAudioIsPlaying(false); // Always pause when source changes
+      setAudioCurrentTime(0);
+      setAudioDuration(0);
+      audioRef.current.src = src || ''; // Set new source
+      audioRef.current.load(); // Reload media when src changes
+    }
+  }, [src]);
 
   const togglePlayPause = useCallback(() => {
     setAudioIsPlaying(prev => !prev);

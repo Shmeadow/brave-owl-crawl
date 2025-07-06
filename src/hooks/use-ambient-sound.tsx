@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-// Removed import for useHtmlAudioPlayer as it will no longer be used directly here
+import { useHtmlAudioPlayer } from './use-html-audio-player';
 
 interface UseAmbientSoundResult {
   isPlaying: boolean;
@@ -14,16 +14,48 @@ interface UseAmbientSoundResult {
 }
 
 export function useAmbientSound(soundUrl: string): UseAmbientSoundResult {
-  // This hook will now be a placeholder or removed entirely,
-  // as ambient sound state will be managed by a global context.
-  // For now, returning dummy values to prevent errors.
+  const {
+    audioRef,
+    audioIsPlaying,
+    audioVolume,
+    audioIsMuted,
+    togglePlayPause: htmlAudioTogglePlayPause,
+    setVolume,
+    toggleMute,
+  } = useHtmlAudioPlayer(soundUrl);
+
+  const [isBuffering, setIsBuffering] = useState(false);
+
+  // Ensure the audio element loops
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.loop = true;
+
+      const handleWaiting = () => setIsBuffering(true);
+      const handlePlaying = () => setIsBuffering(false);
+      const handleCanPlayThrough = () => setIsBuffering(false);
+
+      audioRef.current.addEventListener('waiting', handleWaiting);
+      audioRef.current.addEventListener('playing', handlePlaying);
+      audioRef.current.addEventListener('canplaythrough', handleCanPlayThrough);
+
+      return () => {
+        if (audioRef.current) {
+          audioRef.current.removeEventListener('waiting', handleWaiting);
+          audioRef.current.removeEventListener('playing', handlePlaying);
+          audioRef.current.removeEventListener('canplaythrough', handleCanPlayThrough);
+        }
+      };
+    }
+  }, [audioRef]);
+
   return {
-    isPlaying: false,
-    volume: 0.5,
-    isMuted: false,
-    isBuffering: false,
-    togglePlayPause: () => console.warn("useAmbientSound: togglePlayPause not implemented in this version."),
-    setVolume: (vol: number) => console.warn("useAmbientSound: setVolume not implemented in this version."),
-    toggleMute: () => console.warn("useAmbientSound: toggleMute not implemented in this version."),
+    isPlaying: audioIsPlaying,
+    volume: audioVolume,
+    isMuted: audioIsMuted,
+    isBuffering, // Expose new state
+    togglePlayPause: htmlAudioTogglePlayPause,
+    setVolume,
+    toggleMute,
   };
 }

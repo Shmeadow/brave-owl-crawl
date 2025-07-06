@@ -11,7 +11,6 @@ import { BackgroundBlurProvider } from "@/context/background-blur-provider";
 import { EffectProvider } from "@/context/effect-provider";
 import { ClientOnlyWrapper } from '@/components/client-only-wrapper';
 import { SpeedInsights } from "@vercel/speed-insights/next"; // Corrected import for Next.js App Router
-import { AmbientSoundProvider } from "@/context/ambient-sound-context"; // Import AmbientSoundProvider
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
