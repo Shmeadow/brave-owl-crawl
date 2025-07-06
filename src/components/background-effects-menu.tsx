@@ -65,12 +65,13 @@ export function BackgroundEffectsMenu() {
         <TabsContent value="animated-backgrounds" className="mt-4">
           <ScrollArea className="h-[450px]">
             <div className="grid grid-cols-2 gap-4 pr-4">
-              {animatedBackgrounds.map(({ videoUrl }) => (
+              {animatedBackgrounds.map((bg) => (
                 <AnimatedBackgroundPreviewItem
-                  key={videoUrl}
-                  videoUrl={videoUrl}
-                  isActive={background.isVideo && background.url === videoUrl}
+                  key={bg.videoUrl}
+                  videoUrl={bg.videoUrl}
+                  isActive={background.isVideo && background.url === bg.videoUrl}
                   onClick={handleBackgroundChange}
+                  previewOffset={bg.previewOffset} // Pass the previewOffset here
                 />
               ))}
             </div>
