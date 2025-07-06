@@ -20,30 +20,58 @@ export function useRoomFetching() {
     let userRooms: RoomData[] = [];
 
     if (session?.user?.id) {
-      // Fetch rooms created by the user OR rooms the user is a member of
-      const { data, error } = await supabase
+      // Fetch rooms created by the user
+      const { data: createdRooms, error: createdError } = await supabase
         .from('rooms')
         .select(`
           *,
           room_members(user_id),
           creator:profiles!creator_id(first_name, last_name)
         `)
-        .or(`creator_id.eq.${session.user.id},room_members.user_id.eq.${session.user.id}`)
+        .eq('creator_id', session.user.id)
         .order('created_at', { ascending: true });
 
-      if (error) {
-        toast.error("Error fetching your rooms: " + error.message);
-        console.error("Error fetching rooms:", error);
-        userRooms = [];
+      if (createdError) {
+        toast.error("Error fetching your created rooms: " + createdError.message);
+        console.error("Error fetching created rooms:", createdError);
       } else {
-        userRooms = data.map(room => ({
-          ...room,
-          is_member: room.room_members.some((m: any) => m.user_id === session.user.id) || room.creator_id === session.user.id,
-        })) as RoomData[];
+        // Mark created rooms as 'is_member: true' as the creator is implicitly a member
+        userRooms = [...(createdRooms as RoomData[]).map(room => ({ ...room, is_member: true }))];
       }
+
+      // Fetch rooms where the user is a member (excluding rooms they created)
+      const { data: memberEntries, error: memberError } = await supabase
+        .from('room_members')
+        .select(`
+          room_id,
+          rooms (
+            *,
+            room_members(user_id),
+            creator:profiles!creator_id(first_name, last_name)
+          )
+        `)
+        .eq('user_id', session.user.id);
+
+      if (memberError) {
+        toast.error("Error fetching rooms you joined: " + memberError.message);
+        console.error("Error fetching joined rooms:", memberError);
+      } else {
+        const joinedRooms = memberEntries
+          .map((entry: any) => ({ ...entry.rooms, is_member: true }))
+          .filter((room: RoomData) => room.creator_id !== session.user.id); // Exclude rooms already fetched as created
+
+        userRooms = [...userRooms, ...joinedRooms];
+      }
+
+      // Deduplicate rooms in case of any overlap (e.g., if a user is both creator and explicitly a member, though the latter should be prevented by logic)
+      const uniqueRooms = Array.from(new Map(userRooms.map(room => [room.id, room])).values());
+      setRooms(uniqueRooms);
+
+    } else {
+      // If not logged in, clear rooms
+      setRooms([]);
     }
     
-    setRooms(userRooms);
     setLoading(false);
   }, [supabase, session, authLoading]);
 
