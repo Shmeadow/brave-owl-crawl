@@ -170,19 +170,6 @@ export function FlashcardApp() {
         </Card>
       )}
 
-      {currentMode === 'test' && (
-        <Card className="w-full max-w-md">
-            <CardContent className="p-4">
-                <Label>Test Type</Label>
-                <ToggleGroup type="single" value={testType} onValueChange={(value) => value && setTestType(value as 'text' | 'choices')} disabled={cards.length < 4} className="mt-1 grid grid-cols-2">
-                    <ToggleGroupItem value="text">Text Input</ToggleGroupItem>
-                    <ToggleGroupItem value="choices">Multiple Choice</ToggleGroupItem>
-                </ToggleGroup>
-                {cards.length < 4 && <p className="text-xs text-muted-foreground mt-1">Multiple choice requires at least 4 cards.</p>}
-            </CardContent>
-        </Card>
-      )}
-
       <div className="flex flex-wrap justify-center gap-3 mb-4 w-full">
         <Button
           onClick={() => { setCurrentMode('manage'); setEditingCard(null); }}
@@ -209,6 +196,19 @@ export function FlashcardApp() {
           Summary
         </Button>
       </div>
+
+      {currentMode === 'test' && (
+        <Card className="w-full max-w-md">
+            <CardContent className="p-4">
+                <Label>Test Type</Label>
+                <ToggleGroup type="single" value={testType} onValueChange={(value) => value && setTestType(value as 'text' | 'choices')} disabled={cards.length < 4} className="mt-1 grid grid-cols-2">
+                    <ToggleGroupItem value="text">Text Input</ToggleGroupItem>
+                    <ToggleGroupItem value="choices">Multiple Choice</ToggleGroupItem>
+                </ToggleGroup>
+                {cards.length < 4 && <p className="text-xs text-muted-foreground mt-1">Multiple choice requires at least 4 cards.</p>}
+            </CardContent>
+        </Card>
+      )}
 
       {renderContent()}
 

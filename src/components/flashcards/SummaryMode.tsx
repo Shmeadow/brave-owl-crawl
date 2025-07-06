@@ -70,7 +70,7 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
           <p className="text-muted-foreground">Your Answer: <span className={cn(result.isCorrect ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400')}>{result.userAnswer || '[No Answer]'}</span></p>
           <p className="text-muted-foreground">Correct Answer: <span className="font-medium text-primary">{result.correctDefinition}</span></p>
           <div className="text-sm text-muted-foreground mt-2">
-            <p>Source: <span className="capitalize">{result.source}</span></p>
+            <p>Source: {result.source === 'learn' ? 'Learning Mode' : 'Test Mode'}</p>
             <p>Current Status: <span className="capitalize">{result.cardData.status}</span></p>
           </div>
         </li>
@@ -88,7 +88,7 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="overall" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 h-auto">
+            <TabsList className="grid w-full grid-cols-3 h-auto">
               <TabsTrigger value="overall">Overall</TabsTrigger>
               <TabsTrigger value="test-analysis">Test Analysis</TabsTrigger>
               <TabsTrigger value="all-results">All Results</TabsTrigger>

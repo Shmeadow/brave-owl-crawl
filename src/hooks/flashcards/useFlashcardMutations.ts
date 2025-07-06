@@ -29,22 +29,36 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
     let newStatus: CardData['status'] = 'Learning';
 
     if (isCorrect) {
-      if (totalGuesses < 3) {
-        newStatus = 'Learning';
-      } else if (correctRatio < 0.3) {
-        newStatus = 'Beginner';
-      } else if (correctRatio < 0.6) {
-        newStatus = 'Intermediate';
-      } else if (correctRatio < 0.9) {
-        newStatus = 'Advanced';
-      } else {
+      if (correctRatio === 1 && totalGuesses >= 10) {
         newStatus = 'Mastered';
+      } else if (correctRatio >= 0.9) {
+        newStatus = 'Advanced';
+      } else if (correctRatio >= 0.75) {
+        newStatus = 'Intermediate';
+      } else if (correctRatio >= 0.5) {
+        newStatus = 'Beginner';
+      } else {
+        newStatus = 'Learning';
       }
     } else {
-      if (cardToUpdate.status === 'Mastered') newStatus = 'Advanced';
-      else if (cardToUpdate.status === 'Advanced') newStatus = 'Intermediate';
-      else if (cardToUpdate.status === 'Intermediate') newStatus = 'Beginner';
-      else newStatus = 'Learning';
+      // Demote status on incorrect answer
+      switch (cardToUpdate.status) {
+        case 'Mastered':
+          newStatus = 'Advanced';
+          break;
+        case 'Advanced':
+          newStatus = 'Intermediate';
+          break;
+        case 'Intermediate':
+          newStatus = 'Beginner';
+          break;
+        case 'Beginner':
+        case 'Learning':
+          newStatus = 'Learning';
+          break;
+        default:
+          newStatus = 'Learning';
+      }
     }
 
     const updatedFields = {
