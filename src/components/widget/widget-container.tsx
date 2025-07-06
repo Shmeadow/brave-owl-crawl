@@ -18,6 +18,7 @@ import { BackgroundEffectsWidget } from "@/components/widget-content/background-
 import { useWidget } from "./widget-provider";
 import { Widget } from "./widget";
 import { WidgetState } from "@/hooks/widgets/types"; // Import WidgetState
+import { cn } from "@/lib/utils"; // Import cn for styling
 
 // Define WIDGET_COMPONENTS at the top level
 const WIDGET_COMPONENTS = {
@@ -72,14 +73,17 @@ export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobi
     }
   };
 
-  // Filter out minimized/pinned widgets if on mobile, as they will be stacked
+  // Filter out minimized/pinned widgets if on mobile, as they will be hidden
   const visibleWidgets = isMobile
     ? activeWidgets.filter((widget: WidgetState) => !widget.isMinimized && !widget.isPinned)
     : activeWidgets;
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
-      <div className="fixed inset-0 z-[903] pointer-events-none">
+      <div className={cn(
+        "w-full h-full", // Base styling for the container
+        isMobile ? "flex flex-col items-center gap-4 pointer-events-auto" : "fixed inset-0 z-[903] pointer-events-none"
+      )}>
         {visibleWidgets.map((widget: WidgetState) => {
           const WidgetIcon = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.icon;
           const WidgetContent = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.content;

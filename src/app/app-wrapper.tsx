@@ -20,6 +20,7 @@ import { SnowEffect } from "@/components/effects/snow-effect";
 import { RaindropsEffect } from "@/components/effects/raindrops-effect";
 import { useIsMobile } from "@/hooks/use-mobile"; // Import useIsMobile
 import { useNotifications } from "@/hooks/use-notifications"; // Import useNotifications
+import { cn } from "@/lib/utils"; // Import cn for styling
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
@@ -53,19 +54,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const handleClearUnreadMessages = () => {
     setUnreadChatCount(0);
   };
-
-  // Removed:
-  // const [welcomeNotificationShown, setWelcomeNotificationShown] = useState(false);
-  // useEffect(() => {
-  //   if (session && !loading && !welcomeNotificationShown) {
-  //     addNotification("Welcome to Productivity Hub! Explore your new workspace.");
-  //     setWelcomeNotificationShown(true);
-  //   }
-  //   if (!session && welcomeNotificationShown) {
-  //     setWelcomeNotificationShown(false);
-  //   }
-  // }, [session, loading, welcomeNotificationShown, addNotification]);
-
 
   useEffect(() => {
     // On mobile, sidebar is always off-canvas, so content starts at 0.
@@ -129,8 +117,15 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
           <main className="flex-1 relative overflow-y-auto bg-transparent">
             <div className="p-4 sm:p-6 lg:p-8 h-full">
               {children}
+              {isDashboard && (
+                <div className={cn(
+                  "w-full h-full",
+                  isMobile ? "flex flex-col items-center gap-4 py-4" : "fixed inset-0 z-[903] pointer-events-none"
+                )}>
+                  <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} isMobile={isMobile} />
+                </div>
+              )}
             </div>
-            {isDashboard && <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} isMobile={isMobile} />} {/* Pass isMobile */}
           </main>
         </div>
         {isDashboard && <PomodoroWidget 
