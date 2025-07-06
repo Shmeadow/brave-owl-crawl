@@ -12,6 +12,7 @@ export interface CardData {
   correct_guesses: number;
   incorrect_guesses: number;
   created_at: string;
+  ease_factor: number;
 }
 
 export interface Category {
