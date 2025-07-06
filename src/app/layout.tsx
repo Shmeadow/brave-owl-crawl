@@ -90,29 +90,29 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <BackgroundBlurProvider>
-          <EffectProvider>
-            <BackgroundProvider>
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-                isCozyThemeGloballyEnabled={isCozyThemeGloballyEnabled}
-              >
-                <SessionContextProvider>
+        <SessionContextProvider> {/* Moved SessionContextProvider to the top */}
+          <BackgroundBlurProvider>
+            <EffectProvider>
+              <BackgroundProvider>
+                <ThemeProvider
+                  attribute="class"
+                  defaultTheme="system"
+                  enableSystem
+                  disableTransitionOnChange
+                  isCozyThemeGloballyEnabled={isCozyThemeGloballyEnabled}
+                >
                   <SidebarProvider>
-                    <ClientOnlyWrapper> {/* Wrap AppWrapper with ClientOnlyWrapper */}
+                    <ClientOnlyWrapper>
                       <AppWrapper initialWidgetConfigs={WIDGET_CONFIGS}>
                         {children}
                       </AppWrapper>
                     </ClientOnlyWrapper>
                   </SidebarProvider>
-                </SessionContextProvider>
-              </ThemeProvider>
-            </BackgroundProvider>
-          </EffectProvider>
-        </BackgroundBlurProvider>
+                </ThemeProvider>
+              </BackgroundProvider>
+            </EffectProvider>
+          </BackgroundBlurProvider>
+        </SessionContextProvider>
       </body>
     </html>
   );
