@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Twitter, Facebook, Linkedin, ChevronDown } from 'lucide-react';
@@ -8,60 +8,64 @@ import { PricingContent } from '@/components/pricing-content';
 import { useSupabase } from '@/integrations/supabase/auth';
 import { useRouter } from 'next/navigation';
 
+const UpgradeBox = ({ onUpgrade }: { onUpgrade: (cycle?: any) => void }) => {
+  const [isHover, setIsHover] = useState(false);
+
+  return (
+    <div className="relative mx-auto mt-16">
+      <Button onClick={() => setIsHover(!isHover)}>Upgrade</Button>
+      {isHover && (
+        <div className="absolute w-[350px] bg-white border rounded-lg shadow-md top-14">
+          <div className="p-4 text-center">
+            <h3 className="text-xl mb-4">Upgrade your experience!</h3>
+            <div className="flex justify-center gap-2 mb-2">
+              <Button onClick={() => onUpgrade('weekly')}>Weekly</Button>
+              <Button onClick={() => onUpgrade('monthly')}>Monthly</Button>
+              <Button onClick={() => onUpgrade('annually')}>Annually</Button>
+            </div>
+            <Button onClick={() => { setIsHover(false); onUpgrade(); }}>Choose Plan</Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function PricingPage() {
   const { session } = useSupabase();
   const router = useRouter();
 
   const handleGetStarted = () => {
-    if (session) {
-      router.push('/dashboard');
-    } else {
-      router.push('/login');
-    }
+    if (session) router.push('/dashboard');
+    else router.push('/login');
+  };
+
+  const handleUpgrade = (cycle?: any) => {
+    console.log(`Upgrade: ${cycle ? cycle : 'Unknown Cycle'}`);
+    handleGetStarted();
   };
 
   return (
-    <div className="bg-background min-h-screen text-foreground">
-      <header className="container mx-auto py-4 flex justify-between items-center border-b pr-4">
-        <Link href="/" className="text-xl font-bold">
-          Productivity Hub
-        </Link>
-        <nav className="hidden md:flex items-center gap-6">
-          <Link href="/pricing" className="text-sm font-medium text-foreground">Pricing</Link>
+    <div className="bg-gray-100 min-h-screen text-gray-900">
+      <header className="py-4 flex justify-between border-b">
+        <Link href="/" className="text-xl font-bold">MyApp</Link>
+        <nav>
+          <Link href="/pricing" className="ml-6 text-sm font-medium">Pricing</Link>
         </nav>
-        <div className="flex items-center gap-2">
-          <Button onClick={(e) => { e.stopPropagation(); handleGetStarted(); }} variant="default">
-            <span className="flex items-center">
-              Get Started <ChevronDown className="ml-2 h-3 w-3" />
-            </span>
-          </Button>
-        </div>
       </header>
 
-      <main className="container mx-auto py-12 px-4">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
-            Build your cozy workspace for less than a coffee.
-          </h1>
-          <div className="flex justify-center gap-2 mt-4">
-            <Button variant="outline" size="icon"><Twitter className="h-4 w-4" /></Button>
-            <Button variant="outline" size="icon"><Facebook className="h-4 w-4" /></Button>
-            <Button variant="outline" size="icon"><Linkedin className="h-4 w-4" /></Button>
-          </div>
+      <main className="py-12 px-4 max-w-4xl mx-auto space-y-12">
+        <div className="text-center">
+          <h1 className="text-5xl font-bold">Pricing Plans</h1>
+          <p className="text-lg mt-2">Find the best plan for your productivity journey</p>
         </div>
 
-        <PricingContent onUpgrade={handleGetStarted} />
+        <PricingContent onUpgrade={handleUpgrade} />
+        <UpgradeBox onUpgrade={handleUpgrade} />
       </main>
 
-      <footer className="container mx-auto py-6 text-center text-muted-foreground text-sm border-t mt-12">
-        <div className="flex justify-center gap-4 mb-4">
-            <p>Join our community on <Link href="#" className="font-medium hover:underline">Discord</Link>.</p>
-            <p>Creators, <Link href="#" className="font-medium hover:underline">upload your work</Link>.</p>
-        </div>
-        <div className="flex justify-center gap-4">
-          <Link href="#" className="hover:underline">Terms of Service</Link>
-          <Link href="#" className="hover:underline">Privacy Policy</Link>
-        </div>
+      <footer className="py-6 border-t">
+        <p className="text-center text-gray-600">Copyright (C) 2024 My Productivity Hub</p>
       </footer>
     </div>
   );
