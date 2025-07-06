@@ -6,46 +6,36 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { BillingCycle } from '@/hooks/use-user-discounts';
 
-interface PlanCardProps {
-  plan: {
-    name: string;
-    tagline: string;
-    price: {
-      monthly: number;
-      annually: number;
-      weekly: number;
-    };
-    features: { text: string; included: boolean }[];
-    isMostPopular?: boolean;
-    buttonVariant: 'outline' | 'default';
-  };
-  billingCycle: 'monthly' | 'annually' | 'weekly';
-  onUpgrade: () => void;
+interface Plan {
+  name: string;
+  tagline: string;
+  price: { [key in BillingCycle]: number };
+  discounts: { [key in BillingCycle]?: { percent: number } };
+  features: { text: string; included: boolean }[];
+  isMostPopular?: boolean;
+  buttonVariant: 'outline' | 'default';
 }
 
-export function PlanCard({ plan, billingCycle, onUpgrade }: PlanCardProps) {
-  const getPriceText = () => {
-    switch (billingCycle) {
-      case 'annually':
-        return plan.price.annually.toFixed(2);
-      case 'weekly':
-        return plan.price.weekly.toFixed(2);
-      case 'monthly':
-      default:
-        return plan.price.monthly.toFixed(2);
-    }
-  };
+interface PlanCardProps {
+  plan: Plan;
+  billingCycle: BillingCycle;
+  onUpgrade: () => void;
+  isDiscountAvailable: boolean;
+}
+
+export function PlanCard({ plan, billingCycle, onUpgrade, isDiscountAvailable }: PlanCardProps) {
+  const originalPrice = plan.price[billingCycle];
+  const discountInfo = plan.discounts[billingCycle];
+  const hasDiscount = isDiscountAvailable && discountInfo && plan.name !== 'Free';
+  const discountedPrice = hasDiscount ? originalPrice * (1 - discountInfo.percent / 100) : originalPrice;
 
   const getBillingText = () => {
     switch (billingCycle) {
-      case 'annually':
-        return '/yr';
-      case 'weekly':
-        return '/wk';
-      case 'monthly':
-      default:
-        return '/mth';
+      case 'annually': return '/yr';
+      case 'weekly': return '/wk';
+      case 'monthly': default: return '/mo';
     }
   };
 
@@ -69,16 +59,26 @@ export function PlanCard({ plan, billingCycle, onUpgrade }: PlanCardProps) {
           <p className="text-muted-foreground">{plan.tagline}</p>
         </CardHeader>
         <CardContent className="flex flex-col flex-grow">
-          <div className="mb-6">
-            <p className="text-5xl font-extrabold">${getPriceText()}</p>
+          <div className="mb-6 min-h-[100px]">
+            {hasDiscount && (
+              <div className="mb-2">
+                <span className="text-lg line-through text-muted-foreground">${originalPrice.toFixed(2)}</span>
+                <span className="ml-2 bg-destructive text-destructive-foreground text-xs font-bold px-2 py-1 rounded-full">
+                  {discountInfo.percent}% OFF
+                </span>
+              </div>
+            )}
+            <p className="text-5xl font-extrabold">${discountedPrice.toFixed(2)}</p>
             <p className="text-sm text-muted-foreground">{getBillingText()}</p>
+            {hasDiscount && <p className="text-xs text-primary mt-1">First time purchase only</p>}
           </div>
           <Button
             onClick={onUpgrade}
             variant={plan.buttonVariant}
             className="w-full font-bold text-lg py-6 mb-8 transition-transform hover:scale-105"
+            disabled={plan.name === 'Free'}
           >
-            UPGRADE
+            {plan.name === 'Free' ? 'Current Plan' : 'Upgrade'}
           </Button>
           <ul className="space-y-3 text-left flex-grow">
             {plan.features.map((feature, index) => (

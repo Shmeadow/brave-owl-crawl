@@ -19,6 +19,16 @@ const features = [
   { name: 'Cloud Sync', free: <Minus className="text-muted-foreground" />, pro: <Minus className="text-muted-foreground" />, unlimited: <Check className="text-green-500" /> },
 ];
 
+const CenteredCell = ({ children }: { children: React.ReactNode }) => (
+  <td className="p-4 text-center text-muted-foreground">
+    {typeof children === 'string' ? (
+      <span>{children}</span>
+    ) : (
+      <div className="flex justify-center items-center">{children}</div>
+    )}
+  </td>
+);
+
 export function FeatureComparisonGrid({ onChoosePlan }: { onChoosePlan: () => void }) {
   return (
     <Card className="mt-16 w-full max-w-6xl mx-auto">
@@ -40,9 +50,9 @@ export function FeatureComparisonGrid({ onChoosePlan }: { onChoosePlan: () => vo
               {features.map((feature, index) => (
                 <tr key={index} className="border-b last:border-b-0">
                   <td className="p-4 font-medium">{feature.name}</td>
-                  <td className="p-4 text-center text-muted-foreground">{feature.free}</td>
-                  <td className="p-4 text-center text-muted-foreground">{feature.pro}</td>
-                  <td className="p-4 text-center font-semibold text-primary">{feature.unlimited}</td>
+                  <CenteredCell>{feature.free}</CenteredCell>
+                  <CenteredCell>{feature.pro}</CenteredCell>
+                  <CenteredCell><span className="font-semibold text-primary">{feature.unlimited}</span></CenteredCell>
                 </tr>
               ))}
               <tr className="bg-muted/50">
