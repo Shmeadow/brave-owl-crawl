@@ -26,7 +26,7 @@ export default function PricingPage() {
         <X className="h-6 w-6" />
         <span className="sr-only">Close</span>
       </Button>
-      <header className="container mx-auto py-4 flex justify-between items-center border-b">
+      <header className="container mx-auto py-4 flex justify-between items-center border-b pr-12">
         <Link href="/" className="text-xl font-bold">
           Productivity Hub
         </Link>

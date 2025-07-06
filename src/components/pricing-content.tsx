@@ -63,7 +63,7 @@ const plans = [
 ];
 
 export function PricingContent({ onUpgrade }: { onUpgrade: () => void }) {
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>('annually');
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>('weekly');
   const { session } = useSupabase();
   const { usedDiscounts, loading: discountsLoading, recordDiscountUsage } = useUserDiscounts();
 
@@ -85,14 +85,14 @@ export function PricingContent({ onUpgrade }: { onUpgrade: () => void }) {
           }}
           className="bg-background p-1 rounded-full border"
         >
-          <ToggleGroupItem value="annually" aria-label="Pay Annually" className="rounded-full px-6 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-            Annually
+          <ToggleGroupItem value="weekly" aria-label="Pay Weekly" className="rounded-full px-6 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+            Weekly
           </ToggleGroupItem>
           <ToggleGroupItem value="monthly" aria-label="Pay Monthly" className="rounded-full px-6 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
             Monthly
           </ToggleGroupItem>
-          <ToggleGroupItem value="weekly" aria-label="Pay Weekly" className="rounded-full px-6 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-            Weekly
+          <ToggleGroupItem value="annually" aria-label="Pay Annually" className="rounded-full px-6 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+            Annually
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
