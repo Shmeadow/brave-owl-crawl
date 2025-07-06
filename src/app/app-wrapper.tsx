@@ -20,6 +20,7 @@ import { SnowEffect } from "@/components/effects/snow-effect";
 import { RaindropsEffect } from "@/components/effects/raindrops-effect";
 import { useIsMobile } from "@/hooks/use-mobile"; // Import useIsMobile
 import { useNotifications } from "@/hooks/use-notifications"; // Import useNotifications
+import { UpgradeButton } from "@/components/upgrade-button"; // Import UpgradeButton
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
@@ -104,10 +105,10 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     return <LoadingScreen />;
   }
   
-  // Hide main app layout on the pricing page
-  if (pathname === '/pricing') {
-    return <>{children}</>;
-  }
+  // Removed: Hide main app layout on the pricing page
+  // if (pathname === '/pricing') {
+  //   return <>{children}</>;
+  // }
 
   return (
     <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea}>
@@ -143,6 +144,9 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
           isMobile={isMobile} // Pass isMobile
         />}
         {isDashboard && <SimpleAudioPlayer isMobile={isMobile} />} {/* Pass isMobile */}
+        {isDashboard && !isMobile && (
+          <UpgradeButton className="fixed bottom-4 right-4 z-[901]" />
+        )}
         <Toaster />
       </div>
     </WidgetProvider>
