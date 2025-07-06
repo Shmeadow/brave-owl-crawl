@@ -144,9 +144,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
           isMobile={isMobile} // Pass isMobile
         />}
         {isDashboard && <SimpleAudioPlayer isMobile={isMobile} />} {/* Pass isMobile */}
-        {isDashboard && !isMobile && (
-          <UpgradeButton className="fixed bottom-4 right-4 z-[901]" />
-        )}
+        {/* Removed UpgradeButton from here */}
         <Toaster />
       </div>
     </WidgetProvider>

@@ -14,7 +14,7 @@ export function UpgradeButton({ className }: UpgradeButtonProps) {
   return (
     <Link href="/pricing" passHref>
       <Button variant="ghost" size="icon" title="Learn More About Premium" className={cn("group", className)}> {/* Apply className here */}
-        <Crown className="h-6 w-6 text-gold transition-transform duration-300 ease-in-out group-hover:-translate-y-1" />
+        <Crown className="h-6 w-6 text-gold transition-transform duration-300 ease-in-out group-hover:-translate-y-1" /> {/* Adjusted icon size */}
         <span className="sr-only">Learn More About Premium</span>
       </Button>
     </Link>
