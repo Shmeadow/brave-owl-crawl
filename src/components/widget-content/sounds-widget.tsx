@@ -22,7 +22,10 @@ const allAmbientSounds = [
   { name: "Heavy Rain", url: "/sounds/sound17.mp3", category: "Rain & Water" },
   { name: "Thunderstorm", url: "/sounds/sound18.mp3", category: "Rain & Water" },
   { name: "Ocean Storm", url: "/sounds/sound21.mp3", category: "Rain & Water" },
-  { name: "Mountain Stream", url: "/sounds/sound25.mp3", category: "Rain & Water" },
+  { name: "Mountain Stream",
+    url: "/sounds/sound25.mp3",
+    category: "Rain & Water"
+  },
   { name: "Cave Dripping", url: "/sounds/sound26.mp3", category: "Rain & Water" },
   { name: "Underwater Bubbles", url: "/sounds/sound27.mp3", category: "Rain & Water" },
   { name: "Distant Thunder", url: "/sounds/thunder.mp3", category: "Rain & Water" },
@@ -112,7 +115,7 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
         <p className="p-4 text-muted-foreground text-sm text-center">No ambient sounds found matching your criteria.</p>
       ) : (
         <ScrollArea className="flex-1 h-full">
-          <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="p-4 grid grid-cols-2 gap-4">
             {filteredSounds.map((sound) => (
               <AmbientSoundItem
                 key={sound.url}
