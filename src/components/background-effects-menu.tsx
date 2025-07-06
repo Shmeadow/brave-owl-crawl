@@ -30,7 +30,7 @@ export function BackgroundEffectsMenu() {
         </TabsList>
 
         <TabsContent value="static-images" className="mt-4">
-          <ScrollArea className="h-72">
+          <ScrollArea className="h-[450px]">
             <div className="grid grid-cols-2 gap-4 pr-4">
               {staticImages.map((imageUrl) => {
                 const isActive = !background.isVideo && background.url === imageUrl;
@@ -63,7 +63,7 @@ export function BackgroundEffectsMenu() {
         </TabsContent>
 
         <TabsContent value="animated-backgrounds" className="mt-4">
-          <ScrollArea className="h-72">
+          <ScrollArea className="h-[450px]">
             <div className="grid grid-cols-2 gap-4 pr-4">
               {animatedBackgrounds.map(({ videoUrl }) => (
                 <AnimatedBackgroundPreviewItem
