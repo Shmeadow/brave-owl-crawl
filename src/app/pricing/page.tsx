@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Twitter, Facebook, Linkedin, X } from 'lucide-react';
+import { Twitter, Facebook, Linkedin, ChevronDown } from 'lucide-react';
 import { PricingContent } from '@/components/pricing-content';
 import { useSupabase } from '@/integrations/supabase/auth';
 import { useRouter } from 'next/navigation';
@@ -21,21 +21,20 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="bg-background min-h-screen text-foreground relative">
-      <Button onClick={() => router.push('/dashboard')} variant="ghost" size="icon" className="absolute top-4 right-4 z-10">
-        <X className="h-6 w-6" />
-        <span className="sr-only">Close</span>
-      </Button>
-      <header className="container mx-auto py-4 flex justify-between items-center border-b pr-12">
+    <div className="bg-background min-h-screen text-foreground">
+      <header className="container mx-auto py-4 flex justify-between items-center border-b pr-4">
         <Link href="/" className="text-xl font-bold">
           Productivity Hub
         </Link>
         <nav className="hidden md:flex items-center gap-6">
-          <Link href="/blog" className="text-sm font-medium text-muted-foreground hover:text-foreground">Blog</Link>
           <Link href="/pricing" className="text-sm font-medium text-foreground">Pricing</Link>
         </nav>
         <div className="flex items-center gap-2">
-          <Button onClick={handleGetStarted} variant="default">Get Started</Button>
+          <Button onClick={(e) => { e.stopPropagation(); handleGetStarted(); }} variant="default">
+            <span className="flex items-center">
+              Get Started <ChevronDown className="ml-2 h-3 w-3" />
+            </span>
+          </Button>
         </div>
       </header>
 
@@ -50,8 +49,8 @@ export default function PricingPage() {
             <Button variant="outline" size="icon"><Linkedin className="h-4 w-4" /></Button>
           </div>
         </div>
-        
-        <PricingContent onUpgrade={() => { /* Handle upgrade click */ }} />
+
+        <PricingContent onUpgrade={handleGetStarted} />
       </main>
 
       <footer className="container mx-auto py-6 text-center text-muted-foreground text-sm border-t mt-12">
