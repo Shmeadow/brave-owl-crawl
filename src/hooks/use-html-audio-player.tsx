@@ -34,27 +34,31 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
   useEffect(() => {
     if (audioRef.current) {
       if (audioIsPlaying) {
+        console.log(`[useHtmlAudioPlayer] Attempting to play audio: ${src}`);
         audioRef.current.play().catch(error => {
-          console.error("Error playing audio:", error);
+          console.error("[useHtmlAudioPlayer] Error playing audio:", error);
           toast.error(`Failed to play audio: ${error.message || 'Unknown error'}. Please check the URL or browser autoplay settings.`);
           setAudioIsPlaying(false); // Stop trying to play
         });
       } else {
+        console.log(`[useHtmlAudioPlayer] Attempting to pause audio: ${src}`);
         audioRef.current.pause();
       }
     }
-  }, [audioIsPlaying]);
+  }, [audioIsPlaying, src]);
 
   // Sync volume/mute state
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = audioIsMuted ? 0 : audioVolume;
+      console.log(`[useHtmlAudioPlayer] Volume set to: ${audioRef.current.volume}, Muted: ${audioRef.current.muted}`);
     }
   }, [audioVolume, audioIsMuted]);
 
   // Reset audio state when source changes
   useEffect(() => {
     if (audioRef.current) {
+      console.log(`[useHtmlAudioPlayer] Source changed to: ${src}. Resetting audio state.`);
       setAudioIsPlaying(false);
       setAudioCurrentTime(0);
       setAudioDuration(0);
@@ -89,6 +93,7 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
     if (audioRef.current) {
       audioRef.current.currentTime = seconds;
       setAudioCurrentTime(seconds);
+      console.log(`[useHtmlAudioPlayer] Seeked to: ${seconds}s`);
     }
   }, []);
 
@@ -96,6 +101,7 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
     if (audioRef.current) {
       audioRef.current.currentTime = Math.min(audioRef.current.currentTime + 10, audioDuration);
       setAudioCurrentTime(audioRef.current.currentTime);
+      console.log(`[useHtmlAudioPlayer] Skipped forward to: ${audioRef.current.currentTime}s`);
     }
   }, [audioDuration]);
 
@@ -103,12 +109,14 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
     if (audioRef.current) {
       audioRef.current.currentTime = Math.max(audioRef.current.currentTime - 10, 0);
       setAudioCurrentTime(audioRef.current.currentTime);
+      console.log(`[useHtmlAudioPlayer] Skipped backward to: ${audioRef.current.currentTime}s`);
     }
   }, []);
 
   const onLoadedMetadata = useCallback(() => {
     if (audioRef.current) {
       setAudioDuration(audioRef.current.duration);
+      console.log(`[useHtmlAudioPlayer] Metadata loaded. Duration: ${audioRef.current.duration}s`);
     }
   }, []);
 
@@ -124,6 +132,7 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
     }
+    console.log("[useHtmlAudioPlayer] Audio ended.");
   }, []);
 
   return {

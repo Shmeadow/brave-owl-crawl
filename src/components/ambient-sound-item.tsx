@@ -61,7 +61,9 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable }: AmbientSo
       toast.error("You do not have permission to control sounds in this room.");
       return;
     }
+    console.log(`[AmbientSoundItem] Toggling play/pause for: ${name}. Current state: ${isPlaying ? 'Playing' : 'Paused'}`);
     togglePlayPause();
+    toast.info(isPlaying ? `Pausing ${name}` : `Playing ${name}`);
   };
 
   return (
