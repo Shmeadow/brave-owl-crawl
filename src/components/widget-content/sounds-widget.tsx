@@ -56,19 +56,9 @@ const allAmbientSounds = [
 
 export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-
-  const categories = useMemo(() => {
-    const uniqueCategories = new Set(allAmbientSounds.map(sound => sound.category));
-    return ["all", ...Array.from(uniqueCategories).sort()];
-  }, []);
 
   const filteredSounds = useMemo(() => {
     let sounds = allAmbientSounds;
-
-    if (selectedCategory !== "all") {
-      sounds = sounds.filter(sound => sound.category === selectedCategory);
-    }
 
     if (searchTerm) {
       sounds = sounds.filter(sound =>
@@ -76,16 +66,16 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
       );
     }
     return sounds;
-  }, [searchTerm, selectedCategory]);
+  }, [searchTerm]);
 
   return (
-    <div className="h-full w-full flex flex-col p-0"> {/* Removed Card, adjusted padding */}
-      <div className="p-4 pb-2"> {/* Replaced CardHeader */}
+    <div className="h-full w-full flex flex-col p-0">
+      <div className="p-4 pb-2">
         <h2 className="text-xl font-bold flex items-center gap-2">
           <Music className="h-6 w-6" /> Ambient Sounds
         </h2>
       </div>
-      <div className="p-4 pt-2 border-b border-border space-y-3"> {/* Replaced CardContent, adjusted padding */}
+      <div className="p-4 pt-2 border-b border-border space-y-3">
         <div className="relative">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -95,27 +85,14 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div>
-          <Label htmlFor="category-select" className="sr-only">Filter by Category</Label>
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger id="category-select">
-              <SelectValue placeholder="Filter by category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.filter(cat => cat !== "all").map(cat => (
-                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Removed Category Select */}
       </div>
 
       {filteredSounds.length === 0 ? (
         <p className="p-4 text-muted-foreground text-sm text-center">No ambient sounds found matching your criteria.</p>
       ) : (
         <ScrollArea className="flex-1 h-full">
-          <div className="p-4 grid grid-cols-2 gap-4">
+          <div className="p-4 grid grid-cols-1 gap-4"> {/* Changed to grid-cols-1 */}
             {filteredSounds.map((sound) => (
               <AmbientSoundItem
                 key={sound.url}
