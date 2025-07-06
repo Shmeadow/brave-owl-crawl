@@ -12,6 +12,7 @@ export interface UserProfile {
   profile_image_url: string | null;
   role: string | null;
   time_format_24h: boolean | null;
+  welcome_notification_sent: boolean | null; // Add new field
 }
 
 interface SupabaseContextType {
@@ -49,7 +50,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
   const fetchProfile = useCallback(async (userId: string, client: SupabaseClient) => {
     const { data, error } = await client
       .from('profiles')
-      .select('id, first_name, last_name, profile_image_url, role, time_format_24h')
+      .select('id, first_name, last_name, profile_image_url, role, time_format_24h, welcome_notification_sent') // Select new field
       .eq('id', userId)
       .single();
 
@@ -62,8 +63,8 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
       // If no profile found, create a default one
       const { data: newProfile, error: insertError } = await client
         .from('profiles')
-        .insert({ id: userId, first_name: null, last_name: null, profile_image_url: null, role: 'user', time_format_24h: true })
-        .select('id, first_name, last_name, profile_image_url, role, time_format_24h')
+        .insert({ id: userId, first_name: null, last_name: null, profile_image_url: null, role: 'user', time_format_24h: true, welcome_notification_sent: false }) // Set default for new field
+        .select('id, first_name, last_name, profile_image_url, role, time_format_24h, welcome_notification_sent') // Select new field
         .single();
       if (insertError) {
         console.error("Error creating default profile:", insertError);

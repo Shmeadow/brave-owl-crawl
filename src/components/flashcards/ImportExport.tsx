@@ -44,6 +44,34 @@ const SeparatorOptions = ({
   </div>
 );
 
+// Helper function to parse a CSV line, handling quoted fields
+const parseCsvLine = (line: string, delimiter: string): string[] => {
+  const result: string[] = [];
+  let inQuote = false;
+  let currentField = '';
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    const nextChar = line[i + 1];
+
+    if (char === '"') {
+      if (inQuote && nextChar === '"') { // Escaped quote
+        currentField += '"';
+        i++; // Skip next char
+      } else {
+        inQuote = !inQuote;
+      }
+    } else if (char === delimiter && !inQuote) {
+      result.push(currentField);
+      currentField = '';
+    } else {
+      currentField += char;
+    }
+  }
+  result.push(currentField); // Push the last field
+  return result;
+};
+
 export function ImportExport({ cards, onBulkImport, categories, onAddCategory }: ImportExportProps) {
   const [textValue, setTextValue] = useState('');
   const [importTarget, setImportTarget] = useState<string>('new'); // Default to 'new' or first category
@@ -94,17 +122,31 @@ export function ImportExport({ cards, onBulkImport, categories, onAddCategory }:
     toast.success(`Exported ${cards.length} cards.`);
   };
 
-  const parseCSV = (csvText: string): { front: string; back: string }[] => {
+  const parseCSV = (csvText: string, columnSeparator: string): { front: string; back: string }[] => {
     const lines = csvText.trim().split('\n');
-    if (lines[0].toLowerCase().includes('front') && lines[0].toLowerCase().includes('back')) {
-      lines.shift();
+    if (lines.length === 0) return [];
+
+    // Determine if there's a header row
+    let startIndex = 0;
+    const firstLine = lines[0].toLowerCase();
+    if (firstLine.includes('front') && firstLine.includes('back')) {
+      startIndex = 1; // Skip header
     }
-    return lines.map(line => {
-      const values = line.split(',');
-      const front = values[0]?.trim().replace(/^"|"$/g, '') || '';
-      const back = values[1]?.trim().replace(/^"|"$/g, '') || '';
-      return { front, back };
-    }).filter(c => c.front && c.back);
+
+    const parsedCards: { front: string; back: string }[] = [];
+    for (let i = startIndex; i < lines.length; i++) {
+      const line = lines[i];
+      if (!line.trim()) continue; // Skip empty lines
+
+      const values = parseCsvLine(line, columnSeparator);
+      const front = values[0]?.trim() || '';
+      const back = values[1]?.trim() || '';
+
+      if (front && back) { // Only add if both front and back are non-empty
+        parsedCards.push({ front, back });
+      }
+    }
+    return parsedCards;
   };
 
   const handleImport = async (content: string) => {
@@ -125,9 +167,10 @@ export function ImportExport({ cards, onBulkImport, categories, onAddCategory }:
     }
 
     try {
-      const parsedCards = parseCSV(content);
+      const actualColSep = getSeparatorValue(colSep, customColSep);
+      const parsedCards = parseCSV(content, actualColSep); // Pass the actual column separator
       if (parsedCards.length === 0) {
-        toast.error("No valid cards found in the provided text.");
+        toast.error("No valid cards found in the provided text. Ensure correct format and separators.");
         return;
       }
       const importedCount = await onBulkImport(parsedCards, categoryId);
@@ -135,7 +178,7 @@ export function ImportExport({ cards, onBulkImport, categories, onAddCategory }:
       setTextValue('');
       setNewCategoryName('');
     } catch (error) {
-      toast.error("Failed to parse or import cards. Please check the format.");
+      toast.error("Failed to parse or import cards. Please check the format and separators.");
       console.error(error);
     }
   };

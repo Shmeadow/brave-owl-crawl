@@ -54,20 +54,17 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     setUnreadChatCount(0);
   };
 
-  // State to track if the welcome notification has been shown for the current session
-  const [welcomeNotificationShown, setWelcomeNotificationShown] = useState(false);
-
-  useEffect(() => {
-    // Show welcome notification only once per session after user logs in
-    if (session && !loading && !welcomeNotificationShown) {
-      addNotification("Welcome to Productivity Hub! Explore your new workspace.");
-      setWelcomeNotificationShown(true);
-    }
-    // Reset if session changes (e.g., user logs out and then logs in again)
-    if (!session && welcomeNotificationShown) {
-      setWelcomeNotificationShown(false);
-    }
-  }, [session, loading, welcomeNotificationShown, addNotification]);
+  // Removed:
+  // const [welcomeNotificationShown, setWelcomeNotificationShown] = useState(false);
+  // useEffect(() => {
+  //   if (session && !loading && !welcomeNotificationShown) {
+  //     addNotification("Welcome to Productivity Hub! Explore your new workspace.");
+  //     setWelcomeNotificationShown(true);
+  //   }
+  //   if (!session && welcomeNotificationShown) {
+  //     setWelcomeNotificationShown(false);
+  //   }
+  // }, [session, loading, welcomeNotificationShown, addNotification]);
 
 
   useEffect(() => {

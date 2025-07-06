@@ -15,10 +15,38 @@ export interface NotificationData {
 const LOCAL_STORAGE_KEY = 'guest_notifications';
 
 export function useNotifications() {
-  const { supabase, session, loading: authLoading } = useSupabase();
+  const { supabase, session, loading: authLoading, profile } = useSupabase(); // Get profile here
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
+
+  // Moved addNotification declaration here to fix TS2448/TS2454
+  const addNotification = useCallback(async (message: string, targetUserId?: string) => {
+    const userId = targetUserId || session?.user?.id || null;
+
+    if (isLoggedInMode && supabase && userId) {
+      const { data, error } = await supabase
+        .from('notifications')
+        .insert({ user_id: userId, message, is_read: false })
+        .select()
+        .single();
+      if (error) {
+        toast.error("Error adding notification: " + error.message);
+        console.error("Error adding notification (Supabase):", error);
+      } else if (data && userId === session?.user?.id) { // Only add to current state if it's for the current user
+        setNotifications(prev => [data as NotificationData, ...prev]);
+      }
+    } else if (!isLoggedInMode && !targetUserId) { // Only add to local storage if guest and no specific target
+      const newNotification: NotificationData = {
+        id: crypto.randomUUID(),
+        user_id: null,
+        message,
+        is_read: false,
+        created_at: new Date().toISOString(),
+      };
+      setNotifications(prev => [newNotification, ...prev]);
+    }
+  }, [isLoggedInMode, session, supabase]);
 
   const fetchNotifications = useCallback(async () => {
     setLoading(true);
@@ -104,32 +132,19 @@ export function useNotifications() {
     }
   }, [notifications, isLoggedInMode, loading]);
 
-  const addNotification = useCallback(async (message: string, targetUserId?: string) => {
-    const userId = targetUserId || session?.user?.id || null;
-
-    if (isLoggedInMode && supabase && userId) {
-      const { data, error } = await supabase
-        .from('notifications')
-        .insert({ user_id: userId, message, is_read: false })
-        .select()
-        .single();
-      if (error) {
-        toast.error("Error adding notification: " + error.message);
-        console.error("Error adding notification (Supabase):", error);
-      } else if (data && userId === session?.user?.id) { // Only add to current state if it's for the current user
-        setNotifications(prev => [data as NotificationData, ...prev]);
-      }
-    } else if (!isLoggedInMode && !targetUserId) { // Only add to local storage if guest and no specific target
-      const newNotification: NotificationData = {
-        id: crypto.randomUUID(),
-        user_id: null,
-        message,
-        is_read: false,
-        created_at: new Date().toISOString(),
-      };
-      setNotifications(prev => [newNotification, ...prev]);
+  // Logic for one-time welcome notification
+  useEffect(() => {
+    if (!loading && session && profile && !profile.welcome_notification_sent) {
+      addNotification("Welcome to Productivity Hub! Explore your new workspace.");
+      // Mark notification as sent in profile
+      supabase?.from('profiles')
+        .update({ welcome_notification_sent: true })
+        .eq('id', profile.id)
+        .then(({ error }) => {
+          if (error) console.error("Error updating welcome_notification_sent:", error);
+        });
     }
-  }, [isLoggedInMode, session, supabase]);
+  }, [loading, session, profile, addNotification, supabase]);
 
   const markAsRead = useCallback(async (notificationId: string) => {
     const notificationToUpdate = notifications.find(n => n.id === notificationId);
@@ -140,9 +155,7 @@ export function useNotifications() {
         .from('notifications')
         .update({ is_read: true })
         .eq('id', notificationId)
-        .eq('user_id', session.user.id)
-        .select()
-        .single();
+        .eq('user_id', session.user.id);
       if (error) {
         toast.error("Error marking notification as read: " + error.message);
         console.error("Error marking notification as read (Supabase):", error);
