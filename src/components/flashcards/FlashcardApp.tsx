@@ -25,6 +25,7 @@ export function FlashcardApp() {
   const { session } = useSupabase();
   const [currentMode, setCurrentMode] = useState<FlashcardMode>('manage');
   const [sessionHistory, setSessionHistory] = useState<DetailedResult[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [testType, setTestType] = useState<'text' | 'choices'>('text');
 
   // Load session history from local storage on mount
@@ -48,13 +49,43 @@ export function FlashcardApp() {
     }
   }, [sessionHistory]);
 
+  // Start a new session when entering learn/test mode
+  useEffect(() => {
+    if (currentMode === 'learn' || currentMode === 'test') {
+      setCurrentSessionId(new Date().toISOString());
+    } else {
+      setCurrentSessionId(null); // Clear session ID when not in a learning/testing mode
+    }
+  }, [currentMode]);
+
   const handleClearSummary = useCallback(() => {
     setSessionHistory([]);
     localStorage.removeItem(SESSION_HISTORY_KEY);
     toast.success("Session summary has been cleared.");
   }, []);
 
+  const handleGradeCardWrapper = useCallback((cardId: string, grade: 'Easy' | 'Good' | 'Hard' | 'Again') => {
+    if (!currentSessionId) return;
+    handleGradeCard(cardId, grade); // The original mutation
+
+    const card = cards.find(c => c.id === cardId);
+    if (card) {
+        const result: DetailedResult = {
+            term: card.front,
+            correctDefinition: card.back,
+            userAnswer: `Graded as ${grade}`,
+            isCorrect: grade === 'Easy' || grade === 'Good',
+            cardId: card.id,
+            cardData: card,
+            source: 'learn',
+            sessionId: currentSessionId,
+        };
+        setSessionHistory(prev => [...prev, result]);
+    }
+  }, [handleGradeCard, cards, currentSessionId]);
+
   const augmentedHandleAnswerFeedback = useCallback((cardId: string, isCorrect: boolean, userAnswer: string | null, source: 'learn' | 'test') => {
+    if (!currentSessionId) return;
     baseHandleAnswerFeedback(cardId, isCorrect);
 
     const card = cards.find(c => c.id === cardId);
@@ -67,10 +98,11 @@ export function FlashcardApp() {
             cardId: card.id,
             cardData: card,
             source: source,
+            sessionId: currentSessionId,
         };
         setSessionHistory(prev => [...prev, result]);
     }
-  }, [baseHandleAnswerFeedback, cards]);
+  }, [baseHandleAnswerFeedback, cards, currentSessionId]);
 
   const generateSummaryData = useCallback((): SummaryData | null => {
     if (sessionHistory.length === 0) return null;
@@ -98,7 +130,7 @@ export function FlashcardApp() {
     return {
         totalAttempted: uniqueDetailedResults.length,
         score: correctCount,
-        detailedResults: detailedResultsWithLatestCardData,
+        detailedResults: sessionHistory, // Pass the full history for grouping
         testAnalysis: {
             results: testResults,
             accuracy: testAccuracy,
@@ -145,7 +177,7 @@ export function FlashcardApp() {
           />
         );
       case 'learn':
-        return <LearnMode flashcards={cards} onGradeCard={handleGradeCard} goToSummary={goToSummary} />;
+        return <LearnMode flashcards={cards} onGradeCard={handleGradeCardWrapper} goToSummary={goToSummary} />;
       case 'test':
         return <TestMode flashcards={cards} onAnswer={(cardId, isCorrect, userAnswer) => augmentedHandleAnswerFeedback(cardId, isCorrect, userAnswer, 'test')} onQuit={() => setCurrentMode('manage')} testType={testType} />;
       case 'summary':

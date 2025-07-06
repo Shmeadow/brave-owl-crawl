@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, XCircle, Star, RefreshCcw } from 'lucide-react';
+import { Star, RefreshCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CardData } from '@/hooks/flashcards/types';
 import { Button } from '@/components/ui/button';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export interface DetailedResult {
   term: string;
@@ -17,6 +18,7 @@ export interface DetailedResult {
   cardId: string;
   cardData: CardData;
   source: 'learn' | 'test';
+  sessionId: string;
 }
 
 export interface SummaryData {
@@ -38,7 +40,34 @@ interface SummaryModeProps {
 }
 
 export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: SummaryModeProps) {
-  if (!summaryData || summaryData.detailedResults.length === 0) {
+  const sessions = useMemo(() => {
+    if (!summaryData || !summaryData.detailedResults) return [];
+
+    const groups: { [key: string]: DetailedResult[] } = {};
+    summaryData.detailedResults.forEach(result => {
+      if (!groups[result.sessionId]) {
+        groups[result.sessionId] = [];
+      }
+      groups[result.sessionId].push(result);
+    });
+
+    return Object.entries(groups).map(([sessionId, results]) => {
+      const uniqueResultsMap = new Map<string, DetailedResult>();
+      // Get the last result for each card within the session
+      results.forEach(r => uniqueResultsMap.set(r.cardId, r));
+      const uniqueResults = Array.from(uniqueResultsMap.values());
+
+      return {
+        id: sessionId,
+        startTime: new Date(sessionId),
+        results: uniqueResults.sort((a, b) => a.term.localeCompare(b.term)),
+        correctCount: uniqueResults.filter(r => r.isCorrect).length,
+        totalCount: uniqueResults.length,
+      };
+    }).sort((a, b) => b.startTime.getTime() - a.startTime.getTime()); // Newest session first
+  }, [summaryData]);
+
+  if (!summaryData || sessions.length === 0) {
     return (
       <Card className="text-center p-8 bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-lg">
         <CardHeader>
@@ -51,28 +80,23 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
     );
   }
 
-  const { totalAttempted, score, detailedResults, testAnalysis } = summaryData;
-  const correctCount = score;
-  const incorrectCount = totalAttempted - correctCount;
-  const accuracy = totalAttempted > 0 ? parseFloat(((correctCount / totalAttempted) * 100).toFixed(2)) : 0;
+  const overallCorrect = sessions.reduce((sum, s) => sum + s.correctCount, 0);
+  const overallTotal = sessions.reduce((sum, s) => sum + s.totalCount, 0);
+  const overallAccuracy = overallTotal > 0 ? parseFloat(((overallCorrect / overallTotal) * 100).toFixed(2)) : 0;
 
-  const renderDetailedResults = (results: DetailedResult[]) => (
-    <ul className="space-y-4">
+  const renderSessionResults = (results: DetailedResult[]) => (
+    <ul className="space-y-2 pt-2">
       {results.map((result, index) => (
-        <li key={index} className={cn(
-          "p-4 rounded-lg shadow-sm border",
+        <li key={`${result.cardId}-${index}`} className={cn(
+          "p-3 rounded-md shadow-sm border",
           result.isCorrect ? 'bg-green-50/70 dark:bg-green-900/20 border-green-200/50 dark:border-green-800/30' : 'bg-red-50/70 dark:bg-red-900/20 border-red-200/50 dark:border-red-800/30'
         )}>
-          <div className="flex items-center justify-between mb-2">
-            <p className="font-semibold text-lg text-foreground">Term: <span className="text-primary">{result.term}</span></p>
-            {result.cardData.starred && <Star className="h-5 w-5 text-yellow-500 fill-current" />}
+          <div className="flex items-center justify-between mb-1">
+            <p className="font-semibold text-md text-foreground">Term: <span className="text-primary">{result.term}</span></p>
+            {result.cardData.starred && <Star className="h-4 w-4 text-yellow-500 fill-current" />}
           </div>
-          <p className="text-muted-foreground">Your Answer: <span className={cn(result.isCorrect ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400')}>{result.userAnswer || '[No Answer]'}</span></p>
-          <p className="text-muted-foreground">Correct Answer: <span className="font-medium text-primary">{result.correctDefinition}</span></p>
-          <div className="text-sm text-muted-foreground mt-2">
-            <p>Source: {result.source === 'learn' ? 'Learning Mode' : 'Test Mode'}</p>
-            <p>Current Status: <span className="capitalize">{result.cardData.status}</span></p>
-          </div>
+          <p className="text-sm text-muted-foreground">Your Answer: <span className={cn(result.isCorrect ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400')}>{result.userAnswer || '[No Answer]'}</span></p>
+          {!result.isCorrect && <p className="text-sm text-muted-foreground">Correct Answer: <span className="font-medium text-primary">{result.correctDefinition}</span></p>}
         </li>
       ))}
     </ul>
@@ -80,77 +104,52 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
 
   return (
     <div className="w-full space-y-6">
-      <Card className="bg-card backdrop-blur-xl border-white/20 p-8 rounded-xl shadow-lg w-full">
-        <CardHeader>
+      <Card className="bg-card backdrop-blur-xl border-white/20 p-6 rounded-xl shadow-lg w-full">
+        <CardHeader className="p-0 pb-6">
           <CardTitle className="text-3xl font-bold text-foreground text-center">
             Session Summary
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="overall" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 h-auto">
-              <TabsTrigger value="overall">Overall</TabsTrigger>
-              <TabsTrigger value="test-analysis">Test Analysis</TabsTrigger>
-              <TabsTrigger value="all-results">All Results</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="overall" className="mt-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mb-8">
-                <div className="bg-muted p-4 rounded-lg shadow-sm border border-border">
-                  <p className="text-lg font-semibold text-foreground">Total Cards Reviewed</p>
-                  <p className="text-4xl font-bold text-primary">{totalAttempted}</p>
-                </div>
-                <div className="bg-green-100/70 dark:bg-green-900/30 p-4 rounded-lg shadow-sm border border-green-200/50 dark:border-green-800/50">
-                  <p className="text-lg font-semibold text-green-800 dark:text-green-300">Correct Answers</p>
-                  <p className="text-4xl font-bold text-green-900 dark:text-green-200">{correctCount}</p>
-                </div>
-                <div className="bg-red-100/70 dark:bg-red-900/30 p-4 rounded-lg shadow-sm border border-red-200/50 dark:border-red-800/50">
-                  <p className="text-lg font-semibold text-red-800 dark:text-red-300">Incorrect Answers</p>
-                  <p className="text-4xl font-bold text-red-900 dark:text-red-200">{incorrectCount}</p>
-                </div>
-              </div>
-              <div className="text-center text-2xl font-bold text-foreground mb-8">
-                Overall Accuracy: {accuracy}%
-              </div>
-            </TabsContent>
-
-            <TabsContent value="test-analysis" className="mt-4">
-              <h3 className="text-xl font-bold text-foreground mb-4 text-center">Test Session Analysis</h3>
-              {testAnalysis.total > 0 ? (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mb-8">
-                    <div className="bg-muted p-4 rounded-lg shadow-sm border border-border">
-                      <p className="text-lg font-semibold text-foreground">Test Questions</p>
-                      <p className="text-4xl font-bold text-primary">{testAnalysis.total}</p>
-                    </div>
-                    <div className="bg-green-100/70 dark:bg-green-900/30 p-4 rounded-lg shadow-sm border border-green-200/50 dark:border-green-800/50">
-                      <p className="text-lg font-semibold text-green-800 dark:text-green-300">Correct</p>
-                      <p className="text-4xl font-bold text-green-900 dark:text-green-200">{testAnalysis.correct}</p>
-                    </div>
-                    <div className="bg-red-100/70 dark:bg-red-900/30 p-4 rounded-lg shadow-sm border border-red-200/50 dark:border-red-800/50">
-                      <p className="text-lg font-semibold text-red-800 dark:text-red-300">Incorrect</p>
-                      <p className="text-4xl font-bold text-red-900 dark:text-red-200">{testAnalysis.total - testAnalysis.correct}</p>
-                    </div>
-                  </div>
-                  <div className="text-center text-2xl font-bold text-foreground mb-8">
-                    Test Accuracy: {testAnalysis.accuracy.toFixed(2)}%
-                  </div>
-                  {renderDetailedResults(testAnalysis.results)}
-                </>
-              ) : (
-                <p className="text-muted-foreground text-center">No test data in this session.</p>
-              )}
-            </TabsContent>
-
-            <TabsContent value="all-results" className="mt-4">
-              <h3 className="text-2xl font-bold text-foreground mb-4 text-center">All Detailed Results (Last Attempt per Card)</h3>
-              {detailedResults.length > 0 ? (
-                renderDetailedResults(detailedResults)
-              ) : (
-                <p className="text-muted-foreground text-center">No detailed results to display.</p>
-              )}
-            </TabsContent>
-          </Tabs>
+        <CardContent className="p-0">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mb-6">
+            <div className="bg-muted p-4 rounded-lg shadow-sm border border-border">
+              <p className="text-lg font-semibold text-foreground">Total Cards Reviewed</p>
+              <p className="text-4xl font-bold text-primary">{overallTotal}</p>
+            </div>
+            <div className="bg-green-100/70 dark:bg-green-900/30 p-4 rounded-lg shadow-sm border border-green-200/50 dark:border-green-800/50">
+              <p className="text-lg font-semibold text-green-800 dark:text-green-300">Correct Answers</p>
+              <p className="text-4xl font-bold text-green-900 dark:text-green-200">{overallCorrect}</p>
+            </div>
+            <div className="bg-red-100/70 dark:bg-red-900/30 p-4 rounded-lg shadow-sm border border-red-200/50 dark:border-red-800/50">
+              <p className="text-lg font-semibold text-red-800 dark:text-red-300">Incorrect Answers</p>
+              <p className="text-4xl font-bold text-red-900 dark:text-red-200">{overallTotal - overallCorrect}</p>
+            </div>
+          </div>
+          <div className="text-center text-2xl font-bold text-foreground mb-8">
+            Overall Accuracy: {overallAccuracy}%
+          </div>
+          <h3 className="text-xl font-bold text-foreground mb-4 text-center">Session History</h3>
+          {sessions.length > 0 ? (
+            <ScrollArea className="h-[400px] pr-4">
+              <Accordion type="single" collapsible className="w-full" defaultValue={sessions[0]?.id}>
+                {sessions.map((session, index) => (
+                  <AccordionItem value={session.id} key={session.id}>
+                    <AccordionTrigger>
+                      <div className="flex justify-between w-full pr-4">
+                        <span>Session #{sessions.length - index} ({session.startTime.toLocaleString()})</span>
+                        <span>Score: {session.correctCount}/{session.totalCount}</span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      {renderSessionResults(session.results)}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </ScrollArea>
+          ) : (
+            <p className="text-muted-foreground text-center">No session data to display.</p>
+          )}
         </CardContent>
       </Card>
       <Card>
