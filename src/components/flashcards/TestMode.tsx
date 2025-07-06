@@ -39,7 +39,8 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType }: TestModePro
 
   const cardIdString = useMemo(() => flashcards.map(c => c.id).sort().join(','), [flashcards]);
 
-  const startTest = useCallback(() => {
+  // This effect now correctly restarts the test only when the set of cards changes.
+  useEffect(() => {
     const shuffled = [...flashcards].sort(() => Math.random() - 0.5);
     setTestDeck(shuffled);
     setCurrentIndex(0);
@@ -51,11 +52,7 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType }: TestModePro
     if (flashcards.length > 0) {
       toast.success("Test started!");
     }
-  }, [flashcards]);
-
-  useEffect(() => {
-    startTest();
-  }, [cardIdString, startTest]);
+  }, [cardIdString]);
 
   const currentCard = testDeck[currentIndex];
 
@@ -104,7 +101,7 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType }: TestModePro
     setTimeout(() => {
       setShowFeedbackOverlay(false);
       handleNext();
-    }, 1000);
+    }, 800); // Shortened feedback duration
   }, [currentCard, onAnswer, handleNext]);
 
   const handleSkip = () => {
@@ -142,7 +139,17 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType }: TestModePro
           <p className="text-xl">Your final score is:</p>
           <p className="text-6xl font-bold text-primary">{correctCount} / {testDeck.length}</p>
           <div className="flex justify-center gap-4">
-            <Button onClick={startTest} size="lg">
+            <Button onClick={() => {
+              const shuffled = [...flashcards].sort(() => Math.random() - 0.5);
+              setTestDeck(shuffled);
+              setCurrentIndex(0);
+              setUserAnswer('');
+              setIsAnswered(false);
+              setIsCorrect(null);
+              setSessionResults([]);
+              setIsComplete(false);
+              toast.success("Test restarted!");
+            }} size="lg">
               <RefreshCw className="mr-2 h-4 w-4" /> Restart Test
             </Button>
             <Button onClick={onQuit} variant="secondary" size="lg">
