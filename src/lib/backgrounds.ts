@@ -44,8 +44,8 @@ export const animatedBackgrounds = [
 ];
 
 export const allBackgrounds = [
-    ...staticImages.map(url => ({ url, isVideo: false })),
-    ...animatedBackgrounds.map(bg => ({ url: bg.videoUrl, isVideo: true }))
+    ...staticImages.map(url => ({ url, isVideo: false, isMirrored: false })),
+    ...animatedBackgrounds.map(bg => ({ url: bg.videoUrl, isVideo: true, isMirrored: false }))
 ];
 
 export const getRandomBackground = () => {

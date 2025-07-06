@@ -1,5 +1,7 @@
 "use client";
-import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { useSupabase } from '@/integrations/supabase/auth';
+import { toast } from 'sonner';
 
 interface WidgetConfig {
   initialPosition: { x: number; y: number };
@@ -20,6 +22,30 @@ interface WidgetState {
   previousSize?: { width: number; height: number };
   normalSize?: { width: number; height: number };
   normalPosition?: { x: number; y: number };
+}
+
+// Database representation of a widget state
+interface DbWidgetState {
+  id?: string; // PK from DB
+  user_id: string;
+  widget_id: string;
+  title: string;
+  position_x: number;
+  position_y: number;
+  size_width: number;
+  size_height: number;
+  z_index: number;
+  is_minimized: boolean;
+  is_maximized: boolean;
+  is_pinned: boolean;
+  previous_position_x: number | null;
+  previous_position_y: number | null;
+  previous_size_width: number | null;
+  previous_size_height: number | null;
+  normal_position_x: number | null;
+  normal_position_y: number | null;
+  normal_size_width: number | null;
+  normal_size_height: number | null;
 }
 
 interface WidgetContextType {
@@ -64,60 +90,58 @@ export const clampPosition = (x: number, y: number, width: number, height: numbe
   return { x: clampedX, y: clampedY };
 };
 
+// Helper to convert WidgetState to DbWidgetState
+const toDbWidgetState = (widget: WidgetState, userId: string): DbWidgetState => ({
+  user_id: userId,
+  widget_id: widget.id,
+  title: widget.title,
+  position_x: widget.position.x,
+  position_y: widget.position.y,
+  size_width: widget.size.width,
+  size_height: widget.size.height,
+  z_index: widget.zIndex,
+  is_minimized: widget.isMinimized,
+  is_maximized: widget.isMaximized,
+  is_pinned: widget.isPinned,
+  previous_position_x: widget.previousPosition?.x ?? null,
+  previous_position_y: widget.previousPosition?.y ?? null,
+  previous_size_width: widget.previousSize?.width ?? null,
+  previous_size_height: widget.previousSize?.height ?? null,
+  normal_position_x: widget.normalPosition?.x ?? null,
+  normal_position_y: widget.normalPosition?.y ?? null,
+  normal_size_width: widget.normalSize?.width ?? null,
+  normal_size_height: widget.normalSize?.height ?? null,
+});
+
+// Helper to convert DbWidgetState to WidgetState
+const fromDbWidgetState = (dbWidget: DbWidgetState): WidgetState => ({
+  id: dbWidget.widget_id,
+  title: dbWidget.title,
+  position: { x: dbWidget.position_x, y: dbWidget.position_y },
+  size: { width: dbWidget.size_width, height: dbWidget.size_height },
+  zIndex: dbWidget.z_index,
+  isMinimized: dbWidget.is_minimized,
+  isMaximized: dbWidget.is_maximized,
+  isPinned: dbWidget.is_pinned,
+  previousPosition: dbWidget.previous_position_x !== null && dbWidget.previous_position_y !== null ? { x: dbWidget.previous_position_x, y: dbWidget.previous_position_y } : undefined,
+  previousSize: dbWidget.previous_size_width !== null && dbWidget.previous_size_height !== null ? { width: dbWidget.previous_size_width, height: dbWidget.previous_size_height } : undefined,
+  normalPosition: dbWidget.normal_position_x !== null && dbWidget.normal_position_y !== null ? { x: dbWidget.normal_position_x, y: dbWidget.normal_position_y } : undefined,
+  normalSize: dbWidget.normal_size_width !== null && dbWidget.normal_size_height !== null ? { width: dbWidget.normal_size_width, height: dbWidget.normal_size_height } : undefined,
+});
+
+
 export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea }: WidgetProviderProps) {
+  const { supabase, session, loading: authLoading } = useSupabase();
   const [activeWidgets, setActiveWidgets] = useState<WidgetState[]>([]);
-  const [maxZIndex, setMaxZIndex] = useState(903); // Changed from 900 to 903
-  const [mounted, setMounted] = useState(false);
+  const [maxZIndex, setMaxZIndex] = useState(903);
+  const [loading, setLoading] = useState(true);
+  const [isLoggedInMode, setIsLoggedInMode] = useState(false);
+  const mounted = useRef(false);
 
-  // Load state from local storage on mount
   useEffect(() => {
-    setMounted(true);
-    if (typeof window !== 'undefined') {
-      try {
-        const savedState = localStorage.getItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
-        if (savedState) {
-          const parsedState: WidgetState[] = JSON.parse(savedState);
-          // Filter out any widgets that might not have a config anymore
-          const validWidgets = parsedState.filter(w => initialWidgetConfigs[w.id]);
-          // Re-clamp positions and sizes based on current mainContentArea
-          const reClampedWidgets = validWidgets.map(widget => {
-            const clampedPos = clampPosition(
-              widget.position.x,
-              widget.position.y,
-              widget.size.width,
-              widget.size.height,
-              mainContentArea
-            );
-            return {
-              ...widget,
-              position: clampedPos,
-              normalPosition: widget.normalPosition ? clampPosition(
-                widget.normalPosition.x,
-                widget.normalPosition.y,
-                widget.normalSize?.width || initialWidgetConfigs[widget.id].initialWidth,
-                widget.normalSize?.height || initialWidgetConfigs[widget.id].initialHeight,
-                mainContentArea
-              ) : clampedPos,
-            };
-          });
-          setActiveWidgets(reClampedWidgets);
-          const currentMaxZ = reClampedWidgets.length > 0 ? Math.max(...reClampedWidgets.map(w => w.zIndex)) : 903; // Changed from 900 to 903
-          setMaxZIndex(currentMaxZ);
-        }
-      } catch (e) {
-        console.error("Failed to parse widget states from local storage:", e);
-        // Fallback to default if parsing fails
-        setActiveWidgets([]);
-      }
-    }
-  }, [initialWidgetConfigs, mainContentArea]); // Re-run if mainContentArea changes on initial load
-
-  // Save state to local storage whenever activeWidgets changes
-  useEffect(() => {
-    if (mounted && typeof window !== 'undefined') {
-      localStorage.setItem(LOCAL_STORAGE_WIDGET_STATE_KEY, JSON.stringify(activeWidgets));
-    }
-  }, [activeWidgets, mounted]);
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   const recalculatePinnedWidgets = useCallback((currentWidgets: WidgetState[]) => {
     const pinned = currentWidgets.filter(w => w.isPinned).sort((a, b) => a.id.localeCompare(b.id));
@@ -146,6 +170,197 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
     });
   }, [mainContentArea]);
 
+  // Load state from Supabase or local storage on mount/auth change
+  useEffect(() => {
+    if (authLoading || !mounted.current) return;
+
+    const loadWidgetStates = async () => {
+      setLoading(true);
+      if (session && supabase) {
+        setIsLoggedInMode(true);
+        // 1. Try to fetch from Supabase
+        const { data: supabaseWidgets, error: fetchError } = await supabase
+          .from('user_widget_states')
+          .select('*')
+          .eq('user_id', session.user.id);
+
+        if (fetchError) {
+          console.error("Error fetching widget states from Supabase:", fetchError);
+          toast.error("Failed to load widget states.");
+        }
+
+        if (supabaseWidgets && supabaseWidgets.length > 0) {
+          const loadedWidgets = supabaseWidgets.map(fromDbWidgetState).filter(w => initialWidgetConfigs[w.id]);
+          const reClampedWidgets = loadedWidgets.map(widget => {
+            const clampedPos = clampPosition(
+              widget.position.x,
+              widget.position.y,
+              widget.size.width,
+              widget.size.height,
+              mainContentArea
+            );
+            return {
+              ...widget,
+              position: clampedPos,
+              normalPosition: widget.normalPosition ? clampPosition(
+                widget.normalPosition.x,
+                widget.normalPosition.y,
+                widget.normalSize?.width || initialWidgetConfigs[widget.id].initialWidth,
+                widget.normalSize?.height || initialWidgetConfigs[widget.id].initialHeight,
+                mainContentArea
+              ) : clampedPos,
+            };
+          });
+          setActiveWidgets(recalculatePinnedWidgets(reClampedWidgets));
+          const currentMaxZ = reClampedWidgets.length > 0 ? Math.max(...reClampedWidgets.map(w => w.zIndex)) : 903;
+          setMaxZIndex(currentMaxZ);
+          console.log("Loaded widget states from Supabase.");
+        } else {
+          // 2. If no Supabase data, check local storage for migration
+          const savedState = localStorage.getItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
+          if (savedState) {
+            try {
+              const parsedState: WidgetState[] = JSON.parse(savedState);
+              const validWidgets = parsedState.filter(w => initialWidgetConfigs[w.id]);
+              const reClampedWidgets = validWidgets.map(widget => {
+                const clampedPos = clampPosition(
+                  widget.position.x,
+                  widget.position.y,
+                  widget.size.width,
+                  widget.size.height,
+                  mainContentArea
+                );
+                return {
+                  ...widget,
+                  position: clampedPos,
+                  normalPosition: widget.normalPosition ? clampPosition(
+                    widget.normalPosition.x,
+                    widget.normalPosition.y,
+                    widget.normalSize?.width || initialWidgetConfigs[widget.id].initialWidth,
+                    widget.normalSize?.height || initialWidgetConfigs[widget.id].initialHeight,
+                    mainContentArea
+                  ) : clampedPos,
+                };
+              });
+
+              // Migrate to Supabase
+              const { error: insertError } = await supabase
+                .from('user_widget_states')
+                .insert(reClampedWidgets.map(w => toDbWidgetState(w, session.user.id)));
+
+              if (insertError) {
+                console.error("Error migrating local widget states to Supabase:", insertError);
+                toast.error("Error migrating local widget settings.");
+              } else {
+                setActiveWidgets(recalculatePinnedWidgets(reClampedWidgets));
+                localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
+                toast.success("Local widget settings migrated to your account!");
+              }
+            } catch (e) {
+              console.error("Error parsing local storage widget states:", e);
+              setActiveWidgets([]);
+            }
+          } else {
+            // 3. If neither, start with empty state (new user)
+            setActiveWidgets([]);
+          }
+        }
+      } else {
+        // User is a guest (not logged in)
+        setIsLoggedInMode(false);
+        const savedState = localStorage.getItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
+        if (savedState) {
+          try {
+            const parsedState: WidgetState[] = JSON.parse(savedState);
+            const validWidgets = parsedState.filter(w => initialWidgetConfigs[w.id]);
+            const reClampedWidgets = validWidgets.map(widget => {
+              const clampedPos = clampPosition(
+                widget.position.x,
+                widget.position.y,
+                widget.size.width,
+                widget.size.height,
+                mainContentArea
+              );
+              return {
+                ...widget,
+                position: clampedPos,
+                normalPosition: widget.normalPosition ? clampPosition(
+                  widget.normalPosition.x,
+                  widget.normalPosition.y,
+                  widget.normalSize?.width || initialWidgetConfigs[widget.id].initialWidth,
+                  widget.normalSize?.height || initialWidgetConfigs[widget.id].initialHeight,
+                  mainContentArea
+                ) : clampedPos,
+              };
+            });
+            setActiveWidgets(recalculatePinnedWidgets(reClampedWidgets));
+            const currentMaxZ = reClampedWidgets.length > 0 ? Math.max(...reClampedWidgets.map(w => w.zIndex)) : 903;
+            setMaxZIndex(currentMaxZ);
+          } catch (e) {
+            console.error("Error parsing local storage widget states:", e);
+            setActiveWidgets([]);
+          }
+        } else {
+          setActiveWidgets([]);
+        }
+      }
+      setLoading(false);
+    };
+
+    loadWidgetStates();
+  }, [session, supabase, authLoading, initialWidgetConfigs, mainContentArea, recalculatePinnedWidgets]);
+
+  // Save state to Supabase or local storage whenever activeWidgets changes
+  const isInitialLoad = useRef(true);
+  useEffect(() => {
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      return;
+    }
+
+    if (!mounted.current || loading) return; // Don't save if not mounted or still loading
+
+    const saveWidgetStates = async () => {
+      if (isLoggedInMode && session && supabase) {
+        // Delete existing states for this user and insert new ones
+        const { error: deleteError } = await supabase
+          .from('user_widget_states')
+          .delete()
+          .eq('user_id', session.user.id);
+
+        if (deleteError) {
+          console.error("Error clearing old widget states:", deleteError);
+          toast.error("Failed to save widget layout.");
+          return;
+        }
+
+        if (activeWidgets.length > 0) {
+          const { error: insertError } = await supabase
+            .from('user_widget_states')
+            .insert(activeWidgets.map(w => toDbWidgetState(w, session.user.id)));
+
+          if (insertError) {
+            console.error("Error saving widget states to Supabase:", insertError);
+            toast.error("Failed to save widget layout.");
+          } else {
+            // toast.success("Widget layout saved to your account!"); // Too frequent
+          }
+        }
+      } else {
+        localStorage.setItem(LOCAL_STORAGE_WIDGET_STATE_KEY, JSON.stringify(activeWidgets));
+        // toast.success("Widget layout saved locally!"); // Too frequent
+      }
+    };
+
+    const debounceSave = setTimeout(() => {
+      saveWidgetStates();
+    }, 500); // Debounce saves to avoid too many writes
+
+    return () => clearTimeout(debounceSave);
+  }, [activeWidgets, isLoggedInMode, session, supabase, loading]);
+
+
+  // Re-clamp positions on mainContentArea change (e.g., window resize)
   useEffect(() => {
     setActiveWidgets(prevWidgets => {
       const updated = prevWidgets.map(widget => {
