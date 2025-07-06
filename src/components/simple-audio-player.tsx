@@ -1,21 +1,23 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Music, ListMusic, Youtube, VolumeX, Volume2, ChevronLeft, ChevronUp, ChevronDown, Link } from 'lucide-react';
+import { Music, ListMusic, Youtube, VolumeX, Volume2, ChevronLeft, ChevronUp, ChevronDown, Link, X } from 'lucide-react';
 import { useYouTubePlayer } from '@/hooks/use-youtube-player';
 import { useHtmlAudioPlayer } from '@/hooks/use-html-audio-player';
 import { useSpotifyPlayer } from '@/hooks/use-spotify-player';
 import { cn, getYouTubeEmbedUrl } from '@/lib/utils';
 import { useSupabase } from '@/integrations/supabase/auth';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Import Popover components
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 // Import new modular components
 import { PlayerDisplay } from './audio-player/player-display';
 import { MediaInput } from './audio-player/media-input';
 import { PlayerControls } from './audio-player/player-controls';
 import { ProgressBar } from './audio-player/progress-bar';
-import { MinimizedPlayerControls } from './audio-player/minimized-player-controls'; // New import
+import { MinimizedPlayerControls } from './audio-player/minimized-player-controls';
+import { useAmbientSoundContext } from '@/context/ambient-sound-context'; // Import AmbientSoundContext
+import { allAmbientSounds } from '@/components/widget-content/sounds-widget'; // Import allAmbientSounds
 
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 
@@ -25,10 +27,12 @@ interface SimpleAudioPlayerProps {
 
 const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
   const { session } = useSupabase();
+  const { activeSounds, setSoundVolume, toggleSoundMute, toggleSound } = useAmbientSoundContext(); // Use AmbientSoundContext
+
   const [stagedInputUrl, setStagedInputUrl] = useState('');
   const [committedMediaUrl, setCommittedMediaUrl] = useState('');
   const [playerType, setPlayerType] = useState<'audio' | 'youtube' | 'spotify' | null>(null);
-  const [isUrlInputPopoverOpen, setIsUrlInputPopoverOpen] = useState(false); // State for popover
+  const [isUrlInputPopoverOpen, setIsUrlInputPopoverOpen] = useState(false);
   const [displayMode, setDisplayMode] = useState<'normal' | 'maximized' | 'minimized'>(() => {
     if (typeof window !== 'undefined') {
       const savedMode = localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY);
@@ -199,6 +203,14 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
     setIsMobileExpanded(prev => !prev);
   };
 
+  // Get active ambient sounds for display
+  const playingAmbientSounds = Object.entries(activeSounds)
+    .filter(([, state]) => state.isPlaying)
+    .map(([url, state]) => {
+      const soundInfo = allAmbientSounds.find(s => s.url === url);
+      return { url, name: soundInfo?.name || 'Unknown Sound', state };
+    });
+
   if (isMobile) {
     return (
       <div className={cn(
@@ -288,6 +300,48 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
                 </Button>
               </div>
             )}
+
+            {/* Ambient Sounds List for Mobile */}
+            {playingAmbientSounds.length > 0 && (
+              <div className="mt-4 w-full border-t border-border pt-2">
+                <h4 className="text-sm font-semibold mb-2">Playing Sounds:</h4>
+                <div className="space-y-1">
+                  {playingAmbientSounds.map(({ url, name, state }) => (
+                    <div key={url} className="flex items-center justify-between text-xs bg-muted/50 p-1 rounded">
+                      <span className="truncate">{name}</span>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-primary"
+                          onClick={() => toggleSoundMute(url)}
+                        >
+                          {state.isMuted || state.volume === 0 ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
+                        </Button>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.01"
+                          value={state.volume}
+                          onChange={(e) => setSoundVolume(url, parseFloat(e.target.value))}
+                          className="w-12 h-1 accent-primary"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-red-500 hover:text-red-600"
+                          onClick={() => toggleSound(url, name)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <Button
               onClick={toggleMobileExpand}
               className="w-full mt-2"
@@ -422,6 +476,47 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
             <Button onClick={connectToSpotify} className="text-primary hover:underline mt-1">
               Connect to Spotify
             </Button>
+          </div>
+        )}
+
+        {/* Ambient Sounds List for Desktop */}
+        {playingAmbientSounds.length > 0 && (
+          <div className="mt-4 w-full border-t border-border pt-2">
+            <h4 className="text-sm font-semibold mb-2">Playing Sounds:</h4>
+            <div className="space-y-1">
+              {playingAmbientSounds.map(({ url, name, state }) => (
+                <div key={url} className="flex items-center justify-between text-xs bg-muted/50 p-1 rounded">
+                  <span className="truncate">{name}</span>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-muted-foreground hover:text-primary"
+                      onClick={() => toggleSoundMute(url)}
+                    >
+                      {state.isMuted || state.volume === 0 ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
+                    </Button>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      value={state.volume}
+                      onChange={(e) => setSoundVolume(url, parseFloat(e.target.value))}
+                      className="w-12 h-1 accent-primary"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-red-500 hover:text-red-600"
+                      onClick={() => toggleSound(url, name)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

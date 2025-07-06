@@ -3,9 +3,9 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, Volume2, VolumeX, Music, Loader2 } from "lucide-react";
-import { useAmbientSound } from "@/hooks/use-ambient-sound";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useAmbientSoundContext } from "@/context/ambient-sound-context"; // Import the new context hook
 
 interface AmbientSoundItemProps {
   name: string;
@@ -35,7 +35,15 @@ const getSoundIcon = (name: string) => {
 
 
 export function AmbientSoundItem({ name, url, isCurrentRoomWritable }: AmbientSoundItemProps) {
-  const { isPlaying, volume, isMuted, isBuffering, togglePlayPause, setVolume, toggleMute } = useAmbientSound(url);
+  const {
+    activeSounds,
+    toggleSound,
+    setSoundVolume,
+    toggleSoundMute,
+  } = useAmbientSoundContext();
+
+  const soundState = activeSounds[url] || { isPlaying: false, volume: 0.5, isMuted: false, isBuffering: false };
+  const { isPlaying, volume, isMuted, isBuffering } = soundState;
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation(); // Prevent parent div's onClick
@@ -43,7 +51,7 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable }: AmbientSo
       toast.error("You do not have permission to control sounds in this room.");
       return;
     }
-    setVolume(parseFloat(e.target.value));
+    setSoundVolume(url, parseFloat(e.target.value));
   };
 
   const handleToggleMute = (e: React.MouseEvent) => {
@@ -52,7 +60,7 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable }: AmbientSo
       toast.error("You do not have permission to control sounds in this room.");
       return;
     }
-    toggleMute();
+    toggleSoundMute(url);
   };
 
   const handleTogglePlayPause = (e: React.MouseEvent) => {
@@ -62,7 +70,7 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable }: AmbientSo
       return;
     }
     console.log(`[AmbientSoundItem] Toggling play/pause for: ${name}. Current state: ${isPlaying ? 'Playing' : 'Paused'}`);
-    togglePlayPause();
+    toggleSound(url, name); // Pass name for toast
     toast.info(isPlaying ? `Pausing ${name}` : `Playing ${name}`);
   };
 
