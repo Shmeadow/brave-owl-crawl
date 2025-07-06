@@ -15,7 +15,9 @@ interface SoundsWidgetProps {
 
 // Categorized list of ambient sounds
 const allAmbientSounds = [
-  { name: "Beach Ocean", url: "/sounds/beach_ocean.mp3", category: "Nature & Water" },
+  // TEMPORARY: Using an external URL for testing.
+  // Please replace this with your local file path: "/sounds/beach_ocean.mp3"
+  { name: "Beach Ocean", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", category: "Nature & Water" },
 ];
 
 export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
