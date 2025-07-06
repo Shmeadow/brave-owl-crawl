@@ -84,8 +84,8 @@ function BackgroundManager({ url, isVideo, isMirrored }: { url: string; isVideo:
 export function BackgroundProvider({ children }: { children: React.ReactNode }) {
   const { supabase, session, loading: authLoading } = useSupabase();
   const [background, setBackgroundState] = useState<BackgroundState>(() => {
-    // Default to ani7.mp4 and mirrored for SSR
-    return { url: '/animated/ani7.mp4', isVideo: true, isMirrored: true };
+    // Default to ani28.mp4 for SSR and initial client render
+    return { url: '/animated/ani28.mp4', isVideo: true, isMirrored: false };
   });
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
@@ -148,8 +148,8 @@ export function BackgroundProvider({ children }: { children: React.ReactNode }) 
               toast.success("Local background settings migrated to your account!");
             }
           } else {
-            // 3. If neither, set default and insert into Supabase
-            const defaultBg = getRandomBackground();
+            // 3. If neither, set default (ani28.mp4) and insert into Supabase
+            const defaultBg = { url: '/animated/ani28.mp4', isVideo: true, isMirrored: false };
             const { error: insertError } = await supabase
               .from('user_preferences')
               .upsert({
@@ -181,7 +181,7 @@ export function BackgroundProvider({ children }: { children: React.ReactNode }) 
           });
         } else {
           // Set default for guests if no local storage
-          const defaultBg = getRandomBackground();
+          const defaultBg = { url: '/animated/ani28.mp4', isVideo: true, isMirrored: false };
           setBackgroundState(defaultBg);
           localStorage.setItem(LOCAL_STORAGE_BG_KEY, defaultBg.url);
           localStorage.setItem(LOCAL_STORAGE_BG_TYPE_KEY, defaultBg.isVideo ? 'video' : 'image');
