@@ -8,27 +8,23 @@ import { useSpotifyPlayer } from '@/hooks/use-spotify-player';
 import { cn, getYouTubeEmbedUrl } from '@/lib/utils';
 import { useSupabase } from '@/integrations/supabase/auth';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Import Popover components
 
 // Import new modular components
 import { PlayerDisplay } from './audio-player/player-display';
-import { MediaInput } from './audio-player/media-input';
 import { PlayerControls } from './audio-player/player-controls';
 import { ProgressBar } from './audio-player/progress-bar';
-import { MinimizedPlayerControls } from './audio-player/minimized-player-controls'; // New import
+import { MinimizedPlayerControls } from './audio-player/minimized-player-controls';
 
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 
 interface SimpleAudioPlayerProps {
-  isMobile: boolean;
+  mediaUrl: string | null;
+  mediaType: 'audio' | 'youtube' | 'spotify' | null;
+  isCurrentRoomWritable?: boolean; // Added for consistency, though player controls usually aren't room-writable
 }
 
-const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
+const SimpleAudioPlayer = ({ mediaUrl, mediaType, isCurrentRoomWritable = true }: SimpleAudioPlayerProps) => {
   const { session } = useSupabase();
-  const [stagedInputUrl, setStagedInputUrl] = useState('');
-  const [committedMediaUrl, setCommittedMediaUrl] = useState('');
-  const [playerType, setPlayerType] = useState<'audio' | 'youtube' | 'spotify' | null>(null);
-  const [isUrlInputPopoverOpen, setIsUrlInputPopoverOpen] = useState(false); // State for popover
   const [displayMode, setDisplayMode] = useState<'normal' | 'maximized' | 'minimized'>(() => {
     if (typeof window !== 'undefined') {
       const savedMode = localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY);
@@ -55,9 +51,9 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
     onLoadedMetadata: htmlAudioOnLoadedMetadata,
     onTimeUpdate: htmlAudioOnTimeUpdate,
     onEnded: htmlAudioOnEnded,
-  } = useHtmlAudioPlayer(playerType === 'audio' ? committedMediaUrl : null);
+  } = useHtmlAudioPlayer(mediaType === 'audio' ? mediaUrl : null);
 
-  const youtubeEmbedUrl = playerType === 'youtube' ? getYouTubeEmbedUrl(committedMediaUrl) : null;
+  const youtubeEmbedUrl = mediaType === 'youtube' ? getYouTubeEmbedUrl(mediaUrl || '') : null;
   const {
     isPlaying: youtubeIsPlaying,
     volume: youtubeVolume,
@@ -94,20 +90,13 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
     }
   }, [displayMode]);
 
+  // Handle playing Spotify track when mediaUrl changes to a Spotify URI
   useEffect(() => {
-    if (committedMediaUrl.includes('youtube.com') || committedMediaUrl.includes('youtu.be')) {
-      setPlayerType('youtube');
-    } else if (committedMediaUrl.includes('open.spotify.com')) {
-      setPlayerType('spotify');
-      if (spotifyPlayerReady && spotifyCurrentTrack?.uri !== committedMediaUrl) {
-        spotifyPlayTrack(committedMediaUrl);
-      }
-    } else if (committedMediaUrl.match(/\.(mp3|wav|ogg|aac|flac)$/i)) {
-      setPlayerType('audio');
-    } else {
-      setPlayerType(null);
+    if (mediaType === 'spotify' && mediaUrl && spotifyPlayerReady && spotifyCurrentTrack?.uri !== mediaUrl) {
+      spotifyPlayTrack(mediaUrl);
     }
-  }, [committedMediaUrl, spotifyCurrentTrack, spotifyPlayerReady, spotifyPlayTrack]);
+  }, [mediaUrl, mediaType, spotifyPlayerReady, spotifyCurrentTrack, spotifyPlayTrack]);
+
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -116,334 +105,136 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
   };
 
   const togglePlayPause = () => {
-    if (playerType === 'audio') {
+    if (mediaType === 'audio') {
       htmlAudioTogglePlayPause();
-    } else if (playerType === 'youtube') {
+    } else if (mediaType === 'youtube') {
       youtubeTogglePlayPause();
-    } else if (playerType === 'spotify') {
+    } else if (mediaType === 'spotify') {
       spotifyTogglePlayPause();
     }
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(e.target.value);
-    if (playerType === 'audio') {
+    if (mediaType === 'audio') {
       htmlAudioSetVolume(newVolume);
-    } else if (playerType === 'youtube') {
+    } else if (mediaType === 'youtube') {
       youtubeSetVolume(newVolume * 100);
-    } else if (playerType === 'spotify') {
+    } else if (mediaType === 'spotify') {
       spotifySetVolume(newVolume);
     }
   };
 
   const toggleMute = () => {
-    if (playerType === 'audio') {
+    if (mediaType === 'audio') {
       htmlAudioToggleMute();
-    } else if (playerType === 'youtube') {
+    } else if (mediaType === 'youtube') {
       youtubeToggleMute();
-    } else if (playerType === 'spotify') {
+    } else if (mediaType === 'spotify') {
       spotifyToggleMute();
     }
   };
 
   const handleProgressBarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTime = parseFloat(e.target.value);
-    if (playerType === 'audio') {
+    if (mediaType === 'audio') {
       htmlAudioSeekTo(newTime);
-    } else if (playerType === 'youtube' && youtubePlayerReady) {
+    } else if (mediaType === 'youtube' && youtubePlayerReady) {
       youtubeSeekTo(newTime);
-    } else if (playerType === 'spotify' && spotifyPlayerReady) {
+    } else if (mediaType === 'spotify' && spotifyPlayerReady) {
       spotifySeekTo(newTime);
     }
   };
 
   const skipForward = () => {
-    if (playerType === 'audio') {
+    if (mediaType === 'audio') {
       htmlAudioSkipForward();
-    } else if (playerType === 'youtube' && youtubePlayerReady) {
+    } else if (mediaType === 'youtube' && youtubePlayerReady) {
       youtubeSeekTo(youtubeCurrentTime + 10);
-    } else if (playerType === 'spotify' && spotifyPlayerReady) {
+    } else if (mediaType === 'spotify' && spotifyPlayerReady) {
       spotifySeekTo(spotifyCurrentTime + 10);
     }
   };
 
   const skipBackward = () => {
-    if (playerType === 'audio') {
+    if (mediaType === 'audio') {
       htmlAudioSkipBackward();
-    } else if (playerType === 'youtube' && youtubePlayerReady) {
+    } else if (mediaType === 'youtube' && youtubePlayerReady) {
       youtubeSeekTo(youtubeCurrentTime - 10);
-    } else if (playerType === 'spotify' && spotifyPlayerReady) {
+    } else if (mediaType === 'spotify' && spotifyPlayerReady) {
       spotifySeekTo(spotifyCurrentTime - 10);
     }
   };
 
-  const loadNewMedia = () => {
-    setCommittedMediaUrl(stagedInputUrl);
-    setIsUrlInputPopoverOpen(false); // Close popover after loading
-  };
-
-  const currentPlaybackTime = playerType === 'youtube' ? youtubeCurrentTime : (playerType === 'spotify' ? spotifyCurrentTime : audioCurrentTime);
-  const totalDuration = playerType === 'youtube' ? youtubeDuration : (playerType === 'spotify' ? spotifyDuration : audioDuration);
-  const currentVolume = playerType === 'youtube' ? youtubeVolume / 100 : (playerType === 'spotify' ? spotifyVolume : audioVolume);
-  const currentIsPlaying = playerType === 'youtube' ? youtubeIsPlaying : (playerType === 'spotify' ? spotifyIsPlaying : audioIsPlaying);
-  const playerIsReady = playerType === 'youtube' ? youtubePlayerReady : (playerType === 'spotify' ? spotifyPlayerReady : true);
-  const currentIsMuted = playerType === 'youtube' ? youtubeIsMuted : (playerType === 'spotify' ? spotifyIsMuted : audioIsMuted);
+  const currentPlaybackTime = mediaType === 'youtube' ? youtubeCurrentTime : (mediaType === 'spotify' ? spotifyCurrentTime : audioCurrentTime);
+  const totalDuration = mediaType === 'youtube' ? youtubeDuration : (mediaType === 'spotify' ? spotifyDuration : audioDuration);
+  const currentVolume = mediaType === 'youtube' ? youtubeVolume / 100 : (mediaType === 'spotify' ? spotifyVolume : audioVolume);
+  const currentIsPlaying = mediaType === 'youtube' ? youtubeIsPlaying : (mediaType === 'spotify' ? spotifyIsPlaying : audioIsPlaying);
+  const playerIsReady = mediaType === 'youtube' ? youtubePlayerReady : (mediaType === 'spotify' ? spotifyPlayerReady : true);
+  const currentIsMuted = mediaType === 'youtube' ? youtubeIsMuted : (mediaType === 'spotify' ? spotifyIsMuted : audioIsMuted);
 
   const canPlayPause = playerIsReady;
   const canSeek = playerIsReady && totalDuration > 0;
 
-  // Mobile specific state for expanded/collapsed
-  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
-
-  const toggleMobileExpand = () => {
-    setIsMobileExpanded(prev => !prev);
-  };
-
-  if (isMobile) {
-    return (
-      <div className={cn(
-        "fixed bottom-4 left-4 right-4 z-[900] transition-all duration-300 ease-in-out",
-        "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-auto",
-        isMobileExpanded ? "h-auto p-2" : "h-16 p-2 items-center justify-between flex-row"
-      )}>
-        {isMobileExpanded ? (
-          <>
-            {/* PlayerDisplay is now inside and will fill available space */}
-            <PlayerDisplay
-              playerType={playerType}
-              inputUrl={committedMediaUrl}
-              audioRef={audioRef}
-              youtubeIframeRef={youtubeIframeRef}
-              spotifyCurrentTrack={spotifyCurrentTrack}
-              onLoadedMetadata={htmlAudioOnLoadedMetadata}
-              onTimeUpdate={htmlAudioOnTimeUpdate}
-              onEnded={htmlAudioOnEnded}
-              isMaximized={false} // Not maximized in mobile expanded view
-              className="w-full"
-            />
-
-            {/* Spotify Track Info */}
-            {playerType === 'spotify' && spotifyCurrentTrack && (
-              <div className="text-center p-1 flex-shrink-0">
-                <p className="text-sm font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
-                <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map(a => a.name).join(', ')}</p>
-              </div>
-            )}
-
-            {/* Main Player Row: URL Input Toggle and Controls */}
-            <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
-              {/* URL Input Toggle */}
-              <Popover open={isUrlInputPopoverOpen} onOpenChange={setIsUrlInputPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <button
-                    className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
-                    title="Change Media URL"
-                  >
-                    <Link size={12} className="mr-0.5" />
-                    {isUrlInputPopoverOpen ? 'Hide URL' : 'Embed URL'}
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-64 p-0 z-[901] bg-popover/80 backdrop-blur-lg border-white/20">
-                  <MediaInput
-                    inputUrl={stagedInputUrl}
-                    setInputUrl={setStagedInputUrl}
-                    onLoadMedia={loadNewMedia}
-                    onClosePopover={() => setIsUrlInputPopoverOpen(false)}
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <PlayerControls
-                playerType={playerType}
-                playerIsReady={playerIsReady}
-                currentIsPlaying={currentIsPlaying}
-                togglePlayPause={togglePlayPause}
-                skipBackward={skipBackward}
-                skipForward={skipForward}
-                currentVolume={currentVolume}
-                currentIsMuted={currentIsMuted}
-                toggleMute={toggleMute}
-                handleVolumeChange={handleVolumeChange}
-                canPlayPause={canPlayPause}
-                canSeek={canSeek}
-                displayMode={displayMode} // Pass displayMode
-                setDisplayMode={setDisplayMode} // Pass setDisplayMode
-              />
-            </div>
-
-            <ProgressBar
-              playerType={playerType}
-              playerIsReady={playerIsReady}
-              currentPlaybackTime={currentPlaybackTime}
-              totalDuration={totalDuration}
-              handleProgressBarChange={handleProgressBarChange}
-              formatTime={formatTime}
-            />
-
-            {playerType === 'spotify' && !spotifyPlayerReady && (
-              <div className="text-center text-sm text-muted-foreground mt-2">
-                <p>Connect to Spotify to enable playback.</p>
-                <Button onClick={connectToSpotify} className="text-primary hover:underline mt-1">
-                  Connect to Spotify
-                </Button>
-              </div>
-            )}
-            <Button
-              onClick={toggleMobileExpand}
-              className="w-full mt-2"
-              variant="secondary"
-            >
-              <ChevronDown className="mr-2 h-4 w-4" /> Collapse Player
-            </Button>
-          </>
-        ) : (
-          // Minimized mobile view
-          <>
-            <PlayerControls
-              playerType={playerType}
-              playerIsReady={playerIsReady}
-              currentIsPlaying={currentIsPlaying}
-              togglePlayPause={togglePlayPause}
-              skipBackward={skipBackward}
-              skipForward={skipForward}
-              currentVolume={currentVolume}
-              currentIsMuted={currentIsMuted}
-              toggleMute={toggleMute}
-              handleVolumeChange={handleVolumeChange}
-              canPlayPause={canPlayPause}
-              canSeek={canSeek}
-              displayMode={displayMode} // Pass displayMode
-              setDisplayMode={setDisplayMode} // Pass setDisplayMode
-            />
-
-            <button
-              onClick={toggleMobileExpand}
-              className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 ml-1 flex-shrink-0"
-              title="Expand Player"
-            >
-              <ChevronUp size={16} />
-            </button>
-          </>
-        )}
-      </div>
-    );
-  }
-
-  // Desktop rendering
+  // This component is now designed to be embedded, so it doesn't handle its own fixed positioning or mobile/desktop differentiation.
+  // It will render based on the `displayMode` prop, which can be controlled by its parent.
   return (
-    <div className={cn(
-      "fixed z-[900] transition-all duration-300 ease-in-out",
-      displayMode === 'normal' && 'top-20 right-4 w-80',
-      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-12',
-      displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-[500px] flex flex-col items-center justify-center'
-    )}>
-      <div className={cn(
-        "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full",
-        displayMode === 'normal' && 'p-1',
-        displayMode === 'maximized' && 'p-4 items-center justify-center',
-        displayMode === 'minimized' && 'hidden'
-      )}>
-        <PlayerDisplay
-          playerType={playerType}
-          inputUrl={committedMediaUrl}
-          audioRef={audioRef}
-          youtubeIframeRef={youtubeIframeRef}
-          spotifyCurrentTrack={spotifyCurrentTrack}
-          onLoadedMetadata={htmlAudioOnLoadedMetadata}
-          onTimeUpdate={htmlAudioOnTimeUpdate}
-          onEnded={htmlAudioOnEnded}
-          isMaximized={displayMode === 'maximized'}
-          className={cn(
-            displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : '',
-            'w-full'
-          )}
-        />
+    <div className="w-full h-full flex flex-col">
+      <PlayerDisplay
+        playerType={mediaType}
+        inputUrl={mediaUrl || ''}
+        audioRef={audioRef}
+        youtubeIframeRef={youtubeIframeRef}
+        spotifyCurrentTrack={spotifyCurrentTrack}
+        onLoadedMetadata={htmlAudioOnLoadedMetadata}
+        onTimeUpdate={htmlAudioOnTimeUpdate}
+        onEnded={htmlAudioOnEnded}
+        isMaximized={displayMode === 'maximized'}
+        className="w-full flex-grow"
+      />
 
-        {playerType === 'spotify' && spotifyCurrentTrack && (
-          <div className="text-center p-1 flex-shrink-0">
-            <p className="text-sm font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
-            <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map(a => a.name).join(', ')}</p>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
-          <div className="flex-grow min-w-0">
-            <Popover open={isUrlInputPopoverOpen} onOpenChange={setIsUrlInputPopoverOpen}>
-              <PopoverTrigger asChild>
-                <button
-                  className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
-                  title="Change Media URL"
-                >
-                  <Link size={12} className="mr-0.5" />
-                  {isUrlInputPopoverOpen ? 'Hide URL' : 'Embed URL'}
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-64 p-0 z-[901] bg-popover/80 backdrop-blur-lg border-white/20">
-                <MediaInput
-                  inputUrl={stagedInputUrl}
-                  setInputUrl={setStagedInputUrl}
-                  onLoadMedia={loadNewMedia}
-                  onClosePopover={() => setIsUrlInputPopoverOpen(false)}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <PlayerControls
-            playerType={playerType}
-            playerIsReady={playerIsReady}
-            currentIsPlaying={currentIsPlaying}
-            togglePlayPause={togglePlayPause}
-            skipBackward={skipBackward}
-            skipForward={skipForward}
-            currentVolume={currentVolume}
-            currentIsMuted={currentIsMuted}
-            toggleMute={toggleMute}
-            handleVolumeChange={handleVolumeChange}
-            canPlayPause={canPlayPause}
-            canSeek={canSeek}
-            displayMode={displayMode}
-            setDisplayMode={setDisplayMode}
-          />
+      {mediaType === 'spotify' && spotifyCurrentTrack && (
+        <div className="text-center p-1 flex-shrink-0">
+          <p className="text-sm font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
+          <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map(a => a.name).join(', ')}</p>
         </div>
+      )}
 
-        <ProgressBar
-          playerType={playerType}
+      <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
+        {/* Removed URL input popover as this component is now for predefined media or external control */}
+        <PlayerControls
+          playerType={mediaType}
           playerIsReady={playerIsReady}
-          currentPlaybackTime={currentPlaybackTime}
-          totalDuration={totalDuration}
-          handleProgressBarChange={handleProgressBarChange}
-          formatTime={formatTime}
+          currentIsPlaying={currentIsPlaying}
+          togglePlayPause={togglePlayPause}
+          skipBackward={skipBackward}
+          skipForward={skipForward}
+          currentVolume={currentVolume}
+          currentIsMuted={currentIsMuted}
+          toggleMute={toggleMute}
+          handleVolumeChange={handleVolumeChange}
+          canPlayPause={canPlayPause}
+          canSeek={canSeek}
+          displayMode={displayMode}
+          setDisplayMode={setDisplayMode}
         />
-
-        {playerType === 'spotify' && !spotifyPlayerReady && (
-          <div className="text-center text-sm text-muted-foreground mt-2">
-            <p>Connect to Spotify to enable playback.</p>
-            <Button onClick={connectToSpotify} className="text-primary hover:underline mt-1">
-              Connect to Spotify
-            </Button>
-          </div>
-        )}
       </div>
 
-      {displayMode === 'minimized' && (
-        <div
-          className={cn(
-            "bg-card/40 backdrop-blur-xl border-white/20 p-2 rounded-lg shadow-sm flex items-center justify-between w-full h-full"
-          )}
-          title="Expand Player"
-        >
-          <MinimizedPlayerControls
-            playerType={playerType}
-            playerIsReady={playerIsReady}
-            currentIsPlaying={currentIsPlaying}
-            togglePlayPause={togglePlayPause}
-            currentVolume={currentVolume}
-            currentIsMuted={currentIsMuted}
-            toggleMute={toggleMute}
-            handleVolumeChange={handleVolumeChange}
-            setDisplayMode={setDisplayMode}
-          />
+      <ProgressBar
+        playerType={mediaType}
+        playerIsReady={playerIsReady}
+        currentPlaybackTime={currentPlaybackTime}
+        totalDuration={totalDuration}
+        handleProgressBarChange={handleProgressBarChange}
+        formatTime={formatTime}
+      />
+
+      {mediaType === 'spotify' && !spotifyPlayerReady && (
+        <div className="text-center text-sm text-muted-foreground mt-2">
+          <p>Connect to Spotify to enable playback.</p>
+          <Button onClick={connectToSpotify} className="text-primary hover:underline mt-1">
+            Connect to Spotify
+          </Button>
         </div>
       )}
     </div>
