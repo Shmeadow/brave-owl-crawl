@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
 import { PricingContent } from '@/components/pricing-content';
 import { useSupabase } from '@/integrations/supabase/auth';
 import { useRouter } from 'next/navigation';
@@ -41,12 +40,9 @@ export default function PricingPage() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
-        <DialogHeader className="p-4 border-b flex flex-row items-center justify-between">
+        <DialogHeader className="p-4 border-b flex flex-row items-center justify-center"> {/* Changed justify-between to justify-center */}
           <DialogTitle className="text-2xl font-bold">Upgrade Your Plan</DialogTitle>
-          <Button variant="ghost" size="icon" onClick={handleClose}>
-            <X className="h-6 w-6" />
-            <span className="sr-only">Close</span>
-          </Button>
+          {/* Removed the close button here */}
         </DialogHeader>
         <ScrollArea className="flex-1 p-6">
           <div className="text-center mb-8">
