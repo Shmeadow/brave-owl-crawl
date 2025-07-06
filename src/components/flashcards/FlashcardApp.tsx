@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { useFlashcards, CardData } from '@/hooks/use-flashcards';
 import { useSupabase } from '@/integrations/supabase/auth';
@@ -14,6 +14,8 @@ import { useFlashcardCategories } from '@/hooks/flashcards/useFlashcardCategorie
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FlashcardForm } from './FlashcardForm';
 import { toast } from 'sonner';
+import { Label } from '@/components/ui/label';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 type FlashcardMode = 'manage' | 'learn' | 'test' | 'summary';
 
@@ -26,6 +28,7 @@ export function FlashcardApp() {
   const [currentMode, setCurrentMode] = useState<FlashcardMode>('manage');
   const [editingCard, setEditingCard] = useState<CardData | null>(null);
   const [sessionHistory, setSessionHistory] = useState<DetailedResult[]>([]);
+  const [testType, setTestType] = useState<'text' | 'choices'>('text');
 
   // Load session history from local storage on mount
   useEffect(() => {
@@ -147,7 +150,7 @@ export function FlashcardApp() {
       case 'learn':
         return <LearnMode flashcards={cards} onGradeCard={handleGradeCard} goToSummary={goToSummary} />;
       case 'test':
-        return <TestMode flashcards={cards} onAnswer={(cardId, isCorrect, userAnswer) => augmentedHandleAnswerFeedback(cardId, isCorrect, userAnswer, 'test')} onQuit={() => setCurrentMode('manage')} />;
+        return <TestMode flashcards={cards} onAnswer={(cardId, isCorrect, userAnswer) => augmentedHandleAnswerFeedback(cardId, isCorrect, userAnswer, 'test')} onQuit={() => setCurrentMode('manage')} testType={testType} />;
       case 'summary':
         return <SummaryMode summaryData={generateSummaryData()} onResetProgress={handleResetProgress} onClearSummary={handleClearSummary} />;
       default:
@@ -164,6 +167,19 @@ export function FlashcardApp() {
           <CardContent className="text-center text-sm text-muted-foreground p-2">
             You are currently browsing as a guest. Your cards are saved locally. Log in to save them to your account!
           </CardContent>
+        </Card>
+      )}
+
+      {currentMode === 'test' && (
+        <Card className="w-full max-w-md">
+            <CardContent className="p-4">
+                <Label>Test Type</Label>
+                <ToggleGroup type="single" value={testType} onValueChange={(value) => value && setTestType(value as 'text' | 'choices')} disabled={cards.length < 4} className="mt-1 grid grid-cols-2">
+                    <ToggleGroupItem value="text">Text Input</ToggleGroupItem>
+                    <ToggleGroupItem value="choices">Multiple Choice</ToggleGroupItem>
+                </ToggleGroup>
+                {cards.length < 4 && <p className="text-xs text-muted-foreground mt-1">Multiple choice requires at least 4 cards.</p>}
+            </CardContent>
         </Card>
       )}
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, Check, X, RefreshCw, Flag, CheckCircle, XCircle, Loader2 } from 'lucide-react';
@@ -9,13 +9,13 @@ import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Label } from '@/components/ui/label';
 
 interface TestModeProps {
   flashcards: CardData[];
   onAnswer: (cardId: string, isCorrect: boolean, userAnswer: string) => void;
   onQuit: () => void;
+  testType: 'text' | 'choices';
 }
 
 interface SessionResult {
@@ -26,7 +26,7 @@ interface SessionResult {
   isCorrect: boolean;
 }
 
-export function TestMode({ flashcards, onAnswer, onQuit }: TestModeProps) {
+export function TestMode({ flashcards, onAnswer, onQuit, testType }: TestModeProps) {
   const [testDeck, setTestDeck] = useState<CardData[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState('');
@@ -35,8 +35,9 @@ export function TestMode({ flashcards, onAnswer, onQuit }: TestModeProps) {
   const [sessionResults, setSessionResults] = useState<SessionResult[]>([]);
   const [isComplete, setIsComplete] = useState(false);
   const [showFeedbackOverlay, setShowFeedbackOverlay] = useState(false);
-  const [testType, setTestType] = useState<'text' | 'choices'>('text');
   const [choices, setChoices] = useState<string[]>([]);
+
+  const cardIdString = useMemo(() => flashcards.map(c => c.id).sort().join(','), [flashcards]);
 
   const startTest = useCallback(() => {
     const shuffled = [...flashcards].sort(() => Math.random() - 0.5);
@@ -54,7 +55,7 @@ export function TestMode({ flashcards, onAnswer, onQuit }: TestModeProps) {
 
   useEffect(() => {
     startTest();
-  }, [flashcards, startTest]);
+  }, [cardIdString, startTest]);
 
   const currentCard = testDeck[currentIndex];
 
@@ -168,15 +169,6 @@ export function TestMode({ flashcards, onAnswer, onQuit }: TestModeProps) {
           <Button onClick={onQuit} variant="ghost" size="sm">Quit Test</Button>
         </CardHeader>
         <CardContent>
-          <div className="mb-4">
-            <Label>Test Type</Label>
-            <ToggleGroup type="single" value={testType} onValueChange={(value) => value && setTestType(value as 'text' | 'choices')} disabled={flashcards.length < 4} className="mt-1">
-              <ToggleGroupItem value="text">Text Input</ToggleGroupItem>
-              <ToggleGroupItem value="choices">Multiple Choice</ToggleGroupItem>
-            </ToggleGroup>
-            {flashcards.length < 4 && <p className="text-xs text-muted-foreground mt-1">Multiple choice requires at least 4 cards.</p>}
-          </div>
-
           <Progress value={progressPercentage} className="w-full mb-6" />
           
           <div className="bg-muted p-6 rounded-lg shadow-inner text-center border mb-4">
