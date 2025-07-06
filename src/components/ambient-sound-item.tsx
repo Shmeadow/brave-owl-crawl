@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Music } from "lucide-react"; // Added Music icon for generic sounds
 import { useAmbientSound } from "@/hooks/use-ambient-sound";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -13,11 +13,33 @@ interface AmbientSoundItemProps {
   isCurrentRoomWritable: boolean;
 }
 
+// Helper to get a relevant icon based on sound name/category (can be expanded)
+const getSoundIcon = (name: string) => {
+  const lowerName = name.toLowerCase();
+  if (lowerName.includes('rain') || lowerName.includes('water') || lowerName.includes('ocean') || lowerName.includes('river') || lowerName.includes('thunder')) {
+    return <Volume2 className="h-12 w-12 text-primary" />; // Using Volume2 as a generic water/rain icon
+  }
+  if (lowerName.includes('wind') || lowerName.includes('forest') || lowerName.includes('bird') || lowerName.includes('jungle') || lowerName.includes('desert')) {
+    return <Volume2 className="h-12 w-12 text-primary" />; // Using Volume2 as a generic nature icon
+  }
+  if (lowerName.includes('cafe') || lowerName.includes('city') || lowerName.includes('train')) {
+    return <Volume2 className="h-12 w-12 text-primary" />; // Using Volume2 as a generic urban icon
+  }
+  if (lowerName.includes('fire') || lowerName.includes('space') || lowerName.includes('zen') || lowerName.includes('ambiance')) {
+    return <Volume2 className="h-12 w-12 text-primary" />; // Using Volume2 as a generic cozy icon
+  }
+  if (lowerName.includes('noise')) {
+    return <Volume2 className="h-12 w-12 text-primary" />; // Using Volume2 as a generic noise icon
+  }
+  return <Music className="h-12 w-12 text-primary" />; // Default generic music icon
+};
+
+
 export function AmbientSoundItem({ name, url, isCurrentRoomWritable }: AmbientSoundItemProps) {
   const { isPlaying, volume, isMuted, togglePlayPause, setVolume, toggleMute } = useAmbientSound(url);
 
   const handlePlayPause = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent triggering parent click if it becomes a button
+    e.stopPropagation();
     if (!isCurrentRoomWritable) {
       toast.error("You do not have permission to control sounds in this room.");
       return;
@@ -26,7 +48,7 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable }: AmbientSo
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.stopPropagation(); // Prevent triggering parent click
+    e.stopPropagation();
     if (!isCurrentRoomWritable) {
       toast.error("You do not have permission to control sounds in this room.");
       return;
@@ -35,7 +57,7 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable }: AmbientSo
   };
 
   const handleToggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent triggering parent click
+    e.stopPropagation();
     if (!isCurrentRoomWritable) {
       toast.error("You do not have permission to control sounds in this room.");
       return;
@@ -46,25 +68,31 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable }: AmbientSo
   return (
     <div
       className={cn(
-        "relative flex flex-col items-center justify-center p-3 rounded-lg shadow-sm transition-all duration-200 group",
+        "relative flex flex-col items-center justify-between p-4 rounded-3xl shadow-lg transition-all duration-200 group aspect-square", // Added aspect-square for fixed ratio
         "bg-muted backdrop-blur-xl border border-border",
-        isPlaying ? "ring-2 ring-primary" : "",
+        isPlaying ? "ring-2 ring-primary" : "hover:border-primary/50", // Highlight when playing
         !isCurrentRoomWritable && "opacity-70 cursor-not-allowed"
       )}
     >
-      <span className="font-semibold text-sm text-foreground mb-2 text-center w-full px-1">{name}</span>
-      <div className="flex items-center gap-2 w-full justify-center">
+      {/* Icon and Name Area */}
+      <div className="flex flex-col items-center justify-center flex-grow text-center">
+        {getSoundIcon(name)}
+        <span className="font-semibold text-base text-foreground mt-2 line-clamp-2">{name}</span>
+      </div>
+
+      {/* Controls Area */}
+      <div className="flex flex-col items-center gap-2 w-full flex-shrink-0">
         <Button
-          variant="ghost"
+          variant="default"
           size="icon"
-          className="h-9 w-9 text-primary hover:bg-primary/10"
+          className="h-12 w-12 rounded-full text-primary-foreground shadow-md hover:scale-105 transition-transform"
           onClick={handlePlayPause}
           disabled={!isCurrentRoomWritable}
         >
-          {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+          {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
           <span className="sr-only">{isPlaying ? 'Pause' : 'Play'} {name}</span>
         </Button>
-        <div className="flex items-center gap-1 flex-1 min-w-0">
+        <div className="flex items-center gap-1 w-full">
           <Button
             variant="ghost"
             size="icon"

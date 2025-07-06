@@ -84,7 +84,7 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="flex-1 p-0 flex flex-col">
-          <div className="p-4 border-b border-border space-y-3"> {/* Adjusted spacing */}
+          <div className="p-4 border-b border-border space-y-3">
             <div className="relative">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -114,7 +114,7 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
             <p className="p-4 text-muted-foreground text-sm text-center">No ambient sounds found matching your criteria.</p>
           ) : (
             <ScrollArea className="flex-1 h-full">
-              <div className="p-4 grid grid-cols-2 gap-3">
+              <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"> {/* Adjusted grid for larger items */}
                 {filteredSounds.map((sound) => (
                   <AmbientSoundItem
                     key={sound.url}
