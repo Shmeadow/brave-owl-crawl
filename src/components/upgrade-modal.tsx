@@ -9,7 +9,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { PricingPage } from './pricing-page';
+import { PricingContent } from './pricing-content';
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const LOCAL_STORAGE_UPGRADED_KEY = 'upgraded';
@@ -57,7 +57,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl z-[1001] bg-transparent border-none shadow-none p-0">
         <ScrollArea className="max-h-[90vh] rounded-lg">
-          <PricingPage onUpgrade={handleUpgrade} />
+          <PricingContent onUpgrade={handleUpgrade} />
         </ScrollArea>
       </DialogContent>
     </Dialog>

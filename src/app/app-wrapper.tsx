@@ -12,7 +12,6 @@ import { WidgetProvider } from "@/components/widget/widget-context";
 import { WidgetContainer } from "@/components/widget/widget-container";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { Header } from "@/components/header";
-import { UpgradeModal } from "@/components/upgrade-modal";
 import { PomodoroWidget } from "@/components/pomodoro-widget";
 import { SimpleAudioPlayer } from "@/components/simple-audio-player";
 import { useEffects } from "@/context/effect-provider";
@@ -40,7 +39,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const [mainContentArea, setMainContentArea] = useState({ left: 0, top: 0, width: 0, height: 0 });
 
   // State for Header and related components
-  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [isPomodoroMinimized, setIsPomodoroMinimized] = useState(true); // Changed to true
@@ -105,6 +103,11 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   if (loading) {
     return <LoadingScreen />;
   }
+  
+  // Hide main app layout on the pricing page
+  if (pathname === '/pricing') {
+    return <>{children}</>;
+  }
 
   return (
     <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea}>
@@ -113,7 +116,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
         {activeEffect === 'snow' && <SnowEffect />}
         {activeEffect === 'raindrops' && <RaindropsEffect />}
         <Header
-          onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
           isChatOpen={isChatOpen}
           onToggleChat={() => setIsChatOpen(!isChatOpen)}
           onNewUnreadMessage={handleNewUnreadMessage}
@@ -141,7 +143,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
           isMobile={isMobile} // Pass isMobile
         />}
         {isDashboard && <SimpleAudioPlayer isMobile={isMobile} />} {/* Pass isMobile */}
-        <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
         <Toaster />
       </div>
     </WidgetProvider>

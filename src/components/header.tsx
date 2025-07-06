@@ -24,7 +24,6 @@ import { useRooms } from "@/hooks/use-rooms"; // Import useRooms for join functi
 import { toast } from "sonner"; // Import toast for notifications
 
 interface HeaderProps {
-  onOpenUpgradeModal: () => void;
   onToggleChat: () => void;
   onNewUnreadMessage: () => void;
   onClearUnreadMessages: () => void;
@@ -34,7 +33,7 @@ interface HeaderProps {
   isChatOpen: boolean;
 }
 
-export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChatCount, isMobile, onToggleSidebar, isChatOpen, onNewUnreadMessage, onClearUnreadMessages }: HeaderProps) => {
+export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onToggleSidebar, isChatOpen, onNewUnreadMessage, onClearUnreadMessages }: HeaderProps) => {
   const { session } = useSupabase();
   const router = useRouter();
   const { currentRoomName, currentRoomId, isCurrentRoomWritable, setCurrentRoom } = useCurrentRoom();
@@ -158,7 +157,7 @@ export const Header = React.memo(({ onOpenUpgradeModal, onToggleChat, unreadChat
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <UpgradeButton onOpenUpgradeModal={onOpenUpgradeModal} />
+        <UpgradeButton />
         <ThemeToggle />
         {session && (
           <NotificationsDropdown />
