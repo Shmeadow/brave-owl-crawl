@@ -15,23 +15,9 @@ import { GamesWidget } from "@/components/widget-content/games-widget";
 import { FlashCardsWidget } from "@/components/widget-content/flash-cards-widget";
 import { GoalFocusWidget } from "@/components/widget-content/goal-focus-widget";
 import { BackgroundEffectsWidget } from "@/components/widget-content/background-effects-widget";
-import { useWidget } from "./widget-context";
+import { useWidget } from "./widget-provider";
 import { Widget } from "./widget";
-
-// Map widget IDs to their components and icons
-const WIDGET_COMPONENTS = {
-  "spaces": { icon: LayoutGrid, content: SpacesWidget },
-  "sounds": { icon: Volume2, content: SoundsWidget },
-  "calendar": { icon: Calendar, content: CalendarWidget },
-  "timer": { icon: Timer, content: TimerWidget },
-  "tasks": { icon: ListTodo, content: TasksWidget },
-  "notes": { icon: NotebookPen, content: NotesWidget },
-  "media": { icon: Image, content: MediaWidget },
-  "games": { icon: Gamepad2, content: GamesWidget },
-  "flash-cards": { icon: BookOpen, content: FlashCardsWidget },
-  "goal-focus": { icon: Goal, content: GoalFocusWidget },
-  "background-effects": { icon: WandSparkles, content: BackgroundEffectsWidget },
-};
+import { WidgetState } from "@/hooks/widgets/types"; // Corrected import path
 
 interface WidgetContainerProps {
   isCurrentRoomWritable: boolean;
@@ -73,13 +59,13 @@ export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobi
 
   // Filter out minimized/pinned widgets if on mobile, as they will be stacked
   const visibleWidgets = isMobile
-    ? activeWidgets.filter(widget => !widget.isMinimized && !widget.isPinned)
+    ? activeWidgets.filter((widget: WidgetState) => !widget.isMinimized && !widget.isPinned)
     : activeWidgets;
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
       <div className="fixed inset-0 z-[903] pointer-events-none">
-        {visibleWidgets.map(widget => {
+        {visibleWidgets.map((widget: WidgetState) => {
           const WidgetIcon = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.icon;
           const WidgetContent = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.content;
 

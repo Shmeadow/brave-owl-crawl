@@ -4,9 +4,9 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
-import { useWidget } from "@/components/widget/widget-context";
+import { useWidget } from "@/components/widget/widget-provider"; // Corrected import path
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
-import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Gamepad2, BookOpen, Goal, ChevronLeft, ChevronRight, WandSparkles } from "lucide-react";
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Gamepad2, BookOpen, Goal, ChevronLeft, ChevronRight, WandSparkples } from "lucide-react";
 
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
 const SIDEBAR_WIDTH_EXPANDED = 120; // px - New width for expanded desktop sidebar (reduced from 180)

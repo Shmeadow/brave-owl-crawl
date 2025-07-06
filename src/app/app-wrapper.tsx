@@ -8,7 +8,7 @@ import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { Toaster } from "@/components/ui/sonner";
 import { Sidebar } from "@/components/sidebar/sidebar";
 import { LoadingScreen } from "@/components/loading-screen";
-import { WidgetProvider } from "@/components/widget/widget-context";
+import { WidgetProvider } from "@/components/widget/widget-provider";
 import { WidgetContainer } from "@/components/widget/widget-container";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { Header } from "@/components/header";
