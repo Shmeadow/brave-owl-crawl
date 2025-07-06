@@ -2,8 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { Session, SupabaseClient } from '@supabase/supabase-js';
-import { createBrowserClient } from './client'; // Import the function
-// Removed: import { useNotifications } from '@/hooks/use-notifications'; // Import useNotifications
+import { createBrowserClient } from './client';
 
 export interface UserProfile {
   id: string;
@@ -12,7 +11,7 @@ export interface UserProfile {
   profile_image_url: string | null;
   role: string | null;
   time_format_24h: boolean | null;
-  welcome_notification_sent: boolean | null; // Add new field
+  welcome_notification_sent: boolean | null;
 }
 
 interface SupabaseContextType {
@@ -26,35 +25,40 @@ interface SupabaseContextType {
 const SupabaseContext = createContext<SupabaseContextType | undefined>(undefined);
 
 export function SessionContextProvider({ children }: { children: React.ReactNode }) {
-  const [supabaseClient, setSupabaseClient] = useState<SupabaseClient | null>(null); // State for the Supabase client
+  const [supabaseClient, setSupabaseClient] = useState<SupabaseClient | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  // Removed: const { addNotification } = useNotifications(); // Use the notifications hook
+  const [mounted, setMounted] = useState(false); // New mounted state
 
-  // Effect to initialize Supabase client once on mount
   useEffect(() => {
-    if (!supabaseClient) { // Only attempt to initialize if not already initialized
+    setMounted(true); // Mark as mounted on client
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return; // Only run on client after mounting
+
+    if (!supabaseClient) {
       console.log("SessionContextProvider: Attempting to create Supabase client...");
       const client = createBrowserClient();
       setSupabaseClient(client);
       if (!client) {
         console.error("SessionContextProvider: Supabase client failed to initialize.");
-        setLoading(false); // If client fails to initialize, stop loading
+        setLoading(false);
       } else {
         console.log("SessionContextProvider: Supabase client created successfully.");
       }
     }
-  }, [supabaseClient]); // Add supabaseClient as a dependency
+  }, [supabaseClient, mounted]); // Add mounted to dependency array
 
   const fetchProfile = useCallback(async (userId: string, client: SupabaseClient) => {
     const { data, error } = await client
       .from('profiles')
-      .select('id, first_name, last_name, profile_image_url, role, time_format_24h, welcome_notification_sent') // Select new field
+      .select('id, first_name, last_name, profile_image_url, role, time_format_24h, welcome_notification_sent')
       .eq('id', userId)
       .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
+    if (error && error.code !== 'PGRST116') {
       console.error("Error fetching user profile:", error);
       setProfile(null);
     } else if (data) {
@@ -63,8 +67,8 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
       // If no profile found, create a default one
       const { data: newProfile, error: insertError } = await client
         .from('profiles')
-        .insert({ id: userId, first_name: null, last_name: null, profile_image_url: null, role: 'user', time_format_24h: true, welcome_notification_sent: false }) // Set default for new field
-        .select('id, first_name, last_name, profile_image_url, role, time_format_24h, welcome_notification_sent') // Select new field
+        .insert({ id: userId, first_name: null, last_name: null, profile_image_url: null, role: 'user', time_format_24h: true, welcome_notification_sent: false })
+        .select('id, first_name, last_name, profile_image_url, role, time_format_24h, welcome_notification_sent')
         .single();
       if (insertError) {
         console.error("Error creating default profile:", insertError);
@@ -81,24 +85,19 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
   }, [session, fetchProfile, supabaseClient]);
 
   useEffect(() => {
-    if (!supabaseClient) {
-      // Supabase client is not yet available, wait for it.
+    if (!mounted || !supabaseClient) { // Wait for client mount and supabaseClient to be ready
       if (loading) {
-        console.log("SessionContextProvider: Waiting for Supabase client to be ready...");
+        console.log("SessionContextProvider: Waiting for Supabase client to be ready or mounted...");
       }
       return;
     }
 
     console.log("SessionContextProvider: Supabase client is ready. Setting up auth state listener.");
     const handleAuthStateChange = async (_event: string, currentSession: Session | null) => {
-      // const wasLoggedIn = session?.user?.id; // Keep this if needed for other logic, but not for notification here
       setSession(currentSession);
       if (currentSession) {
         console.log("Auth state changed: User is logged in. Fetching profile...");
         await fetchProfile(currentSession.user.id, supabaseClient);
-        // Removed: if (!wasLoggedIn) { // Only show welcome if just logged in
-        // Removed:   addNotification("Welcome to Productivity Hub! Explore your new workspace.");
-        // Removed: }
       } else {
         console.log("Auth state changed: User is logged out. Clearing profile.");
         setProfile(null);
@@ -121,7 +120,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
       console.log("Cleaning up Supabase auth state listener.");
       subscription.unsubscribe();
     };
-  }, [supabaseClient, fetchProfile, loading]); // Removed addNotification and session from dependencies
+  }, [supabaseClient, fetchProfile, loading, mounted]); // Add mounted to dependency array
 
   const value = useMemo(() => ({
     supabase: supabaseClient,
@@ -130,6 +129,11 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
     loading,
     refreshProfile
   }), [supabaseClient, session, profile, loading, refreshProfile]);
+
+  // Only render children if mounted to prevent server-side hydration issues with context
+  if (!mounted) {
+    return null; // Or a loading spinner if desired
+  }
 
   return (
     <SupabaseContext.Provider value={value}>
