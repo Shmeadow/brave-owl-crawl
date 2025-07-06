@@ -25,7 +25,7 @@ const allAmbientSounds = [
   { name: "Mountain Stream", url: "/sounds/sound25.mp3", category: "Rain & Water" },
   { name: "Cave Dripping", url: "/sounds/sound26.mp3", category: "Rain & Water" },
   { name: "Underwater Bubbles", url: "/sounds/sound27.mp3", category: "Rain & Water" },
-  { name: "Distant Thunder", url: "/sounds/thunder.mp3", category: "Rain & Water" }, // Also fits here
+  { name: "Distant Thunder", url: "/sounds/thunder.mp3", category: "Rain & Water" },
 
   { name: "Forest Birds", url: "/sounds/forest.mp3", category: "Nature & Wind" },
   { name: "Gentle Wind", url: "/sounds/wind.mp3", category: "Nature & Wind" },
@@ -46,7 +46,7 @@ const allAmbientSounds = [
   { name: "Space Ambience", url: "/sounds/sound28.mp3", category: "Cozy & Abstract" },
   { name: "Zen Garden", url: "/sounds/sound29.mp3", category: "Cozy & Abstract" },
   { name: "Cozy Fire", url: "/sounds/sound30.mp3", category: "Cozy & Abstract" },
-  { name: "Calm River", url: "/sounds/sound12.mp3", category: "Cozy & Abstract" }, // Can fit here too
+  { name: "Calm River", url: "/sounds/sound12.mp3", category: "Cozy & Abstract" },
 
   { name: "White Noise", url: "/sounds/white_noise.ogg", category: "White Noise" },
 ];
@@ -78,13 +78,13 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
   return (
     <div className="h-full w-full flex flex-col items-center justify-center p-4">
       <Card className="w-full h-full bg-card backdrop-blur-xl border-white/20 flex flex-col">
-        <CardHeader>
+        <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2">
             <Music className="h-6 w-6" /> Ambient Sounds
           </CardTitle>
         </CardHeader>
         <CardContent className="flex-1 p-0 flex flex-col">
-          <div className="p-4 border-b border-border space-y-4">
+          <div className="p-4 border-b border-border space-y-3"> {/* Adjusted spacing */}
             <div className="relative">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
