@@ -45,7 +45,7 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
         audioRef.current.pause();
       }
     }
-  }, [audioIsPlaying, src]);
+  }, [audioIsPlaying, src]); // Ensure src is always in dependencies
 
   // Sync volume/mute state
   useEffect(() => {
