@@ -29,15 +29,9 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false); // New mounted state
+  // Removed the 'mounted' state and its useEffect.
 
   useEffect(() => {
-    setMounted(true); // Mark as mounted on client
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return; // Only run on client after mounting
-
     if (!supabaseClient) {
       console.log("SessionContextProvider: Attempting to create Supabase client...");
       const client = createBrowserClient();
@@ -49,7 +43,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
         console.log("SessionContextProvider: Supabase client created successfully.");
       }
     }
-  }, [supabaseClient, mounted]); // Add mounted to dependency array
+  }, [supabaseClient]);
 
   const fetchProfile = useCallback(async (userId: string, client: SupabaseClient) => {
     const { data, error } = await client
@@ -85,9 +79,9 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
   }, [session, fetchProfile, supabaseClient]);
 
   useEffect(() => {
-    if (!mounted || !supabaseClient) { // Wait for client mount and supabaseClient to be ready
+    if (!supabaseClient) { // Wait for supabaseClient to be ready
       if (loading) {
-        console.log("SessionContextProvider: Waiting for Supabase client to be ready or mounted...");
+        console.log("SessionContextProvider: Waiting for Supabase client to be ready...");
       }
       return;
     }
@@ -120,7 +114,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
       console.log("Cleaning up Supabase auth state listener.");
       subscription.unsubscribe();
     };
-  }, [supabaseClient, fetchProfile, loading, mounted]); // Add mounted to dependency array
+  }, [supabaseClient, fetchProfile, loading]);
 
   const value = useMemo(() => ({
     supabase: supabaseClient,
@@ -130,11 +124,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
     refreshProfile
   }), [supabaseClient, session, profile, loading, refreshProfile]);
 
-  // Only render children if mounted to prevent server-side hydration issues with context
-  if (!mounted) {
-    return null; // Or a loading spinner if desired
-  }
-
+  // Always render children, the 'loading' state will manage content visibility
   return (
     <SupabaseContext.Provider value={value}>
       {children}
