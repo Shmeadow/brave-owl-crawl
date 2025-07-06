@@ -15,43 +15,7 @@ interface SoundsWidgetProps {
 
 // Categorized list of ambient sounds
 const allAmbientSounds = [
-  { name: "Rain Gutter", url: "/sounds/rain.mp3", category: "Rain & Water" },
-  { name: "Ocean Waves", url: "/sounds/ocean.mp3", category: "Rain & Water" },
-  { name: "Flowing River", url: "/sounds/river.mp3", category: "Rain & Water" },
-  { name: "Gentle Rain", url: "/sounds/sound16.mp3", category: "Rain & Water" },
-  { name: "Heavy Rain", url: "/sounds/sound17.mp3", category: "Rain & Water" },
-  { name: "Thunderstorm", url: "/sounds/sound18.mp3", category: "Rain & Water" },
-  { name: "Ocean Storm", url: "/sounds/sound21.mp3", category: "Rain & Water" },
-  { name: "Mountain Stream",
-    url: "/sounds/sound25.mp3",
-    category: "Rain & Water"
-  },
-  { name: "Cave Dripping", url: "/sounds/sound26.mp3", category: "Rain & Water" },
-  { name: "Underwater Bubbles", url: "/sounds/sound27.mp3", category: "Rain & Water" },
-  { name: "Distant Thunder", url: "/sounds/thunder.mp3", category: "Rain & Water" },
-
-  { name: "Forest Birds", url: "/sounds/forest.mp3", category: "Nature & Wind" },
-  { name: "Gentle Wind", url: "/sounds/wind.mp3", category: "Nature & Wind" },
-  { name: "Summer Night", url: "/sounds/sound13.mp3", category: "Nature & Wind" },
-  { name: "Winter Wind", url: "/sounds/sound14.mp3", category: "Nature & Wind" },
-  { name: "Light Breeze", url: "/sounds/sound19.mp3", category: "Nature & Wind" },
-  { name: "Strong Wind", url: "/sounds/sound20.mp3", category: "Nature & Wind" },
-  { name: "Forest Night", url: "/sounds/sound22.mp3", category: "Nature & Wind" },
-  { name: "Jungle Sounds", url: "/sounds/sound23.mp3", category: "Nature & Wind" },
-  { name: "Desert Wind", url: "/sounds/sound24.mp3", category: "Nature & Wind" },
-
-  { name: "Busy Cafe", url: "/sounds/cafe.mp3", category: "Urban & Human" },
-  { name: "City Ambience", url: "/sounds/city_ambience.mp3", category: "Urban & Human" },
-  { name: "Distant City", url: "/sounds/sound15.mp3", category: "Urban & Human" },
-  { name: "Distant Train", url: "/sounds/sound31.mp3", category: "Urban & Human" },
-
-  { name: "Crackling Fireplace", url: "/sounds/fireplace.mp3", category: "Cozy & Abstract" },
-  { name: "Space Ambience", url: "/sounds/sound28.mp3", category: "Cozy & Abstract" },
-  { name: "Zen Garden", url: "/sounds/sound29.mp3", category: "Cozy & Abstract" },
-  { name: "Cozy Fire", url: "/sounds/sound30.mp3", category: "Cozy & Abstract" },
-  { name: "Calm River", url: "/sounds/sound12.mp3", category: "Cozy & Abstract" },
-
-  { name: "White Noise", url: "/sounds/white_noise.ogg", category: "White Noise" },
+  { name: "Beach Ocean", url: "/sounds/beach_ocean.mp3", category: "Nature & Water" },
 ];
 
 export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
