@@ -8,6 +8,7 @@ import { useBackground } from "@/context/background-provider";
 import { useEffects } from "@/context/effect-provider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { staticImages, animatedBackgrounds } from "@/lib/backgrounds";
+import { AnimatedBackgroundPreviewItem } from "./animated-background-preview-item"; // Import the new component
 
 export function BackgroundEffectsMenu() {
   const { background, setBackground } = useBackground();
@@ -64,36 +65,14 @@ export function BackgroundEffectsMenu() {
         <TabsContent value="animated-backgrounds" className="mt-4">
           <ScrollArea className="h-72">
             <div className="grid grid-cols-2 gap-4 pr-4">
-              {animatedBackgrounds.map(({ videoUrl }) => {
-                const isActive = background.isVideo && background.url === videoUrl;
-                return (
-                  <div
-                    key={videoUrl}
-                    className={`relative w-full h-24 cursor-pointer rounded-md overflow-hidden group ${
-                      isActive
-                        ? "ring-2 ring-blue-500 ring-offset-2"
-                        : "hover:ring-2 hover:ring-gray-300"
-                    }`}
-                    onClick={() => handleBackgroundChange(videoUrl, true)}
-                  >
-                    <video
-                      src={videoUrl}
-                      className="absolute inset-0 w-full h-full object-cover"
-                      preload="metadata"
-                      muted
-                      playsInline
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ImageIcon className="h-6 w-6" />
-                    </div>
-                    {isActive && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 text-white text-sm font-bold">
-                        Active
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+              {animatedBackgrounds.map(({ videoUrl }) => (
+                <AnimatedBackgroundPreviewItem
+                  key={videoUrl}
+                  videoUrl={videoUrl}
+                  isActive={background.isVideo && background.url === videoUrl}
+                  onClick={handleBackgroundChange}
+                />
+              ))}
             </div>
           </ScrollArea>
         </TabsContent>
