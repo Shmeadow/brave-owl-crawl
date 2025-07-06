@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Music, Search } from "lucide-react";
+import { Music, Search, CloudRain, Wind, Coffee, Building, Volume2, Waves, Sun, Snowflake } from "lucide-react"; // Added more specific icons
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AmbientSoundItem } from "@/components/ambient-sound-item";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,27 @@ const allAmbientSounds = [
   { name: "Space Ambience", url: "/sounds/space_ambience.mp3", category: "Abstract" },
   { name: "Zen Garden", url: "/sounds/zen_garden.mp3", category: "Abstract" },
 ];
+
+// Helper function to get a more specific icon based on sound name/category
+const getSoundIcon = (name: string, category: string) => {
+  const lowerName = name.toLowerCase();
+  const lowerCategory = category.toLowerCase();
+
+  if (lowerCategory === 'nature') {
+    if (lowerName.includes('rain') || lowerName.includes('thunderstorm')) return <CloudRain className="h-5 w-5 text-primary" />;
+    if (lowerName.includes('ocean') || lowerName.includes('beach') || lowerName.includes('river')) return <Waves className="h-5 w-5 text-primary" />;
+    if (lowerName.includes('forest') || lowerName.includes('birds')) return <Wind className="h-5 w-5 text-primary" />;
+  }
+  if (lowerCategory === 'cafe') return <Coffee className="h-5 w-5 text-primary" />;
+  if (lowerCategory === 'city') return <Building className="h-5 w-5 text-primary" />;
+  if (lowerCategory === 'noise') return <Volume2 className="h-5 w-5 text-primary" />;
+  if (lowerCategory === 'music') return <Music className="h-5 w-5 text-primary" />;
+  if (lowerCategory === 'abstract') {
+    if (lowerName.includes('space')) return <Sun className="h-5 w-5 text-primary" />; // Using Sun for space
+    if (lowerName.includes('zen')) return <Snowflake className="h-5 w-5 text-primary" />; // Using Snowflake for zen
+  }
+  return <Music className="h-5 w-5 text-primary" />; // Default icon
+};
 
 export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -100,6 +121,7 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
                 name={sound.name}
                 url={sound.url}
                 isCurrentRoomWritable={isCurrentRoomWritable}
+                category={sound.category} // Added missing category prop
               />
             ))}
           </div>

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Volume2, VolumeX, Music, Loader2 } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Music, Loader2, CloudRain, Wind, Coffee, Building, Waves, Sun, Snowflake } from "lucide-react";
 import { useAmbientSound } from "@/hooks/use-ambient-sound";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -11,30 +11,32 @@ interface AmbientSoundItemProps {
   name: string;
   url: string;
   isCurrentRoomWritable: boolean;
+  category: string; // Added category prop
 }
 
-const getSoundIcon = (name: string) => {
+// Helper function to get a more specific icon based on sound name/category
+const getSoundIcon = (name: string, category: string) => {
   const lowerName = name.toLowerCase();
-  if (lowerName.includes('rain') || lowerName.includes('water') || lowerName.includes('ocean') || lowerName.includes('river') || lowerName.includes('thunder')) {
-    return <Volume2 className="h-5 w-5 text-primary" />;
+  const lowerCategory = category.toLowerCase();
+
+  if (lowerCategory === 'nature') {
+    if (lowerName.includes('rain') || lowerName.includes('thunderstorm')) return <CloudRain className="h-5 w-5 text-primary" />;
+    if (lowerName.includes('ocean') || lowerName.includes('beach') || lowerName.includes('river')) return <Waves className="h-5 w-5 text-primary" />;
+    if (lowerName.includes('forest') || lowerName.includes('birds')) return <Wind className="h-5 w-5 text-primary" />;
   }
-  if (lowerName.includes('wind') || lowerName.includes('forest') || lowerName.includes('bird') || lowerName.includes('jungle') || lowerName.includes('desert')) {
-    return <Volume2 className="h-5 w-5 text-primary" />;
+  if (lowerCategory === 'cafe') return <Coffee className="h-5 w-5 text-primary" />;
+  if (lowerCategory === 'city') return <Building className="h-5 w-5 text-primary" />;
+  if (lowerCategory === 'noise') return <Volume2 className="h-5 w-5 text-primary" />;
+  if (lowerCategory === 'music') return <Music className="h-5 w-5 text-primary" />;
+  if (lowerCategory === 'abstract') {
+    if (lowerName.includes('space')) return <Sun className="h-5 w-5 text-primary" />; // Using Sun for space
+    if (lowerName.includes('zen')) return <Snowflake className="h-5 w-5 text-primary" />; // Using Snowflake for zen
   }
-  if (lowerName.includes('cafe') || lowerName.includes('city') || lowerName.includes('train')) {
-    return <Volume2 className="h-5 w-5 text-primary" />;
-  }
-  if (lowerName.includes('fire') || lowerName.includes('space') || lowerName.includes('zen') || lowerName.includes('ambiance')) {
-    return <Volume2 className="h-5 w-5 text-primary" />;
-  }
-  if (lowerName.includes('noise')) {
-    return <Volume2 className="h-5 w-5 text-primary" />;
-  }
-  return <Music className="h-5 w-5 text-primary" />;
+  return <Music className="h-5 w-5 text-primary" />; // Default icon
 };
 
 
-export function AmbientSoundItem({ name, url, isCurrentRoomWritable }: AmbientSoundItemProps) {
+export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }: AmbientSoundItemProps) {
   const { isPlaying, volume, isMuted, isBuffering, togglePlayPause, setVolume, toggleMute } = useAmbientSound(url);
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,7 +81,7 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable }: AmbientSo
         {isBuffering && isPlaying ? (
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
         ) : (
-          getSoundIcon(name)
+          getSoundIcon(name, category)
         )}
         <span className="font-medium text-sm truncate text-foreground">{name}</span>
       </div>
