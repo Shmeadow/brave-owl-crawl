@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Volume2, VolumeX, Music, Loader2, CloudRain, Wind, Coffee, Building, Waves, Sun, Snowflake } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Music, Loader2, CloudRain, Wind, Coffee, Building, Waves, Sun, Snowflake, Keyboard, BookOpen } from "lucide-react";
 import { useAmbientSound } from "@/hooks/use-ambient-sound";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -20,17 +20,21 @@ const getSoundIcon = (name: string, category: string) => {
   const lowerCategory = category.toLowerCase();
 
   if (lowerCategory === 'nature') {
-    if (lowerName.includes('rain') || lowerName.includes('thunderstorm')) return <CloudRain className="h-5 w-5 text-primary" />;
-    if (lowerName.includes('ocean') || lowerName.includes('beach') || lowerName.includes('river')) return <Waves className="h-5 w-5 text-primary" />;
-    if (lowerName.includes('forest') || lowerName.includes('birds')) return <Wind className="h-5 w-5 text-primary" />;
+    if (lowerName.includes('rain') || lowerName.includes('thunderstorm') || lowerName.includes('thunder')) return <CloudRain className="h-5 w-5 text-primary" />;
+    if (lowerName.includes('ocean') || lowerName.includes('beach') || lowerName.includes('river') || lowerName.includes('waves')) return <Waves className="h-5 w-5 text-primary" />;
+    if (lowerName.includes('forest') || lowerName.includes('birds') || lowerName.includes('wind')) return <Wind className="h-5 w-5 text-primary" />;
   }
   if (lowerCategory === 'cafe') return <Coffee className="h-5 w-5 text-primary" />;
   if (lowerCategory === 'city') return <Building className="h-5 w-5 text-primary" />;
   if (lowerCategory === 'noise') return <Volume2 className="h-5 w-5 text-primary" />;
   if (lowerCategory === 'music') return <Music className="h-5 w-5 text-primary" />;
   if (lowerCategory === 'abstract') {
-    if (lowerName.includes('space')) return <Sun className="h-5 w-5 text-primary" />; // Using Sun for space
-    if (lowerName.includes('zen')) return <Snowflake className="h-5 w-5 text-primary" />; // Using Snowflake for zen
+    if (lowerName.includes('space')) return <Sun className="h-5 w-5 text-primary" />;
+    if (lowerName.includes('zen')) return <Snowflake className="h-5 w-5 text-primary" />;
+  }
+  if (lowerCategory === 'productivity') {
+    if (lowerName.includes('keyboard')) return <Keyboard className="h-5 w-5 text-primary" />;
+    return <BookOpen className="h-5 w-5 text-primary" />; // Generic for productivity
   }
   return <Music className="h-5 w-5 text-primary" />; // Default icon
 };

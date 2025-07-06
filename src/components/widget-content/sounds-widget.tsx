@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Music, Search, CloudRain, Wind, Coffee, Building, Volume2, Waves, Sun, Snowflake } from "lucide-react"; // Added more specific icons
+import { Music, Search, CloudRain, Wind, Coffee, Building, Volume2, Waves, Sun, Snowflake, BookOpen, Keyboard } from "lucide-react"; // Added more specific icons
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AmbientSoundItem } from "@/components/ambient-sound-item";
 import { Input } from "@/components/ui/input";
@@ -14,22 +14,40 @@ interface SoundsWidgetProps {
 }
 
 // Categorized list of ambient sounds
+// IMPORTANT: Ensure these files exist in your public/sounds/ directory!
+// Supported formats typically include .mp3, .ogg, .wav
 const allAmbientSounds = [
+  // Nature Sounds
   { name: "Beach Ocean", url: "/sounds/beach_ocean.mp3", category: "Nature" },
   { name: "Rain", url: "/sounds/rain.mp3", category: "Nature" },
   { name: "Forest Birds", url: "/sounds/forest_birds.mp3", category: "Nature" },
   { name: "Thunderstorm", url: "/sounds/thunderstorm.mp3", category: "Nature" },
   { name: "River Flow", url: "/sounds/river_flow.mp3", category: "Nature" },
+  { name: "Fireplace Crackle", url: "/sounds/fireplace_crackle.mp3", category: "Nature" },
+  { name: "Ocean Waves", url: "/sounds/ocean_waves.mp3", category: "Nature" },
+  { name: "Wind Chimes", url: "/sounds/wind_chimes.mp3", category: "Nature" },
+  { name: "Thunder", url: "/sounds/thunder.mp3", category: "Nature" },
+
+  // Cafe & City Sounds
   { name: "Coffee Shop", url: "/sounds/coffee_shop.mp3", category: "Cafe" },
   { name: "City Ambience", url: "/sounds/city_ambience.mp3", category: "City" },
   { name: "Train Ride", url: "/sounds/train_ride.mp3", category: "City" },
+  { name: "City Traffic", url: "/sounds/city_traffic.mp3", category: "City" },
+  { name: "Library Ambience", url: "/sounds/library_ambience.mp3", category: "City" },
+
+  // Noise Sounds
   { name: "White Noise", url: "/sounds/white_noise.mp3", category: "Noise" },
   { name: "Brown Noise", url: "/sounds/brown_noise.mp3", category: "Noise" },
   { name: "Pink Noise", url: "/sounds/pink_noise.mp3", category: "Noise" },
+
+  // Music & Abstract Sounds
   { name: "Lofi Beats", url: "/sounds/lofi_beats.mp3", category: "Music" },
   { name: "Calm Piano", url: "/sounds/calm_piano.mp3", category: "Music" },
   { name: "Space Ambience", url: "/sounds/space_ambience.mp3", category: "Abstract" },
   { name: "Zen Garden", url: "/sounds/zen_garden.mp3", category: "Abstract" },
+
+  // Productivity Sounds
+  { name: "Keyboard Typing", url: "/sounds/keyboard_typing.mp3", category: "Productivity" },
 ];
 
 // Helper function to get a more specific icon based on sound name/category
@@ -38,17 +56,21 @@ const getSoundIcon = (name: string, category: string) => {
   const lowerCategory = category.toLowerCase();
 
   if (lowerCategory === 'nature') {
-    if (lowerName.includes('rain') || lowerName.includes('thunderstorm')) return <CloudRain className="h-5 w-5 text-primary" />;
-    if (lowerName.includes('ocean') || lowerName.includes('beach') || lowerName.includes('river')) return <Waves className="h-5 w-5 text-primary" />;
-    if (lowerName.includes('forest') || lowerName.includes('birds')) return <Wind className="h-5 w-5 text-primary" />;
+    if (lowerName.includes('rain') || lowerName.includes('thunderstorm') || lowerName.includes('thunder')) return <CloudRain className="h-5 w-5 text-primary" />;
+    if (lowerName.includes('ocean') || lowerName.includes('beach') || lowerName.includes('river') || lowerName.includes('waves')) return <Waves className="h-5 w-5 text-primary" />;
+    if (lowerName.includes('forest') || lowerName.includes('birds') || lowerName.includes('wind')) return <Wind className="h-5 w-5 text-primary" />;
   }
   if (lowerCategory === 'cafe') return <Coffee className="h-5 w-5 text-primary" />;
   if (lowerCategory === 'city') return <Building className="h-5 w-5 text-primary" />;
   if (lowerCategory === 'noise') return <Volume2 className="h-5 w-5 text-primary" />;
   if (lowerCategory === 'music') return <Music className="h-5 w-5 text-primary" />;
   if (lowerCategory === 'abstract') {
-    if (lowerName.includes('space')) return <Sun className="h-5 w-5 text-primary" />; // Using Sun for space
-    if (lowerName.includes('zen')) return <Snowflake className="h-5 w-5 text-primary" />; // Using Snowflake for zen
+    if (lowerName.includes('space')) return <Sun className="h-5 w-5 text-primary" />;
+    if (lowerName.includes('zen')) return <Snowflake className="h-5 w-5 text-primary" />;
+  }
+  if (lowerCategory === 'productivity') {
+    if (lowerName.includes('keyboard')) return <Keyboard className="h-5 w-5 text-primary" />;
+    return <BookOpen className="h-5 w-5 text-primary" />; // Generic for productivity
   }
   return <Music className="h-5 w-5 text-primary" />; // Default icon
 };
@@ -121,7 +143,7 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
                 name={sound.name}
                 url={sound.url}
                 isCurrentRoomWritable={isCurrentRoomWritable}
-                category={sound.category} // Added missing category prop
+                category={sound.category}
               />
             ))}
           </div>
