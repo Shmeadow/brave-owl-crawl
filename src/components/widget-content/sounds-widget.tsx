@@ -15,16 +15,38 @@ interface SoundsWidgetProps {
 
 // Categorized list of ambient sounds
 const allAmbientSounds = [
-  // TEMPORARY: Using an external URL for testing.
-  // Please replace this with your local file path: "/sounds/beach_ocean.mp3"
-  { name: "Beach Ocean", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", category: "Nature & Water" },
+  { name: "Beach Ocean", url: "/sounds/beach_ocean.mp3", category: "Nature" },
+  { name: "Rain", url: "/sounds/rain.mp3", category: "Nature" },
+  { name: "Forest Birds", url: "/sounds/forest_birds.mp3", category: "Nature" },
+  { name: "Thunderstorm", url: "/sounds/thunderstorm.mp3", category: "Nature" },
+  { name: "River Flow", url: "/sounds/river_flow.mp3", category: "Nature" },
+  { name: "Coffee Shop", url: "/sounds/coffee_shop.mp3", category: "Cafe" },
+  { name: "City Ambience", url: "/sounds/city_ambience.mp3", category: "City" },
+  { name: "Train Ride", url: "/sounds/train_ride.mp3", category: "City" },
+  { name: "White Noise", url: "/sounds/white_noise.mp3", category: "Noise" },
+  { name: "Brown Noise", url: "/sounds/brown_noise.mp3", category: "Noise" },
+  { name: "Pink Noise", url: "/sounds/pink_noise.mp3", category: "Noise" },
+  { name: "Lofi Beats", url: "/sounds/lofi_beats.mp3", category: "Music" },
+  { name: "Calm Piano", url: "/sounds/calm_piano.mp3", category: "Music" },
+  { name: "Space Ambience", url: "/sounds/space_ambience.mp3", category: "Abstract" },
+  { name: "Zen Garden", url: "/sounds/zen_garden.mp3", category: "Abstract" },
 ];
 
 export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+
+  const categories = useMemo(() => {
+    const uniqueCategories = new Set(allAmbientSounds.map(sound => sound.category));
+    return ["all", ...Array.from(uniqueCategories).sort()];
+  }, []);
 
   const filteredSounds = useMemo(() => {
     let sounds = allAmbientSounds;
+
+    if (selectedCategory !== "all") {
+      sounds = sounds.filter(sound => sound.category === selectedCategory);
+    }
 
     if (searchTerm) {
       sounds = sounds.filter(sound =>
@@ -32,7 +54,7 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
       );
     }
     return sounds;
-  }, [searchTerm]);
+  }, [searchTerm, selectedCategory]);
 
   return (
     <div className="h-full w-full flex flex-col p-0">
@@ -51,14 +73,27 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        {/* Removed Category Select */}
+        <div>
+          <Label htmlFor="category-select" className="sr-only">Filter by Category</Label>
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger id="category-select">
+              <SelectValue placeholder="Filter by category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories.filter(cat => cat !== "all").map(cat => (
+                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {filteredSounds.length === 0 ? (
         <p className="p-4 text-muted-foreground text-sm text-center">No ambient sounds found matching your criteria.</p>
       ) : (
         <ScrollArea className="flex-1 h-full">
-          <div className="p-4 grid grid-cols-1 gap-4"> {/* Changed to grid-cols-1 */}
+          <div className="p-4 grid grid-cols-1 gap-4">
             {filteredSounds.map((sound) => (
               <AmbientSoundItem
                 key={sound.url}
