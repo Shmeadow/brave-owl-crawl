@@ -10,7 +10,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle,
+  // DialogTitle, // Removed DialogTitle import
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -41,8 +41,8 @@ export default function PricingPage() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
-        <DialogHeader className="p-4 border-b flex flex-row items-center justify-between">
-          <DialogTitle className="text-2xl font-bold">Upgrade Your Plan</DialogTitle>
+        <DialogHeader className="p-4 border-b flex flex-row items-center justify-end"> {/* Changed justify-between to justify-end */}
+          {/* DialogTitle removed */}
           <Button variant="ghost" size="icon" onClick={handleClose}>
             <X className="h-6 w-6" />
             <span className="sr-only">Close</span>
