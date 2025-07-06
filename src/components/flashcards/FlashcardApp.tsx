@@ -115,9 +115,9 @@ export function FlashcardApp() {
           />
         );
       case 'learn':
-        return <LearnMode flashcards={cards} handleAnswerFeedback={augmentedHandleAnswerFeedback} goToSummary={goToSummary} />;
+        return <LearnMode flashcards={cards} onGradeCard={handleGradeCard} goToSummary={goToSummary} />;
       case 'test':
-        return <TestMode flashcards={cards} onGradeCard={handleGradeCard} onQuit={() => setCurrentMode('manage')} />;
+        return <TestMode flashcards={cards} onAnswer={(cardId, isCorrect, userAnswer) => augmentedHandleAnswerFeedback(cardId, isCorrect, userAnswer, 'test')} onQuit={() => setCurrentMode('manage')} />;
       case 'summary':
         return <SummaryMode summaryData={generateSummaryData()} onResetProgress={handleResetProgress} />;
       default:

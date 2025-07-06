@@ -2,36 +2,27 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, ArrowRight, Check, Send, XCircle, Repeat, Shuffle, CheckCircle, Flag } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Repeat, Shuffle, Flag } from 'lucide-react';
 import { CardData, Category } from '@/hooks/flashcards/types';
-import { getWeightedRandomCard } from '@/utils/flashcard-helpers';
 import { toast } from 'sonner';
 import { FlashCard } from '@/components/flash-card';
 import { useFlashcardCategories } from '@/hooks/flashcards/useFlashcardCategories';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
 
 interface LearnModeProps {
   flashcards: CardData[];
-  handleAnswerFeedback: (cardId: string, isCorrect: boolean, userAnswer: string | null, source: 'learn' | 'test') => void;
+  onGradeCard: (cardId: string, grade: 'Easy' | 'Good' | 'Hard' | 'Again') => void;
   goToSummary: () => void;
 }
 
-export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: LearnModeProps) {
+export function LearnMode({ flashcards, onGradeCard, goToSummary }: LearnModeProps) {
   const { categories } = useFlashcardCategories();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all'>('all');
   const [activeCards, setActiveCards] = useState<CardData[]>([]);
-  const [currentCard, setCurrentCard] = useState<CardData | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [userAnswer, setUserAnswer] = useState('');
-  const [trackProgress, setTrackProgress] = useState(true);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [isCorrectAnswer, setIsCorrectAnswer] = useState(false);
 
   useEffect(() => {
     const filtered = selectedCategoryId === 'all'
@@ -43,12 +34,8 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: Lea
   useEffect(() => {
     if (activeCards.length > 0) {
       setCurrentIndex(0);
-      setCurrentCard(activeCards[0]);
-    } else {
-      setCurrentCard(null);
     }
     setIsFlipped(false);
-    setUserAnswer('');
   }, [activeCards]);
 
   const currentCardData = activeCards[currentIndex];
@@ -59,7 +46,6 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: Lea
       setActiveCards(shuffled);
       setCurrentIndex(0);
       setIsFlipped(false);
-      setUserAnswer('');
       toast.success("Cards shuffled!");
     }
   };
@@ -69,7 +55,6 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: Lea
     const nextIndex = (currentIndex + 1) % activeCards.length;
     setCurrentIndex(nextIndex);
     setIsFlipped(false);
-    setUserAnswer('');
   };
 
   const handleBack = () => {
@@ -77,29 +62,12 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: Lea
     const prevIndex = (currentIndex - 1 + activeCards.length) % activeCards.length;
     setCurrentIndex(prevIndex);
     setIsFlipped(false);
-    setUserAnswer('');
   };
 
-  const handleSubmitAnswer = () => {
+  const handleGradeAndProceed = (grade: 'Easy' | 'Good' | 'Hard' | 'Again') => {
     if (!currentCardData) return;
-    if (!userAnswer.trim()) {
-      toast.info("Type an answer to check it.");
-      return;
-    }
-
-    const isCorrect = userAnswer.trim().toLowerCase() === currentCardData.back.trim().toLowerCase();
-    
-    if (trackProgress) {
-      handleAnswerFeedback(currentCardData.id, isCorrect, userAnswer, 'learn');
-    }
-
-    setIsCorrectAnswer(isCorrect);
-    setShowFeedback(true);
-    
-    setTimeout(() => {
-      setShowFeedback(false);
-      setIsFlipped(true);
-    }, 1500);
+    onGradeCard(currentCardData.id, grade);
+    handleNext();
   };
 
   if (flashcards.length === 0) {
@@ -124,13 +92,6 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: Lea
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-center space-x-2">
-            <Switch id="track-progress" checked={trackProgress} onCheckedChange={setTrackProgress} />
-            <Label htmlFor="track-progress">Track Progress</Label>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            When off, your answers won't affect card statuses. Good for casual studying.
-          </p>
           <Button onClick={handleShuffle} variant="secondary" className="w-full">
             <Shuffle className="mr-2 h-4 w-4" /> Shuffle Cards
           </Button>
@@ -151,19 +112,17 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: Lea
               status={currentCardData.status}
               seen_count={currentCardData.seen_count}
             />
-            <div className="w-full max-w-md flex gap-2">
-              <Input
-                type="text"
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSubmitAnswer()}
-                placeholder="Type your answer..."
-                className="flex-grow"
-              />
-              <Button onClick={handleSubmitAnswer}>
-                <Send className="mr-2 h-4 w-4" /> Submit
-              </Button>
-            </div>
+            {isFlipped && (
+              <div className="w-full max-w-md text-center space-y-2 mt-4">
+                <p className="font-semibold">How well did you know this?</p>
+                <div className="flex justify-center gap-2">
+                  <Button onClick={() => handleGradeAndProceed('Again')} variant="destructive">Again</Button>
+                  <Button onClick={() => handleGradeAndProceed('Hard')} variant="outline">Hard</Button>
+                  <Button onClick={() => handleGradeAndProceed('Good')} variant="outline">Good</Button>
+                  <Button onClick={() => handleGradeAndProceed('Easy')} variant="secondary" className="bg-green-600 hover:bg-green-700 text-white">Easy</Button>
+                </div>
+              </div>
+            )}
             <div className="flex gap-2">
               <Button onClick={handleBack} variant="outline">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back
@@ -181,15 +140,6 @@ export function LearnMode({ flashcards, handleAnswerFeedback, goToSummary }: Lea
           </>
         ) : (
           <Card className="text-center p-8"><CardContent>No cards in this category.</CardContent></Card>
-        )}
-        {showFeedback && (
-          <div className={cn(
-            "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-6 rounded-lg text-white text-2xl font-bold flex items-center gap-4 shadow-2xl z-10",
-            isCorrectAnswer ? 'bg-green-600' : 'bg-red-600'
-          )}>
-            {isCorrectAnswer ? <CheckCircle size={32} /> : <XCircle size={32} />}
-            {isCorrectAnswer ? 'Correct!' : 'Incorrect!'}
-          </div>
         )}
       </div>
     </div>
