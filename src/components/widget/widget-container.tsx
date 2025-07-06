@@ -17,7 +17,22 @@ import { GoalFocusWidget } from "@/components/widget-content/goal-focus-widget";
 import { BackgroundEffectsWidget } from "@/components/widget-content/background-effects-widget";
 import { useWidget } from "./widget-provider";
 import { Widget } from "./widget";
-import { WidgetState } from "@/hooks/widgets/types"; // Corrected import path
+import { WidgetState } from "@/hooks/widgets/types"; // Import WidgetState
+
+// Define WIDGET_COMPONENTS at the top level
+const WIDGET_COMPONENTS = {
+  "spaces": { icon: LayoutGrid, content: SpacesWidget },
+  "sounds": { icon: Volume2, content: SoundsWidget },
+  "calendar": { icon: Calendar, content: CalendarWidget },
+  "timer": { icon: Timer, content: TimerWidget },
+  "tasks": { icon: ListTodo, content: TasksWidget },
+  "notes": { icon: NotebookPen, content: NotesWidget },
+  "media": { icon: Image, content: MediaWidget },
+  "games": { icon: Gamepad2, content: GamesWidget },
+  "flash-cards": { icon: BookOpen, content: FlashCardsWidget },
+  "goal-focus": { icon: Goal, content: GoalFocusWidget },
+  "background-effects": { icon: WandSparkles, content: BackgroundEffectsWidget },
+};
 
 interface WidgetContainerProps {
   isCurrentRoomWritable: boolean;
