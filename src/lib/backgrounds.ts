@@ -35,12 +35,12 @@ export const animatedBackgrounds = [
   { videoUrl: "/animated/ani20.mp4" },
   { videoUrl: "/animated/ani21.mp4" },
   { videoUrl: "/animated/ani22.mp4" },
-  { videoUrl: "/animated/ani23.mp4" }, // New
-  { videoUrl: "/animated/ani24.mp4" }, // New
-  { videoUrl: "/animated/ani25.mp4" }, // New
-  { videoUrl: "/animated/ani26.mp4" }, // New
-  { videoUrl: "/animated/ani27.mp4" }, // New
-  { videoUrl: "/animated/ani28.mp4" }, // New
+  { videoUrl: "/animated/ani23.mp4", previewOffset: 5 }, // Added previewOffset
+  { videoUrl: "/animated/ani24.mp4", previewOffset: 5 }, // Added previewOffset
+  { videoUrl: "/animated/ani25.mp4", previewOffset: 5 }, // Added previewOffset
+  { videoUrl: "/animated/ani26.mp4", previewOffset: 5 }, // Added previewOffset
+  { videoUrl: "/animated/ani27.mp4", previewOffset: 5 }, // Added previewOffset
+  { videoUrl: "/animated/ani28.mp4", previewOffset: 5 }, // Added previewOffset
 ];
 
 export const allBackgrounds = [
