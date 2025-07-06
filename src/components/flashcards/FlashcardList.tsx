@@ -3,12 +3,12 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CardData } from '@/hooks/use-flashcards';
+import { CardData, Category } from '@/hooks/flashcards/types';
 import { FlashcardListItem } from './FlashcardListItem';
 
 interface FlashcardListProps {
   flashcards: CardData[];
-  onEdit: (card: CardData) => void;
+  onUpdate: (cardData: { id?: string; front: string; back: string; category_id?: string | null }) => void;
   onDelete: (id: string) => void;
   onOrganize: (card: CardData) => void;
   columns: number;
@@ -16,11 +16,12 @@ interface FlashcardListProps {
   selectionMode: boolean;
   selectedCardIds: Set<string>;
   onToggleSelection: (id: string) => void;
+  categories: Category[];
 }
 
 export function FlashcardList({
   flashcards,
-  onEdit,
+  onUpdate,
   onDelete,
   onOrganize,
   columns,
@@ -28,6 +29,7 @@ export function FlashcardList({
   selectionMode,
   selectedCardIds,
   onToggleSelection,
+  categories,
 }: FlashcardListProps) {
   return (
     <Card className="w-full flex flex-col flex-1 bg-card backdrop-blur-xl border-white/20">
@@ -47,13 +49,14 @@ export function FlashcardList({
                 <FlashcardListItem
                   key={card.id}
                   card={card}
-                  onEdit={onEdit}
+                  onUpdate={onUpdate}
                   onDelete={onDelete}
                   onOrganize={onOrganize}
                   rowHeight={rowHeight}
                   isSelected={selectedCardIds.has(card.id)}
                   selectionMode={selectionMode}
                   onToggleSelection={onToggleSelection}
+                  categories={categories}
                 />
               ))}
             </ul>

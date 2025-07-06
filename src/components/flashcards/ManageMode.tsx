@@ -20,7 +20,7 @@ interface ManageModeProps {
   cards: CardData[];
   onAddCard: (card: { front: string; back: string; category_id?: string | null }) => void;
   onDeleteCard: (id: string) => void;
-  onEdit: (card: CardData) => void;
+  onUpdateCard: (cardData: { id?: string; front: string; back: string; category_id?: string | null }) => void;
   onBulkImport: (cards: { front: string; back: string }[], categoryId: string | null) => Promise<number>;
   categories: Category[];
   onAddCategory: (name: string) => Promise<Category | null>;
@@ -33,7 +33,7 @@ export function ManageMode({
   cards,
   onAddCard,
   onDeleteCard,
-  onEdit,
+  onUpdateCard,
   onBulkImport,
   categories,
   onAddCategory,
@@ -140,7 +140,7 @@ export function ManageMode({
         </div>
         <FlashcardList
           flashcards={filteredCards}
-          onEdit={onEdit}
+          onUpdate={onUpdateCard}
           onDelete={onDeleteCard}
           onOrganize={setOrganizingCard}
           columns={columns}
@@ -148,6 +148,7 @@ export function ManageMode({
           selectionMode={selectionMode}
           selectedCardIds={selectedCardIds}
           onToggleSelection={toggleSelection}
+          categories={categories}
         />
       </div>
       <OrganizeCardModal card={organizingCard} categories={categories} isOpen={!!organizingCard} onClose={() => setOrganizingCard(null)} onUpdateCategory={onUpdateCardCategory} />

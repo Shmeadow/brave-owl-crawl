@@ -11,8 +11,6 @@ import { LearnMode } from './LearnMode';
 import { TestMode } from './TestMode';
 import { SummaryMode, DetailedResult, SummaryData } from './SummaryMode';
 import { useFlashcardCategories } from '@/hooks/flashcards/useFlashcardCategories';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { FlashcardForm } from './FlashcardForm';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -26,7 +24,6 @@ export function FlashcardApp() {
   const { categories, addCategory, deleteCategory, updateCategory } = useFlashcardCategories();
   const { session } = useSupabase();
   const [currentMode, setCurrentMode] = useState<FlashcardMode>('manage');
-  const [editingCard, setEditingCard] = useState<CardData | null>(null);
   const [sessionHistory, setSessionHistory] = useState<DetailedResult[]>([]);
   const [testType, setTestType] = useState<'text' | 'choices'>('text');
 
@@ -115,11 +112,11 @@ export function FlashcardApp() {
     setCurrentMode('summary');
   }, []);
 
-  const handleUpdateAndClose = (cardData: { id?: string; front: string; back: string; category_id?: string | null }) => {
+  const handleUpdateCardWrapper = (cardData: { id?: string; front: string; back: string; category_id?: string | null }) => {
     if (cardData.id) {
-      handleUpdateCard(cardData.id, cardData);
+      const { id, ...updatedData } = cardData;
+      handleUpdateCard(id, updatedData);
     }
-    setEditingCard(null);
   };
 
   const renderContent = () => {
@@ -138,7 +135,7 @@ export function FlashcardApp() {
             cards={cards}
             onAddCard={handleAddCard}
             onDeleteCard={handleDeleteCard}
-            onEdit={setEditingCard}
+            onUpdateCard={handleUpdateCardWrapper}
             onBulkImport={handleBulkAddCards}
             categories={categories}
             onAddCategory={addCategory}
@@ -172,7 +169,7 @@ export function FlashcardApp() {
 
       <div className="flex flex-wrap justify-center gap-3 mb-4 w-full">
         <Button
-          onClick={() => { setCurrentMode('manage'); setEditingCard(null); }}
+          onClick={() => setCurrentMode('manage')}
           variant={currentMode === 'manage' ? 'default' : 'outline'}
         >
           Manage Deck
@@ -211,23 +208,6 @@ export function FlashcardApp() {
       )}
 
       {renderContent()}
-
-      <Dialog open={!!editingCard} onOpenChange={(isOpen) => !isOpen && setEditingCard(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Flashcard</DialogTitle>
-          </DialogHeader>
-          {editingCard && (
-            <FlashcardForm
-              onSave={handleUpdateAndClose}
-              editingCard={editingCard}
-              onCancel={() => setEditingCard(null)}
-              categories={categories}
-              selectedCategoryId={null}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
