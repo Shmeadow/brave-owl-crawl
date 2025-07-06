@@ -39,20 +39,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
   const { currentRoomName, currentRoomId, isCurrentRoomWritable, setCurrentRoom } = useCurrentRoom();
   const { handleJoinRoomByRoomId } = useRooms(); // Use the hook for joining rooms
 
-  const [roomInput, setRoomInput] = useState("");
-
-  const handleJoinRoom = async () => {
-    if (!session) {
-      toast.error("You must be logged in to join a room.");
-      return;
-    }
-    if (!roomInput.trim()) {
-      toast.error("Please enter a Room ID.");
-      return;
-    }
-    await handleJoinRoomByRoomId(roomInput.trim());
-    setRoomInput(""); // Clear input after attempt
-  };
+  // Removed roomInput state and handleJoinRoom function
 
   const handleCopyRoomId = () => {
     if (currentRoomId) {
@@ -116,29 +103,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
       </div>
 
       <div className="flex items-center gap-4 ml-auto pr-4">
-        {/* Join Room Input and Button */}
-        <div className="flex items-center space-x-2">
-          <Input
-            type="text"
-            placeholder="Room ID"
-            className="w-32 text-sm h-9"
-            value={roomInput}
-            onChange={(e) => setRoomInput(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && roomInput.trim()) {
-                handleJoinRoom();
-              }
-            }}
-          />
-          <Button
-            onClick={handleJoinRoom}
-            size="sm"
-            className="h-9"
-            disabled={!session || !roomInput.trim()}
-          >
-            Join
-          </Button>
-        </div>
+        {/* Removed Join Room Input and Button */}
 
         <ClockDisplay className="hidden md:flex" />
         <BackgroundBlurSlider className="hidden md:flex" />
