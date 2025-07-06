@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils"; // Import cn for styling
 // Define WIDGET_COMPONENTS at the top level
 const WIDGET_COMPONENTS = {
   "spaces": { icon: LayoutGrid, content: SpacesWidget },
-  "sounds": { icon: Volume2, content: SoundsWidget }, // Updated to SoundsWidget
+  "sounds": { icon: Volume2, content: SoundsWidget },
   "calendar": { icon: Calendar, content: CalendarWidget },
   "timer": { icon: Timer, content: TimerWidget },
   "tasks": { icon: ListTodo, content: TasksWidget },

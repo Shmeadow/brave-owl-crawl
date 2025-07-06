@@ -134,7 +134,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
           chatPanelWidth={chatPanelWidth}
           isMobile={isMobile} // Pass isMobile
         />}
-        {/* Removed SimpleAudioPlayer from here */}
+        {isDashboard && <SimpleAudioPlayer isMobile={isMobile} />} {/* Pass isMobile */}
         <Toaster />
       </div>
     </WidgetProvider>
