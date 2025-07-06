@@ -76,7 +76,7 @@ export function PricingContent({ onUpgrade }: { onUpgrade: () => void }) {
 
   return (
     <div className="w-full">
-      <div className="flex justify-center mb-10">
+      <div className="flex justify-center mb-8"> {/* Reduced mb-10 to mb-8 */}
         <ToggleGroup
           type="single"
           value={billingCycle}
@@ -102,7 +102,7 @@ export function PricingContent({ onUpgrade }: { onUpgrade: () => void }) {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> {/* Reduced gap-8 to gap-6, removed max-w-6xl mx-auto */}
           {plans.map((plan) => (
             <PlanCard
               key={plan.name}

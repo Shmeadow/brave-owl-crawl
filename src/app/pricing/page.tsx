@@ -1,68 +1,63 @@
 "use client";
 
-import React from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Twitter, Facebook, Linkedin, ChevronDown } from 'lucide-react';
+import { X } from 'lucide-react';
 import { PricingContent } from '@/components/pricing-content';
 import { useSupabase } from '@/integrations/supabase/auth';
 import { useRouter } from 'next/navigation';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function PricingPage() {
   const { session } = useSupabase();
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(true); // Dialog is open by default
 
-  const handleGetStarted = () => {
+  const handleClose = () => {
+    setIsOpen(false);
+    router.push('/dashboard'); // Redirect to dashboard on close
+  };
+
+  const handleUpgrade = () => {
     if (session) {
-      router.push('/dashboard');
+      router.push('/dashboard'); // Or to a checkout flow
     } else {
       router.push('/login');
     }
+    setIsOpen(false); // Close dialog after action
   };
 
+  // Ensure dialog re-opens if user navigates back to /pricing
+  useEffect(() => {
+    setIsOpen(true);
+  }, []);
+
   return (
-    <div className="bg-background min-h-screen text-foreground">
-      <header className="container mx-auto py-4 flex justify-between items-center border-b pr-4">
-        <Link href="/" className="text-xl font-bold">
-          Productivity Hub
-        </Link>
-        <nav className="hidden md:flex items-center gap-6">
-          <Link href="/pricing" className="text-sm font-medium text-foreground">Pricing</Link>
-        </nav>
-        <div className="flex items-center gap-2">
-          <Button onClick={(e) => { e.stopPropagation(); handleGetStarted(); }} variant="default">
-            <span className="flex items-center">
-              Get Started <ChevronDown className="ml-2 h-3 w-3" />
-            </span>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
+        <DialogHeader className="p-4 border-b flex flex-row items-center justify-between">
+          <DialogTitle className="text-2xl font-bold">Upgrade Your Plan</DialogTitle>
+          <Button variant="ghost" size="icon" onClick={handleClose}>
+            <X className="h-6 w-6" />
+            <span className="sr-only">Close</span>
           </Button>
-        </div>
-      </header>
-
-      <main className="container mx-auto py-12 px-4">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
-            Build your cozy workspace for less than a coffee.
-          </h1>
-          <div className="flex justify-center gap-2 mt-4">
-            <Button variant="outline" size="icon"><Twitter className="h-4 w-4" /></Button>
-            <Button variant="outline" size="icon"><Facebook className="h-4 w-4" /></Button>
-            <Button variant="outline" size="icon"><Linkedin className="h-4 w-4" /></Button>
+        </DialogHeader>
+        <ScrollArea className="flex-1 p-6">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-extrabold tracking-tight">
+              Build your cozy workspace for less than a coffee.
+            </h1>
+            <p className="text-muted-foreground mt-2">Choose the plan that's right for you.</p>
           </div>
-        </div>
-
-        <PricingContent onUpgrade={handleGetStarted} />
-      </main>
-
-      <footer className="container mx-auto py-6 text-center text-muted-foreground text-sm border-t mt-12">
-        <div className="flex justify-center gap-4 mb-4">
-            <p>Join our community on <Link href="#" className="font-medium hover:underline">Discord</Link>.</p>
-            <p>Creators, <Link href="#" className="font-medium hover:underline">upload your work</Link>.</p>
-        </div>
-        <div className="flex justify-center gap-4">
-          <Link href="#" className="hover:underline">Terms of Service</Link>
-          <Link href="#" className="hover:underline">Privacy Policy</Link>
-        </div>
-      </footer>
-    </div>
+          <PricingContent onUpgrade={handleUpgrade} />
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
   );
 }
