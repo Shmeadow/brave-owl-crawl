@@ -15,26 +15,39 @@ interface UseAmbientSoundResult {
 export function useAmbientSound(soundUrl: string): UseAmbientSoundResult {
   const {
     audioRef,
-    audioIsPlaying,
+    audioIsPlaying, // This is the state from useHtmlAudioPlayer
     audioVolume,
     audioIsMuted,
-    togglePlayPause,
+    togglePlayPause: htmlAudioTogglePlayPause, // Rename to avoid conflict
     setVolume,
     toggleMute,
-    onLoadedMetadata, // Not directly used for controls, but good to have
-    onTimeUpdate,     // Not directly used for controls, but good to have
-    onEnded,          // Not directly used for controls, but good to have
   } = useHtmlAudioPlayer(soundUrl);
 
-  // Ensure the audio element loops
+  // State to control if this specific ambient sound should be playing
+  const [shouldPlay, setShouldPlay] = useState(true); // Default to true for autoplay
+
+  // Effect to ensure the audio element loops
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.loop = true;
     }
   }, [audioRef]);
 
+  // Effect to control playback based on shouldPlay state
+  useEffect(() => {
+    if (shouldPlay && !audioIsPlaying) {
+      htmlAudioTogglePlayPause(); // Start playing if it should and isn't
+    } else if (!shouldPlay && audioIsPlaying) {
+      htmlAudioTogglePlayPause(); // Pause if it shouldn't and is playing
+    }
+  }, [shouldPlay, audioIsPlaying, htmlAudioTogglePlayPause]);
+
+  const togglePlayPause = useCallback(() => {
+    setShouldPlay(prev => !prev);
+  }, []);
+
   return {
-    isPlaying: audioIsPlaying,
+    isPlaying: shouldPlay, // Expose our controlled state
     volume: audioVolume,
     isMuted: audioIsMuted,
     togglePlayPause,
