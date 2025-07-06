@@ -68,6 +68,12 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         <Link href="/dashboard" className="flex items-center space-x-2">
           <h1 className="text-2xl font-bold text-primary">CozyHub</h1>
         </Link>
+        <Link href="/dashboard" className="flex items-center space-x-2">
+          <Button variant="ghost" size="icon" title="Home">
+            <Home className="h-6 w-6" />
+            <span className="sr-only">Home</span>
+          </Button>
+        </Link>
         {currentRoomId && (
           <span
             className="text-sm font-mono text-muted-foreground cursor-pointer flex items-center gap-1 hover:text-foreground transition-colors"
