@@ -32,9 +32,9 @@ export function NotificationsDropdown({}: NotificationsDropdownProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" title="Notifications" className="relative h-10 w-10"> {/* Increased size */}
+        <Button variant="ghost" size="icon" title="Notifications" className="relative h-10 w-10"> {/* Increased size, added title */}
           <Bell className="h-6 w-6" /> {/* Increased icon size */}
-          <span className="sr-only">Notifications</span>
+          {/* Removed sr-only span as it causes React.Children.only error when Button is asChild */}
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
               {unreadCount}
