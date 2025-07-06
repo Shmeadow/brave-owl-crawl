@@ -87,7 +87,7 @@ export function FlashcardListItem({
               </Button>
             </PopoverTrigger>
             <PopoverContent
-              className="w-80"
+              className="w-80 z-[1100]"
               onClick={(e) => e.stopPropagation()}
               side="bottom"
               align="end"
