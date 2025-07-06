@@ -33,13 +33,21 @@ export default function PricingPage() {
     setIsOpen(false); // Close dialog after action
   };
 
+  // This function will be called when the dialog's open state changes
+  const handleDialogStateChange = (newOpenState: boolean) => {
+    setIsOpen(newOpenState);
+    if (!newOpenState) { // If the dialog is closing
+      router.push('/dashboard'); // Redirect to dashboard
+    }
+  };
+
   // Ensure dialog re-opens if user navigates back to /pricing
   useEffect(() => {
     setIsOpen(true);
   }, []);
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleDialogStateChange}>
       <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
         <DialogHeader className="p-4 border-b flex flex-row items-center justify-between">
           <DialogTitle className="text-2xl font-bold">Upgrade Your Plan</DialogTitle>
