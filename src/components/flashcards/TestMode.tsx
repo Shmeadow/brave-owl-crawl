@@ -104,7 +104,7 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType }: TestModePro
     setTimeout(() => {
       setShowFeedbackOverlay(false);
       handleNext();
-    }, 1500);
+    }, 1000);
   }, [currentCard, onAnswer, handleNext]);
 
   const handleSkip = () => {
