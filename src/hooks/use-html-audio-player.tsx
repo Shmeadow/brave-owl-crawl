@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { toast } from 'sonner'; // Import toast
 
 interface UseHtmlAudioPlayerResult {
   audioRef: React.RefObject<HTMLAudioElement | null>;
@@ -33,7 +34,11 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
   useEffect(() => {
     if (audioRef.current) {
       if (audioIsPlaying) {
-        audioRef.current.play().catch(error => console.error("Error playing audio:", error));
+        audioRef.current.play().catch(error => {
+          console.error("Error playing audio:", error);
+          toast.error(`Failed to play audio: ${error.message || 'Unknown error'}. Please check the URL or browser autoplay settings.`);
+          setAudioIsPlaying(false); // Stop trying to play
+        });
       } else {
         audioRef.current.pause();
       }

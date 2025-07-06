@@ -49,7 +49,7 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable }: AmbientSo
         !isCurrentRoomWritable && "opacity-70 cursor-not-allowed"
       )}
     >
-      <span className="font-medium text-sm text-foreground flex-1 truncate pr-2">{name}</span>
+      <span className="font-medium text-sm text-foreground flex-1 min-w-0">{name}</span>
       <div className="flex items-center gap-1">
         <Button
           variant="ghost"
