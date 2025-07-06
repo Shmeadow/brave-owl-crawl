@@ -76,61 +76,57 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
   }, [searchTerm, selectedCategory]);
 
   return (
-    <div className="h-full w-full flex flex-col items-center justify-center p-4">
-      <Card className="w-full h-full bg-card backdrop-blur-xl border-white/20 flex flex-col">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2">
-            <Music className="h-6 w-6" /> Ambient Sounds
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex-1 p-0 flex flex-col">
-          <div className="p-4 border-b border-border space-y-3">
-            <div className="relative">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search sounds..."
-                className="pl-8"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="category-select" className="sr-only">Filter by Category</Label>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger id="category-select">
-                  <SelectValue placeholder="Filter by category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.filter(cat => cat !== "all").map(cat => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+    <div className="h-full w-full flex flex-col p-0"> {/* Removed Card, adjusted padding */}
+      <div className="p-4 pb-2"> {/* Replaced CardHeader */}
+        <h2 className="text-xl font-bold flex items-center gap-2">
+          <Music className="h-6 w-6" /> Ambient Sounds
+        </h2>
+      </div>
+      <div className="p-4 pt-2 border-b border-border space-y-3"> {/* Replaced CardContent, adjusted padding */}
+        <div className="relative">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search sounds..."
+            className="pl-8"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div>
+          <Label htmlFor="category-select" className="sr-only">Filter by Category</Label>
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger id="category-select">
+              <SelectValue placeholder="Filter by category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories.filter(cat => cat !== "all").map(cat => (
+                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
-          {filteredSounds.length === 0 ? (
-            <p className="p-4 text-muted-foreground text-sm text-center">No ambient sounds found matching your criteria.</p>
-          ) : (
-            <ScrollArea className="flex-1 h-full">
-              <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"> {/* Adjusted grid for larger items */}
-                {filteredSounds.map((sound) => (
-                  <AmbientSoundItem
-                    key={sound.url}
-                    name={sound.name}
-                    url={sound.url}
-                    isCurrentRoomWritable={isCurrentRoomWritable}
-                  />
-                ))}
-              </div>
-            </ScrollArea>
-          )}
-          <p className="text-sm text-muted-foreground mt-4 p-4 text-center border-t border-border">
-            Click play on any sound to start. Multiple sounds can play simultaneously.
-          </p>
-        </CardContent>
-      </Card>
+      {filteredSounds.length === 0 ? (
+        <p className="p-4 text-muted-foreground text-sm text-center">No ambient sounds found matching your criteria.</p>
+      ) : (
+        <ScrollArea className="flex-1 h-full">
+          <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredSounds.map((sound) => (
+              <AmbientSoundItem
+                key={sound.url}
+                name={sound.name}
+                url={sound.url}
+                isCurrentRoomWritable={isCurrentRoomWritable}
+              />
+            ))}
+          </div>
+        </ScrollArea>
+      )}
+      <p className="text-sm text-muted-foreground mt-auto p-4 text-center border-t border-border">
+        Click play on any sound to start. Multiple sounds can play simultaneously.
+      </p>
     </div>
   );
 }
