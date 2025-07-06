@@ -28,11 +28,8 @@ export function SidebarItem({ icon: Icon, label, isActive, onClick, isExpanded }
             )}
             onClick={onClick}
           >
-            {/* Wrap Icon and span in a single div */}
-            <div>
-              <Icon className="h-6 w-6" /> {/* No conditional margin-bottom */}
-              <span className="sr-only">{label}</span>
-            </div>
+            <Icon className="h-6 w-6" /> {/* No conditional margin-bottom */}
+            <span className="sr-only">{label}</span>
           </Button>
         </TooltipTrigger>
         {/* TooltipContent always appears on hover, regardless of isExpanded */}

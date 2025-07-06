@@ -287,11 +287,8 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" className="w-full mt-4" disabled={isDeletingAccount}>
-              {/* Wrap conditional icon and text in a single div */}
-              <div>
-                {isDeletingAccount ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
-                Delete My Account
-              </div>
+              {isDeletingAccount ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+              Delete My Account
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
