@@ -34,6 +34,10 @@ export const animatedBackgrounds = [
   { videoUrl: "/animated/ani19.mp4" },
   { videoUrl: "/animated/ani20.mp4" },
   { videoUrl: "/animated/ani21.mp4" },
+  { videoUrl: "/animated/ani22.mp4" },
+  { videoUrl: "/animated/ani23.mp4" },
+  { videoUrl: "/animated/ani24.mp4" },
+  { videoUrl: "/animated/ani25.mp4" },
 ];
 
 export const allBackgrounds = [
