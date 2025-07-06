@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { PlanCard } from './plan-card';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Button } from './ui/button';
 import { FeatureComparisonGrid } from './feature-comparison-grid';
 
 const plans = [
@@ -23,9 +22,7 @@ const plans = [
   {
     name: 'Pro',
     tagline: 'For dedicated individuals.',
-    price: { monthly: 5.99, annually: 47.88, weekly: 1.99 },
-    originalPrice: { monthly: 5.99 },
-    discount: { annually: '33% Off', weekly: '15% Off' },
+    price: { monthly: 4.99, annually: 9.99, weekly: 0.99 },
     features: [
       { text: 'Unlimited Tasks', included: true },
       { text: '10 Focus Sessions', included: true },
@@ -38,9 +35,9 @@ const plans = [
   {
     name: 'Unlimited',
     tagline: 'Best value for power users.',
-    price: { monthly: 7.99, annually: 59.88, weekly: 2.99 },
-    originalPrice: { monthly: 7.99 },
-    discount: { annually: '38% Off', weekly: '25% Off' },
+    price: { monthly: 9.99, annually: 14.99, weekly: 2.99 },
+    isMostPopular: true,
+    buttonVariant: 'default' as const,
     features: [
       { text: 'Everything in Pro', included: true },
       { text: 'Unlimited Focus Sessions', included: true },
@@ -48,8 +45,6 @@ const plans = [
       { text: 'Premium Analytics', included: true },
       { text: 'Seamless Device Sync', included: true },
     ],
-    isMostPopular: true,
-    buttonVariant: 'default' as const,
   },
 ];
 
@@ -86,11 +81,6 @@ export function PricingContent({ onUpgrade }: { onUpgrade: () => void }) {
       </div>
 
       <FeatureComparisonGrid onChoosePlan={onUpgrade} />
-      
-      <div className="mt-12 text-center bg-primary/5 border border-primary/20 p-6 rounded-lg max-w-4xl mx-auto">
-        <h3 className="text-xl font-bold text-foreground">Explore the whole premium feature suite</h3>
-        <Button onClick={onUpgrade} size="lg" className="mt-4">Get Unlimited</Button>
-      </div>
     </div>
   );
 }

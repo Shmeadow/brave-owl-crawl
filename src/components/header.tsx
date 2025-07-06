@@ -80,11 +80,11 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setCurrentRoom(null, "My Room")}
-          title="Go to My Room"
+          onClick={() => router.push('/dashboard')}
+          title="Go to Dashboard"
         >
           <Home className="h-6 w-6" />
-          <span className="sr-only">Go to My Room</span>
+          <span className="sr-only">Go to Dashboard</span>
         </Button>
         {currentRoomId && (
           <span

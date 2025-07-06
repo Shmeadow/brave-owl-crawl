@@ -16,13 +16,6 @@ interface PlanCardProps {
       annually: number;
       weekly: number;
     };
-    originalPrice?: {
-      monthly: number;
-    };
-    discount?: {
-      annually: string;
-      weekly: string;
-    };
     features: { text: string; included: boolean }[];
     isMostPopular?: boolean;
     buttonVariant: 'outline' | 'default';
@@ -35,9 +28,9 @@ export function PlanCard({ plan, billingCycle, onUpgrade }: PlanCardProps) {
   const getPriceText = () => {
     switch (billingCycle) {
       case 'annually':
-        return (plan.price.annually / 12).toFixed(2);
+        return plan.price.annually.toFixed(2);
       case 'weekly':
-        return (plan.price.weekly).toFixed(2);
+        return plan.price.weekly.toFixed(2);
       case 'monthly':
       default:
         return plan.price.monthly.toFixed(2);
@@ -47,7 +40,7 @@ export function PlanCard({ plan, billingCycle, onUpgrade }: PlanCardProps) {
   const getBillingText = () => {
     switch (billingCycle) {
       case 'annually':
-        return '/mth billed yearly';
+        return '/yr';
       case 'weekly':
         return '/wk';
       case 'monthly':
@@ -55,18 +48,6 @@ export function PlanCard({ plan, billingCycle, onUpgrade }: PlanCardProps) {
         return '/mth';
     }
   };
-
-  const getDiscountBadge = () => {
-    if (billingCycle === 'annually' && plan.discount?.annually) {
-      return plan.discount.annually;
-    }
-    if (billingCycle === 'weekly' && plan.discount?.weekly) {
-      return plan.discount.weekly;
-    }
-    return null;
-  };
-
-  const discountBadge = getDiscountBadge();
 
   return (
     <motion.div
@@ -83,11 +64,6 @@ export function PlanCard({ plan, billingCycle, onUpgrade }: PlanCardProps) {
             Most Popular
           </div>
         )}
-        {discountBadge && (
-          <div className="absolute top-4 right-4 bg-destructive text-destructive-foreground px-2 py-0.5 text-xs font-bold rounded-md">
-            {discountBadge}
-          </div>
-        )}
         <CardHeader className="pb-4">
           <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
           <p className="text-muted-foreground">{plan.tagline}</p>
@@ -96,9 +72,6 @@ export function PlanCard({ plan, billingCycle, onUpgrade }: PlanCardProps) {
           <div className="mb-6">
             <p className="text-5xl font-extrabold">${getPriceText()}</p>
             <p className="text-sm text-muted-foreground">{getBillingText()}</p>
-            {billingCycle === 'annually' && plan.originalPrice?.monthly && (
-              <p className="text-xs text-muted-foreground line-through">U.P. ${plan.originalPrice.monthly.toFixed(2)}/mth</p>
-            )}
           </div>
           <Button
             onClick={onUpgrade}
