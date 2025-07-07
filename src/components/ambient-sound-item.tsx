@@ -65,9 +65,10 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }:
     e.stopPropagation(); // Prevent any parent click handlers
     if (!isCurrentRoomWritable) {
       toast.error("You do not have permission to control sounds in this room.");
+      console.log("[AmbientSoundItem] Blocked play/pause: Room not writable.");
       return;
     }
-    console.log(`[AmbientSoundItem] Toggling play/pause for: ${name}. Current state: ${isPlaying ? 'Playing' : 'Paused'}`);
+    console.log(`[AmbientSoundItem] Toggling play/pause for: ${name}. Current state: ${isPlaying ? 'Playing' : 'Paused'}. Writable: ${isCurrentRoomWritable}`);
     togglePlayPause();
     toast.info(isPlaying ? `Pausing ${name}` : `Playing ${name}`);
   };

@@ -22,18 +22,31 @@ export function useAmbientSound(soundUrl: string): UseAmbientSoundResult {
     togglePlayPause: htmlAudioTogglePlayPause,
     setVolume,
     toggleMute,
+    // isReadyToPlay is not directly exposed by useHtmlAudioPlayer,
+    // but the buffering state is what we care about.
+    // The `isBuffering` state will be derived from `isReadyToPlay` and `audioIsPlaying`
+    // or directly from `waiting` event.
   } = useHtmlAudioPlayer(soundUrl);
 
   const [isBuffering, setIsBuffering] = useState(false);
 
-  // Ensure the audio element loops
+  // Ensure the audio element loops and listen for buffering events
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.loop = true;
 
-      const handleWaiting = () => setIsBuffering(true);
-      const handlePlaying = () => setIsBuffering(false);
-      const handleCanPlayThrough = () => setIsBuffering(false);
+      const handleWaiting = () => {
+        console.log(`[useAmbientSound] Waiting for: ${soundUrl}`);
+        setIsBuffering(true);
+      };
+      const handlePlaying = () => {
+        console.log(`[useAmbientSound] Playing: ${soundUrl}`);
+        setIsBuffering(false);
+      };
+      const handleCanPlayThrough = () => {
+        console.log(`[useAmbientSound] CanPlayThrough: ${soundUrl}`);
+        setIsBuffering(false);
+      };
 
       audioRef.current.addEventListener('waiting', handleWaiting);
       audioRef.current.addEventListener('playing', handlePlaying);
@@ -47,7 +60,7 @@ export function useAmbientSound(soundUrl: string): UseAmbientSoundResult {
         }
       };
     }
-  }, [audioRef]);
+  }, [audioRef, soundUrl]); // Add soundUrl to dependencies to re-attach listeners if URL changes
 
   return {
     isPlaying: audioIsPlaying,
