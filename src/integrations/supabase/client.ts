@@ -10,22 +10,20 @@ export function createBrowserClient(): SupabaseClient | null {
 
   if (supabaseUrl && supabaseAnonKey) {
     try {
-      // console.log('Attempting to initialize Supabase client with URL:', supabaseUrl, 'and Anon Key (first 5 chars):', supabaseAnonKey.substring(0, 5) + '...'); // Removed for cleaner logs
       const client = createClient(supabaseUrl, supabaseAnonKey);
-      // console.log('Supabase client initialized successfully. Full URL used:', supabaseUrl); // Removed for cleaner logs
       return client;
     } catch (e) {
       console.error('Error initializing Supabase client:', e);
-      // if (typeof window !== 'undefined') { // Removed for cleaner logs
-      //   toast.error('Supabase client failed to initialize. Check console for details.'); // Removed for cleaner logs
-      // }
+      if (typeof window !== 'undefined') {
+        toast.error('Supabase client failed to initialize. Check console for details.');
+      }
       return null;
     }
   } else {
     console.warn('Supabase client not initialized: Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY.');
-    // if (typeof window !== 'undefined') { // Removed for cleaner logs
-    //   toast.error('Supabase environment variables are missing. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.'); // Removed for cleaner logs
-    // }
+    if (typeof window !== 'undefined') {
+      toast.error('Supabase environment variables are missing. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+    }
     return null;
   }
 }
