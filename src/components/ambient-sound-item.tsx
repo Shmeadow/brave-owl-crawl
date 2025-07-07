@@ -2,10 +2,11 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Music, CloudRain, Wind, Coffee, Building, Waves, Sun, Snowflake, Keyboard, BookOpen, Volume2, Pause } from "lucide-react"; // Import Pause icon
-import useClientAudio from "@/hooks/useClientAudio"; // Import the new hook
+import { Play, Music, CloudRain, Wind, Coffee, Building, Waves, Sun, Snowflake, Keyboard, BookOpen, Volume2, Pause, VolumeX, Droplet, WavesIcon, TrainFront, Cloud, Leaf, Bird, Flame, Footprints, TreePine, Bug, Moon, Speaker } from "lucide-react"; // Import Pause icon, VolumeX, and more specific icons
+import useClientAudio from "@/hooks/useClientAudio";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Slider } from "@/components/ui/slider"; // Import Slider
 
 interface AmbientSoundItemProps {
   name: string;
@@ -19,29 +20,29 @@ const getSoundIcon = (name: string, category: string) => {
   const lowerName = name.toLowerCase();
   const lowerCategory = category.toLowerCase();
 
-  if (lowerCategory === 'nature') {
-    if (lowerName.includes('rain') || lowerName.includes('thunderstorm') || lowerName.includes('thunder')) return <CloudRain className="h-5 w-5 text-primary" />;
-    if (lowerName.includes('ocean') || lowerName.includes('beach') || lowerName.includes('river') || lowerName.includes('waves')) return <Waves className="h-5 w-5 text-primary" />;
-    if (lowerName.includes('forest') || lowerName.includes('birds') || lowerName.includes('wind')) return <Wind className="h-5 w-5 text-primary" />;
+  switch (lowerCategory) {
+    case 'birds': return <Bird className="h-5 w-5 text-primary" />;
+    case 'fire': return <Flame className="h-5 w-5 text-primary" />;
+    case 'footsteps': return <Footprints className="h-5 w-5 text-primary" />;
+    case 'forest': return <TreePine className="h-5 w-5 text-primary" />;
+    case 'frogs': return <Bug className="h-5 w-5 text-primary" />; // Using Bug for frogs
+    case 'leaves': return <Leaf className="h-5 w-5 text-primary" />;
+    case 'night': return <Moon className="h-5 w-5 text-primary" />;
+    case 'rain': return <Droplet className="h-5 w-5 text-primary" />;
+    case 'cafe': return <Coffee className="h-5 w-5 text-primary" />;
+    case 'river': return <WavesIcon className="h-5 w-5 text-primary" />;
+    case 'weather': return <Cloud className="h-5 w-5 text-primary" />; // For thunder
+    case 'city': return <TrainFront className="h-5 w-5 text-primary" />; // For trains
+    case 'ocean': return <Waves className="h-5 w-5 text-primary" />;
+    case 'wind': return <Wind className="h-5 w-5 text-primary" />;
+    case 'noise': return <Speaker className="h-5 w-5 text-primary" />; // For white noise
+    default: return <Music className="h-5 w-5 text-primary" />; // Default icon
   }
-  if (lowerCategory === 'cafe') return <Coffee className="h-5 w-5 text-primary" />;
-  if (lowerCategory === 'city') return <Building className="h-5 w-5 text-primary" />;
-  if (lowerCategory === 'noise') return <Volume2 className="h-5 w-5 text-primary" />;
-  if (lowerCategory === 'music') return <Music className="h-5 w-5 text-primary" />;
-  if (lowerCategory === 'abstract') {
-    if (lowerName.includes('space')) return <Sun className="h-5 w-5 text-primary" />;
-    if (lowerName.includes('zen')) return <Snowflake className="h-5 w-5 text-primary" />;
-  }
-  if (lowerCategory === 'productivity') {
-    if (lowerName.includes('keyboard')) return <Keyboard className="h-5 w-5 text-primary" />;
-    return <BookOpen className="h-5 w-5 text-primary" />; // Generic for productivity
-  }
-  return <Music className="h-5 w-5 text-primary" />; // Default icon
 };
 
 
 export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }: AmbientSoundItemProps) {
-  const { play, pause, isPlaying } = useClientAudio(url); // Removed isReady from destructured values
+  const { play, pause, isPlaying, volume, isMuted, setVolume, toggleMute } = useClientAudio(url);
 
   const handlePlayPauseClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent any parent click handlers
@@ -59,34 +60,71 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }:
     }
   };
 
+  const handleVolumeChange = (value: number[]) => {
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to control sounds in this room.");
+      return;
+    }
+    setVolume(value[0]);
+  };
+
+  const handleToggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to control sounds in this room.");
+      return;
+    }
+    toggleMute();
+  };
+
   return (
     <div
       className={cn(
-        "flex items-center justify-between p-2 rounded-md border border-border bg-card backdrop-blur-xl shadow-sm transition-all duration-200",
+        "flex flex-col p-2 rounded-md border border-border bg-card backdrop-blur-xl shadow-sm transition-all duration-200",
         isPlaying ? "bg-primary/10 border-primary" : "hover:bg-muted/50", // Indicate if playing
-        // Removed !isReady and opacity-70 cursor-wait
         !isCurrentRoomWritable && "opacity-70 cursor-not-allowed"
       )}
     >
-      {/* Icon and Name Area */}
-      <div className="flex items-center gap-2 flex-grow min-w-0">
-        {/* Removed conditional rendering for Loader2 */}
-        {getSoundIcon(name, category)}
-        <span className="font-medium text-sm truncate text-foreground">{name}</span>
-      </div>
+      <div className="flex items-center justify-between mb-2">
+        {/* Icon and Name Area */}
+        <div className="flex items-center gap-2 flex-grow min-w-0">
+          {getSoundIcon(name, category)}
+          <span className="font-medium text-sm truncate text-foreground">{name}</span>
+        </div>
 
-      {/* Controls Area */}
-      <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Play/Pause Button */}
         <Button
           variant="ghost"
           size="icon"
           className="h-8 w-8 text-muted-foreground hover:text-primary"
           onClick={handlePlayPauseClick}
-          disabled={!isCurrentRoomWritable} // Only disable if not writable
+          disabled={!isCurrentRoomWritable}
         >
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           <span className="sr-only">{isPlaying ? `Pause ${name}` : `Play ${name}`}</span>
         </Button>
+      </div>
+
+      {/* Volume Control */}
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-muted-foreground hover:text-primary"
+          onClick={handleToggleMute}
+          disabled={!isCurrentRoomWritable}
+        >
+          {isMuted || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          <span className="sr-only">{isMuted ? "Unmute" : "Mute"}</span>
+        </Button>
+        <Slider
+          value={[volume]}
+          onValueChange={handleVolumeChange}
+          max={1}
+          step={0.01}
+          className="flex-grow"
+          disabled={!isCurrentRoomWritable}
+        />
       </div>
     </div>
   );

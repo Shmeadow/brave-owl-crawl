@@ -6,6 +6,9 @@ export default function useClientAudio(src: string) {
   // Create the Audio object once when the component mounts
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false); // Track playing state
+  const [volume, setVolumeState] = useState(0.5); // Default volume 0-1
+  const [isMuted, setIsMuted] = useState(false);
+  const prevVolumeRef = useRef(volume); // To store volume before muting
 
   // Initialize audio element and attach event listeners once
   useEffect(() => {
@@ -13,6 +16,8 @@ export default function useClientAudio(src: string) {
       audioRef.current = new Audio();
       audioRef.current.preload = "auto";
       audioRef.current.loop = true; // Ensure ambient sounds loop
+      audioRef.current.volume = volume; // Set initial volume
+      audioRef.current.muted = isMuted; // Set initial mute state
 
       const audio = audioRef.current;
 
@@ -24,11 +29,18 @@ export default function useClientAudio(src: string) {
       const onPlay = () => setIsPlaying(true);
       const onPause = () => setIsPlaying(false);
       const onEnded = () => setIsPlaying(false); // Also handle when loop ends (though loop is true)
+      const onVolumeChange = () => { // Listen to native volume changes
+        if (audioRef.current) {
+          setVolumeState(audioRef.current.volume);
+          setIsMuted(audioRef.current.muted || audioRef.current.volume === 0);
+        }
+      };
 
       audio.addEventListener("error", onError);
       audio.addEventListener("play", onPlay);
       audio.addEventListener("pause", onPause);
       audio.addEventListener("ended", onEnded);
+      audio.addEventListener("volumechange", onVolumeChange); // New listener
 
       return () => {
         // Cleanup listeners when component unmounts
@@ -37,6 +49,7 @@ export default function useClientAudio(src: string) {
         audio.removeEventListener("play", onPlay);
         audio.removeEventListener("pause", onPause);
         audio.removeEventListener("ended", onEnded);
+        audio.removeEventListener("volumechange", onVolumeChange); // Remove listener
         // Do NOT nullify audioRef.current here, as it's a persistent ref for the hook instance.
       };
     }
@@ -82,5 +95,34 @@ export default function useClientAudio(src: string) {
     }
   }, [isPlaying]);
 
-  return { play, pause, isPlaying }; // Removed isReady from return
+  const setVolume = useCallback((vol: number) => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.volume = vol;
+      setVolumeState(vol);
+      if (vol > 0) {
+        setIsMuted(false);
+        prevVolumeRef.current = vol;
+      } else {
+        setIsMuted(true);
+      }
+    }
+  }, []);
+
+  const toggleMute = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      if (isMuted) {
+        audio.muted = false;
+        setVolumeState(prevVolumeRef.current > 0 ? prevVolumeRef.current : 0.5);
+      } else {
+        prevVolumeRef.current = audio.volume;
+        audio.muted = true;
+        setVolumeState(0);
+      }
+      setIsMuted(!isMuted);
+    }
+  }, [isMuted]);
+
+  return { play, pause, isPlaying, volume, isMuted, setVolume, toggleMute };
 }

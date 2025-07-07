@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Music, Search, CloudRain, Wind, Coffee, Building, Volume2, Waves, Sun, Snowflake, BookOpen, Keyboard, Bird, Flame, Footprints, Leaf } from "lucide-react"; // Removed Frog icon
+import { Music, Search, CloudRain, Wind, Coffee, Building, Volume2, Waves, Sun, Snowflake, BookOpen, Keyboard, Bird, Flame, Footprints, Leaf, Droplet, WavesIcon, TrainFront, Cloud, TreePine, Bug, Moon, Speaker } from "lucide-react"; // Added more specific icons
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AmbientSoundItem } from "@/components/ambient-sound-item";
 import { Input } from "@/components/ui/input";
@@ -17,20 +17,52 @@ interface SoundsWidgetProps {
 // IMPORTANT: Ensure these files exist in your public/sound/ directory!
 // Supported formats typically include .mp3, .ogg, .wav
 const allAmbientSounds = [
-  // Nature Sounds (based on provided filenames)
-  { name: "Blackbird", url: "/sound/birdblackbird.ogg", category: "Nature" },
-  { name: "Crow", url: "/sound/birdcrow.ogg", category: "Nature" },
-  { name: "Nightingale", url: "/sound/birdnightingale.ogg", category: "Nature" },
-  { name: "Calm Fire", url: "/sound/firecalm.ogg", category: "Nature" },
-  { name: "Fire Crackling", url: "/sound/firecrackling.ogg", category: "Nature" },
-  { name: "Gravel Footsteps", url: "/sound/footstepsgravel.ogg", category: "Nature" },
-  { name: "Eerie Forest", url: "/sound/foresteerie.ogg", category: "Nature" },
-  { name: "Evening Forest", url: "/sound/forestevening.ogg", category: "Nature" },
-  { name: "Frog Chorus", url: "/sound/frogchorus.ogg", category: "Nature" },
-  { name: "Cricket Frog", url: "/sound/frogcricket.ogg", category: "Nature" },
-  { name: "Natterjack Frog", url: "/sound/frognatterjack.ogg", category: "Nature" },
-  { name: "Wood Frog", url: "/sound/frogwood.ogg", category: "Nature" },
-  { name: "Rustling Leaves", url: "/sound/leaves.ogg", category: "Nature" },
+  // Birds
+  { name: "Blackbird", url: "/sound/birdblackbird.ogg", category: "Birds" },
+  { name: "Crow", url: "/sound/birdcrow.ogg", category: "Birds" },
+  { name: "Nightingale", url: "/sound/birdnightingale.ogg", category: "Birds" },
+  // Fire
+  { name: "Calm Fire", url: "/sound/firecalm.ogg", category: "Fire" },
+  { name: "Fire Crackling", url: "/sound/firecrackling.ogg", category: "Fire" },
+  // Footsteps
+  { name: "Gravel Footsteps", url: "/sound/footstepsgravel.ogg", category: "Footsteps" },
+  // Forest
+  { name: "Eerie Forest", url: "/sound/foresteerie.ogg", category: "Forest" },
+  { name: "Evening Forest", url: "/sound/forestevening.ogg", category: "Forest" },
+  // Frogs
+  { name: "Frog Chorus", url: "/sound/frogchorus.ogg", category: "Frogs" },
+  { name: "Cricket Frog", url: "/sound/frogcricket.ogg", category: "Frogs" },
+  { name: "Natterjack Frog", url: "/sound/frognatterjack.ogg", category: "Frogs" },
+  { name: "Wood Frog", url: "/sound/frogwood.ogg", category: "Frogs" },
+  // Leaves
+  { name: "Rustling Leaves", url: "/sound/leaves.ogg", category: "Leaves" },
+  // Night
+  { name: "Night Meadow", url: "/sound/nightmeadow.ogg", category: "Night" },
+  { name: "Night Suburban", url: "/sound/nightsuburban.ogg", category: "Night" },
+  // Rain
+  { name: "Dense Rain", url: "/sound/raindense.ogg", category: "Rain" },
+  { name: "Rain Dripping", url: "/sound/raindripping.ogg", category: "Rain" },
+  { name: "Rain Gutter", url: "/sound/raingutter.ogg", category: "Rain" },
+  { name: "Rain Porch", url: "/sound/rainporch.ogg", category: "Rain" },
+  { name: "Rain Shack", url: "/sound/rainshack.ogg", category: "Rain" },
+  // Restaurant
+  { name: "English Restaurant", url: "/sound/restaurantenglish.ogg", category: "Cafe" },
+  // River
+  { name: "Calm River", url: "/sound/rivercalm.ogg", category: "River" },
+  { name: "Strong River", url: "/sound/riverstrong.ogg", category: "River" },
+  // Thunder
+  { name: "Thunder", url: "/sound/thunder.ogg", category: "Weather" },
+  // Train
+  { name: "Fast Train", url: "/sound/trainfast.ogg", category: "City" },
+  { name: "Slow Train", url: "/sound/trainslow.ogg", category: "City" },
+  // Waves
+  { name: "Beach Waves", url: "/sound/wavesbeach.ogg", category: "Ocean" },
+  { name: "Slow Waves", url: "/sound/wavesslow.ogg", category: "Ocean" },
+  // Wind
+  { name: "Howling Wind", url: "/sound/windhowling.ogg", category: "Wind" },
+  { name: "Steady Wind", url: "/sound/windsteady.ogg", category: "Wind" },
+  // Noise
+  { name: "White Noise", url: "/sound/noisewhite.ogg", category: "Noise" },
 ];
 
 // Helper function to get a more specific icon based on sound name/category
@@ -38,28 +70,24 @@ const getSoundIcon = (name: string, category: string) => {
   const lowerName = name.toLowerCase();
   const lowerCategory = category.toLowerCase();
 
-  if (lowerCategory === 'nature') {
-    if (lowerName.includes('bird')) return <Bird className="h-5 w-5 text-primary" />;
-    if (lowerName.includes('fire')) return <Flame className="h-5 w-5 text-primary" />;
-    if (lowerName.includes('footsteps')) return <Footprints className="h-5 w-5 text-primary" />;
-    if (lowerName.includes('forest')) return <Wind className="h-5 w-5 text-primary" />;
-    if (lowerName.includes('frog')) return <Leaf className="h-5 w-5 text-primary" />; // Replaced Frog with Leaf
-    if (lowerName.includes('leaves')) return <Leaf className="h-5 w-5 text-primary" />;
+  switch (lowerCategory) {
+    case 'birds': return <Bird className="h-5 w-5 text-primary" />;
+    case 'fire': return <Flame className="h-5 w-5 text-primary" />;
+    case 'footsteps': return <Footprints className="h-5 w-5 text-primary" />;
+    case 'forest': return <TreePine className="h-5 w-5 text-primary" />;
+    case 'frogs': return <Bug className="h-5 w-5 text-primary" />; // Using Bug for frogs
+    case 'leaves': return <Leaf className="h-5 w-5 text-primary" />;
+    case 'night': return <Moon className="h-5 w-5 text-primary" />;
+    case 'rain': return <Droplet className="h-5 w-5 text-primary" />;
+    case 'cafe': return <Coffee className="h-5 w-5 text-primary" />;
+    case 'river': return <WavesIcon className="h-5 w-5 text-primary" />;
+    case 'weather': return <Cloud className="h-5 w-5 text-primary" />; // For thunder
+    case 'city': return <TrainFront className="h-5 w-5 text-primary" />; // For trains
+    case 'ocean': return <Waves className="h-5 w-5 text-primary" />;
+    case 'wind': return <Wind className="h-5 w-5 text-primary" />;
+    case 'noise': return <Speaker className="h-5 w-5 text-primary" />; // For white noise
+    default: return <Music className="h-5 w-5 text-primary" />; // Default icon
   }
-  // Keep existing icons for categories that might be added later or are generic
-  if (lowerCategory === 'cafe') return <Coffee className="h-5 w-5 text-primary" />;
-  if (lowerCategory === 'city') return <Building className="h-5 w-5 text-primary" />;
-  if (lowerCategory === 'noise') return <Volume2 className="h-5 w-5 text-primary" />;
-  if (lowerCategory === 'music') return <Music className="h-5 w-5 text-primary" />;
-  if (lowerCategory === 'abstract') {
-    if (lowerName.includes('space')) return <Sun className="h-5 w-5 text-primary" />;
-    if (lowerName.includes('zen')) return <Snowflake className="h-5 w-5 text-primary" />;
-  }
-  if (lowerCategory === 'productivity') {
-    if (lowerName.includes('keyboard')) return <Keyboard className="h-5 w-5 text-primary" />;
-    return <BookOpen className="h-5 w-5 text-primary" />; // Generic for productivity
-  }
-  return <Music className="h-5 w-5 text-primary" />; // Default icon
 };
 
 export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
@@ -100,7 +128,7 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
             <SelectTrigger id="category-select">
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
-            <SelectContent className="z-[1003]"> {/* Added z-[1003] here */}
+            <SelectContent className="z-[1003]">
               <SelectItem value="all">All Categories</SelectItem>
               {categories.filter(cat => cat !== "all").map(cat => (
                 <SelectItem key={cat} value={cat}>{cat}</SelectItem>
