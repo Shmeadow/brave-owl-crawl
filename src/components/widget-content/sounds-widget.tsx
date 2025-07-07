@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Music, Search, CloudRain, Wind, Coffee, Building, Volume2, Waves, Sun, Snowflake, BookOpen, Keyboard, Bird, Flame, Footprints, Leaf, Droplet, WavesIcon, TrainFront, Cloud, TreePine, Bug, Moon, Speaker, LayoutGrid } from "lucide-react"; // Added LayoutGrid icon
+import { Music, Search, CloudRain, Wind, Coffee, Building, Volume2, Waves, Sun, Snowflake, BookOpen, Keyboard, Bird, Flame, Footprints, Leaf, Droplet, WavesIcon, TrainFront, Cloud, TreePine, Bug, Moon, Speaker } from "lucide-react"; // Added more specific icons
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AmbientSoundItem } from "@/components/ambient-sound-item";
 import { Input } from "@/components/ui/input";
@@ -60,7 +60,7 @@ const allAmbientSounds = [
   { name: "Beach Waves", url: "/sound/wavesbeach.ogg", category: "Ocean" },
   { name: "Slow Waves", url: "/sound/wavesslow.ogg", category: "Ocean" },
   // Wind
-  { name: "Howling Wind", url: "/sound/windhowling.ogg", category: "Wind" },
+  { name: "Howling Wind", url: "/sound/windhowling.ogg", category: "  Wind" },
   { name: "Steady Wind", url: "/sound/windsteady.ogg", category: "Wind" },
   // Noise
   { name: "White Noise", url: "/sound/noisewhite.ogg", category: "Noise" },
@@ -94,7 +94,6 @@ const getSoundIcon = (name: string, category: string) => {
 export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [columns, setColumns] = useState(1); // New state for columns
 
   const categories = useMemo(() => {
     const uniqueCategories = new Set(allAmbientSounds.map(sound => sound.category));
@@ -147,21 +146,13 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        {/* Column Slider */}
-        <div className="space-y-2">
-          <Label htmlFor="columns-slider">Columns: {columns}</Label>
-          <div className="flex items-center gap-4">
-            <LayoutGrid className="h-5 w-5 text-muted-foreground" />
-            <Slider id="columns-slider" value={[columns]} onValueChange={(v) => setColumns(v[0])} min={1} max={2} step={1} />
-          </div>
-        </div>
       </div>
 
       {filteredSounds.length === 0 ? (
         <p className="p-4 text-muted-foreground text-sm text-center">No ambient sounds found matching your criteria.</p>
       ) : (
         <ScrollArea className="flex-1 h-full">
-          <div className={`p-4 grid gap-4 grid-cols-${columns}`}> {/* Dynamic grid columns */}
+          <div className="p-4 grid gap-4 grid-cols-2"> {/* Fixed to 2 columns */}
             {filteredSounds.map((sound) => (
               <AmbientSoundItem
                 key={sound.url}

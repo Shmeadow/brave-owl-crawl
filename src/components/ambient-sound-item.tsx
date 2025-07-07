@@ -46,7 +46,6 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }:
 
   const handlePlayPauseClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent any parent click handlers
-    console.log(`[AmbientSoundItem] Clicked ${name}. isPlaying before: ${isPlaying}`);
     if (!isCurrentRoomWritable) {
       toast.error("You do not have permission to control sounds in this room.");
       return;
@@ -81,8 +80,8 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }:
   return (
     <div
       className={cn(
-        "flex flex-col p-2 rounded-md border border-border bg-card backdrop-blur-xl shadow-sm transition-all duration-200",
-        isPlaying ? "bg-primary/10 border-primary" : "hover:bg-muted/50", // Indicate if playing
+        "flex flex-col p-2 rounded-md border shadow-sm transition-all duration-200",
+        isPlaying ? "bg-white/10 border-white/30" : "bg-card backdrop-blur-xl border-border hover:bg-muted/50", // Transparent glass when playing
         !isCurrentRoomWritable && "opacity-70 cursor-not-allowed"
       )}
     >
