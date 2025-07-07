@@ -60,28 +60,28 @@ export function TimeTracker({ isCurrentRoomWritable }: TimeTrackerProps) {
 
   return (
     <div className="flex flex-col items-center justify-center h-full w-full gap-4">
-      <div className="text-7xl font-bold font-mono text-foreground tabular-nums">
+      <div className="text-6xl font-bold font-mono text-foreground tabular-nums">
         {formatTime(time)}
       </div>
       <div className="flex gap-4">
         <Button 
           onClick={handleStartPause} 
           size="icon" 
-          className="h-14 w-14 rounded-full"
+          className="h-12 w-12 rounded-full"
           disabled={!isCurrentRoomWritable}
           aria-label={isRunning ? "Pause" : "Start"}
         >
-          {isRunning ? <Pause className="h-7 w-7" /> : <Play className="h-7 w-7" />}
+          {isRunning ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
         </Button>
         <Button 
           onClick={handleReset} 
           size="icon" 
           variant="secondary" 
-          className="h-14 w-14 rounded-full"
+          className="h-12 w-12 rounded-full"
           disabled={!isCurrentRoomWritable}
           aria-label="Reset"
         >
-          <RotateCcw className="h-7 w-7" />
+          <RotateCcw className="h-6 w-6" />
         </Button>
       </div>
     </div>
