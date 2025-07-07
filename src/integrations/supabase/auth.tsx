@@ -25,8 +25,6 @@ interface SupabaseContextType {
 const SupabaseContext = createContext<SupabaseContextType | undefined>(undefined);
 
 export function SessionContextProvider({ children }: { children: React.ReactNode }) {
-  // Create the Supabase client directly here, ensuring it's available immediately on the client.
-  // This runs only once per component instance on the client side.
   const supabaseClient = useMemo(() => {
     if (typeof window !== 'undefined') {
       const client = createBrowserClient();
@@ -42,7 +40,8 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = useCallback(async (userId: string, client: SupabaseClient) => {
+  // Make internalFetchProfile a stable callback that only depends on its own setters
+  const internalFetchProfile = useCallback(async (userId: string, client: SupabaseClient) => {
     const { data, error } = await client
       .from('profiles')
       .select('id, first_name, last_name, profile_image_url, role, time_format_24h, welcome_notification_sent')
@@ -67,43 +66,48 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
         setProfile(newProfile as UserProfile);
       }
     }
-  }, []);
+  }, [setProfile]);
 
   const refreshProfile = useCallback(async () => {
     if (session?.user?.id && supabaseClient) {
-      await fetchProfile(session.user.id, supabaseClient);
+      await internalFetchProfile(session.user.id, supabaseClient);
     }
-  }, [session, fetchProfile, supabaseClient]);
+  }, [session, internalFetchProfile, supabaseClient]);
 
   useEffect(() => {
-    if (!supabaseClient) { // Wait for supabaseClient to be ready
+    if (!supabaseClient) { // If supabaseClient is null, it means env vars are missing or client creation failed.
+      setLoading(false); // In this case, stop loading to prevent infinite spinner.
       return;
     }
 
+    // This callback handles auth state changes and fetches profile.
+    // It's defined inside useEffect to capture supabaseClient and internalFetchProfile from the effect's scope.
     const handleAuthStateChange = async (_event: string, currentSession: Session | null) => {
-      setSession(currentSession);
+      setSession(currentSession); // Update session state
       if (currentSession) {
-        await fetchProfile(currentSession.user.id, supabaseClient);
+        await internalFetchProfile(currentSession.user.id, supabaseClient); // Use the stable internalFetchProfile
       } else {
-        setProfile(null);
+        setProfile(null); // Clear profile if no session
       }
-      setLoading(false);
+      setLoading(false); // Always set loading to false after auth state is processed
     };
 
-    // Initial session check
+    // Initial session check when the component mounts or supabaseClient becomes available
     supabaseClient.auth.getSession().then(({ data: { session: initialSession } }) => {
       handleAuthStateChange('INITIAL_LOAD', initialSession);
     }).catch(error => {
       console.error("Error fetching initial Supabase session:", error);
-      setLoading(false);
+      setLoading(false); // Ensure loading is false even if initial fetch fails
     });
 
+    // Subscribe to real-time auth state changes
     const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(handleAuthStateChange);
 
+    // Cleanup function: unsubscribe when the component unmounts or dependencies change
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabaseClient, fetchProfile]);
+  }, [supabaseClient, internalFetchProfile]); // Dependencies: supabaseClient (stable) and internalFetchProfile (stable)
 
   const value = useMemo(() => ({
     supabase: supabaseClient,
