@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
-import { usePersistentData } from "./use-persistent-data"; // Import the new hook
 
 export interface NotificationData {
   id: string;
@@ -13,49 +12,125 @@ export interface NotificationData {
   created_at: string;
 }
 
-interface DbNotification {
-  id: string;
-  user_id: string;
-  message: string;
-  is_read: boolean;
-  created_at: string;
-}
-
 const LOCAL_STORAGE_KEY = 'guest_notifications';
-const SUPABASE_TABLE_NAME = 'notifications';
 
 export function useNotifications() {
-  const { supabase, session, profile } = useSupabase();
+  const { supabase, session, loading: authLoading, profile } = useSupabase(); // Get profile here
+  const [notifications, setNotifications] = useState<NotificationData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isLoggedInMode, setIsLoggedInMode] = useState(false);
 
-  const {
-    data: notifications,
-    loading,
-    isLoggedInMode,
-    setData: setNotifications,
-    fetchData,
-  } = usePersistentData<NotificationData[], DbNotification>({ // T_APP_DATA is NotificationData[], T_DB_DATA_ITEM is DbNotification
-    localStorageKey: LOCAL_STORAGE_KEY,
-    supabaseTableName: SUPABASE_TABLE_NAME,
-    initialValue: [],
-    selectQuery: '*',
-    transformFromDb: (dbNotifications: DbNotification[]) => dbNotifications.map(notif => ({
-      id: notif.id,
-      user_id: notif.user_id,
-      message: notif.message,
-      is_read: notif.is_read,
-      created_at: notif.created_at,
-    })).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()), // Ensure sorting
-    transformToDb: (appNotif: NotificationData, userId: string) => ({ // appItem is NotificationData, returns DbNotification
-      id: appNotif.id,
-      user_id: userId,
-      message: appNotif.message,
-      is_read: appNotif.is_read,
-      created_at: appNotif.created_at,
-    }),
-    userIdColumn: 'user_id',
-    onConflictColumn: 'id',
-    debounceDelay: 0,
-  });
+  // Moved addNotification declaration here to fix TS2448/TS2454
+  const addNotification = useCallback(async (message: string, targetUserId?: string) => {
+    const userId = targetUserId || session?.user?.id || null;
+
+    if (isLoggedInMode && supabase && userId) {
+      const { data, error } = await supabase
+        .from('notifications')
+        .insert({ user_id: userId, message, is_read: false })
+        .select()
+        .single();
+      if (error) {
+        toast.error("Error adding notification: " + error.message);
+        console.error("Error adding notification (Supabase):", error);
+      } else if (data && userId === session?.user?.id) { // Only add to current state if it's for the current user
+        setNotifications(prev => [data as NotificationData, ...prev]);
+      }
+    } else if (!isLoggedInMode && !targetUserId) { // Only add to local storage if guest and no specific target
+      const newNotification: NotificationData = {
+        id: crypto.randomUUID(),
+        user_id: null,
+        message,
+        is_read: false,
+        created_at: new Date().toISOString(),
+      };
+      setNotifications(prev => [newNotification, ...prev]);
+    }
+  }, [isLoggedInMode, session, supabase]);
+
+  const fetchNotifications = useCallback(async () => {
+    setLoading(true);
+    if (session && supabase) {
+      setIsLoggedInMode(true);
+      // Attempt to migrate local notifications first
+      const localNotificationsString = localStorage.getItem(LOCAL_STORAGE_KEY);
+      let localNotifications: NotificationData[] = [];
+      try {
+        localNotifications = localNotificationsString ? JSON.parse(localNotificationsString) : [];
+      } catch (e) {
+        console.error("Error parsing local storage notifications:", e);
+        localNotifications = [];
+      }
+
+      const { data: supabaseNotifications, error: fetchError } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false }); // Order by newest first
+
+      if (fetchError) {
+        toast.error("Error fetching notifications: " + fetchError.message);
+        console.error("Error fetching notifications (Supabase):", fetchError);
+        setNotifications([]);
+      } else {
+        let mergedNotifications = [...(supabaseNotifications as NotificationData[])];
+
+        if (localNotifications.length > 0) {
+          for (const localNotif of localNotifications) {
+            const existsInSupabase = mergedNotifications.some(
+              sn => sn.message === localNotif.message && sn.created_at === localNotif.created_at
+            );
+            if (!existsInSupabase) {
+              const { data: newSupabaseNotif, error: insertError } = await supabase
+                .from('notifications')
+                .insert({
+                  user_id: session.user.id,
+                  message: localNotif.message,
+                  is_read: localNotif.is_read,
+                  created_at: localNotif.created_at || new Date().toISOString(),
+                })
+                .select()
+                .single();
+              if (insertError) {
+                console.error("Error migrating local notification:", insertError);
+              } else if (newSupabaseNotif) {
+                mergedNotifications.push(newSupabaseNotif as NotificationData);
+              }
+            }
+          }
+          localStorage.removeItem(LOCAL_STORAGE_KEY);
+          toast.success("Local notifications migrated!");
+        }
+        // Sort again after merging to ensure correct order
+        mergedNotifications.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        setNotifications(mergedNotifications);
+      }
+    } else {
+      setIsLoggedInMode(false);
+      const storedNotificationsString = localStorage.getItem(LOCAL_STORAGE_KEY);
+      let loadedNotifications: NotificationData[] = [];
+      try {
+        loadedNotifications = storedNotificationsString ? JSON.parse(storedNotificationsString) : [];
+      } catch (e) {
+        console.error("Error parsing local storage notifications:", e);
+        loadedNotifications = [];
+      }
+      setNotifications(loadedNotifications.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+    }
+    setLoading(false);
+  }, [session, supabase, authLoading]);
+
+  useEffect(() => {
+    if (!authLoading) {
+      fetchNotifications();
+    }
+  }, [authLoading, fetchNotifications]);
+
+  useEffect(() => {
+    if (!isLoggedInMode && !loading) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(notifications));
+    }
+  }, [notifications, isLoggedInMode, loading]);
 
   // Logic for one-time welcome notification
   useEffect(() => {
@@ -69,34 +144,7 @@ export function useNotifications() {
           if (error) console.error("Error updating welcome_notification_sent:", error);
         });
     }
-  }, [loading, session, profile, supabase]); // Removed addNotification from dependencies to prevent infinite loop
-
-  const addNotification = useCallback(async (message: string, targetUserId?: string) => {
-    const userId = targetUserId || session?.user?.id || null;
-
-    if (isLoggedInMode && supabase && userId) {
-      const { data, error } = await supabase
-        .from(SUPABASE_TABLE_NAME)
-        .insert({ user_id: userId, message, is_read: false })
-        .select()
-        .single();
-      if (error) {
-        toast.error("Error adding notification: " + error.message);
-        console.error("Error adding notification (Supabase):", error);
-      } else if (data && userId === session?.user?.id) { // Only add to current state if it's for the current user
-        fetchData(); // Re-fetch to ensure state is consistent
-      }
-    } else if (!isLoggedInMode && !targetUserId) { // Only add to local storage if guest and no specific target
-      const newNotification: NotificationData = {
-        id: crypto.randomUUID(),
-        user_id: null,
-        message,
-        is_read: false,
-        created_at: new Date().toISOString(),
-      };
-      setNotifications(prev => [newNotification, ...prev]);
-    }
-  }, [isLoggedInMode, session, supabase, setNotifications, fetchData]);
+  }, [loading, session, profile, addNotification, supabase]);
 
   const markAsRead = useCallback(async (notificationId: string) => {
     const notificationToUpdate = notifications.find(n => n.id === notificationId);
@@ -104,7 +152,7 @@ export function useNotifications() {
 
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase
-        .from(SUPABASE_TABLE_NAME)
+        .from('notifications')
         .update({ is_read: true })
         .eq('id', notificationId)
         .eq('user_id', session.user.id)
@@ -114,12 +162,12 @@ export function useNotifications() {
         toast.error("Error marking notification as read: " + error.message);
         console.error("Error marking notification as read (Supabase):", error);
       } else if (data) {
-        fetchData();
+        setNotifications(prev => prev.map(n => n.id === notificationId ? data as NotificationData : n));
       }
     } else {
       setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n));
     }
-  }, [notifications, isLoggedInMode, session, supabase, setNotifications, fetchData]);
+  }, [notifications, isLoggedInMode, session, supabase]);
 
   const markAllAsRead = useCallback(async () => {
     const unreadNotifications = notifications.filter(n => !n.is_read);
@@ -127,7 +175,7 @@ export function useNotifications() {
 
     if (isLoggedInMode && session && supabase) {
       const { error } = await supabase
-        .from(SUPABASE_TABLE_NAME)
+        .from('notifications')
         .update({ is_read: true })
         .in('id', unreadNotifications.map(n => n.id))
         .eq('user_id', session.user.id);
@@ -135,14 +183,14 @@ export function useNotifications() {
         toast.error("Error marking all notifications as read: " + error.message);
         console.error("Error marking all notifications as read (Supabase):", error);
       } else {
-        fetchData();
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
         toast.success("All notifications marked as read.");
       }
     } else {
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
       toast.success("All notifications marked as read (locally).");
     }
-  }, [notifications, isLoggedInMode, session, supabase, setNotifications, fetchData]);
+  }, [notifications, isLoggedInMode, session, supabase]);
 
   const deleteReadNotifications = useCallback(async () => {
     const readNotifications = notifications.filter(n => n.is_read);
@@ -155,7 +203,7 @@ export function useNotifications() {
 
     if (isLoggedInMode && session && supabase) {
         const { error } = await supabase
-            .from(SUPABASE_TABLE_NAME)
+            .from('notifications')
             .delete()
             .in('id', readNotificationIds)
             .eq('user_id', session.user.id);
@@ -164,14 +212,14 @@ export function useNotifications() {
             toast.error("Error deleting read notifications: " + error.message);
             console.error("Error deleting read notifications (Supabase):", error);
         } else {
-            fetchData();
+            setNotifications(prev => prev.filter(n => !n.is_read));
             toast.success("Read notifications cleared.");
         }
     } else {
         setNotifications(prev => prev.filter(n => !n.is_read));
         toast.success("Read notifications cleared (locally).");
     }
-  }, [notifications, isLoggedInMode, session, supabase, setNotifications, fetchData]);
+  }, [notifications, isLoggedInMode, session, supabase]);
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
@@ -184,6 +232,6 @@ export function useNotifications() {
     markAsRead,
     markAllAsRead,
     deleteReadNotifications,
-    fetchNotifications: fetchData,
+    fetchNotifications, // Expose for manual refresh
   };
 }

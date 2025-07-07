@@ -35,15 +35,14 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
     return () => { mounted.current = false; };
   }, []);
 
-  // Helper to recalculate positions of pinned widgets
-  const recalculatePinnedWidgets = useCallback((currentWidgets: WidgetState[], area: MainContentArea) => {
-    let currentX = area.left + DOCKED_WIDGET_HORIZONTAL_GAP;
+  const recalculatePinnedWidgets = useCallback((currentWidgets: WidgetState[]) => {
+    let currentX = mainContentArea.left + DOCKED_WIDGET_HORIZONTAL_GAP;
 
     return currentWidgets.map((widget: WidgetState) => {
       if (widget.isPinned) {
         const newPosition = {
           x: currentX,
-          y: area.top + area.height - DOCKED_WIDGET_HEIGHT - BOTTOM_DOCK_OFFSET,
+          y: mainContentArea.top + mainContentArea.height - DOCKED_WIDGET_HEIGHT - BOTTOM_DOCK_OFFSET,
         };
         currentX += DOCKED_WIDGET_WIDTH + DOCKED_WIDGET_HORIZONTAL_GAP;
 
@@ -61,11 +60,11 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
       }
       return widget;
     });
-  }, []);
+  }, [mainContentArea]);
 
-  // Effect for initial loading of widget states (runs once or on session change)
+  // Load state from Supabase or local storage on mount/auth change
   useEffect(() => {
-    if (authLoading || !mounted.current || mainContentArea.width === 0) return; // Wait for mainContentArea to be valid for initial clamping
+    if (authLoading || !mounted.current || mainContentArea.width === 0) return; // Wait for mainContentArea to be valid
 
     const loadWidgetStates = async () => {
       setLoading(true);
@@ -73,6 +72,7 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
 
       if (session && supabase) {
         setIsLoggedInMode(true);
+        // 1. Try to fetch from Supabase
         const { data: supabaseWidgets, error: fetchError } = await supabase
           .from('user_widget_states')
           .select('*')
@@ -86,12 +86,14 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
         if (supabaseWidgets && supabaseWidgets.length > 0) {
           loadedWidgetStates = supabaseWidgets.map((w: DbWidgetState) => fromDbWidgetState(w)).filter((w: WidgetState) => initialWidgetConfigs[w.id]);
         } else {
+          // 2. If no Supabase data, check local storage for migration
           const savedState = localStorage.getItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
           if (savedState) {
             try {
               const parsedState: WidgetState[] = JSON.parse(savedState);
               const validWidgets = parsedState.filter((w: WidgetState) => initialWidgetConfigs[w.id]);
               
+              // Migrate to Supabase
               const { error: insertError } = await supabase
                 .from('user_widget_states')
                 .insert(validWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id)));
@@ -108,13 +110,14 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
               loadedWidgetStates = [];
             }
           } else {
+            // 3. If neither, start with empty state (new user)
             loadedWidgetStates = [];
           }
         }
       } else {
+        // User is a guest (not logged in)
         setIsLoggedInMode(false);
         // For guests, always start with an empty screen, ignoring local storage.
-        // This ensures a clean slate for guest users on every visit.
         loadedWidgetStates = [];
         localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY); // Clear any previous guest state
       }
@@ -145,15 +148,16 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
             ...existingState,
             position: clampedCurrentPos,
             normalPosition: clampedNormalPos,
-            isClosed: existingState.isClosed || false,
+            isClosed: existingState.isClosed || false, // Ensure isClosed is set, default to false if undefined
           };
         } else {
+          // Default state for widgets not found in persistence (closed by default)
           return {
             id,
-            title: id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+            title: id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '), // Basic title from ID
             position: clampPosition(config.initialPosition.x, config.initialPosition.y, config.initialWidth, config.initialHeight, mainContentArea),
             size: { width: config.initialWidth, height: config.initialHeight },
-            zIndex: 903,
+            zIndex: 903, // Base zIndex
             isMinimized: false,
             isMaximized: false,
             isPinned: false,
@@ -164,57 +168,26 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
         }
       });
       
-      setActiveWidgets(recalculatePinnedWidgets(allWidgets, mainContentArea));
+      setActiveWidgets(recalculatePinnedWidgets(allWidgets));
       setLoading(false);
     };
 
     loadWidgetStates();
-  }, [session, supabase, authLoading, initialWidgetConfigs, mounted, mainContentArea, recalculatePinnedWidgets]); // Added mainContentArea here for initial clamping
-
-  // Effect to re-clamp and re-position widgets when mainContentArea changes
-  useEffect(() => {
-    if (!mounted.current || loading || mainContentArea.width === 0) return;
-
-    setActiveWidgets(prevWidgets => {
-      const updatedWidgets = prevWidgets.map(widget => {
-        // Only re-clamp floating widgets (not maximized or pinned)
-        if (!widget.isMaximized && !widget.isPinned) {
-          const clampedPos = clampPosition(
-            widget.position.x,
-            widget.position.y,
-            widget.size.width,
-            widget.size.height,
-            mainContentArea
-          );
-          return { ...widget, position: clampedPos, normalPosition: clampedPos };
-        } else if (widget.isMaximized) {
-          // Maximized widgets always fill the mainContentArea
-          return {
-            ...widget,
-            position: { x: mainContentArea.left, y: mainContentArea.top },
-            size: { width: mainContentArea.width, height: mainContentArea.height },
-          };
-        }
-        return widget;
-      });
-      // Recalculate pinned widgets after clamping
-      return recalculatePinnedWidgets(updatedWidgets, mainContentArea);
-    });
-  }, [mainContentArea, mounted, loading, recalculatePinnedWidgets]);
-
+  }, [session, supabase, authLoading, initialWidgetConfigs, mainContentArea, recalculatePinnedWidgets]);
 
   // Save state to Supabase or local storage whenever activeWidgets changes
-  const isInitialSaveLoad = useRef(true);
+  const isInitialSaveLoad = useRef(true); // Use a different ref for saving
   useEffect(() => {
     if (isInitialSaveLoad.current) {
       isInitialSaveLoad.current = false;
       return;
     }
 
-    if (!mounted.current || loading) return;
+    if (!mounted.current || loading) return; // Don't save if not mounted or still loading
 
     const saveWidgetStates = async () => {
       if (isLoggedInMode && session && supabase) {
+        // Delete existing states for this user and insert new ones
         const { error: deleteError } = await supabase
           .from('user_widget_states')
           .delete()
@@ -234,6 +207,8 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
           if (insertError) {
             console.error("Error saving widget states to Supabase:", insertError);
             toast.error("Failed to save widget layout.");
+          } else {
+            // toast.success("Widget layout saved to your account!"); // Too frequent, removed
           }
         }
       } else {
@@ -243,7 +218,7 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
 
     const debounceSave = setTimeout(() => {
       saveWidgetStates();
-    }, 500);
+    }, 500); // Debounce saves to avoid too many writes
 
     return () => clearTimeout(debounceSave);
   }, [activeWidgets, isLoggedInMode, session, supabase, loading, mounted]);

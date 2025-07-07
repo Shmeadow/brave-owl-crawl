@@ -19,9 +19,13 @@ interface NotificationsDropdownProps {
 }
 
 export function NotificationsDropdown({}: NotificationsDropdownProps) {
-  const { notifications, loading, unreadCount, markAsRead, markAllAsRead, deleteReadNotifications } = useNotifications();
+  const { notifications, loading, unreadCount, markAsRead, markAllAsRead, addNotification, deleteReadNotifications } = useNotifications();
 
-  // Removed redundant welcome notification logic from here as it's now handled in useNotifications hook
+  useEffect(() => {
+    if (!loading && notifications.length === 0) {
+      addNotification("Welcome to Productivity Hub! Explore your new workspace.");
+    }
+  }, [loading, notifications.length, addNotification]);
 
   const hasReadNotifications = notifications.some(n => n.is_read);
 

@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useSupabase } from '@/integrations/supabase/auth';
 import { toast } from 'sonner';
-import { usePersistentData } from '@/hooks/use-persistent-data'; // Import the new hook
 
 type EffectType = 'none' | 'rain' | 'snow' | 'raindrops';
 
@@ -14,39 +13,104 @@ interface EffectContextType {
 
 const EffectContext = createContext<EffectContextType | undefined>(undefined);
 
-interface DbUserPreference {
-  user_id: string;
-  active_effect: EffectType;
-}
-
 const LOCAL_STORAGE_KEY = 'app_active_effect';
-const SUPABASE_TABLE_NAME = 'user_preferences';
 
 export function EffectProvider({ children }: { children: React.ReactNode }) {
-  const {
-    data: activeEffect,
-    loading,
-    isLoggedInMode,
-    setData: setActiveEffectState,
-    fetchData,
-  } = usePersistentData<EffectType, DbUserPreference>({
-    localStorageKey: LOCAL_STORAGE_KEY,
-    supabaseTableName: SUPABASE_TABLE_NAME,
-    initialValue: 'none', // Keep as literal, but rely on explicit return type below
-    selectQuery: 'active_effect',
-    transformFromDb: (dbData: DbUserPreference): EffectType => dbData.active_effect ?? 'none', // Explicit return type
-    transformToDb: (appData: EffectType, userId: string) => ({
-      user_id: userId,
-      active_effect: appData,
-    }),
-    onConflictColumn: 'user_id',
-    isSingleton: true,
-    debounceDelay: 500,
-  });
+  const { supabase, session, loading: authLoading } = useSupabase();
+  const [activeEffect, setActiveEffectState] = useState<EffectType>('none');
+  const [loading, setLoading] = useState(true);
+  const [isLoggedInMode, setIsLoggedInMode] = useState(false);
 
-  const setEffect = useCallback((effect: EffectType) => {
+  // Effect to load active effect
+  useEffect(() => {
+    if (authLoading) return;
+
+    const loadEffect = async () => {
+      setLoading(true);
+      if (session && supabase) {
+        setIsLoggedInMode(true);
+        // 1. Try to fetch from Supabase
+        const { data: supabasePrefs, error: fetchError } = await supabase
+          .from('user_preferences')
+          .select('active_effect')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (fetchError && fetchError.code !== 'PGRST116') {
+          console.error("Error fetching effect preferences from Supabase:", fetchError);
+          toast.error("Failed to load effect preferences.");
+        }
+
+        if (supabasePrefs && supabasePrefs.active_effect) {
+          setActiveEffectState(supabasePrefs.active_effect as EffectType);
+          // console.log("Loaded active effect from Supabase."); // Removed for cleaner logs
+        } else {
+          // 2. If no Supabase data, check local storage for migration
+          const savedEffect = localStorage.getItem(LOCAL_STORAGE_KEY);
+          if (savedEffect && ['none', 'rain', 'snow', 'raindrops'].includes(savedEffect)) {
+            // Migrate to Supabase
+            const { error: insertError } = await supabase
+              .from('user_preferences')
+              .upsert({ user_id: session.user.id, active_effect: savedEffect }, { onConflict: 'user_id' });
+
+            if (insertError) {
+              console.error("Error migrating local effect to Supabase:", insertError);
+              toast.error("Error migrating local effect settings.");
+            } else {
+              setActiveEffectState(savedEffect as EffectType);
+              localStorage.removeItem(LOCAL_STORAGE_KEY);
+              // toast.success("Local effect settings migrated to your account!"); // Removed for cleaner logs
+            }
+          } else {
+            // 3. If neither, set default and insert into Supabase
+            const { error: insertError } = await supabase
+              .from('user_preferences')
+              .upsert({ user_id: session.user.id, active_effect: 'none' }, { onConflict: 'user_id' });
+
+            if (insertError) {
+              console.error("Error inserting default effect into Supabase:", insertError);
+            } else {
+              setActiveEffectState('none');
+            }
+          }
+        }
+      } else {
+        // User is a guest (not logged in)
+        setIsLoggedInMode(false);
+        const savedEffect = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (savedEffect && ['none', 'rain', 'snow', 'raindrops'].includes(savedEffect)) {
+          setActiveEffectState(savedEffect as EffectType);
+        } else {
+          // Set default for guests if no local storage
+          setActiveEffectState('none');
+          localStorage.setItem(LOCAL_STORAGE_KEY, 'none');
+        }
+      }
+      setLoading(false);
+    };
+
+    loadEffect();
+  }, [session, supabase, authLoading]);
+
+  const setEffect = useCallback(async (effect: EffectType) => {
     setActiveEffectState(effect);
-  }, [setActiveEffectState]);
+
+    if (isLoggedInMode && session && supabase) {
+      const { error } = await supabase
+        .from('user_preferences')
+        .upsert({ user_id: session.user.id, active_effect: effect }, { onConflict: 'user_id' });
+
+      if (error) {
+        console.error("Error updating effect in Supabase:", error);
+        toast.error("Failed to save effect preference.");
+      } else {
+        // toast.success("Effect saved to your account!"); // Removed for cleaner logs
+      }
+    } else if (!loading) { // Only save to local storage if not logged in and initial load is complete
+      localStorage.setItem(LOCAL_STORAGE_KEY, effect);
+      // toast.success("Effect saved locally!"); // Removed for cleaner logs
+    }
+  }, [isLoggedInMode, session, supabase, loading]);
 
   return (
     <EffectContext.Provider value={{ activeEffect, setEffect }}>

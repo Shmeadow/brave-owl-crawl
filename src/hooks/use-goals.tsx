@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
-import { usePersistentData } from "./use-persistent-data"; // Import the new hook
 
 export interface GoalData {
   id: string;
@@ -13,54 +12,118 @@ export interface GoalData {
   created_at: string;
 }
 
-interface DbGoal {
-  id: string;
-  user_id: string;
-  title: string;
-  completed: boolean;
-  created_at: string;
-}
-
 const LOCAL_STORAGE_KEY = 'guest_goals';
-const SUPABASE_TABLE_NAME = 'goals';
 
 export function useGoals() {
-  const { supabase, session } = useSupabase();
+  const { supabase, session, loading: authLoading } = useSupabase();
+  const [goals, setGoals] = useState<GoalData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isLoggedInMode, setIsLoggedInMode] = useState(false);
 
-  const {
-    data: goals,
-    loading,
-    isLoggedInMode,
-    setData: setGoals,
-    fetchData,
-  } = usePersistentData<GoalData[], DbGoal>({ // T_APP_DATA is GoalData[], T_DB_DATA_ITEM is DbGoal
-    localStorageKey: LOCAL_STORAGE_KEY,
-    supabaseTableName: SUPABASE_TABLE_NAME,
-    initialValue: [],
-    selectQuery: '*',
-    transformFromDb: (dbGoals: DbGoal[]) => dbGoals.map(goal => ({
-      id: goal.id,
-      user_id: goal.user_id,
-      title: goal.title,
-      completed: goal.completed,
-      created_at: goal.created_at,
-    })),
-    transformToDb: (appGoal: GoalData, userId: string) => ({ // appItem is GoalData, returns DbGoal
-      id: appGoal.id,
-      user_id: userId,
-      title: appGoal.title,
-      completed: appGoal.completed,
-      created_at: appGoal.created_at,
-    }),
-    userIdColumn: 'user_id',
-    onConflictColumn: 'id',
-    debounceDelay: 0,
-  });
+  // Effect to handle initial load and auth state changes
+  useEffect(() => {
+    if (authLoading) return;
+
+    const loadGoals = async () => {
+      setLoading(true);
+      if (session && supabase) {
+        // User is logged in
+        setIsLoggedInMode(true);
+        // console.log("User logged in. Checking for local goals to migrate..."); // Removed for cleaner logs
+
+        // 1. Load local goals (if any)
+        const localGoalsString = localStorage.getItem(LOCAL_STORAGE_KEY);
+        let localGoals: GoalData[] = [];
+        try {
+          localGoals = localGoalsString ? JSON.parse(localGoalsString) : [];
+        } catch (e) {
+          console.error("Error parsing local storage goals:", e);
+          localGoals = [];
+        }
+
+        // 2. Fetch user's existing goals from Supabase
+        const { data: supabaseGoals, error: fetchError } = await supabase
+          .from('goals')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: true });
+
+        if (fetchError) {
+          toast.error("Error fetching goals from Supabase: " + fetchError.message);
+          console.error("Error fetching goals (Supabase):", fetchError);
+          setGoals([]);
+        } else {
+          let mergedGoals = [...(supabaseGoals as GoalData[])];
+
+          // 3. Migrate local goals to Supabase if they don't already exist
+          if (localGoals.length > 0) {
+            // console.log(`Found ${localGoals.length} local goals. Attempting migration...`); // Removed for cleaner logs
+            for (const localGoal of localGoals) {
+              // Check if a similar goal (by title) already exists in Supabase for this user
+              const existsInSupabase = mergedGoals.some(
+                sg => sg.title === localGoal.title
+              );
+
+              if (!existsInSupabase) {
+                const { data: newSupabaseGoal, error: insertError } = await supabase
+                  .from('goals')
+                  .insert({
+                    user_id: session.user.id,
+                    title: localGoal.title,
+                    completed: localGoal.completed,
+                    created_at: localGoal.created_at || new Date().toISOString(), // Ensure created_at
+                  })
+                  .select()
+                  .single();
+
+                if (insertError) {
+                  console.error("Error migrating local goal to Supabase:", insertError);
+                  toast.error("Error migrating some local goals.");
+                } else if (newSupabaseGoal) {
+                  mergedGoals.push(newSupabaseGoal as GoalData);
+                  // console.log("Migrated local goal:", newSupabaseGoal.title); // Removed for cleaner logs
+                }
+              }
+            }
+            // Clear local storage after migration attempt
+            localStorage.removeItem(LOCAL_STORAGE_KEY);
+            toast.success("Local goals migrated to your account!");
+          }
+          setGoals(mergedGoals);
+        }
+      } else {
+        // User is a guest (not logged in)
+        setIsLoggedInMode(false);
+        const storedGoalsString = localStorage.getItem(LOCAL_STORAGE_KEY);
+        let loadedGoals: GoalData[] = [];
+        try {
+          loadedGoals = storedGoalsString ? JSON.parse(storedGoalsString) : [];
+        } catch (e) {
+          console.error("Error parsing local storage goals:", e);
+          loadedGoals = [];
+        }
+        setGoals(loadedGoals);
+        if (loadedGoals.length === 0) {
+          toast.info("You are browsing goals as a guest. Your goals will be saved locally.");
+        }
+      }
+      setLoading(false);
+    };
+
+    loadGoals();
+  }, [session, supabase, authLoading]);
+
+  // Effect to save goals to local storage when in guest mode
+  useEffect(() => {
+    if (!isLoggedInMode && !loading) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(goals));
+    }
+  }, [goals, isLoggedInMode, loading]);
 
   const handleAddGoal = useCallback(async (title: string) => {
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase
-        .from(SUPABASE_TABLE_NAME)
+        .from('goals')
         .insert({
           user_id: session.user.id,
           title: title,
@@ -73,7 +136,7 @@ export function useGoals() {
         toast.error("Error adding goal (Supabase): " + error.message);
         console.error("Error adding goal (Supabase):", error);
       } else if (data) {
-        fetchData();
+        setGoals((prevGoals) => [...prevGoals, data as GoalData]);
         toast.success("Goal added successfully to your account!");
       }
     } else {
@@ -86,7 +149,7 @@ export function useGoals() {
       setGoals((prevGoals) => [...prevGoals, newGoal]);
       toast.success("Goal added successfully (saved locally)!");
     }
-  }, [isLoggedInMode, session, supabase, setGoals, fetchData]);
+  }, [isLoggedInMode, session, supabase]);
 
   const handleToggleComplete = useCallback(async (goalId: string, currentCompleted: boolean) => {
     const goalToUpdate = goals.find(goal => goal.id === goalId);
@@ -96,7 +159,7 @@ export function useGoals() {
 
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase
-        .from(SUPABASE_TABLE_NAME)
+        .from('goals')
         .update({ completed: newCompletedStatus })
         .eq('id', goalId)
         .eq('user_id', session.user.id)
@@ -107,7 +170,7 @@ export function useGoals() {
         toast.error("Error updating goal status (Supabase): " + error.message);
         console.error("Error updating goal status (Supabase):", error);
       } else if (data) {
-        fetchData();
+        setGoals(prevGoals => prevGoals.map(goal => goal.id === goalId ? data as GoalData : goal));
         if (newCompletedStatus) {
           toast.success("🎉 Goal Complete! Great job!");
         } else {
@@ -124,12 +187,12 @@ export function useGoals() {
         toast.info("Goal marked as incomplete (locally).");
       }
     }
-  }, [goals, isLoggedInMode, session, supabase, setGoals, fetchData]);
+  }, [goals, isLoggedInMode, session, supabase]);
 
   const handleDeleteGoal = useCallback(async (goalId: string) => {
     if (isLoggedInMode && session && supabase) {
       const { error } = await supabase
-        .from(SUPABASE_TABLE_NAME)
+        .from('goals')
         .delete()
         .eq('id', goalId)
         .eq('user_id', session.user.id);
@@ -138,14 +201,14 @@ export function useGoals() {
         toast.error("Error deleting goal (Supabase): " + error.message);
         console.error("Error deleting goal (Supabase):", error);
       } else {
-        fetchData();
+        setGoals(prevGoals => prevGoals.filter(goal => goal.id !== goalId));
         toast.success("Goal deleted from your account.");
       }
     } else {
       setGoals(prevGoals => prevGoals.filter(goal => goal.id !== goalId));
       toast.success("Goal deleted (locally).");
     }
-  }, [isLoggedInMode, session, supabase, setGoals, fetchData]);
+  }, [isLoggedInMode, session, supabase]);
 
   return {
     goals,
