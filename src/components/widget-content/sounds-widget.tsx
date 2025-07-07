@@ -43,7 +43,7 @@ const allAmbientSounds = [
   // Music & Abstract Sounds
   { name: "Lofi Beats", url: "/sound/lofi_beats.mp3", category: "Music" },
   // Removed "Calm Piano" as it was causing an error
-  { name: "Space Ambience", url: "/sound/space_ambience.mpory", category: "Abstract" },
+  { name: "Space Ambience", url: "/sound/space_ambience.mp3", category: "Abstract" },
   { name: "Zen Garden", url: "/sound/zen_garden.mp3", category: "Abstract" },
 
   // Productivity Sounds
@@ -113,7 +113,7 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
             <SelectTrigger id="category-select">
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[1003]"> {/* Added z-[1003] here */}
               <SelectItem value="all">All Categories</SelectItem>
               {categories.filter(cat => cat !== "all").map(cat => (
                 <SelectItem key={cat} value={cat}>{cat}</SelectItem>
