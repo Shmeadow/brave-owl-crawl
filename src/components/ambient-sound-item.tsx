@@ -42,7 +42,7 @@ const getSoundIcon = (name: string, category: string) => {
 
 
 export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }: AmbientSoundItemProps) {
-  const { play, pause, isPlaying, volume, isMuted, setVolume, toggleMute } = useClientAudio(url);
+  const { isPlaying, volume, isMuted, togglePlayPause, setVolume, toggleMute } = useClientAudio(url);
 
   // Debugging log for isPlaying prop
   useEffect(() => {
@@ -56,13 +56,8 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }:
       return;
     }
 
-    if (isPlaying) {
-      pause();
-      toast.info(`Paused ${name}`);
-    } else {
-      play();
-      toast.info(`Playing ${name}`);
-    }
+    togglePlayPause(); // Use the combined toggle function
+    toast.info(isPlaying ? `Paused ${name}` : `Playing ${name}`);
   };
 
   const handleVolumeChange = (value: number[]) => {
