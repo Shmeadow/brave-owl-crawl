@@ -27,6 +27,7 @@ import { MobileControls } from "@/components/mobile-controls";
 import { FocusSessionProvider } from "@/context/focus-session-provider";
 import { WelcomeBackModal } from "@/components/welcome-back-modal";
 import { useGoals } from "@/hooks/use-goals";
+import { PinnedWidgetsDock } from "@/components/pinned-widgets-dock"; // Import PinnedWidgetsDock
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px

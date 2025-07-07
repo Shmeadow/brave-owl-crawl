@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useDraggable } from "@dnd-kit/core";
 import { ResizableBox } from "@/components/resizable-box";
 import type { ResizeCallbackData } from 'react-resizable';
+import { DOCKED_WIDGET_WIDTH, DOCKED_WIDGET_HEIGHT, MINIMIZED_WIDGET_WIDTH, MINIMIZED_WIDGET_HEIGHT } from "@/hooks/widgets/types"; // Import constants
 
 interface WidgetProps {
   id: string;
@@ -34,14 +35,9 @@ interface WidgetProps {
     width: number;
     height: number;
   };
-  isMobile: boolean; // New prop
+  isMobile: boolean;
+  isInsideDock?: boolean; // New prop
 }
-
-// Constants for widget dimensions (should match WidgetProvider)
-const DOCKED_WIDGET_WIDTH = 192;
-const DOCKED_WIDGET_HEIGHT = 48;
-const MINIMIZED_WIDGET_WIDTH = 224; // Assuming this from PomodoroWidget
-const MINIMIZED_WIDGET_HEIGHT = 48;
 
 export function Widget({
   id,
@@ -63,12 +59,13 @@ export function Widget({
   onClose,
   isCurrentRoomWritable,
   mainContentArea,
-  isMobile, // Destructure new prop
+  isMobile,
+  isInsideDock = false, // Default to false
 }: WidgetProps) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: `widget-${id}`,
     data: { id, type: "widget", initialPosition: position },
-    disabled: isPinned || isMaximized || isMobile, // Disable dragging on mobile
+    disabled: isPinned || isMaximized || isMobile || isInsideDock, // Disable dragging if inside dock
   });
 
   const currentTransformStyle = transform ? {
@@ -76,8 +73,8 @@ export function Widget({
   } : {};
 
   const isVisuallyMinimized = isMinimized || isPinned;
-  const isResizable = !isMaximized && !isVisuallyMinimized && !isMobile; // Disable resizing on mobile
-  const isDraggable = !isMaximized && !isPinned && !isMobile; // Disable dragging on mobile
+  const isResizable = !isMaximized && !isVisuallyMinimized && !isMobile && !isInsideDock; // Disable resizing if inside dock
+  const isDraggable = !isMaximized && !isPinned && !isMobile && !isInsideDock; // Disable dragging if inside dock
 
   // Determine actual width/height for ResizableBox based on state
   let actualWidth = size.width;
@@ -99,14 +96,18 @@ export function Widget({
   actualHeight = Math.max(actualHeight, 150);
 
   const renderWidgetContent = (
-    <Card className="w-full h-full flex flex-col overflow-hidden bg-transparent">
+    <Card className={cn(
+      "w-full h-full flex flex-col overflow-hidden",
+      isInsideDock ? "bg-transparent border-none shadow-none" : "bg-transparent" // No background/border/shadow if inside dock
+    )}>
       <CardHeader
         className={cn(
           "flex flex-row items-center justify-between space-y-0",
-          isVisuallyMinimized ? "p-2 h-12" : "pb-2"
+          isVisuallyMinimized ? "p-2 h-12" : "pb-2",
+          isInsideDock ? "p-0 h-auto" : "" // Minimal padding if inside dock
         )}
       >
-        {isVisuallyMinimized ? (
+        {isVisuallyMinimized || isInsideDock ? ( // Simplified header for minimized or docked
           <>
             <div 
               className={cn("flex items-center gap-2 flex-1 min-w-0", isDraggable && "cursor-grab")}
@@ -116,22 +117,19 @@ export function Widget({
               <CardTitle className="text-sm font-medium leading-none truncate">{title}</CardTitle>
             </div>
             <div className="flex gap-1">
-              {isPinned ? (
+              {!isInsideDock && ( // Only show these buttons if NOT inside the dock
                 <>
-                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
-                    <Maximize className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title="Unpin">
-                    <PinOff className="h-4 w-4" />
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
-                    <Maximize className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title="Pin">
-                    <Pin className="h-4 w-4" />
+                  {isPinned ? (
+                    <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
+                      <Maximize className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
+                      <Maximize className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title={isPinned ? "Unpin" : "Pin"}>
+                    {isPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
                   </Button>
                 </>
               )}
@@ -140,7 +138,7 @@ export function Widget({
               </Button>
             </div>
           </>
-        ) : (
+        ) : ( // Full header for normal/maximized floating widgets
           <>
             <div 
               className={cn("flex-1 min-w-0", isDraggable && "cursor-grab")}
@@ -172,13 +170,33 @@ export function Widget({
         )}
       </CardHeader>
 
-      {!isVisuallyMinimized && (
+      {!isVisuallyMinimized && !isInsideDock && ( // Only render content if not minimized and not inside dock
         <CardContent className="flex-grow p-0 overflow-y-auto">
           <Content isCurrentRoomWritable={isCurrentRoomWritable} />
         </CardContent>
       )}
     </Card>
   );
+
+  // Render logic for the widget wrapper
+  if (isInsideDock) {
+    return (
+      <div
+        ref={setNodeRef}
+        className={cn(
+          "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg flex flex-col",
+          "transition-all duration-300 ease-in-out",
+          "w-full h-full", // Occupy full space provided by parent (dock)
+          "pointer-events-auto",
+          "cursor-pointer" // Indicate clickable to unpin
+        )}
+        onClick={() => onPin(id)} // Clicking a docked widget unpins it
+        onMouseDown={onBringToFront}
+      >
+        {renderWidgetContent}
+      </div>
+    );
+  }
 
   return (
     <div

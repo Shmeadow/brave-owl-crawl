@@ -6,12 +6,15 @@ import { toast } from 'sonner';
 interface SoundState {
   isPlaying: boolean;
   volume: number;
+  isMuted: boolean; // New: Track if sound is muted
+  prevVolume: number; // New: Store volume before muting
 }
 
 interface AmbientSoundContextType {
   soundsState: Map<string, SoundState>;
   togglePlay: (url: string, name: string) => void;
   setVolume: (url: string, volume: number) => void;
+  toggleMute: (url: string, name: string) => void; // New: Toggle mute function
 }
 
 const AmbientSoundContext = createContext<AmbientSoundContextType | undefined>(undefined);
@@ -35,7 +38,7 @@ export function AmbientSoundProvider({ children }: { children: React.ReactNode }
   const updateState = useCallback((url: string, newPartialState: Partial<SoundState>) => {
     setSoundsState(prev => {
       const newState = new Map(prev);
-      const currentState = newState.get(url) || { isPlaying: false, volume: 0.5 };
+      const currentState = newState.get(url) || { isPlaying: false, volume: 0.5, isMuted: false, prevVolume: 0.5 };
       newState.set(url, { ...currentState, ...newPartialState });
       return newState;
     });
@@ -43,12 +46,13 @@ export function AmbientSoundProvider({ children }: { children: React.ReactNode }
 
   const togglePlay = useCallback((url: string, name: string) => {
     let player = audioPlayersRef.current.get(url);
-    const currentState = soundsState.get(url) || { isPlaying: false, volume: 0.5 };
+    const currentState = soundsState.get(url) || { isPlaying: false, volume: 0.5, isMuted: false, prevVolume: 0.5 };
 
     if (!player) {
       player = new Audio(url);
       player.loop = true;
       player.volume = currentState.volume;
+      player.muted = currentState.isMuted; // Initialize muted state
       audioPlayersRef.current.set(url, player);
 
       player.onerror = () => {
@@ -76,11 +80,39 @@ export function AmbientSoundProvider({ children }: { children: React.ReactNode }
     const player = audioPlayersRef.current.get(url);
     if (player) {
       player.volume = volume;
+      if (volume > 0 && player.muted) { // If volume is set above 0, unmute
+        player.muted = false;
+        updateState(url, { volume, isMuted: false, prevVolume: volume });
+      } else if (volume === 0 && !player.muted) { // If volume is set to 0, mute
+        player.muted = true;
+        updateState(url, { volume, isMuted: true, prevVolume: volume });
+      } else {
+        updateState(url, { volume, prevVolume: volume });
+      }
+    } else {
+      updateState(url, { volume, prevVolume: volume });
     }
-    updateState(url, { volume });
   }, [updateState]);
 
-  const value = { soundsState, togglePlay, setVolume };
+  const toggleMute = useCallback((url: string, name: string) => {
+    const player = audioPlayersRef.current.get(url);
+    const currentState = soundsState.get(url) || { isPlaying: false, volume: 0.5, isMuted: false, prevVolume: 0.5 };
+
+    if (player) {
+      if (currentState.isMuted) {
+        player.muted = false;
+        player.volume = currentState.prevVolume > 0 ? currentState.prevVolume : 0.5; // Restore previous volume or default
+        updateState(url, { isMuted: false, volume: player.volume });
+        toast.info(`Unmuted ${name}`);
+      } else {
+        updateState(url, { isMuted: true, prevVolume: player.volume, volume: 0 }); // Store current volume, set to 0
+        player.muted = true;
+        toast.info(`Muted ${name}`);
+      }
+    }
+  }, [soundsState, updateState]);
+
+  const value = { soundsState, togglePlay, setVolume, toggleMute };
 
   return (
     <AmbientSoundContext.Provider value={value}>

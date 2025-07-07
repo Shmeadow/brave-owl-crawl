@@ -19,6 +19,7 @@ import { useWidget } from "./widget-provider";
 import { Widget } from "./widget";
 import { WidgetState } from "@/hooks/widgets/types"; // Import WidgetState
 import { cn } from "@/lib/utils"; // Import cn for styling
+import { PinnedWidgetsDock } from "@/components/pinned-widgets-dock"; // Import the new dock component
 
 // Define WIDGET_COMPONENTS at the top level
 const WIDGET_COMPONENTS = {
@@ -73,10 +74,14 @@ export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobi
     }
   };
 
+  // Separate floating and pinned widgets
+  const floatingWidgets = activeWidgets.filter((widget: WidgetState) => !widget.isPinned);
+  const pinnedWidgets = activeWidgets.filter((widget: WidgetState) => widget.isPinned);
+
   // Filter out minimized/pinned widgets if on mobile, as they will be hidden
-  const visibleWidgets = isMobile
-    ? activeWidgets.filter((widget: WidgetState) => !widget.isMinimized && !widget.isPinned)
-    : activeWidgets;
+  const visibleFloatingWidgets = isMobile
+    ? floatingWidgets.filter((widget: WidgetState) => !widget.isMinimized && !widget.isMaximized) // On mobile, only show normal/maximized floating widgets
+    : floatingWidgets; // On desktop, show all floating widgets (minimized ones are just smaller)
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
@@ -84,7 +89,7 @@ export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobi
         "w-full h-full", // Base styling for the container
         isMobile ? "flex flex-col items-center gap-4 pointer-events-auto" : "fixed inset-0 z-[903] pointer-events-none"
       )}>
-        {visibleWidgets.map((widget: WidgetState) => {
+        {visibleFloatingWidgets.map((widget: WidgetState) => {
           const WidgetIcon = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.icon;
           const WidgetContent = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.content;
 
@@ -117,11 +122,19 @@ export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobi
               onClose={closeWidget}
               isCurrentRoomWritable={isCurrentRoomWritable}
               mainContentArea={mainContentArea}
-              isMobile={isMobile} // Pass isMobile
+              isMobile={isMobile}
+              isInsideDock={false} // Explicitly not inside dock
             />
           );
         })}
       </div>
+      {/* Render the PinnedWidgetsDock outside the DndContext if it manages its own draggable/resizable */}
+      {/* Or, if it's just a visual container, keep it here. */}
+      {/* For now, it's a visual container that renders its own Widgets */}
+      <PinnedWidgetsDock
+        pinnedWidgets={pinnedWidgets}
+        mainContentArea={mainContentArea}
+      />
     </DndContext>
   );
 }

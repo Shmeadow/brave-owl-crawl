@@ -83,23 +83,27 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
         if (supabaseWidgets && supabaseWidgets.length > 0) {
           const loadedWidgets = supabaseWidgets.map((w: DbWidgetState) => fromDbWidgetState(w)).filter((w: WidgetState) => initialWidgetConfigs[w.id]);
           const reClampedWidgets = loadedWidgets.map((widget: WidgetState) => {
-            const clampedPos = clampPosition(
+            // Clamp current position
+            const clampedCurrentPos = clampPosition(
               widget.position.x,
               widget.position.y,
               widget.size.width,
               widget.size.height,
               mainContentArea
             );
+            // Clamp normal position if it exists, otherwise use clamped current
+            const clampedNormalPos = widget.normalPosition ? clampPosition(
+              widget.normalPosition.x,
+              widget.normalPosition.y,
+              widget.normalSize?.width || initialWidgetConfigs[widget.id].initialWidth,
+              widget.normalSize?.height || initialWidgetConfigs[widget.id].initialHeight,
+              mainContentArea
+            ) : clampedCurrentPos;
+
             return {
               ...widget,
-              position: clampedPos,
-              normalPosition: widget.normalPosition ? clampPosition(
-                widget.normalPosition.x,
-                widget.normalPosition.y,
-                widget.normalSize?.width || initialWidgetConfigs[widget.id].initialWidth,
-                widget.normalSize?.height || initialWidgetConfigs[widget.id].initialHeight,
-                mainContentArea
-              ) : clampedPos,
+              position: clampedCurrentPos,
+              normalPosition: clampedNormalPos,
             };
           });
           setActiveWidgets(reClampedWidgets); // Pinned widgets will be recalculated after this
@@ -112,23 +116,25 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
               const parsedState: WidgetState[] = JSON.parse(savedState);
               const validWidgets = parsedState.filter((w: WidgetState) => initialWidgetConfigs[w.id]);
               const reClampedWidgets = validWidgets.map((widget: WidgetState) => {
-                const clampedPos = clampPosition(
+                const clampedCurrentPos = clampPosition(
                   widget.position.x,
                   widget.position.y,
                   widget.size.width,
                   widget.size.height,
                   mainContentArea
                 );
+                const clampedNormalPos = widget.normalPosition ? clampPosition(
+                  widget.normalPosition.x,
+                  widget.normalPosition.y,
+                  widget.normalSize?.width || initialWidgetConfigs[widget.id].initialWidth,
+                  widget.normalSize?.height || initialWidgetConfigs[widget.id].initialHeight,
+                  mainContentArea
+                ) : clampedCurrentPos;
+
                 return {
                   ...widget,
-                  position: clampedPos,
-                  normalPosition: widget.normalPosition ? clampPosition(
-                    widget.normalPosition.x,
-                    widget.normalPosition.y,
-                    widget.normalSize?.width || initialWidgetConfigs[widget.id].initialWidth,
-                    widget.normalSize?.height || initialWidgetConfigs[widget.id].initialHeight,
-                    mainContentArea
-                  ) : clampedPos,
+                  position: clampedCurrentPos,
+                  normalPosition: clampedNormalPos,
                 };
               });
 

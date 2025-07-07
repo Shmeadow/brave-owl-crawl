@@ -10,6 +10,8 @@ import {
   DOCKED_WIDGET_HEIGHT,
   DOCKED_WIDGET_HORIZONTAL_GAP,
   BOTTOM_DOCK_OFFSET,
+  MINIMIZED_WIDGET_WIDTH, // Import here
+  MINIMIZED_WIDGET_HEIGHT, // Import here
 } from './types'; // Corrected import path
 
 interface UseWidgetActionsProps {
@@ -27,6 +29,8 @@ export function useWidgetActions({
 }: UseWidgetActionsProps) {
   const [maxZIndex, setMaxZIndex] = useState(903); // Initial z-index for new widgets
 
+  // This function is now primarily for calculating the *target* position for pinned widgets
+  // within the conceptual dock area, even if they are rendered by a separate component.
   const recalculatePinnedWidgets = useCallback((currentWidgets: WidgetState[]) => {
     const pinned = currentWidgets.filter((w: WidgetState) => w.isPinned).sort((a, b) => a.id.localeCompare(b.id));
     let currentX = mainContentArea.left + DOCKED_WIDGET_HORIZONTAL_GAP;
@@ -41,12 +45,12 @@ export function useWidgetActions({
 
         return {
           ...widget,
-          position: newPosition,
+          position: newPosition, // This is the calculated position for persistence
           size: {
             width: DOCKED_WIDGET_WIDTH,
             height: DOCKED_WIDGET_HEIGHT,
           },
-          isMinimized: true,
+          isMinimized: true, // Pinned widgets are always minimized
           isMaximized: false,
         };
       }
@@ -99,7 +103,7 @@ export function useWidgetActions({
   const removeWidget = useCallback((id: string) => {
     setActiveWidgets(prev => {
       const updated = prev.filter((widget: WidgetState) => widget.id !== id);
-      return recalculatePinnedWidgets(updated);
+      return recalculatePinnedWidgets(updated); // Recalculate pinned positions after removal
     });
   }, [setActiveWidgets, recalculatePinnedWidgets]);
 
@@ -170,14 +174,15 @@ export function useWidgetActions({
               ...widget,
               isMinimized: true,
               isMaximized: false, // Ensure it's not maximized
+              isPinned: false, // Minimizing unpins it
               normalSize: normalSizeToSave,
               normalPosition: normalPositionToSave,
-              size: { width: 224, height: 48 },
+              size: { width: MINIMIZED_WIDGET_WIDTH, height: MINIMIZED_WIDGET_HEIGHT },
               position: clampPosition(
                 normalPositionToSave.x,
                 normalPositionToSave.y,
-                224,
-                48,
+                MINIMIZED_WIDGET_WIDTH,
+                MINIMIZED_WIDGET_HEIGHT,
                 mainContentArea
               ),
             };
@@ -230,31 +235,32 @@ export function useWidgetActions({
       const updatedWidgets = prev.map((widget: WidgetState) => {
         if (widget.id === id) {
           if (widget.isPinned) {
-            const config = initialWidgetConfigs[id];
+            // It's pinned, unpin it and restore to normal position/size
             return {
               ...widget,
               isPinned: false,
-              isMinimized: false,
+              isMinimized: false, // Unpinning makes it normal
               isMaximized: false,
-              position: widget.previousPosition!,
-              size: widget.previousSize!,
-              previousPosition: undefined,
+              position: widget.normalPosition || initialWidgetConfigs[id].initialPosition, // Restore or use initial
+              size: widget.normalSize || { width: initialWidgetConfigs[id].initialWidth, height: initialWidgetConfigs[id].initialHeight }, // Restore or use initial
+              previousPosition: undefined, // Clear previous state
               previousSize: undefined,
             };
           } else {
+            // It's not pinned, pin it. Save current normal state.
             return {
               ...widget,
               isPinned: true,
-              isMinimized: true,
+              isMinimized: true, // Pinned widgets are always minimized
               isMaximized: false,
-              previousPosition: widget.normalPosition!,
-              previousSize: widget.normalSize!,
+              normalPosition: widget.position, // Save current position as normal
+              normalSize: widget.size, // Save current size as normal
             };
           }
         }
         return widget;
       });
-      return recalculatePinnedWidgets(updatedWidgets);
+      return recalculatePinnedWidgets(updatedWidgets); // Recalculate positions of all pinned widgets
     });
   }, [initialWidgetConfigs, setActiveWidgets, recalculatePinnedWidgets]);
 
