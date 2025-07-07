@@ -54,8 +54,8 @@ export interface WidgetConfig {
   initialHeight: number;
 }
 
-export const DOCKED_WIDGET_WIDTH = 192;
-export const DOCKED_WIDGET_HEIGHT = 48;
+export const DOCKED_WIDGET_WIDTH = 48; // Changed to match h-12 w-12
+export const DOCKED_WIDGET_HEIGHT = 48; // Changed to match h-12 w-12
 export const DOCKED_WIDGET_HORIZONTAL_GAP = 4;
 export const BOTTOM_DOCK_OFFSET = 16;
 

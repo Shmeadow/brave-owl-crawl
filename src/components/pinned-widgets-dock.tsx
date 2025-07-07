@@ -61,7 +61,14 @@ export function PinnedWidgetsDock({ pinnedWidgets, mainContentArea, isCurrentRoo
   };
 
   // Calculate the width of the dock based on the number of pinned widgets
-  const dockWidth = pinnedWidgets.length * (DOCKED_WIDGET_WIDTH + DOCKED_WIDGET_HORIZONTAL_GAP) + DOCKED_WIDGET_HORIZONTAL_GAP;
+  // Each widget is DOCKED_WIDGET_WIDTH (48px)
+  // There's a gap-2 (8px) between items
+  // The parent Card has p-1.5 (6px padding on each side)
+  const numWidgets = pinnedWidgets.length;
+  const totalWidgetsWidth = numWidgets * DOCKED_WIDGET_WIDTH;
+  const totalGapWidth = numWidgets > 0 ? (numWidgets - 1) * 8 : 0; // 8px for gap-2
+  const totalPaddingWidth = 2 * 6; // 6px for p-1.5 on each side
+  const dockWidth = totalWidgetsWidth + totalGapWidth + totalPaddingWidth;
 
   return (
     <Card

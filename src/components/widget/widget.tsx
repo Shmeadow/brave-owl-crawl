@@ -117,9 +117,7 @@ export function Widget({
               <Icon className="h-6 w-6 text-primary" />
               <span className="sr-only">{title}</span> {/* Screen reader only title */}
             </div>
-            <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onClose(id); }} title="Close">
-              <X className="h-4 w-4" />
-            </Button>
+            {/* Removed X button from pinned widgets */}
           </>
         ) : ( // Full header for normal/maximized/minimized floating widgets
           <>
