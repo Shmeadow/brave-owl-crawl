@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { Bell } from "lucide-react";
+import { Bell, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,22 +12,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useNotifications } from "@/hooks/use-notifications"; // Import the new hook
-import { cn } from "@/lib/utils"; // Import cn for styling
+import { useNotifications } from "@/hooks/use-notifications";
+import { cn } from "@/lib/utils";
 
 interface NotificationsDropdownProps {
-  // Removed unreadCount, onClearUnread, onNewUnread as they will be managed by the hook
 }
 
 export function NotificationsDropdown({}: NotificationsDropdownProps) {
-  const { notifications, loading, unreadCount, markAsRead, markAllAsRead, addNotification } = useNotifications();
+  const { notifications, loading, unreadCount, markAsRead, markAllAsRead, addNotification, deleteReadNotifications } = useNotifications();
 
-  // Example: Add a welcome notification if there are no notifications
   useEffect(() => {
     if (!loading && notifications.length === 0) {
       addNotification("Welcome to Productivity Hub! Explore your new workspace.");
     }
   }, [loading, notifications.length, addNotification]);
+
+  const hasReadNotifications = notifications.some(n => n.is_read);
 
   return (
     <DropdownMenu>
@@ -71,6 +71,10 @@ export function NotificationsDropdown({}: NotificationsDropdownProps) {
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={markAllAsRead} disabled={unreadCount === 0}>
           Mark all as read
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={deleteReadNotifications} disabled={!hasReadNotifications} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+          <Trash2 className="mr-2 h-4 w-4" />
+          <span>Delete Read</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -155,7 +155,9 @@ export function useNotifications() {
         .from('notifications')
         .update({ is_read: true })
         .eq('id', notificationId)
-        .eq('user_id', session.user.id);
+        .eq('user_id', session.user.id)
+        .select()
+        .single();
       if (error) {
         toast.error("Error marking notification as read: " + error.message);
         console.error("Error marking notification as read (Supabase):", error);
@@ -190,6 +192,35 @@ export function useNotifications() {
     }
   }, [notifications, isLoggedInMode, session, supabase]);
 
+  const deleteReadNotifications = useCallback(async () => {
+    const readNotifications = notifications.filter(n => n.is_read);
+    if (readNotifications.length === 0) {
+        toast.info("No read notifications to delete.");
+        return;
+    }
+
+    const readNotificationIds = readNotifications.map(n => n.id);
+
+    if (isLoggedInMode && session && supabase) {
+        const { error } = await supabase
+            .from('notifications')
+            .delete()
+            .in('id', readNotificationIds)
+            .eq('user_id', session.user.id);
+
+        if (error) {
+            toast.error("Error deleting read notifications: " + error.message);
+            console.error("Error deleting read notifications (Supabase):", error);
+        } else {
+            setNotifications(prev => prev.filter(n => !n.is_read));
+            toast.success("Read notifications cleared.");
+        }
+    } else {
+        setNotifications(prev => prev.filter(n => !n.is_read));
+        toast.success("Read notifications cleared (locally).");
+    }
+  }, [notifications, isLoggedInMode, session, supabase]);
+
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   return {
@@ -200,6 +231,7 @@ export function useNotifications() {
     addNotification,
     markAsRead,
     markAllAsRead,
+    deleteReadNotifications,
     fetchNotifications, // Expose for manual refresh
   };
 }
