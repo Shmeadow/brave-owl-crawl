@@ -9,7 +9,7 @@ const LOCAL_STORAGE_CURRENT_ROOM_ID_KEY = 'current_room_id';
 const LOCAL_STORAGE_CURRENT_ROOM_NAME_KEY = 'current_room_name';
 
 export function useCurrentRoom() {
-  const { supabase, session, loading: authLoading } = useSupabase();
+  const { supabase, session, profile, loading: authLoading } = useSupabase(); // Get profile here
   const { rooms, loading: roomsLoading } = useRooms(); // Get rooms and their loading state
   
   const [currentRoomId, setCurrentRoomIdState] = useState<string | null>(() => {
@@ -29,8 +29,19 @@ export function useCurrentRoom() {
   const [isCurrentRoomWritable, setIsCurrentRoomWritable] = useState(true);
 
   const setCurrentRoom = useCallback((id: string | null, name: string) => {
-    setCurrentRoomIdState(id);
-    setCurrentRoomNameState(name);
+    // Only update state if values are actually different
+    setCurrentRoomIdState(prevId => {
+      if (prevId !== id) {
+        return id;
+      }
+      return prevId;
+    });
+    setCurrentRoomNameState(prevName => {
+      if (prevName !== name) {
+        return name;
+      }
+      return prevName;
+    });
     toast.info(`Switched to room: ${name}`);
   }, []);
 
@@ -52,33 +63,42 @@ export function useCurrentRoom() {
     }
 
     // User is logged in
-    const storedRoomId = currentRoomId;
-    const foundRoom = rooms.find(room => room.id === storedRoomId);
+    let targetRoomId: string | null = null;
+    let targetRoomName: string = "My Room";
 
-    if (foundRoom && (foundRoom.is_member || foundRoom.creator_id === session.user.id)) {
-      // The stored room is valid and accessible, keep it.
-      // Ensure name is up-to-date in case it changed in DB
-      if (foundRoom.name !== currentRoomName) {
-        setCurrentRoomNameState(foundRoom.name);
-      }
-    } else {
-      // Stored room is invalid, inaccessible, or no room was stored.
-      // Try to find the user's personal room (the first room they created).
-      const personalRoom = rooms.find(room => room.creator_id === session.user.id);
-
+    // 1. Try to use personal_room_id from profile
+    if (profile?.personal_room_id) {
+      const personalRoom = rooms.find(room => room.id === profile.personal_room_id);
       if (personalRoom) {
-        setCurrentRoomIdState(personalRoom.id);
-        setCurrentRoomNameState(personalRoom.name);
-        toast.info(`Switched to your personal room: ${personalRoom.name}`);
+        targetRoomId = personalRoom.id;
+        targetRoomName = personalRoom.name;
       } else {
-        // Fallback: If no personal room found (shouldn't happen if trigger works),
-        // or if rooms array is empty for some reason, default to "My Room" (guest-like state).
-        setCurrentRoomIdState(null);
-        setCurrentRoomNameState("My Room");
-        toast.info("Could not find your personal room. Defaulting to 'My Room'.");
+        // If personal_room_id exists in profile but room not found in `rooms` list,
+        // it might be a timing issue or data inconsistency. Log and try fallback.
+        console.warn(`Personal room (ID: ${profile.personal_room_id}) not found in fetched rooms.`);
       }
     }
-  }, [authLoading, roomsLoading, session, rooms, currentRoomId, currentRoomName, setCurrentRoom]);
+
+    // 2. Fallback: If no personal_room_id or room not found, try to find the first room created by the user
+    if (!targetRoomId) {
+      const firstCreatedRoom = rooms.find(room => room.creator_id === session.user.id);
+      if (firstCreatedRoom) {
+        targetRoomId = firstCreatedRoom.id;
+        targetRoomName = firstCreatedRoom.name;
+      }
+    }
+
+    // 3. If a target room was found, update state if different
+    if (targetRoomId !== currentRoomId || targetRoomName !== currentRoomName) {
+      setCurrentRoomIdState(targetRoomId);
+      setCurrentRoomNameState(targetRoomName);
+      if (targetRoomId) {
+        toast.info(`Switched to room: ${targetRoomName}`);
+      } else {
+        toast.info("No personal room found. Defaulting to 'My Room'.");
+      }
+    }
+  }, [authLoading, roomsLoading, session, profile, rooms, currentRoomId, currentRoomName]); // Added profile to dependencies
 
   // Effect to persist current room ID to local storage
   useEffect(() => {

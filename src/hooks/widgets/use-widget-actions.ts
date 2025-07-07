@@ -36,7 +36,6 @@ export function useWidgetActions({
   // This function is now primarily for calculating the *target* position for pinned widgets
   // within the conceptual dock area, even if they are rendered by a separate component.
   const recalculatePinnedWidgets = useCallback((currentWidgets: WidgetState[]) => {
-    const pinned = currentWidgets.filter((w: WidgetState) => w.isPinned).sort((a, b) => a.id.localeCompare(b.id));
     let currentX = mainContentArea.left + DOCKED_WIDGET_HORIZONTAL_GAP;
 
     return currentWidgets.map((widget: WidgetState) => {
@@ -63,8 +62,16 @@ export function useWidgetActions({
     });
   }, [mainContentArea]);
 
-  const addWidget = useCallback((id: string, title: string) => {
+  const updateAndRecalculate = useCallback((updater: (prev: WidgetState[]) => WidgetState[]) => {
     setActiveWidgets(prev => {
+      const updated = updater(prev);
+      return recalculatePinnedWidgets(updated);
+    });
+  }, [setActiveWidgets, recalculatePinnedWidgets]);
+
+
+  const addWidget = useCallback((id: string, title: string) => {
+    updateAndRecalculate(prev => {
       const existingWidget = prev.find((widget: WidgetState) => widget.id === id);
       const config = initialWidgetConfigs[id];
 
@@ -101,7 +108,7 @@ export function useWidgetActions({
               }
             : widget
         );
-        return recalculatePinnedWidgets(updatedWidgets);
+        return updatedWidgets; // Recalculation happens in updateAndRecalculate
       } else {
         // If widget does not exist (shouldn't happen with new persistence model, but as fallback)
         const initialX = mainContentArea.left + SIDEBAR_OPEN_OFFSET_X;
@@ -131,20 +138,20 @@ export function useWidgetActions({
             normalPosition: clampedInitialPos,
           },
         ];
-        return recalculatePinnedWidgets(newWidgets);
+        return newWidgets; // Recalculation happens in updateAndRecalculate
       }
     });
-  }, [initialWidgetConfigs, maxZIndex, mainContentArea, setActiveWidgets, recalculatePinnedWidgets]);
+  }, [initialWidgetConfigs, maxZIndex, mainContentArea, updateAndRecalculate]);
 
   const removeWidget = useCallback((id: string) => {
     // "Remove" now means setting isClosed to true
-    setActiveWidgets(prev => {
+    updateAndRecalculate(prev => {
       const updated = prev.map((widget: WidgetState) =>
         widget.id === id ? { ...widget, isClosed: true, isMinimized: false, isMaximized: false, isPinned: false } : widget
       );
-      return recalculatePinnedWidgets(updated);
+      return updated; // Recalculation happens in updateAndRecalculate
     });
-  }, [setActiveWidgets, recalculatePinnedWidgets]);
+  }, [updateAndRecalculate]);
 
   const updateWidgetPosition = useCallback((id: string, newPosition: { x: number; y: number }) => {
     setActiveWidgets(prev =>
@@ -193,7 +200,7 @@ export function useWidgetActions({
   }, [maxZIndex, setActiveWidgets]);
 
   const minimizeWidget = useCallback((id: string) => {
-    setActiveWidgets(prev => {
+    updateAndRecalculate(prev => {
       const updatedWidgets = prev.map((widget: WidgetState) => {
         if (widget.id === id) {
           if (widget.isMinimized) {
@@ -231,12 +238,12 @@ export function useWidgetActions({
         }
         return widget;
       });
-      return recalculatePinnedWidgets(updatedWidgets);
+      return updatedWidgets; // Recalculation happens in updateAndRecalculate
     });
-  }, [mainContentArea, setActiveWidgets, recalculatePinnedWidgets]);
+  }, [mainContentArea, updateAndRecalculate]);
 
   const maximizeWidget = useCallback((id: string) => {
-    setActiveWidgets(prev => {
+    updateAndRecalculate(prev => {
       const updatedWidgets = prev.map((widget: WidgetState) => {
         if (widget.id === id) {
           if (widget.isMaximized) {
@@ -269,12 +276,12 @@ export function useWidgetActions({
         }
         return widget;
       });
-      return recalculatePinnedWidgets(updatedWidgets);
+      return updatedWidgets; // Recalculation happens in updateAndRecalculate
     });
-  }, [mainContentArea, setActiveWidgets, recalculatePinnedWidgets]);
+  }, [mainContentArea, updateAndRecalculate]);
 
   const togglePinned = useCallback((id: string) => {
-    setActiveWidgets(prev => {
+    updateAndRecalculate(prev => {
       const updatedWidgets = prev.map((widget: WidgetState) => {
         if (widget.id === id) {
           if (widget.isPinned) {
@@ -311,21 +318,21 @@ export function useWidgetActions({
         }
         return widget;
       });
-      return recalculatePinnedWidgets(updatedWidgets); // Recalculate positions of all pinned widgets
+      return updatedWidgets; // Recalculation happens in updateAndRecalculate
     });
-  }, [initialWidgetConfigs, mainContentArea, setActiveWidgets, recalculatePinnedWidgets]);
+  }, [initialWidgetConfigs, mainContentArea, updateAndRecalculate]);
 
   const closeWidget = useCallback((id: string) => {
-    setActiveWidgets(prev => {
+    updateAndRecalculate(prev => {
       const updated = prev.map((widget: WidgetState) =>
         widget.id === id ? { ...widget, isClosed: true, isMinimized: false, isMaximized: false, isPinned: false } : widget
       );
-      return recalculatePinnedWidgets(updated);
+      return updated; // Recalculation happens in updateAndRecalculate
     });
-  }, [setActiveWidgets, recalculatePinnedWidgets]);
+  }, [updateAndRecalculate]);
 
   const toggleWidget = useCallback((id: string, title: string) => {
-    setActiveWidgets(prev => {
+    updateAndRecalculate(prev => {
       const existingWidget = prev.find((widget: WidgetState) => widget.id === id);
       const config = initialWidgetConfigs[id];
 
@@ -374,7 +381,7 @@ export function useWidgetActions({
           }
           return widget;
         });
-        return recalculatePinnedWidgets(updatedWidgets);
+        return updatedWidgets; // Recalculation happens in updateAndRecalculate
       } else {
         // This case should ideally not happen if all widgets are pre-initialized in persistence.
         // But as a fallback, add it as a new, open widget.
@@ -402,10 +409,10 @@ export function useWidgetActions({
           normalSize: { width: config.initialWidth, height: config.initialHeight },
           normalPosition: clampedInitialPos,
         };
-        return recalculatePinnedWidgets([...prev, newWidget]);
+        return [...prev, newWidget]; // Recalculation happens in updateAndRecalculate
       }
     });
-  }, [activeWidgets, initialWidgetConfigs, maxZIndex, mainContentArea, setActiveWidgets, recalculatePinnedWidgets]);
+  }, [activeWidgets, initialWidgetConfigs, maxZIndex, mainContentArea, updateAndRecalculate]);
 
 
   const topmostZIndex = useMemo(() => {

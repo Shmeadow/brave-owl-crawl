@@ -12,6 +12,7 @@ export interface UserProfile {
   role: string | null;
   time_format_24h: boolean | null;
   welcome_notification_sent: boolean | null;
+  personal_room_id: string | null; // Added personal_room_id
 }
 
 interface SupabaseContextType {
@@ -44,7 +45,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
   const internalFetchProfile = useCallback(async (userId: string, client: SupabaseClient) => {
     const { data, error } = await client
       .from('profiles')
-      .select('id, first_name, last_name, profile_image_url, role, time_format_24h, welcome_notification_sent')
+      .select('id, first_name, last_name, profile_image_url, role, time_format_24h, welcome_notification_sent, personal_room_id')
       .eq('id', userId)
       .single();
 
@@ -58,7 +59,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
       const { data: newProfile, error: insertError } = await client
         .from('profiles')
         .insert({ id: userId, first_name: null, last_name: null, profile_image_url: null, role: 'user', time_format_24h: true, welcome_notification_sent: false })
-        .select('id, first_name, last_name, profile_image_url, role, time_format_24h, welcome_notification_sent')
+        .select('id, first_name, last_name, profile_image_url, role, time_format_24h, welcome_notification_sent, personal_room_id')
         .single();
       if (insertError) {
         console.error("Error creating default profile:", insertError);
