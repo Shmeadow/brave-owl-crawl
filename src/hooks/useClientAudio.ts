@@ -1,7 +1,7 @@
-"use client";  
+"use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { toast } from "sonner"; // Ensure toast is imported
+import { toast } from "sonner";
 
 interface UseHtmlAudioPlayerResult {
   audioRef: React.RefObject<HTMLAudioElement | null>;
@@ -15,35 +15,31 @@ interface UseHtmlAudioPlayerResult {
 
 export default function useClientAudio(src: string): UseHtmlAudioPlayerResult {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false); // Track playing state
-  const [volume, setVolumeState] = useState(0.5); // Default volume 0-1
+  const [volume, setVolumeState] = useState(0.5);
   const [isMuted, setIsMuted] = useState(false);
-  const prevVolumeRef = useRef(volume); // To store volume before muting
+  const prevVolumeRef = useRef(volume);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize audio element and attach event listeners once
+  // State for isPlaying will now be derived from the audio element's actual state
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  // Initialize audio element and attach core event listeners once
   useEffect(() => {
     if (!audioRef.current) {
       audioRef.current = new Audio();
       audioRef.current.preload = "auto";
-      audioRef.current.loop = true; // Ensure ambient sounds loop
-      audioRef.current.volume = volume; // Set initial volume
-      audioRef.current.muted = isMuted; // Set initial mute state
+      audioRef.current.loop = true;
+      audioRef.current.volume = volume;
+      audioRef.current.muted = isMuted;
 
       const audio = audioRef.current;
 
       const onError = (e: Event) => {
         console.error(`[useClientAudio] load error for ${audio.src}:`, e);
         toast.error(`Failed to load audio: ${audio.src.split('/').pop()}. Please ensure the file exists and is accessible.`);
-        setIsPlaying(false); // Stop playing on error
+        // Do not set isPlaying here, let the polling handle it
       };
-      const onPlay = () => {
-        setIsPlaying(true);
-      };
-      const onPause = () => {
-        setIsPlaying(false);
-      };
-      const onEnded = () => setIsPlaying(false); // Also handle when loop ends (though loop is true)
-      const onVolumeChange = () => { // Listen to native volume changes
+      const onVolumeChange = () => {
         if (audioRef.current) {
           setVolumeState(audioRef.current.volume);
           setIsMuted(audioRef.current.muted || audioRef.current.volume === 0);
@@ -51,33 +47,55 @@ export default function useClientAudio(src: string): UseHtmlAudioPlayerResult {
       };
 
       audio.addEventListener("error", onError);
-      audio.addEventListener("play", onPlay);
-      audio.addEventListener("pause", onPause);
-      audio.addEventListener("ended", onEnded);
-      audio.addEventListener("volumechange", onVolumeChange); // New listener
+      audio.addEventListener("volumechange", onVolumeChange);
 
       return () => {
-        // Cleanup listeners when component unmounts
         audio.pause();
         audio.removeEventListener("error", onError);
-        audio.removeEventListener("play", onPlay);
-        audio.removeEventListener("pause", onPause);
-        audio.removeEventListener("ended", onEnded);
-        audio.removeEventListener("volumechange", onVolumeChange); // Remove listener
+        audio.removeEventListener("volumechange", onVolumeChange);
+        // Clear polling interval on unmount
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
       };
     }
   }, []); // Empty dependency array: runs only once on mount
 
-  // Update src and load when src prop changes
+  // Effect to sync `src` prop with audio element and manage polling
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    if (audio.src !== src) {
+    // Clear any existing polling interval when src changes
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    if (src && audio.src !== src) {
       audio.src = src;
       audio.load(); // Load the new source
-      setIsPlaying(false); // Pause when source changes
+      setIsPlaying(false); // Reset playing state when source changes
+    } else if (!src && audio.src) {
+      audio.src = '';
+      audio.load();
+      setIsPlaying(false);
     }
+
+    // Start polling for isPlaying state
+    intervalRef.current = setInterval(() => {
+      if (audioRef.current) {
+        setIsPlaying(!audioRef.current.paused);
+      }
+    }, 100); // Poll every 100ms for responsiveness
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
   }, [src]); // Dependency on src: runs when src prop changes
 
   const play = useCallback(async () => {
@@ -95,16 +113,15 @@ export default function useClientAudio(src: string): UseHtmlAudioPlayerResult {
       } else {
         toast.error(`Failed to play audio: ${err.message || 'Unknown error'}.`);
       }
-      setIsPlaying(false); // Ensure state is correct if play fails
     }
-  }, []); // No dependencies needed as audioRef.current is stable
+  }, []);
 
   const pause = useCallback(() => {
     const audio = audioRef.current;
     if (audio) {
       audio.pause();
     }
-  }, []); // No dependencies needed as audioRef.current is stable
+  }, []);
 
   const togglePlayPause = useCallback(() => {
     if (isPlaying) {
@@ -112,7 +129,7 @@ export default function useClientAudio(src: string): UseHtmlAudioPlayerResult {
     } else {
       play();
     }
-  }, [isPlaying, play, pause]); // Depend on isPlaying, play, and pause
+  }, [isPlaying, play, pause]);
 
   const setVolume = useCallback((vol: number) => {
     const audio = audioRef.current;
