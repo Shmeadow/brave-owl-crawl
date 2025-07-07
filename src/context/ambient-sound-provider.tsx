@@ -3,22 +3,24 @@
 import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 
-interface SoundState {
+interface GroupSoundState {
   isPlaying: boolean;
   volume: number;
+  activeSoundUrl: string;
 }
 
 interface AmbientSoundContextType {
-  soundsState: Map<string, SoundState>;
-  togglePlay: (url: string, name: string) => void;
-  setVolume: (url: string, volume: number) => void;
+  groupsState: Map<string, GroupSoundState>;
+  togglePlay: (groupName: string, defaultSoundUrl: string) => void;
+  setVolume: (groupName: string, volume: number) => void;
+  setActiveSound: (groupName: string, soundUrl: string) => void;
 }
 
 const AmbientSoundContext = createContext<AmbientSoundContextType | undefined>(undefined);
 
 export function AmbientSoundProvider({ children }: { children: React.ReactNode }) {
   const audioPlayersRef = useRef<Map<string, HTMLAudioElement>>(new Map());
-  const [soundsState, setSoundsState] = useState<Map<string, SoundState>>(new Map());
+  const [groupsState, setGroupsState] = useState<Map<string, GroupSoundState>>(new Map());
 
   // Cleanup on unmount
   useEffect(() => {
@@ -32,60 +34,72 @@ export function AmbientSoundProvider({ children }: { children: React.ReactNode }
     };
   }, []);
 
-  const updateState = useCallback((url: string, newPartialState: Partial<SoundState>) => {
-    setSoundsState(prev => {
+  const updateGroupState = useCallback((groupName: string, newPartialState: Partial<GroupSoundState>) => {
+    setGroupsState(prev => {
       const newState = new Map(prev);
-      const currentState = newState.get(url) || { isPlaying: false, volume: 0.5 };
-      newState.set(url, { ...currentState, ...newPartialState });
+      const currentState = newState.get(groupName) || { isPlaying: false, volume: 0.5, activeSoundUrl: '' };
+      newState.set(groupName, { ...currentState, ...newPartialState });
       return newState;
     });
   }, []);
 
-  const togglePlay = useCallback((url: string, name: string) => {
-    let player = audioPlayersRef.current.get(url);
-    const currentState = soundsState.get(url) || { isPlaying: false, volume: 0.5 };
-
+  const getOrCreatePlayer = useCallback((groupName: string): HTMLAudioElement => {
+    let player = audioPlayersRef.current.get(groupName);
     if (!player) {
-      player = new Audio(url);
+      player = new Audio();
       player.loop = true;
-      player.volume = currentState.volume;
-      audioPlayersRef.current.set(url, player);
-
-      player.oncanplaythrough = () => {
-        if (!currentState.isPlaying) { // Check if it should be playing
-          player?.play().catch(e => console.error("Autoplay failed", e));
-          updateState(url, { isPlaying: true });
-        }
-      };
-      player.onerror = () => {
-        toast.error(`Failed to load sound: ${name}`);
-        updateState(url, { isPlaying: false });
-      };
+      audioPlayersRef.current.set(groupName, player);
     }
+    return player;
+  }, []);
 
-    if (currentState.isPlaying) {
+  const togglePlay = useCallback((groupName: string, defaultSoundUrl: string) => {
+    const player = getOrCreatePlayer(groupName);
+    const groupState = groupsState.get(groupName) || { isPlaying: false, volume: 0.5, activeSoundUrl: defaultSoundUrl };
+
+    if (player.src !== groupState.activeSoundUrl) {
+      player.src = groupState.activeSoundUrl;
+      player.load();
+    }
+    
+    player.volume = groupState.volume;
+
+    if (groupState.isPlaying) {
       player.pause();
-      updateState(url, { isPlaying: false });
-      toast.info(`Paused ${name}`);
+      updateGroupState(groupName, { isPlaying: false });
+      toast.info(`Paused ${groupName}`);
     } else {
       player.play().catch(e => {
-        toast.error(`Could not play ${name}. Please interact with the page first.`);
+        toast.error(`Could not play ${groupName}. Please interact with the page first.`);
         console.error("Play error:", e);
       });
-      updateState(url, { isPlaying: true });
-      toast.info(`Playing ${name}`);
+      updateGroupState(groupName, { isPlaying: true });
+      toast.info(`Playing ${groupName}`);
     }
-  }, [soundsState, updateState]);
+  }, [groupsState, getOrCreatePlayer, updateGroupState]);
 
-  const setVolume = useCallback((url: string, volume: number) => {
-    const player = audioPlayersRef.current.get(url);
-    if (player) {
-      player.volume = volume;
+  const setVolume = useCallback((groupName: string, volume: number) => {
+    const player = getOrCreatePlayer(groupName);
+    player.volume = volume;
+    updateGroupState(groupName, { volume });
+  }, [getOrCreatePlayer, updateGroupState]);
+
+  const setActiveSound = useCallback((groupName: string, soundUrl: string) => {
+    const player = getOrCreatePlayer(groupName);
+    const groupState = groupsState.get(groupName) || { isPlaying: false, volume: 0.5, activeSoundUrl: soundUrl };
+    
+    updateGroupState(groupName, { activeSoundUrl: soundUrl });
+
+    if (player.src !== soundUrl) {
+        player.src = soundUrl;
+        player.load();
+        if (groupState.isPlaying) {
+            player.play().catch(e => console.error("Failed to play new sound in group", e));
+        }
     }
-    updateState(url, { volume });
-  }, [updateState]);
+  }, [groupsState, getOrCreatePlayer, updateGroupState]);
 
-  const value = { soundsState, togglePlay, setVolume };
+  const value = { groupsState, togglePlay, setVolume, setActiveSound };
 
   return (
     <AmbientSoundContext.Provider value={value}>
