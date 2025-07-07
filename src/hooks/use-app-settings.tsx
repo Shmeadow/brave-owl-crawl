@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } => 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSupabase } from '@/integrations/supabase/auth';
 import { toast } from 'sonner';
 import { usePersistentData } from './use-persistent-data'; // Import the new hook

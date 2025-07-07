@@ -32,9 +32,9 @@ export function EffectProvider({ children }: { children: React.ReactNode }) {
   } = usePersistentData<EffectType, DbUserPreference>({
     localStorageKey: LOCAL_STORAGE_KEY,
     supabaseTableName: SUPABASE_TABLE_NAME,
-    initialValue: 'none',
+    initialValue: 'none', // Keep as literal, but rely on explicit return type below
     selectQuery: 'active_effect',
-    transformFromDb: (dbData: DbUserPreference) => dbData.active_effect ?? 'none',
+    transformFromDb: (dbData: DbUserPreference): EffectType => dbData.active_effect ?? 'none', // Explicit return type
     transformToDb: (appData: EffectType, userId: string) => ({
       user_id: userId,
       active_effect: appData,

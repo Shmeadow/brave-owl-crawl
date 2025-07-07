@@ -25,9 +25,9 @@ export function useSidebarPreference() {
   } = usePersistentData<boolean, DbUserPreference>({
     localStorageKey: LOCAL_STORAGE_SIDEBAR_PREFERENCE_KEY,
     supabaseTableName: SUPABASE_TABLE_NAME,
-    initialValue: false,
+    initialValue: false, // Keep as literal, but rely on explicit return type below
     selectQuery: 'is_sidebar_always_open',
-    transformFromDb: (dbData: DbUserPreference) => dbData.is_sidebar_always_open,
+    transformFromDb: (dbData: DbUserPreference): boolean => dbData.is_sidebar_always_open, // Explicit return type
     transformToDb: (appData: boolean, userId: string) => ({
       user_id: userId,
       is_sidebar_always_open: appData,
