@@ -81,13 +81,9 @@ function BackgroundManager({ url, isVideo, isMirrored }: { url: string; isVideo:
   );
 }
 
-export function BackgroundProvider({ children }: { children: React.ReactNode }) {
+export function BackgroundProvider({ children, initialBackground }: { children: React.ReactNode; initialBackground: BackgroundState }) {
   const { supabase, session, loading: authLoading } = useSupabase();
-  const [background, setBackgroundState] = useState<BackgroundState>(() => {
-    // Default to a random background for SSR and initial client render
-    const randomBg = getRandomBackground();
-    return { url: randomBg.url, isVideo: randomBg.isVideo, isMirrored: false };
-  });
+  const [background, setBackgroundState] = useState<BackgroundState>(initialBackground); // Use the prop for initial state
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
 
@@ -117,7 +113,6 @@ export function BackgroundProvider({ children }: { children: React.ReactNode }) 
             isVideo: supabasePrefs.is_video_background ?? false,
             isMirrored: supabasePrefs.is_mirrored_background ?? false,
           });
-          // console.log("Loaded background from Supabase."); // Removed for cleaner logs
         } else {
           // 2. If no Supabase data, check local storage for migration
           const savedUrl = localStorage.getItem(LOCAL_STORAGE_BG_KEY);
@@ -146,24 +141,22 @@ export function BackgroundProvider({ children }: { children: React.ReactNode }) 
               localStorage.removeItem(LOCAL_STORAGE_BG_KEY);
               localStorage.removeItem(LOCAL_STORAGE_BG_TYPE_KEY);
               localStorage.removeItem(LOCAL_STORAGE_BG_MIRRORED_KEY);
-              // toast.success("Local background settings migrated to your account!"); // Removed for cleaner logs
             }
           } else {
-            // 3. If neither, set a random default and insert into Supabase
-            const defaultBg = getRandomBackground();
+            // 3. If neither, use the initialBackground from props and insert into Supabase
             const { error: insertError } = await supabase
               .from('user_preferences')
               .upsert({
                 user_id: session.user.id,
-                background_url: defaultBg.url,
-                is_video_background: defaultBg.isVideo,
-                is_mirrored_background: defaultBg.isMirrored,
+                background_url: initialBackground.url, // Use initialBackground here
+                is_video_background: initialBackground.isVideo, // Use initialBackground here
+                is_mirrored_background: initialBackground.isMirrored, // Use initialBackground here
               }, { onConflict: 'user_id' });
 
             if (insertError) {
               console.error("Error inserting default background into Supabase:", insertError);
             } else {
-              setBackgroundState(defaultBg);
+              setBackgroundState(initialBackground); // Set state to initialBackground
             }
           }
         }
@@ -181,19 +174,18 @@ export function BackgroundProvider({ children }: { children: React.ReactNode }) 
             isMirrored: savedMirrored === 'true',
           });
         } else {
-          // Set a random default for guests if no local storage
-          const defaultBg = getRandomBackground();
-          setBackgroundState(defaultBg);
-          localStorage.setItem(LOCAL_STORAGE_BG_KEY, defaultBg.url);
-          localStorage.setItem(LOCAL_STORAGE_BG_TYPE_KEY, defaultBg.isVideo ? 'video' : 'image');
-          localStorage.setItem(LOCAL_STORAGE_BG_MIRRORED_KEY, String(defaultBg.isMirrored));
+          // Set the initialBackground from props for guests if no local storage
+          setBackgroundState(initialBackground); // Use initialBackground here
+          localStorage.setItem(LOCAL_STORAGE_BG_KEY, initialBackground.url);
+          localStorage.setItem(LOCAL_STORAGE_BG_TYPE_KEY, initialBackground.isVideo ? 'video' : 'image');
+          localStorage.setItem(LOCAL_STORAGE_BG_MIRRORED_KEY, String(initialBackground.isMirrored));
         }
       }
       setLoading(false);
     };
 
     loadBackground();
-  }, [session, supabase, authLoading]);
+  }, [session, supabase, authLoading, initialBackground]); // Add initialBackground to dependencies
 
   // Callback to change the background and save the choice
   const setBackground = useCallback(async (url: string, isVideo: boolean = false, isMirrored: boolean = false) => {

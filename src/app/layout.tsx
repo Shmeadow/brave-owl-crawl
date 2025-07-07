@@ -11,6 +11,7 @@ import { BackgroundBlurProvider } from "@/context/background-blur-provider";
 import { EffectProvider } from "@/context/effect-provider";
 import { ClientOnlyWrapper } from '@/components/client-only-wrapper';
 import { SpeedInsights } from "@vercel/speed-insights/next"; // Corrected import for Next.js App Router
+import { getRandomBackground } from '@/lib/backgrounds'; // Import getRandomBackground
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,6 +59,9 @@ export default async function RootLayout({
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   let isCozyThemeGloballyEnabled = true; // Default to true
 
+  // Generate a random background on the server
+  const initialBackground = getRandomBackground();
+
   // Log the environment variables to help diagnose
   // console.log('Server-side Supabase URL:', supabaseUrl ? 'Loaded' : 'Undefined'); // Removed for cleaner logs
   // console.log('Server-side Supabase Anon Key:', supabaseAnonKey ? 'Loaded' : 'Undefined'); // Removed for cleaner logs
@@ -94,7 +98,7 @@ export default async function RootLayout({
         <SessionContextProvider> {/* Moved SessionContextProvider to the top */}
           <BackgroundBlurProvider>
             <EffectProvider>
-              <BackgroundProvider>
+              <BackgroundProvider initialBackground={initialBackground}> {/* Pass initialBackground here */}
                 <ThemeProvider
                   attribute="class"
                   defaultTheme="system"
