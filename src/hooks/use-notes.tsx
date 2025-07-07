@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
+import { usePersistentData } from "./use-persistent-data"; // Import the new hook
 
 export interface NoteData {
   id: string;
@@ -12,118 +13,54 @@ export interface NoteData {
   created_at: string;
 }
 
+interface DbNote {
+  id: string;
+  user_id: string;
+  content: string;
+  starred: boolean;
+  created_at: string;
+}
+
 const LOCAL_STORAGE_KEY = 'guest_notes';
+const SUPABASE_TABLE_NAME = 'notes';
 
 export function useNotes() {
-  const { supabase, session, loading: authLoading } = useSupabase();
-  const [notes, setNotes] = useState<NoteData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isLoggedInMode, setIsLoggedInMode] = useState(false);
+  const { supabase, session } = useSupabase();
 
-  // Effect to handle initial load and auth state changes
-  useEffect(() => {
-    if (authLoading) return;
-
-    const loadNotes = async () => {
-      setLoading(true);
-      if (session && supabase) {
-        // User is logged in
-        setIsLoggedInMode(true);
-        // console.log("User logged in. Checking for local notes to migrate..."); // Removed for cleaner logs
-
-        // 1. Load local notes (if any)
-        const localNotesString = localStorage.getItem(LOCAL_STORAGE_KEY);
-        let localNotes: NoteData[] = [];
-        try {
-          localNotes = localNotesString ? JSON.parse(localNotesString) : [];
-        } catch (e) {
-          console.error("Error parsing local storage notes:", e);
-          localNotes = [];
-        }
-
-        // 2. Fetch user's existing notes from Supabase
-        const { data: supabaseNotes, error: fetchError } = await supabase
-          .from('notes')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .order('created_at', { ascending: true });
-
-        if (fetchError) {
-          toast.error("Error fetching notes from Supabase: " + fetchError.message);
-          console.error("Error fetching notes (Supabase):", fetchError);
-          setNotes([]);
-        } else {
-          let mergedNotes = [...(supabaseNotes as NoteData[])];
-
-          // 3. Migrate local notes to Supabase if they don't already exist
-          if (localNotes.length > 0) {
-            // console.log(`Found ${localNotes.length} local notes. Attempting migration...`); // Removed for cleaner logs
-            for (const localNote of localNotes) {
-              // Check if a similar note (by content) already exists in Supabase for this user
-              const existsInSupabase = mergedNotes.some(
-                sn => sn.content === localNote.content
-              );
-
-              if (!existsInSupabase) {
-                const { data: newSupabaseNote, error: insertError } = await supabase
-                  .from('notes')
-                  .insert({
-                    user_id: session.user.id,
-                    content: localNote.content,
-                    starred: localNote.starred,
-                    created_at: localNote.created_at || new Date().toISOString(), // Ensure created_at
-                  })
-                  .select()
-                  .single();
-
-                if (insertError) {
-                  console.error("Error migrating local note to Supabase:", insertError);
-                  toast.error("Error migrating some local notes.");
-                } else if (newSupabaseNote) {
-                  mergedNotes.push(newSupabaseNote as NoteData);
-                  // console.log("Migrated local note:", newSupabaseNote.content); // Removed for cleaner logs
-                }
-              }
-            }
-            // Clear local storage after migration attempt
-            localStorage.removeItem(LOCAL_STORAGE_KEY);
-            toast.success("Local notes migrated to your account!");
-          }
-          setNotes(mergedNotes);
-        }
-      } else {
-        // User is a guest (not logged in)
-        setIsLoggedInMode(false);
-        const storedNotesString = localStorage.getItem(LOCAL_STORAGE_KEY);
-        let loadedNotes: NoteData[] = [];
-        try {
-          loadedNotes = storedNotesString ? JSON.parse(storedNotesString) : [];
-        } catch (e) {
-          console.error("Error parsing local storage notes:", e);
-          loadedNotes = [];
-        }
-        setNotes(loadedNotes);
-        if (loadedNotes.length === 0) {
-          toast.info("You are browsing notes as a guest. Your notes will be saved locally.");
-        }
-      }
-      setLoading(false);
-    };
-
-    loadNotes();
-  }, [session, supabase, authLoading]);
-
-  // Effect to save notes to local storage when in guest mode
-  useEffect(() => {
-    if (!isLoggedInMode && !loading) {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(notes));
-    }
-  }, [notes, isLoggedInMode, loading]);
+  const {
+    data: notes,
+    loading,
+    isLoggedInMode,
+    setData: setNotes, // Rename setData to setNotes for clarity
+    fetchData, // Expose fetchData for manual refresh after mutations
+  } = usePersistentData<NoteData[], DbNote>({ // T_APP_DATA is NoteData[], T_DB_DATA_ITEM is DbNote
+    localStorageKey: LOCAL_STORAGE_KEY,
+    supabaseTableName: SUPABASE_TABLE_NAME,
+    initialValue: [],
+    selectQuery: '*',
+    transformFromDb: (dbNotes: DbNote[]) => dbNotes.map(note => ({
+      id: note.id,
+      user_id: note.user_id,
+      content: note.content,
+      starred: note.starred,
+      created_at: note.created_at,
+    })),
+    transformToDb: (appNote: NoteData, userId: string) => ({ // appItem is NoteData, returns DbNote
+      id: appNote.id, // Keep ID for upserting during migration
+      user_id: userId,
+      content: appNote.content,
+      starred: appNote.starred,
+      created_at: appNote.created_at,
+    }),
+    userIdColumn: 'user_id',
+    onConflictColumn: 'id', // For migrating existing local notes
+    debounceDelay: 0, // No debouncing for list mutations, rely on explicit fetchData
+  });
 
   const handleAddNote = useCallback(async (content: string) => {
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase
-        .from('notes')
+        .from(SUPABASE_TABLE_NAME)
         .insert({
           user_id: session.user.id,
           content: content,
@@ -136,7 +73,7 @@ export function useNotes() {
         toast.error("Error adding note (Supabase): " + error.message);
         console.error("Error adding note (Supabase):", error);
       } else if (data) {
-        setNotes((prevNotes) => [...prevNotes, data as NoteData]);
+        fetchData(); // Re-fetch to update the state with the new note
         toast.success("Note added successfully to your account!");
       }
     } else {
@@ -149,12 +86,12 @@ export function useNotes() {
       setNotes((prevNotes) => [...prevNotes, newNote]);
       toast.success("Note added successfully (saved locally)!");
     }
-  }, [isLoggedInMode, session, supabase]);
+  }, [isLoggedInMode, session, supabase, setNotes, fetchData]);
 
   const handleDeleteNote = useCallback(async (noteId: string) => {
     if (isLoggedInMode && session && supabase) {
       const { error } = await supabase
-        .from('notes')
+        .from(SUPABASE_TABLE_NAME)
         .delete()
         .eq('id', noteId)
         .eq('user_id', session.user.id);
@@ -163,14 +100,14 @@ export function useNotes() {
         toast.error("Error deleting note (Supabase): " + error.message);
         console.error("Error deleting note (Supabase):", error);
       } else {
-        setNotes(prevNotes => prevNotes.filter(note => note.id !== noteId));
+        fetchData(); // Re-fetch to update the state
         toast.success("Note deleted from your account.");
       }
     } else {
       setNotes(prevNotes => prevNotes.filter(note => note.id !== noteId));
       toast.success("Note deleted (locally).");
     }
-  }, [isLoggedInMode, session, supabase]);
+  }, [isLoggedInMode, session, supabase, setNotes, fetchData]);
 
   const handleToggleStar = useCallback(async (noteId: string) => {
     const noteToUpdate = notes.find(note => note.id === noteId);
@@ -180,7 +117,7 @@ export function useNotes() {
 
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase
-        .from('notes')
+        .from(SUPABASE_TABLE_NAME)
         .update({ starred: newStarredStatus })
         .eq('id', noteId)
         .eq('user_id', session.user.id)
@@ -191,7 +128,7 @@ export function useNotes() {
         toast.error("Error updating star status (Supabase): " + error.message);
         console.error("Error updating star status (Supabase):", error);
       } else if (data) {
-        setNotes(prevNotes => prevNotes.map(note => note.id === noteId ? data as NoteData : note));
+        fetchData(); // Re-fetch to update the state
         toast.info(newStarredStatus ? "Note starred!" : "Note unstarred.");
       }
     } else {
@@ -200,7 +137,7 @@ export function useNotes() {
       ));
       toast.info(newStarredStatus ? "Note starred (locally)!" : "Note unstarred (locally).");
     }
-  }, [notes, isLoggedInMode, session, supabase]);
+  }, [notes, isLoggedInMode, session, supabase, setNotes, fetchData]);
 
   return {
     notes,
