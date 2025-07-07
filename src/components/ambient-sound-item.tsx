@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Music, Loader2, CloudRain, Wind, Coffee, Building, Waves, Sun, Snowflake, Keyboard, BookOpen, Volume2 } from "lucide-react";
+import { Play, Music, Loader2, CloudRain, Wind, Coffee, Building, Waves, Sun, Snowflake, Keyboard, BookOpen, Volume2, Pause } from "lucide-react"; // Import Pause icon
 import useClientAudio from "@/hooks/useClientAudio"; // Import the new hook
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -41,25 +41,30 @@ const getSoundIcon = (name: string, category: string) => {
 
 
 export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }: AmbientSoundItemProps) {
-  const { play, isReady } = useClientAudio(url);
+  const { play, pause, isReady, isPlaying } = useClientAudio(url); // Destructure isPlaying
 
-  const handlePlayClick = (e: React.MouseEvent) => {
+  const handlePlayPauseClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent any parent click handlers
     if (!isCurrentRoomWritable) {
       toast.error("You do not have permission to control sounds in this room.");
-      // console.log("[AmbientSoundItem] Blocked play: Room not writable."); // Removed for cleaner logs
       return;
     }
-    // console.log(`[AmbientSoundItem] Attempting to play: ${name}. Ready: ${isReady}. Writable: ${isCurrentRoomWritable}`); // Removed for cleaner logs
-    play();
-    toast.info(`Playing ${name}`);
+
+    if (isPlaying) {
+      pause();
+      toast.info(`Paused ${name}`);
+    } else {
+      play();
+      toast.info(`Playing ${name}`);
+    }
   };
 
   return (
     <div
       className={cn(
         "flex items-center justify-between p-2 rounded-md border border-border bg-card backdrop-blur-xl shadow-sm transition-all duration-200",
-        isReady ? "bg-primary/10 border-primary" : "hover:bg-muted/50", // Indicate if ready
+        isPlaying ? "bg-primary/10 border-primary" : "hover:bg-muted/50", // Indicate if playing
+        !isReady && "opacity-70 cursor-wait", // Indicate loading state
         !isCurrentRoomWritable && "opacity-70 cursor-not-allowed"
       )}
     >
@@ -79,11 +84,11 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }:
           variant="ghost"
           size="icon"
           className="h-8 w-8 text-muted-foreground hover:text-primary"
-          onClick={handlePlayClick}
-          disabled={!isReady || !isCurrentRoomWritable}
+          onClick={handlePlayPauseClick}
+          disabled={!isReady || !isCurrentRoomWritable} // Disable if not ready or not writable
         >
-          <Play className="h-4 w-4" />
-          <span className="sr-only">Play {name}</span>
+          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          <span className="sr-only">{isPlaying ? `Pause ${name}` : `Play ${name}`}</span>
         </Button>
       </div>
     </div>
