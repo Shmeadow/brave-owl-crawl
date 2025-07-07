@@ -5,7 +5,6 @@ import { Music, Search, Bird, Flame, Footprints, Leaf, Droplet, WavesIcon, Train
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AmbientSoundItem } from "@/components/ambient-sound-item";
 import { Input } from "@/components/ui/input";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface SoundsWidgetProps {
   isCurrentRoomWritable: boolean;
@@ -48,28 +47,16 @@ const allAmbientSounds = [
 export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const soundGroups = useMemo(() => {
+  const filteredSounds = useMemo(() => {
     const lowerCaseSearch = searchTerm.toLowerCase();
-    const filtered = allAmbientSounds.filter(sound =>
+    if (!lowerCaseSearch) {
+      return allAmbientSounds;
+    }
+    return allAmbientSounds.filter(sound =>
       sound.name.toLowerCase().includes(lowerCaseSearch) ||
       sound.category.toLowerCase().includes(lowerCaseSearch)
     );
-
-    if (filtered.length === 0) {
-      return {};
-    }
-
-    return filtered.reduce((acc, sound) => {
-      const category = sound.category || "Uncategorized";
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(sound);
-      return acc;
-    }, {} as Record<string, typeof allAmbientSounds>);
   }, [searchTerm]);
-
-  const categories = Object.keys(soundGroups).sort();
 
   return (
     <div className="h-full w-full flex flex-col p-0">
@@ -82,7 +69,7 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
         <div className="relative">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search sounds or categories..."
+            placeholder="Search sounds..."
             className="pl-8"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -90,34 +77,25 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
         </div>
       </div>
 
-      {categories.length === 0 ? (
+      {filteredSounds.length === 0 ? (
         <p className="p-4 text-muted-foreground text-sm text-center">No ambient sounds found.</p>
       ) : (
         <ScrollArea className="flex-1 h-full">
-          <Accordion type="multiple" className="w-full p-4" defaultValue={categories}>
-            {categories.map((category) => (
-              <AccordionItem value={category} key={category}>
-                <AccordionTrigger className="text-lg font-semibold">{category}</AccordionTrigger>
-                <AccordionContent>
-                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 pt-2">
-                    {soundGroups[category].map((sound) => (
-                      <AmbientSoundItem
-                        key={sound.url}
-                        name={sound.name}
-                        url={sound.url}
-                        icon={sound.icon}
-                        isCurrentRoomWritable={isCurrentRoomWritable}
-                      />
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+          <div className="p-4 grid gap-3 grid-cols-3 sm:grid-cols-4">
+            {filteredSounds.map((sound) => (
+              <AmbientSoundItem
+                key={sound.url}
+                name={sound.name}
+                url={sound.url}
+                icon={sound.icon}
+                isCurrentRoomWritable={isCurrentRoomWritable}
+              />
             ))}
-          </Accordion>
+          </div>
         </ScrollArea>
       )}
       <p className="text-sm text-muted-foreground mt-auto p-4 text-center border-t border-border">
-        Click play on any sound to start. Multiple sounds can play simultaneously.
+        Click any sound to play. Multiple sounds can play simultaneously.
       </p>
     </div>
   );

@@ -1,8 +1,6 @@
 "use client";
 
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { Play, Pause, Volume2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { useAmbientSound } from "@/context/ambient-sound-provider";
 import { cn } from "@/lib/utils";
@@ -20,7 +18,7 @@ export function AmbientSoundItem({ name, url, icon: Icon, isCurrentRoomWritable 
   const soundState = soundsState.get(url) || { isPlaying: false, volume: 0.5 };
   const { isPlaying, volume } = soundState;
 
-  const handlePlayPauseClick = () => {
+  const handleContainerClick = () => {
     if (!isCurrentRoomWritable) {
       toast.error("You do not have permission to control sounds in this room.");
       return;
@@ -30,7 +28,6 @@ export function AmbientSoundItem({ name, url, icon: Icon, isCurrentRoomWritable 
 
   const handleVolumeChange = (value: number[]) => {
     if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to control sounds in this room.");
       return;
     }
     setVolume(url, value[0]);
@@ -39,40 +36,30 @@ export function AmbientSoundItem({ name, url, icon: Icon, isCurrentRoomWritable 
   return (
     <div
       className={cn(
-        "flex flex-col p-3 rounded-lg border shadow-sm transition-all duration-200",
-        isPlaying ? "bg-primary/20 border-primary" : "bg-card backdrop-blur-xl border-border hover:bg-muted/50",
-        !isCurrentRoomWritable && "opacity-70 cursor-not-allowed"
+        "relative flex flex-col items-center justify-center p-2 rounded-lg border cursor-pointer transition-all duration-200 space-y-2 h-24",
+        isPlaying ? "bg-primary/20 border-primary shadow-md" : "bg-card/60 backdrop-blur-xl border-border hover:bg-muted/80",
+        !isCurrentRoomWritable && "opacity-60 cursor-not-allowed"
       )}
+      onClick={handleContainerClick}
+      title={name}
     >
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-3 flex-grow min-w-0">
-          <Icon className="h-5 w-5 text-primary" />
-          <span className="font-semibold text-md truncate text-foreground">{name}</span>
-        </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn(
-            "h-8 w-8",
-            isPlaying ? "text-primary hover:bg-primary/20" : "text-muted-foreground hover:bg-accent"
-          )}
-          onClick={handlePlayPauseClick}
-          disabled={!isCurrentRoomWritable}
-        >
-          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-          <span className="sr-only">{isPlaying ? `Pause ${name}` : `Play ${name}`}</span>
-        </Button>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Volume2 className="h-4 w-4 text-muted-foreground" />
+      <Icon className={cn("h-6 w-6", isPlaying ? "text-primary" : "text-muted-foreground")} />
+      <span className="text-xs text-center font-medium truncate w-full">{name}</span>
+      
+      <div
+        className={cn(
+          "absolute bottom-1 left-1 right-1 transition-opacity duration-200",
+          isPlaying ? "opacity-100" : "opacity-0"
+        )}
+        onClick={(e) => e.stopPropagation()} // Prevent slider click from toggling play/pause
+      >
         <Slider
           value={[volume]}
           onValueChange={handleVolumeChange}
           max={1}
           step={0.01}
-          className="flex-grow"
-          disabled={!isCurrentRoomWritable}
+          className="w-full h-4"
+          disabled={!isCurrentRoomWritable || !isPlaying}
         />
       </div>
     </div>
