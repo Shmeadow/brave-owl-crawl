@@ -51,7 +51,8 @@ export function AnimatedBackgroundPreviewItem({ videoUrl, isActive, onClick, pre
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-700 text-white text-xs font-semibold p-2 text-center">
           <ImageIcon className="h-6 w-6 mb-1" />
-          <span>Video Error</span>
+          <span className="text-center">Video Error</span>
+          <img src="/static/bg-fallback.jpg" alt="Fallback" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
         </div>
       )}
       {isActive && (
