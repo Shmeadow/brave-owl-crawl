@@ -21,7 +21,7 @@ export function PlayingSoundsBar() {
   }
 
   return (
-    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[1001] pointer-events-none">
+    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[902] pointer-events-none">
       <Card className="bg-background/60 backdrop-blur-xl border-white/20 shadow-lg rounded-full p-1.5 pointer-events-auto">
         <div className="flex items-center gap-2">
           <TooltipProvider>
