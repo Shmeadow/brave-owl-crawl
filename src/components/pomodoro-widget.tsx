@@ -1,23 +1,25 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Play, Pause, RotateCcw, Coffee, Brain, Home, ChevronDown, Settings, ChevronUp } from "lucide-react";
-import { usePomodoroState, formatTime } from "@/hooks/use-pomodoro-state";
+import { usePomodoroState, formatTime, parseTimeToSeconds, PomodoroMode } from "@/hooks/use-pomodoro-state";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PomodoroSettingsModal } from "@/components/pomodoro-settings-modal";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useFocusSession } from "@/context/focus-session-provider";
 
 interface PomodoroWidgetProps {
+  isMinimized: boolean;
+  setIsMinimized: (minimized: boolean) => void;
   chatPanelWidth: number;
   isMobile: boolean;
 }
 
-export function PomodoroWidget({ chatPanelWidth, isMobile }: PomodoroWidgetProps) {
+export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, isMobile }: PomodoroWidgetProps) {
   const {
     mode,
     timeLeft,
@@ -36,11 +38,10 @@ export function PomodoroWidget({ chatPanelWidth, isMobile }: PomodoroWidgetProps
 
   const { isCurrentRoomWritable } = useCurrentRoom();
   const { activeGoalTitle, isFocusSessionActive, endFocusSession } = useFocusSession();
-  const [isMinimized, setIsMinimized] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleStartPause = () => {
-    if (isRunning) {
+    if (isRunning) { // If it's currently running, pausing will end the session
       endFocusSession();
     }
     baseHandleStartPause();
@@ -63,34 +64,22 @@ export function PomodoroWidget({ chatPanelWidth, isMobile }: PomodoroWidgetProps
     }
   }, [isEditingTime]);
 
+  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
+
+  const toggleMobileExpand = () => {
+    setIsMobileExpanded(prev => !prev);
+  };
+
   if (isMobile) {
     return (
       <Card
         className={cn(
           "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg",
           "flex flex-col transition-all duration-300 ease-in-out w-full",
-          isMinimized ? "h-16 p-2 items-center justify-between flex-row" : "h-auto p-2"
+          isMobileExpanded ? "h-auto p-2" : "h-16 p-2 items-center justify-between flex-row"
         )}
       >
-        {isMinimized ? (
-          <>
-            <span className="text-sm font-semibold capitalize">{mode.replace('-', ' ')}</span>
-            <div
-              className="text-xl font-bold font-mono cursor-pointer hover:text-primary"
-              onClick={() => setIsMinimized(false)}
-            >
-              {formatTime(timeLeft)}
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-7 w-7" disabled={!isCurrentRoomWritable}>
-                {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-              </Button>
-              <Button onClick={(e) => { e.stopPropagation(); handleReset(); }} size="icon" variant="secondary" className="h-7 w-7" disabled={!isCurrentRoomWritable}>
-                <RotateCcw className="h-4 w-4" />
-              </Button>
-            </div>
-          </>
-        ) : (
+        {isMobileExpanded ? (
           <>
             <CardHeader className="flex flex-row items-center justify-between w-full p-1 pb-2">
               <CardTitle className="text-lg font-bold flex-1 text-left">
@@ -100,10 +89,11 @@ export function PomodoroWidget({ chatPanelWidth, isMobile }: PomodoroWidgetProps
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7"
-                onClick={() => setIsMinimized(true)}
+                onClick={toggleMobileExpand}
                 title="Collapse Pomodoro Timer"
               >
                 <ChevronDown className="h-4 w-4" />
+                <span className="sr-only">Collapse Pomodoro</span>
               </Button>
             </CardHeader>
             <CardContent className="flex flex-col items-center gap-3 w-full p-2">
@@ -182,6 +172,27 @@ export function PomodoroWidget({ chatPanelWidth, isMobile }: PomodoroWidgetProps
               </div>
             </CardContent>
           </>
+        ) : (
+          <>
+            <span className="text-sm font-semibold capitalize">{mode.replace('-', ' ')}</span>
+            <div
+              className={cn(
+                "text-xl font-bold font-mono",
+                isCurrentRoomWritable ? "cursor-pointer hover:text-primary" : "cursor-not-allowed opacity-70"
+              )}
+              onClick={toggleMobileExpand}
+            >
+              {formatTime(timeLeft)}
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-7 w-7" disabled={!isCurrentRoomWritable}>
+                {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              </Button>
+              <Button onClick={(e) => { e.stopPropagation(); handleReset(); }} size="icon" variant="secondary" className="h-7 w-7" disabled={!isCurrentRoomWritable}>
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            </div>
+          </>
         )}
       </Card>
     );
@@ -190,85 +201,142 @@ export function PomodoroWidget({ chatPanelWidth, isMobile }: PomodoroWidgetProps
   return (
     <Card
       className={cn(
-        "fixed bottom-4 left-1/2 -translate-x-1/2",
+        "fixed bottom-20 left-1/2 -translate-x-1/2",
         "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg",
         "flex transition-all duration-300 ease-in-out z-[901]",
+        "w-48",
         isMinimized
-          ? "flex-row items-center p-2 gap-3 h-14 cursor-pointer"
-          : "flex-col p-4 gap-4 w-64"
+          ? "flex-col items-center px-2 py-1 h-auto cursor-pointer"
+          : "flex-col items-center p-3 gap-3 h-auto"
       )}
       onClick={isMinimized ? () => setIsMinimized(false) : undefined}
     >
-      {isMinimized ? (
-        <>
-          {mode === 'focus' ? <Brain className="h-5 w-5 text-primary" /> : mode === 'short-break' ? <Coffee className="h-5 w-5 text-green-500" /> : <Home className="h-5 w-5 text-blue-500" />}
-          <span className="text-xl font-bold font-mono">{formatTime(timeLeft)}</span>
-          <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-8 w-8" disabled={!isCurrentRoomWritable}>
-            {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+      <CardHeader className={cn(
+        "flex flex-row items-center justify-between w-full p-0",
+        isMinimized ? "hidden" : "pb-2"
+      )}>
+        <CardTitle className="text-lg font-bold flex-1 text-left">
+          Pomodoro
+        </CardTitle>
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMinimized(true);
+            }}
+            title="Minimize Pomodoro Timer"
+          >
+            <ChevronDown className="h-4 w-4" />
+            <span className="sr-only">Minimize Pomodoro</span>
           </Button>
-        </>
-      ) : (
-        <>
-          <CardHeader className="flex flex-row items-center justify-between w-full p-0">
-            <CardTitle className="text-lg font-bold">Pomodoro</CardTitle>
-            <div className="flex gap-1">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => e.stopPropagation()}>
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                </DialogTrigger>
-                <PomodoroSettingsModal initialTimes={customTimes} onSave={setCustomTime} />
-              </Dialog>
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsMinimized(true)}>
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-4 w-full p-0">
-            {isFocusSessionActive && activeGoalTitle && mode === 'focus' && (
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground">Focusing on:</p>
-                <p className="text-sm font-semibold text-primary truncate max-w-[200px]">{activeGoalTitle}</p>
-              </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className={cn("flex flex-col items-center gap-3 w-full p-0", isMinimized ? "hidden" : "flex")}>
+        {isFocusSessionActive && activeGoalTitle && mode === 'focus' && (
+          <div className="text-center mb-2">
+            <p className="text-xs text-muted-foreground">Focusing on:</p>
+            <p className="text-sm font-semibold text-primary truncate max-w-[160px]">{activeGoalTitle}</p>
+          </div>
+        )}
+        <div className="grid grid-cols-3 gap-2 w-full">
+          <div className="flex flex-col items-center gap-1">
+            <Button
+              variant={mode === 'focus' ? 'default' : 'outline'}
+              size="icon"
+              onClick={() => handleSwitchMode('focus')}
+              className={cn("h-8 w-8 rounded-md", mode === 'focus' && "bg-primary text-primary-foreground")}
+              disabled={!isCurrentRoomWritable}
+            >
+              <Brain className="h-4 w-4" />
+            </Button>
+            <span className="text-xs text-muted-foreground">Focus</span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <Button
+              variant={mode === 'short-break' ? 'default' : 'outline'}
+              size="icon"
+              onClick={() => handleSwitchMode('short-break')}
+              className={cn("h-8 w-8 rounded-md", mode === 'short-break' && "bg-secondary text-secondary-foreground")}
+              disabled={!isCurrentRoomWritable}
+            >
+              <Coffee className="h-4 w-4" />
+            </Button>
+            <span className="text-xs text-muted-foreground">Short</span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <Button
+              variant={mode === 'long-break' ? 'default' : 'outline'}
+              size="icon"
+              onClick={() => handleSwitchMode('long-break')}
+              className={cn("h-8 w-8 rounded-md", mode === 'long-break' && "bg-accent text-accent-foreground")}
+              disabled={!isCurrentRoomWritable}
+            >
+              <Home className="h-4 w-4" />
+            </Button>
+            <span className="text-xs text-muted-foreground">Long</span>
+          </div>
+        </div>
+        {isEditingTime ? (
+          <Input
+            ref={inputRef}
+            type="text"
+            value={editableTimeString}
+            onChange={(e) => setEditableTimeString(e.target.value)}
+            onBlur={handleTimeInputBlur}
+            onKeyDown={handleTimeInputKeyDown}
+            className="text-4xl font-bold font-mono text-center w-full h-12 bg-transparent border-none focus-visible:ring-0"
+            disabled={!isCurrentRoomWritable}
+          />
+        ) : (
+          <div
+            className={cn(
+              "text-4xl font-bold font-mono transition-colors",
+              isCurrentRoomWritable ? "cursor-pointer hover:text-primary" : "cursor-not-allowed opacity-70"
             )}
-            <div className="flex gap-2 justify-center w-full">
-              <Button variant={mode === 'focus' ? 'default' : 'outline'} onClick={() => handleSwitchMode('focus')} disabled={!isCurrentRoomWritable}>Focus</Button>
-              <Button variant={mode === 'short-break' ? 'default' : 'outline'} onClick={() => handleSwitchMode('short-break')} disabled={!isCurrentRoomWritable}>Short</Button>
-              <Button variant={mode === 'long-break' ? 'default' : 'outline'} onClick={() => handleSwitchMode('long-break')} disabled={!isCurrentRoomWritable}>Long</Button>
-            </div>
-            {isEditingTime ? (
-              <Input
-                ref={inputRef}
-                type="text"
-                value={editableTimeString}
-                onChange={(e) => setEditableTimeString(e.target.value)}
-                onBlur={handleTimeInputBlur}
-                onKeyDown={handleTimeInputKeyDown}
-                className="text-5xl font-bold font-mono text-center w-full h-16 bg-transparent border-none focus-visible:ring-0"
-                disabled={!isCurrentRoomWritable}
-              />
+            onClick={isCurrentRoomWritable ? handleTimeDisplayClick : undefined}
+          >
+            {formatTime(timeLeft)}
+          </div>
+        )}
+        <div className="flex gap-4 justify-center">
+          <Button onClick={handleStartPause} size="icon" className="h-12 w-12 rounded-full" disabled={!isCurrentRoomWritable}>
+            {isRunning ? (
+              <Pause className="h-5 w-5" />
             ) : (
-              <div
-                className={cn(
-                  "text-5xl font-bold font-mono transition-colors",
-                  isCurrentRoomWritable ? "cursor-pointer hover:text-primary" : "cursor-not-allowed opacity-70"
-                )}
-                onClick={isCurrentRoomWritable ? handleTimeDisplayClick : undefined}
-              >
-                {formatTime(timeLeft)}
-              </div>
+              <Play className="h-5 w-5" />
             )}
-            <div className="flex gap-4 justify-center">
-              <Button onClick={handleStartPause} size="lg" className="w-24" disabled={!isCurrentRoomWritable}>
-                {isRunning ? 'Pause' : 'Start'}
-              </Button>
-              <Button onClick={handleReset} size="lg" variant="secondary" disabled={!isCurrentRoomWritable}>
-                Reset
-              </Button>
-            </div>
-          </CardContent>
-        </>
+          </Button>
+          <Button onClick={handleReset} size="icon" variant="secondary" className="h-12 w-12 rounded-full" disabled={!isCurrentRoomWritable}>
+            <RotateCcw className="h-5 w-5" />
+          </Button>
+        </div>
+      </CardContent>
+
+      {isMinimized && (
+        <div className="flex flex-col items-center justify-center w-full h-full py-2">
+          <span className="text-xs font-semibold capitalize">{mode.replace('-', ' ')}</span>
+          <div
+            className={cn(
+              "text-3xl font-bold font-mono my-1",
+              isCurrentRoomWritable ? "cursor-pointer hover:text-primary" : "cursor-not-allowed opacity-70"
+            )}
+            onClick={isMinimized ? () => setIsMinimized(false) : undefined}
+          >
+            {formatTime(timeLeft)}
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-7 w-7" disabled={!isCurrentRoomWritable}>
+              {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            </Button>
+            <Button onClick={(e) => { e.stopPropagation(); handleReset(); }} size="icon" variant="secondary" className="h-7 w-7" disabled={!isCurrentRoomWritable}>
+              <RotateCcw className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       )}
     </Card>
   );

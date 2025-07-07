@@ -46,6 +46,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   // State for Header and related components
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
+  const [isPomodoroMinimized, setIsPomodoroMinimized] = useState(true);
 
   const chatPanelWidth = isChatOpen ? 320 : 56;
   const isDashboard = pathname === '/dashboard';
@@ -134,6 +135,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             {isDashboard && isMobile && (
               <MobileControls>
                 <PomodoroWidget 
+                  isMinimized={isPomodoroMinimized}
+                  setIsMinimized={setIsPomodoroMinimized}
                   chatPanelWidth={chatPanelWidth}
                   isMobile={isMobile}
                 />
@@ -144,6 +147,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             {isDashboard && !isMobile && (
               <>
                 <PomodoroWidget 
+                  isMinimized={isPomodoroMinimized}
+                  setIsMinimized={setIsPomodoroMinimized}
                   chatPanelWidth={chatPanelWidth}
                   isMobile={isMobile}
                 />
