@@ -1,18 +1,18 @@
 "use client";
 
-import React, { useEffect } from "react"; // Import useEffect
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Music, CloudRain, Wind, Coffee, Building, Waves, Sun, Snowflake, Keyboard, BookOpen, Volume2, Pause, VolumeX, Droplet, WavesIcon, TrainFront, Cloud, Leaf, Bird, Flame, Footprints, TreePine, Bug, Moon, Speaker } from "lucide-react"; // Import Pause icon, VolumeX, and more specific icons
+import { Play, Music, CloudRain, Wind, Coffee, Building, Waves, Sun, Snowflake, Keyboard, BookOpen, Volume2, Pause, VolumeX, Droplet, WavesIcon, TrainFront, Cloud, Leaf, Bird, Flame, Footprints, TreePine, Bug, Moon, Speaker } from "lucide-react";
 import useClientAudio from "@/hooks/useClientAudio";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Slider } from "@/components/ui/slider"; // Import Slider
+import { Slider } from "@/components/ui/slider";
 
 interface AmbientSoundItemProps {
   name: string;
   url: string;
   isCurrentRoomWritable: boolean;
-  category: string; // Added category prop
+  category: string;
 }
 
 // Helper function to get a more specific icon based on sound name/category
@@ -42,12 +42,12 @@ const getSoundIcon = (name: string, category: string) => {
 
 
 export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }: AmbientSoundItemProps) {
-  const { isPlaying, volume, isMuted, togglePlayPause, setVolume, toggleMute } = useClientAudio(url);
+  const { isPlaying, volume, isMuted, togglePlayPause, setVolume, toggleMute, isReady } = useClientAudio(url); // Destructure isReady
 
   // Debugging log for isPlaying prop
   useEffect(() => {
-    console.log(`[AmbientSoundItem] ${name} - isPlaying prop: ${isPlaying}`);
-  }, [isPlaying, name]);
+    console.log(`[AmbientSoundItem] ${name} - isPlaying: ${isPlaying}, isReady: ${isReady}`);
+  }, [isPlaying, isReady, name]);
 
   const handlePlayPauseClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent any parent click handlers
@@ -55,8 +55,12 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }:
       toast.error("You do not have permission to control sounds in this room.");
       return;
     }
+    if (!isReady) { // Check if audio is ready
+      toast.info("Audio is still loading, please wait...");
+      return;
+    }
 
-    togglePlayPause(); // Use the combined toggle function
+    togglePlayPause();
     toast.info(isPlaying ? `Paused ${name}` : `Playing ${name}`);
   };
 
@@ -81,7 +85,7 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }:
     <div
       className={cn(
         "flex flex-col p-2 rounded-md border shadow-sm transition-all duration-200",
-        isPlaying ? "bg-primary/20 border-primary" : "bg-card backdrop-blur-xl border-border hover:bg-muted/50", // More distinct playing state
+        isPlaying ? "bg-primary/20 border-primary" : "bg-card backdrop-blur-xl border-border hover:bg-muted/50",
         !isCurrentRoomWritable && "opacity-70 cursor-not-allowed"
       )}
     >
@@ -101,7 +105,7 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }:
             isPlaying ? "text-primary hover:bg-primary/20" : "text-muted-foreground hover:bg-accent"
           )}
           onClick={handlePlayPauseClick}
-          disabled={!isCurrentRoomWritable}
+          disabled={!isCurrentRoomWritable || !isReady} // Disable if not writable or not ready
         >
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           <span className="sr-only">{isPlaying ? `Pause ${name}` : `Play ${name}`}</span>
@@ -115,7 +119,7 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }:
           size="icon"
           className="h-7 w-7 text-muted-foreground hover:text-primary"
           onClick={handleToggleMute}
-          disabled={!isCurrentRoomWritable}
+          disabled={!isCurrentRoomWritable || !isReady} // Disable if not writable or not ready
         >
           {isMuted || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
           <span className="sr-only">{isMuted ? "Unmute" : "Mute"}</span>
@@ -126,7 +130,7 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }:
           max={1}
           step={0.01}
           className="flex-grow"
-          disabled={!isCurrentRoomWritable}
+          disabled={!isCurrentRoomWritable || !isReady} // Disable if not writable or not ready
         />
       </div>
     </div>
