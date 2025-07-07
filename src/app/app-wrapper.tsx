@@ -25,13 +25,15 @@ import { AmbientSoundProvider } from "@/context/ambient-sound-provider";
 import { PlayingSoundsBar } from "@/components/playing-sounds-bar";
 import { MobileControls } from "@/components/mobile-controls";
 import { FocusSessionProvider } from "@/context/focus-session-provider";
+import { WelcomeBackModal } from "@/components/welcome-back-modal";
+import { useGoals } from "@/hooks/use-goals";
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
 
 export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
-  const { loading, session } = useSupabase();
+  const { loading, session, profile } = useSupabase();
   const pathname = usePathname();
   const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const { isAlwaysOpen, mounted } = useSidebarPreference();
@@ -39,6 +41,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const { activeEffect } = useEffects();
   const isMobile = useIsMobile();
   const { addNotification } = useNotifications();
+  const { goals } = useGoals();
 
   const [sidebarCurrentWidth, setSidebarCurrentWidth] = useState(0);
   const [mainContentArea, setMainContentArea] = useState({ left: 0, top: 0, width: 0, height: 0 });
@@ -47,6 +50,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [isPomodoroMinimized, setIsPomodoroMinimized] = useState(true);
+  const [showWelcomeBack, setShowWelcomeBack] = useState(false);
 
   const chatPanelWidth = isChatOpen ? 320 : 56;
   const isDashboard = pathname === '/dashboard';
@@ -58,6 +62,17 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const handleClearUnreadMessages = () => {
     setUnreadChatCount(0);
   };
+
+  useEffect(() => {
+    // Show welcome back modal only once per session
+    const welcomeBackShown = sessionStorage.getItem('welcomeBackShown');
+    if (!welcomeBackShown && session) { // Only show if logged in
+      setShowWelcomeBack(true);
+      sessionStorage.setItem('welcomeBackShown', 'true');
+    }
+  }, [session]);
+
+  const firstIncompleteGoal = goals.find(g => !g.completed) || null;
 
   useEffect(() => {
     const newSidebarWidth = isMobile ? 0 : (mounted && isAlwaysOpen || isSidebarOpen ? SIDEBAR_WIDTH_DESKTOP : 0);
@@ -110,6 +125,12 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               unreadChatCount={unreadChatCount}
               isMobile={isMobile}
               onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+            />
+            <WelcomeBackModal
+              isOpen={showWelcomeBack}
+              onClose={() => setShowWelcomeBack(false)}
+              profile={profile}
+              firstGoal={firstIncompleteGoal}
             />
             <PlayingSoundsBar isMobile={isMobile} />
             <Sidebar isMobile={isMobile} />

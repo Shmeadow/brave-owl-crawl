@@ -293,7 +293,7 @@ export function usePomodoroState() {
         let nextMode: PomodoroMode;
         if (prevState.mode === 'focus') {
           nextMode = 'short-break';
-          toast.success("Focus session complete! Time for a break.");
+          toast.success("✨ Focus session complete! Time for a well-deserved break.");
         } else {
           nextMode = 'focus';
           toast.success("Break complete! Time to focus again.");

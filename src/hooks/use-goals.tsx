@@ -171,13 +171,21 @@ export function useGoals() {
         console.error("Error updating goal status (Supabase):", error);
       } else if (data) {
         setGoals(prevGoals => prevGoals.map(goal => goal.id === goalId ? data as GoalData : goal));
-        toast.info(newCompletedStatus ? "Goal marked as complete!" : "Goal marked as incomplete.");
+        if (newCompletedStatus) {
+          toast.success("🎉 Goal Complete! Great job!");
+        } else {
+          toast.info("Goal marked as incomplete.");
+        }
       }
     } else {
       setGoals(prevGoals => prevGoals.map(goal =>
         goal.id === goalId ? { ...goal, completed: newCompletedStatus } : goal
       ));
-      toast.info(newCompletedStatus ? "Goal marked as complete (locally)!" : "Goal marked as incomplete (locally).");
+      if (newCompletedStatus) {
+        toast.success("🎉 Goal Complete! Great job!");
+      } else {
+        toast.info("Goal marked as incomplete (locally).");
+      }
     }
   }, [goals, isLoggedInMode, session, supabase]);
 
