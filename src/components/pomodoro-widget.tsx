@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PomodoroSettingsModal } from "@/components/pomodoro-settings-modal";
 import { useCurrentRoom } from "@/hooks/use-current-room";
+import { useFocusSession } from "@/context/focus-session-provider";
 
 interface PomodoroWidgetProps {
   isMinimized: boolean;
@@ -27,8 +28,8 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
     isEditingTime,
     editableTimeString,
     setEditableTimeString,
-    handleStartPause,
-    handleReset,
+    handleStartPause: baseHandleStartPause,
+    handleReset: baseHandleReset,
     handleSwitchMode,
     handleTimeDisplayClick,
     handleTimeInputBlur,
@@ -36,7 +37,20 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
   } = usePomodoroState();
 
   const { isCurrentRoomWritable } = useCurrentRoom();
+  const { activeGoalTitle, isFocusSessionActive, endFocusSession } = useFocusSession();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleStartPause = () => {
+    if (isRunning) { // If it's currently running, pausing will end the session
+      endFocusSession();
+    }
+    baseHandleStartPause();
+  };
+
+  const handleReset = () => {
+    baseHandleReset();
+    endFocusSession();
+  };
 
   const handleTimeInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -50,7 +64,6 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
     }
   }, [isEditingTime]);
 
-  // Mobile specific state for expanded/collapsed
   const [isMobileExpanded, setIsMobileExpanded] = useState(false);
 
   const toggleMobileExpand = () => {
@@ -84,6 +97,12 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
               </Button>
             </CardHeader>
             <CardContent className="flex flex-col items-center gap-3 w-full p-2">
+              {isFocusSessionActive && activeGoalTitle && mode === 'focus' && (
+                <div className="text-center mb-1">
+                  <p className="text-xs text-muted-foreground">Focusing on:</p>
+                  <p className="text-sm font-semibold text-primary truncate max-w-[200px]">{activeGoalTitle}</p>
+                </div>
+              )}
               <div className="flex gap-0.5 justify-center w-full">
                 <Button
                   variant={mode === 'focus' ? 'default' : 'outline'}
@@ -154,7 +173,6 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
             </CardContent>
           </>
         ) : (
-          // Minimized mobile view
           <>
             <span className="text-sm font-semibold capitalize">{mode.replace('-', ' ')}</span>
             <div
@@ -180,17 +198,16 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
     );
   }
 
-  // Desktop rendering
   return (
     <Card
       className={cn(
         "fixed bottom-20 left-1/2 -translate-x-1/2",
         "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg",
         "flex transition-all duration-300 ease-in-out z-[901]",
-        "w-48", // Changed from w-56
+        "w-48",
         isMinimized
           ? "flex-col items-center px-2 py-1 h-auto cursor-pointer"
-          : "flex-col items-center p-3 gap-3 h-auto" // Changed p-4 to p-3, gap-4 to gap-3
+          : "flex-col items-center p-3 gap-3 h-auto"
       )}
       onClick={isMinimized ? () => setIsMinimized(false) : undefined}
     >
@@ -219,6 +236,12 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
       </CardHeader>
 
       <CardContent className={cn("flex flex-col items-center gap-3 w-full p-0", isMinimized ? "hidden" : "flex")}>
+        {isFocusSessionActive && activeGoalTitle && mode === 'focus' && (
+          <div className="text-center mb-2">
+            <p className="text-xs text-muted-foreground">Focusing on:</p>
+            <p className="text-sm font-semibold text-primary truncate max-w-[160px]">{activeGoalTitle}</p>
+          </div>
+        )}
         <div className="grid grid-cols-3 gap-2 w-full">
           <div className="flex flex-col items-center gap-1">
             <Button

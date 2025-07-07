@@ -1,17 +1,29 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useSupabase } from '@/integrations/supabase/auth';
 import { useGoals } from '@/hooks/use-goals';
 import { useWidget } from '@/components/widget/widget-provider';
+import { useFocusSession } from '@/context/focus-session-provider';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Target } from 'lucide-react';
+import { Loader2, Target, Zap, Meh, BatteryLow } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+const moods = [
+  { name: 'Energized', icon: Zap, color: 'text-green-500' },
+  { name: 'Neutral', icon: Meh, color: 'text-yellow-500' },
+  { name: 'Tired', icon: BatteryLow, color: 'text-red-500' },
+];
 
 export function PersonalizedKickoff() {
   const { profile, loading: authLoading } = useSupabase();
   const { goals, loading: goalsLoading } = useGoals();
   const { toggleWidget } = useWidget();
+  const { startFocusSession } = useFocusSession();
+
+  const [step, setStep] = useState<'mood' | 'kickoff'>('mood');
+  const [selectedMood, setSelectedMood] = useState<string | null>(null);
 
   const loading = authLoading || goalsLoading;
 
@@ -25,9 +37,28 @@ export function PersonalizedKickoff() {
   const primaryGoal = goals.find(goal => !goal.completed);
   const userName = profile?.first_name || 'there';
 
+  const handleSelectMood = (moodName: string) => {
+    setSelectedMood(moodName);
+    setStep('kickoff');
+  };
+
   const handleStartFocus = () => {
-    // This will open the Pomodoro widget if it's closed, or bring it to the front.
-    toggleWidget('timer', 'Timer'); 
+    if (primaryGoal) {
+      startFocusSession(primaryGoal.title);
+      toggleWidget('timer', 'Timer');
+    }
+  };
+
+  const getMotivationalText = () => {
+    switch (selectedMood) {
+      case 'Energized':
+        return "You're feeling great! Let's channel that energy and make some serious progress.";
+      case 'Tired':
+        return "Feeling a bit low? No problem. Even a short, focused session can make a big difference. Let's do this, one step at a time.";
+      case 'Neutral':
+      default:
+        return "This is prime time for clarity. Let's dive in and turn ideas into structure.";
+    }
   };
 
   if (loading) {
@@ -35,6 +66,30 @@ export function PersonalizedKickoff() {
       <div className="flex items-center justify-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
+    );
+  }
+
+  if (step === 'mood') {
+    return (
+      <Card className="w-full h-full bg-transparent border-none shadow-none flex flex-col items-center justify-center text-center p-4">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">How are you feeling?</CardTitle>
+          <CardDescription>Let's tailor your session to your energy level.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex gap-4">
+          {moods.map(mood => (
+            <Button
+              key={mood.name}
+              variant="outline"
+              className="flex flex-col h-24 w-24 items-center justify-center gap-2"
+              onClick={() => handleSelectMood(mood.name)}
+            >
+              <mood.icon className={cn("h-8 w-8", mood.color)} />
+              <span className="text-sm">{mood.name}</span>
+            </Button>
+          ))}
+        </CardContent>
+      </Card>
     );
   }
 
@@ -53,7 +108,7 @@ export function PersonalizedKickoff() {
               Today’s main goal is <span className="font-semibold text-foreground">{primaryGoal.title}</span>.
             </CardDescription>
             <p className="text-muted-foreground">
-              Remember to break it down into bite-size tasks. This is prime time for clarity. Let's dive in and turn ideas into structure.
+              {getMotivationalText()} Remember to break it down into bite-size tasks.
             </p>
             <p className="font-semibold text-lg">Ready?</p>
             <Button onClick={handleStartFocus} size="lg">

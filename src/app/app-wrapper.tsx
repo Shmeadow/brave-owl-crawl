@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { AmbientSoundProvider } from "@/context/ambient-sound-provider";
 import { PlayingSoundsBar } from "@/components/playing-sounds-bar";
 import { MobileControls } from "@/components/mobile-controls";
+import { FocusSessionProvider } from "@/context/focus-session-provider";
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
@@ -95,68 +96,70 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
 
   return (
     <AmbientSoundProvider>
-      <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea}>
-        <div className="relative h-screen bg-transparent">
-          {activeEffect === 'rain' && <RainEffect />}
-          {activeEffect === 'snow' && <SnowEffect />}
-          {activeEffect === 'raindrops' && <RaindropsEffect />}
-          <Header
-            isChatOpen={isChatOpen}
-            onToggleChat={() => setIsChatOpen(!isChatOpen)}
-            onNewUnreadMessage={handleNewUnreadMessage}
-            onClearUnreadMessages={handleClearUnreadMessages}
-            unreadChatCount={unreadChatCount}
-            isMobile={isMobile}
-            onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-          />
-          <PlayingSoundsBar isMobile={isMobile} />
-          <Sidebar isMobile={isMobile} />
-          <div
-            className="absolute top-16 right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
-            style={{ left: `${sidebarCurrentWidth}px` }}
-          >
-            <main className="flex-1 relative overflow-y-auto bg-transparent">
-              <div className="p-4 sm:p-6 lg:p-8 h-full">
-                {children}
-                {isDashboard && (
-                  <div className={cn(
-                    "w-full h-full",
-                    isMobile ? "flex flex-col items-center gap-4 py-4" : "fixed inset-0 z-[903] pointer-events-none"
-                  )}>
-                    <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} isMobile={isMobile} />
-                  </div>
-                )}
-              </div>
-            </main>
+      <FocusSessionProvider>
+        <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea}>
+          <div className="relative h-screen bg-transparent">
+            {activeEffect === 'rain' && <RainEffect />}
+            {activeEffect === 'snow' && <SnowEffect />}
+            {activeEffect === 'raindrops' && <RaindropsEffect />}
+            <Header
+              isChatOpen={isChatOpen}
+              onToggleChat={() => setIsChatOpen(!isChatOpen)}
+              onNewUnreadMessage={handleNewUnreadMessage}
+              onClearUnreadMessages={handleClearUnreadMessages}
+              unreadChatCount={unreadChatCount}
+              isMobile={isMobile}
+              onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+            />
+            <PlayingSoundsBar isMobile={isMobile} />
+            <Sidebar isMobile={isMobile} />
+            <div
+              className="absolute top-16 right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
+              style={{ left: `${sidebarCurrentWidth}px` }}
+            >
+              <main className="flex-1 relative overflow-y-auto bg-transparent">
+                <div className="p-4 sm:p-6 lg:p-8 h-full">
+                  {children}
+                  {isDashboard && (
+                    <div className={cn(
+                      "w-full h-full",
+                      isMobile ? "flex flex-col items-center gap-4 py-4" : "fixed inset-0 z-[903] pointer-events-none"
+                    )}>
+                      <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} isMobile={isMobile} />
+                    </div>
+                  )}
+                </div>
+              </main>
+            </div>
+            
+            {isDashboard && isMobile && (
+              <MobileControls>
+                <PomodoroWidget 
+                  isMinimized={isPomodoroMinimized}
+                  setIsMinimized={setIsPomodoroMinimized}
+                  chatPanelWidth={chatPanelWidth}
+                  isMobile={isMobile}
+                />
+                <SimpleAudioPlayer isMobile={isMobile} />
+              </MobileControls>
+            )}
+
+            {isDashboard && !isMobile && (
+              <>
+                <PomodoroWidget 
+                  isMinimized={isPomodoroMinimized}
+                  setIsMinimized={setIsPomodoroMinimized}
+                  chatPanelWidth={chatPanelWidth}
+                  isMobile={isMobile}
+                />
+                <SimpleAudioPlayer isMobile={isMobile} />
+              </>
+            )}
+
+            <Toaster />
           </div>
-          
-          {isDashboard && isMobile && (
-            <MobileControls>
-              <PomodoroWidget 
-                isMinimized={isPomodoroMinimized}
-                setIsMinimized={setIsPomodoroMinimized}
-                chatPanelWidth={chatPanelWidth}
-                isMobile={isMobile}
-              />
-              <SimpleAudioPlayer isMobile={isMobile} />
-            </MobileControls>
-          )}
-
-          {isDashboard && !isMobile && (
-            <>
-              <PomodoroWidget 
-                isMinimized={isPomodoroMinimized}
-                setIsMinimized={setIsPomodoroMinimized}
-                chatPanelWidth={chatPanelWidth}
-                isMobile={isMobile}
-              />
-              <SimpleAudioPlayer isMobile={isMobile} />
-            </>
-          )}
-
-          <Toaster />
-        </div>
-      </WidgetProvider>
+        </WidgetProvider>
+      </FocusSessionProvider>
     </AmbientSoundProvider>
   );
 }
