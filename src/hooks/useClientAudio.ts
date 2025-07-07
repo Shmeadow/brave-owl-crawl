@@ -16,17 +16,15 @@ export default function useClientAudio(src: string) {
 
       const audio = audioRef.current;
 
-      // Removed onCanPlay as we're simplifying readiness
       const onError = (e: Event) => {
-        console.error(`[useClientAudio] load error for ${audio.src}`, e);
-        toast.error(`Failed to load audio: ${audio.src.split('/').pop()}.`);
+        console.error(`[useClientAudio] load error for ${audio.src}:`, e);
+        toast.error(`Failed to load audio: ${audio.src.split('/').pop()}. Please ensure the file exists and is accessible.`);
         setIsPlaying(false); // Stop playing on error
       };
       const onPlay = () => setIsPlaying(true);
       const onPause = () => setIsPlaying(false);
       const onEnded = () => setIsPlaying(false); // Also handle when loop ends (though loop is true)
 
-      // Removed "canplaythrough" listener
       audio.addEventListener("error", onError);
       audio.addEventListener("play", onPlay);
       audio.addEventListener("pause", onPause);
@@ -35,7 +33,6 @@ export default function useClientAudio(src: string) {
       return () => {
         // Cleanup listeners when component unmounts
         audio.pause();
-        // Removed "canplaythrough" listener cleanup
         audio.removeEventListener("error", onError);
         audio.removeEventListener("play", onPlay);
         audio.removeEventListener("pause", onPause);
