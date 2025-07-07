@@ -1,14 +1,11 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Music, Search, CloudRain, Wind, Coffee, Building, Volume2, Waves, Sun, Snowflake, BookOpen, Keyboard, Bird, Flame, Footprints, Leaf, Droplet, WavesIcon, TrainFront, Cloud, TreePine, Bug, Moon, Speaker } from "lucide-react"; // Added more specific icons
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AmbientSoundItem } from "@/components/ambient-sound-item";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider"; // Import Slider
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"; // Import Accordion
 
 interface SoundsWidgetProps {
   isCurrentRoomWritable: boolean;
@@ -60,7 +57,7 @@ const allAmbientSounds = [
   { name: "Beach Waves", url: "/sound/wavesbeach.ogg", category: "Ocean" },
   { name: "Slow Waves", url: "/sound/wavesslow.ogg", category: "Ocean" },
   // Wind
-  { name: "Howling Wind", url: "/sound/windhowling.ogg", category: "  Wind" },
+  { name: "Howling Wind", url: "/sound/windhowling.ogg", category: "Wind" },
   { name: "Steady Wind", url: "/sound/windsteady.ogg", category: "Wind" },
   // Noise
   { name: "White Noise", url: "/sound/noisewhite.ogg", category: "Noise" },
@@ -93,27 +90,28 @@ const getSoundIcon = (name: string, category: string) => {
 
 export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
 
-  const categories = useMemo(() => {
-    const uniqueCategories = new Set(allAmbientSounds.map(sound => sound.category));
-    return ["all", ...Array.from(uniqueCategories).sort()];
-  }, []);
+  // Group sounds by category and filter them based on search term
+  const groupedAndFilteredSounds = useMemo(() => {
+    const filtered = allAmbientSounds.filter(sound =>
+      sound.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
-  const filteredSounds = useMemo(() => {
-    let sounds = allAmbientSounds;
-
-    if (selectedCategory !== "all") {
-      sounds = sounds.filter(sound => sound.category === selectedCategory);
+    if (filtered.length === 0) {
+      return {};
     }
 
-    if (searchTerm) {
-      sounds = sounds.filter(sound =>
-        sound.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    return sounds;
-  }, [searchTerm, selectedCategory]);
+    return filtered.reduce((acc, sound) => {
+      const category = sound.category || "Uncategorized";
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(sound);
+      return acc;
+    }, {} as Record<string, typeof allAmbientSounds>);
+  }, [searchTerm]);
+
+  const categories = Object.keys(groupedAndFilteredSounds).sort();
 
   return (
     <div className="h-full w-full flex flex-col p-0">
@@ -123,20 +121,6 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
         </h2>
       </div>
       <div className="p-4 pt-2 border-b border-border space-y-3">
-        <div>
-          <Label htmlFor="category-select" className="sr-only">Filter by Category</Label>
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger id="category-select">
-              <SelectValue placeholder="Filter by category" />
-            </SelectTrigger>
-            <SelectContent className="z-[1003]">
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.filter(cat => cat !== "all").map(cat => (
-                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
         <div className="relative">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -148,21 +132,30 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
         </div>
       </div>
 
-      {filteredSounds.length === 0 ? (
+      {categories.length === 0 ? (
         <p className="p-4 text-muted-foreground text-sm text-center">No ambient sounds found matching your criteria.</p>
       ) : (
         <ScrollArea className="flex-1 h-full">
-          <div className="p-4 grid gap-4 grid-cols-2"> {/* Fixed to 2 columns */}
-            {filteredSounds.map((sound) => (
-              <AmbientSoundItem
-                key={sound.url}
-                name={sound.name}
-                url={sound.url}
-                isCurrentRoomWritable={isCurrentRoomWritable}
-                category={sound.category}
-              />
+          <Accordion type="multiple" className="w-full p-4" defaultValue={categories}>
+            {categories.map((category) => (
+              <AccordionItem value={category} key={category}>
+                <AccordionTrigger className="text-lg font-semibold">{category}</AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 pt-2">
+                    {groupedAndFilteredSounds[category].map((sound) => (
+                      <AmbientSoundItem
+                        key={sound.url}
+                        name={sound.name}
+                        url={sound.url}
+                        isCurrentRoomWritable={isCurrentRoomWritable}
+                        category={sound.category}
+                      />
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
             ))}
-          </div>
+          </Accordion>
         </ScrollArea>
       )}
       <p className="text-sm text-muted-foreground mt-auto p-4 text-center border-t border-border">
