@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"; // Import Dialog components
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import Image from "next/image"; // Import next/image
 
 interface MyRoomsSectionProps {
   myCreatedRooms: RoomData[];
@@ -94,7 +95,7 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
                         room.is_video_background ? (
                           <video src={room.background_url} className="w-full h-full object-cover" muted playsInline />
                         ) : (
-                          <img src={room.background_url} alt={room.name} className="w-full h-full object-cover" />
+                          <Image src={room.background_url} alt={room.name} fill className="object-cover" sizes="64px" />
                         )
                       )}
                     </div>
@@ -166,7 +167,7 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
                         room.is_video_background ? (
                           <video src={room.background_url} className="w-full h-full object-cover" muted playsInline />
                         ) : (
-                          <img src={room.background_url} alt={room.name} className="w-full h-full object-cover" />
+                          <Image src={room.background_url} alt={room.name} fill className="object-cover" sizes="64px" />
                         )
                       )}
                     </div>

@@ -41,7 +41,7 @@ export function AnimatedBackgroundPreviewItem({ videoUrl, isActive, onClick, pre
           ref={videoElementRef} // Assign ref to video element
           src={videoUrl}
           className="absolute inset-0 w-full h-full object-cover"
-          preload="metadata" // Load only metadata to keep it lightweight
+          preload="auto" // Changed from "metadata" to "auto"
           muted
           loop // Loop the preview
           playsInline
