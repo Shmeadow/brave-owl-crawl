@@ -13,6 +13,7 @@ export default function useClientAudio(src: string) {
   // Initialize audio element and attach event listeners once
   useEffect(() => {
     if (!audioRef.current) {
+      console.log("[useClientAudio] Initializing new Audio element.");
       audioRef.current = new Audio();
       audioRef.current.preload = "auto";
       audioRef.current.loop = true; // Ensure ambient sounds loop
@@ -26,13 +27,20 @@ export default function useClientAudio(src: string) {
         toast.error(`Failed to load audio: ${audio.src.split('/').pop()}. Please ensure the file exists and is accessible.`);
         setIsPlaying(false); // Stop playing on error
       };
-      const onPlay = () => setIsPlaying(true);
-      const onPause = () => setIsPlaying(false);
+      const onPlay = () => {
+        setIsPlaying(true);
+        console.log(`[useClientAudio] Audio element reported 'play' event for: ${audio.src}`);
+      };
+      const onPause = () => {
+        setIsPlaying(false);
+        console.log(`[useClientAudio] Audio element reported 'pause' event for: ${audio.src}`);
+      };
       const onEnded = () => setIsPlaying(false); // Also handle when loop ends (though loop is true)
       const onVolumeChange = () => { // Listen to native volume changes
         if (audioRef.current) {
           setVolumeState(audioRef.current.volume);
           setIsMuted(audioRef.current.muted || audioRef.current.volume === 0);
+          console.log(`[useClientAudio] Volume changed to: ${audioRef.current.volume}, Muted: ${audioRef.current.muted}`);
         }
       };
 
@@ -61,6 +69,7 @@ export default function useClientAudio(src: string) {
     if (!audio) return;
 
     if (audio.src !== src) {
+      console.log(`[useClientAudio] Setting new source: ${src}`);
       audio.src = src;
       audio.load(); // Load the new source
       setIsPlaying(false); // Pause when source changes
@@ -74,7 +83,9 @@ export default function useClientAudio(src: string) {
       return;
     }
     try {
+      console.log(`[useClientAudio] Attempting to play audio: ${audio.src}`);
       await audio.play();
+      console.log(`[useClientAudio] Play promise resolved for: ${audio.src}`);
       // isPlaying state will be updated by the 'play' event listener
     } catch (err: any) {
       console.error(`[useClientAudio] play error for ${audio.src}:`, err);
@@ -90,6 +101,7 @@ export default function useClientAudio(src: string) {
   const pause = useCallback(() => {
     const audio = audioRef.current;
     if (audio && isPlaying) {
+      console.log(`[useClientAudio] Attempting to pause audio: ${audio.src}`);
       audio.pause();
       // isPlaying state will be updated by the 'pause' event listener
     }

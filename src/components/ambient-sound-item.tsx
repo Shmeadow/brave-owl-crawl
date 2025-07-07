@@ -46,6 +46,7 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }:
 
   const handlePlayPauseClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent any parent click handlers
+    console.log(`[AmbientSoundItem] Clicked ${name}. isPlaying before: ${isPlaying}`);
     if (!isCurrentRoomWritable) {
       toast.error("You do not have permission to control sounds in this room.");
       return;
@@ -96,7 +97,10 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }:
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-primary"
+          className={cn(
+            "h-8 w-8",
+            isPlaying ? "text-primary hover:bg-primary/20" : "text-muted-foreground hover:bg-accent"
+          )}
           onClick={handlePlayPauseClick}
           disabled={!isCurrentRoomWritable}
         >
