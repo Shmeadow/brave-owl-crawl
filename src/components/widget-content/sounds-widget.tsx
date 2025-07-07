@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Music, Search, CloudRain, Wind, Coffee, Building, Volume2, Waves, Sun, Snowflake, BookOpen, Keyboard } from "lucide-react"; // Added more specific icons
+import { Music, Search, CloudRain, Wind, Coffee, Building, Volume2, Waves, Sun, Snowflake, BookOpen, Keyboard, Bird, Flame, Footprints, Leaf } from "lucide-react"; // Removed Frog icon
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AmbientSoundItem } from "@/components/ambient-sound-item";
 import { Input } from "@/components/ui/input";
@@ -17,37 +17,20 @@ interface SoundsWidgetProps {
 // IMPORTANT: Ensure these files exist in your public/sound/ directory!
 // Supported formats typically include .mp3, .ogg, .wav
 const allAmbientSounds = [
-  // Nature Sounds
-  { name: "Beach Ocean", url: "/sound/beach_ocean.ogg", category: "Nature" },
-  { name: "Rain", url: "/sound/rain.ogg", category: "Nature" },
-  { name: "Forest Birds", url: "/sound/forest_birds.ogg", category: "Nature" },
-  { name: "Thunderstorm", url: "/sound/thunderstorm.ogg", category: "Nature" },
-  { name: "River Flow", url: "/sound/river_flow.ogg", category: "Nature" },
-  { name: "Fireplace Crackle", url: "/sound/fireplace_crackle.ogg", category: "Nature" },
-  { name: "Ocean Waves", url: "/sound/ocean_waves.ogg", category: "Nature" },
-  { name: "Wind Chimes", url: "/sound/wind_chimes.ogg", category: "Nature" },
-  { name: "Thunder", url: "/sound/thunder.ogg", category: "Nature" },
-
-  // Cafe & City Sounds
-  { name: "Coffee Shop", url: "/sound/coffee_shop.ogg", category: "Cafe" },
-  { name: "City Ambience", url: "/sound/city_ambience.ogg", category: "City" },
-  { name: "Train Ride", url: "/sound/train_ride.ogg", category: "City" },
-  { name: "City Traffic", url: "/sound/city_traffic.ogg", category: "City" },
-  { name: "Library Ambience", url: "/sound/library_ambience.ogg", category: "City" },
-
-  // Noise Sounds
-  { name: "White Noise", url: "/sound/white_noise.ogg", category: "Noise" },
-  { name: "Brown Noise", url: "/sound/brown_noise.ogg", category: "Noise" },
-  { name: "Pink Noise", url: "/sound/pink_noise.ogg", category: "Noise" },
-
-  // Music & Abstract Sounds
-  { name: "Lofi Beats", url: "/sound/lofi_beats.ogg", category: "Music" },
-  // Removed "Calm Piano" as it was causing an error
-  { name: "Space Ambience", url: "/sound/space_ambience.ogg", category: "Abstract" },
-  { name: "Zen Garden", url: "/sound/zen_garden.ogg", category: "Abstract" },
-
-  // Productivity Sounds
-  { name: "Keyboard Typing", url: "/sound/keyboard_typing.ogg", category: "Productivity" },
+  // Nature Sounds (based on provided filenames)
+  { name: "Blackbird", url: "/sound/birdblackbird.ogg", category: "Nature" },
+  { name: "Crow", url: "/sound/birdcrow.ogg", category: "Nature" },
+  { name: "Nightingale", url: "/sound/birdnightingale.ogg", category: "Nature" },
+  { name: "Calm Fire", url: "/sound/firecalm.ogg", category: "Nature" },
+  { name: "Fire Crackling", url: "/sound/firecrackling.ogg", category: "Nature" },
+  { name: "Gravel Footsteps", url: "/sound/footstepsgravel.ogg", category: "Nature" },
+  { name: "Eerie Forest", url: "/sound/foresteerie.ogg", category: "Nature" },
+  { name: "Evening Forest", url: "/sound/forestevening.ogg", category: "Nature" },
+  { name: "Frog Chorus", url: "/sound/frogchorus.ogg", category: "Nature" },
+  { name: "Cricket Frog", url: "/sound/frogcricket.ogg", category: "Nature" },
+  { name: "Natterjack Frog", url: "/sound/frognatterjack.ogg", category: "Nature" },
+  { name: "Wood Frog", url: "/sound/frogwood.ogg", category: "Nature" },
+  { name: "Rustling Leaves", url: "/sound/leaves.ogg", category: "Nature" },
 ];
 
 // Helper function to get a more specific icon based on sound name/category
@@ -56,10 +39,14 @@ const getSoundIcon = (name: string, category: string) => {
   const lowerCategory = category.toLowerCase();
 
   if (lowerCategory === 'nature') {
-    if (lowerName.includes('rain') || lowerName.includes('thunderstorm') || lowerName.includes('thunder')) return <CloudRain className="h-5 w-5 text-primary" />;
-    if (lowerName.includes('ocean') || lowerName.includes('beach') || lowerName.includes('river') || lowerName.includes('waves')) return <Waves className="h-5 w-5 text-primary" />;
-    if (lowerName.includes('forest') || lowerName.includes('birds') || lowerName.includes('wind')) return <Wind className="h-5 w-5 text-primary" />;
+    if (lowerName.includes('bird')) return <Bird className="h-5 w-5 text-primary" />;
+    if (lowerName.includes('fire')) return <Flame className="h-5 w-5 text-primary" />;
+    if (lowerName.includes('footsteps')) return <Footprints className="h-5 w-5 text-primary" />;
+    if (lowerName.includes('forest')) return <Wind className="h-5 w-5 text-primary" />;
+    if (lowerName.includes('frog')) return <Leaf className="h-5 w-5 text-primary" />; // Replaced Frog with Leaf
+    if (lowerName.includes('leaves')) return <Leaf className="h-5 w-5 text-primary" />;
   }
+  // Keep existing icons for categories that might be added later or are generic
   if (lowerCategory === 'cafe') return <Coffee className="h-5 w-5 text-primary" />;
   if (lowerCategory === 'city') return <Building className="h-5 w-5 text-primary" />;
   if (lowerCategory === 'noise') return <Volume2 className="h-5 w-5 text-primary" />;
