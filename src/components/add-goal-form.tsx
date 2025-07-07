@@ -10,11 +10,11 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { Plus } from "lucide-react";
 
 const formSchema = z.object({
   title: z.string().min(1, { message: "Goal title cannot be empty." }),
@@ -45,21 +45,22 @@ export function AddGoalForm({ onAddGoal, isCurrentRoomWritable }: AddGoalFormPro
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex w-full items-start gap-2">
         <FormField
           control={form.control}
           name="title"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>New Goal</FormLabel>
+            <FormItem className="flex-grow">
               <FormControl>
                 <Input placeholder="e.g., Learn React Hooks" {...field} disabled={!isCurrentRoomWritable} />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="mt-1" />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={!isCurrentRoomWritable}>Add Goal</Button>
+        <Button type="submit" size="icon" disabled={!isCurrentRoomWritable} aria-label="Add Goal">
+          <Plus className="h-4 w-4" />
+        </Button>
       </form>
     </Form>
   );

@@ -35,9 +35,8 @@ export function GoalItem({ goal, onToggleComplete, onDelete, isCurrentRoomWritab
   return (
     <div
       className={cn(
-        "flex items-center justify-between p-3 rounded-lg shadow-sm transition-all duration-200",
-        "bg-muted backdrop-blur-xl border border-border",
-        goal.completed ? "opacity-70" : ""
+        "group flex items-center justify-between p-3 border-b transition-colors hover:bg-muted/50",
+        goal.completed ? "opacity-60" : ""
       )}
     >
       <div className="flex items-center space-x-3">
@@ -62,7 +61,7 @@ export function GoalItem({ goal, onToggleComplete, onDelete, isCurrentRoomWritab
         variant="ghost"
         size="icon"
         onClick={handleDelete}
-        className="text-muted-foreground hover:text-destructive"
+        className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
         title="Delete goal"
         disabled={!isCurrentRoomWritable}
       >

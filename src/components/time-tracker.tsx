@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
@@ -40,22 +39,13 @@ export function TimeTracker({ isCurrentRoomWritable }: TimeTrackerProps) {
       .join(":");
   };
 
-  const handleStart = () => {
+  const handleStartPause = () => {
     if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to start the time tracker in this room.");
+      toast.error("You do not have permission to control the time tracker in this room.");
       return;
     }
-    setIsRunning(true);
-    toast.success("Time tracking started!");
-  };
-
-  const handlePause = () => {
-    if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to pause the time tracker in this room.");
-      return;
-    }
-    setIsRunning(false);
-    toast.info("Time tracking paused.");
+    setIsRunning(!isRunning);
+    toast.info(isRunning ? "Time tracking paused." : "Time tracking started!");
   };
 
   const handleReset = () => {
@@ -69,29 +59,31 @@ export function TimeTracker({ isCurrentRoomWritable }: TimeTrackerProps) {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto bg-card backdrop-blur-xl border-white/20">
-      <CardHeader>
-        <CardTitle>Time Tracker</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col items-center gap-6">
-        <div className="text-6xl font-bold font-mono">
-          {formatTime(time)}
-        </div>
-        <div className="flex gap-4">
-          {!isRunning ? (
-            <Button onClick={handleStart} size="lg" disabled={!isCurrentRoomWritable}>
-              <Play className="mr-2 h-5 w-5" /> Start
-            </Button>
-          ) : (
-            <Button onClick={handlePause} size="lg" variant="outline" disabled={!isCurrentRoomWritable}>
-              <Pause className="mr-2 h-5 w-5" /> Pause
-            </Button>
-          )}
-          <Button onClick={handleReset} size="lg" variant="secondary" disabled={!isCurrentRoomWritable}>
-            <RotateCcw className="mr-2 h-5 w-5" /> Reset
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex flex-col items-center justify-center h-full w-full gap-8">
+      <div className="text-8xl font-bold font-mono text-foreground tabular-nums">
+        {formatTime(time)}
+      </div>
+      <div className="flex gap-4">
+        <Button 
+          onClick={handleStartPause} 
+          size="icon" 
+          className="h-16 w-16 rounded-full"
+          disabled={!isCurrentRoomWritable}
+          aria-label={isRunning ? "Pause" : "Start"}
+        >
+          {isRunning ? <Pause className="h-8 w-8" /> : <Play className="h-8 w-8" />}
+        </Button>
+        <Button 
+          onClick={handleReset} 
+          size="icon" 
+          variant="secondary" 
+          className="h-16 w-16 rounded-full"
+          disabled={!isCurrentRoomWritable}
+          aria-label="Reset"
+        >
+          <RotateCcw className="h-8 w-8" />
+        </Button>
+      </div>
+    </div>
   );
 }
