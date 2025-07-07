@@ -22,6 +22,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useNotifications } from "@/hooks/use-notifications";
 import { cn } from "@/lib/utils";
 import { AmbientSoundProvider } from "@/context/ambient-sound-provider";
+import { PlayingSoundsBar } from "@/components/playing-sounds-bar";
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
@@ -107,6 +108,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             isMobile={isMobile}
             onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
           />
+          <PlayingSoundsBar />
           <Sidebar isMobile={isMobile} />
           <div
             className="absolute top-16 right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
