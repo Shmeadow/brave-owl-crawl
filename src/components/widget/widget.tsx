@@ -114,7 +114,7 @@ export function Widget({
             <div 
               className={cn("flex items-center justify-center flex-1 min-w-0 h-full")} // Centered icon
             >
-              <Icon className="h-6 w-6 text-primary" />
+              <Icon className="h-8 w-8 text-primary" /> {/* Changed from h-6 w-6 to h-8 w-8 */}
               <span className="sr-only">{title}</span> {/* Screen reader only title */}
             </div>
             {/* Removed X button from pinned widgets */}
