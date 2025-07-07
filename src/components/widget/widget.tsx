@@ -117,7 +117,8 @@ export function Widget({
               <CardTitle className="text-sm font-medium leading-none truncate">{title}</CardTitle>
             </div>
             <div className="flex gap-1">
-              {!isInsideDock && ( // Only show these buttons if NOT inside the dock
+              {/* Only show these buttons if NOT inside the dock */}
+              {!isInsideDock && ( 
                 <>
                   {isPinned ? (
                     <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
@@ -184,9 +185,9 @@ export function Widget({
       <div
         ref={setNodeRef}
         className={cn(
-          "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg flex flex-col",
+          "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-full flex flex-col", // Changed to rounded-full
           "transition-all duration-300 ease-in-out",
-          "w-full h-full", // Occupy full space provided by parent (dock)
+          "w-12 h-12", // Fixed size for the button in the dock
           "pointer-events-auto",
           "cursor-pointer" // Indicate clickable to unpin
         )}
