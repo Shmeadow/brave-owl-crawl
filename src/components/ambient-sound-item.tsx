@@ -2,8 +2,8 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Volume2, VolumeX, Music, Loader2, CloudRain, Wind, Coffee, Building, Waves, Sun, Snowflake, Keyboard, BookOpen } from "lucide-react";
-import { useAmbientSound } from "@/hooks/use-ambient-sound";
+import { Play, Music, Loader2, CloudRain, Wind, Coffee, Building, Waves, Sun, Snowflake, Keyboard, BookOpen, Volume2 } from "lucide-react";
+import useClientAudio from "@/hooks/useClientAudio"; // Import the new hook
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -41,49 +41,31 @@ const getSoundIcon = (name: string, category: string) => {
 
 
 export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }: AmbientSoundItemProps) {
-  const { isPlaying, volume, isMuted, isBuffering, togglePlayPause, setVolume, toggleMute } = useAmbientSound(url);
+  const { play, isReady } = useClientAudio(url);
 
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.stopPropagation(); // Prevent parent div's onClick
-    if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to control sounds in this room.");
-      return;
-    }
-    setVolume(parseFloat(e.target.value));
-  };
-
-  const handleToggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent parent div's onClick
-    if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to control sounds in this room.");
-      return;
-    }
-    toggleMute();
-  };
-
-  const handleTogglePlayPause = (e: React.MouseEvent) => {
+  const handlePlayClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent any parent click handlers
     if (!isCurrentRoomWritable) {
       toast.error("You do not have permission to control sounds in this room.");
-      console.log("[AmbientSoundItem] Blocked play/pause: Room not writable.");
+      console.log("[AmbientSoundItem] Blocked play: Room not writable.");
       return;
     }
-    console.log(`[AmbientSoundItem] Toggling play/pause for: ${name}. Current state: ${isPlaying ? 'Playing' : 'Paused'}. Writable: ${isCurrentRoomWritable}`);
-    togglePlayPause();
-    toast.info(isPlaying ? `Pausing ${name}` : `Playing ${name}`);
+    console.log(`[AmbientSoundItem] Attempting to play: ${name}. Ready: ${isReady}. Writable: ${isCurrentRoomWritable}`);
+    play();
+    toast.info(`Playing ${name}`);
   };
 
   return (
     <div
       className={cn(
         "flex items-center justify-between p-2 rounded-md border border-border bg-card backdrop-blur-xl shadow-sm transition-all duration-200",
-        isPlaying ? "bg-primary/10 border-primary" : "hover:bg-muted/50",
+        isReady ? "bg-primary/10 border-primary" : "hover:bg-muted/50", // Indicate if ready
         !isCurrentRoomWritable && "opacity-70 cursor-not-allowed"
       )}
     >
       {/* Icon and Name Area */}
       <div className="flex items-center gap-2 flex-grow min-w-0">
-        {isBuffering && isPlaying ? (
+        {!isReady ? (
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
         ) : (
           getSoundIcon(name, category)
@@ -97,35 +79,12 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }:
           variant="ghost"
           size="icon"
           className="h-8 w-8 text-muted-foreground hover:text-primary"
-          onClick={handleTogglePlayPause}
-          disabled={!isCurrentRoomWritable}
+          onClick={handlePlayClick}
+          disabled={!isReady || !isCurrentRoomWritable}
         >
-          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-          <span className="sr-only">{isPlaying ? 'Pause' : 'Play'} {name}</span>
+          <Play className="h-4 w-4" />
+          <span className="sr-only">Play {name}</span>
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-primary"
-          onClick={handleToggleMute}
-          disabled={!isCurrentRoomWritable}
-        >
-          {isMuted || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-          <span className="sr-only">{isMuted ? 'Unmute' : 'Mute'} {name}</span>
-        </Button>
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.01"
-          value={volume}
-          onChange={handleVolumeChange}
-          className={cn(
-            "w-20 h-1.5 rounded-lg appearance-none cursor-pointer accent-primary bg-muted-foreground/30",
-            !isCurrentRoomWritable && "opacity-50 cursor-not-allowed"
-          )}
-          disabled={!isCurrentRoomWritable}
-        />
       </div>
     </div>
   );
