@@ -52,7 +52,7 @@ export function PlayingSoundsBar({ isMobile }: PlayingSoundsBarProps) {
                       <Icon className="h-4 w-4 text-primary" />
                       {!sound.isPlaying && (
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-px h-[141.4%] bg-red-500 transform -rotate-45"></div>
+                          <div className="w-0.5 h-[141.4%] bg-red-500 transform -rotate-45"></div>
                         </div>
                       )}
                     </button>
