@@ -9,6 +9,7 @@ export interface WidgetState {
   isMinimized: boolean;
   isMaximized: boolean;
   isPinned: boolean;
+  isClosed: boolean; // New: Indicates if the widget is currently closed/hidden
   previousPosition?: { x: number; y: number };
   previousSize?: { width: number; height: number };
   normalSize?: { width: number; height: number };
@@ -29,6 +30,7 @@ export interface DbWidgetState {
   is_minimized: boolean;
   is_maximized: boolean;
   is_pinned: boolean;
+  is_closed: boolean; // New: For DB persistence
   previous_position_x: number | null;
   previous_position_y: number | null;
   previous_size_width: number | null;
@@ -82,6 +84,7 @@ export const toDbWidgetState = (widget: WidgetState, userId: string): DbWidgetSt
   is_minimized: widget.isMinimized,
   is_maximized: widget.isMaximized,
   is_pinned: widget.isPinned,
+  is_closed: widget.isClosed, // New
   previous_position_x: widget.previousPosition?.x ?? null,
   previous_position_y: widget.previousPosition?.y ?? null,
   previous_size_width: widget.previousSize?.width ?? null,
@@ -101,6 +104,7 @@ export const fromDbWidgetState = (dbWidget: DbWidgetState): WidgetState => ({
   isMinimized: dbWidget.is_minimized,
   isMaximized: dbWidget.is_maximized,
   isPinned: dbWidget.is_pinned,
+  isClosed: dbWidget.is_closed, // New
   previousPosition: dbWidget.previous_position_x !== null && dbWidget.previous_position_y !== null ? { x: dbWidget.previous_position_x, y: dbWidget.previous_position_y } : undefined,
   previousSize: dbWidget.previous_size_width !== null && dbWidget.previous_size_height !== null ? { width: dbWidget.previous_size_width, height: dbWidget.previous_size_height } : undefined,
   normalPosition: dbWidget.normal_position_x !== null && dbWidget.normal_position_y !== null ? { x: dbWidget.normal_position_x, y: dbWidget.normal_position_y } : undefined,

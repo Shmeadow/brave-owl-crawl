@@ -18,6 +18,7 @@ interface WidgetProps {
   isMinimized: boolean;
   isMaximized: boolean;
   isPinned: boolean;
+  isClosed: boolean; // New prop
   isTopmost: boolean;
   position: { x: number; y: number };
   size: { width: number; height: number };
@@ -47,6 +48,7 @@ export function Widget({
   isMinimized,
   isMaximized,
   isPinned,
+  isClosed, // Use this prop for visibility
   isTopmost,
   position,
   size, // This size will be passed to ResizableBox
@@ -65,7 +67,7 @@ export function Widget({
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: `widget-${id}`,
     data: { id, type: "widget", initialPosition: position },
-    disabled: isPinned || isMaximized || isMobile || isInsideDock, // Disable dragging if inside dock
+    disabled: isPinned || isMaximized || isMobile || isInsideDock || isClosed, // Disable dragging if closed
   });
 
   const currentTransformStyle = transform ? {
@@ -73,8 +75,8 @@ export function Widget({
   } : {};
 
   const isVisuallyMinimized = isMinimized || isPinned;
-  const isResizable = !isMaximized && !isVisuallyMinimized && !isMobile && !isInsideDock; // Disable resizing if inside dock
-  const isDraggable = !isMaximized && !isPinned && !isMobile && !isInsideDock; // Disable dragging if inside dock
+  const isResizable = !isMaximized && !isVisuallyMinimized && !isMobile && !isInsideDock && !isClosed; // Disable resizing if closed
+  const isDraggable = !isMaximized && !isPinned && !isMobile && !isInsideDock && !isClosed; // Disable dragging if closed
 
   // Determine actual width/height for ResizableBox based on state
   let actualWidth = size.width;
@@ -107,45 +109,28 @@ export function Widget({
           isInsideDock ? "p-0 h-auto" : "" // Minimal padding if inside dock
         )}
       >
-        {isVisuallyMinimized || isInsideDock ? ( // Simplified header for minimized or docked
+        {isInsideDock ? ( // Simplified header for docked widgets (icon only, unpin on click)
           <>
             <div 
-              className={cn("flex items-center gap-2 flex-1 min-w-0", isDraggable && "cursor-grab")}
-              {...(isDraggable && { ...listeners, ...attributes })}
+              className={cn("flex items-center justify-center flex-1 min-w-0 h-full")} // Centered icon
             >
               <Icon className="h-6 w-6 text-primary" />
-              <CardTitle className="text-sm font-medium leading-none truncate">{title}</CardTitle>
+              <span className="sr-only">{title}</span> {/* Screen reader only title */}
             </div>
-            <div className="flex gap-1">
-              {/* Only show these buttons if NOT inside the dock */}
-              {!isInsideDock && ( 
-                <>
-                  {isPinned ? (
-                    <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
-                      <Maximize className="h-4 w-4" />
-                    </Button>
-                  ) : (
-                    <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
-                      <Maximize className="h-4 w-4" />
-                    </Button>
-                  )}
-                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title={isPinned ? "Unpin" : "Pin"}>
-                    {isPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-                  </Button>
-                </>
-              )}
-              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onClose(id); }} title="Close">
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+            <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onClose(id); }} title="Close">
+              <X className="h-4 w-4" />
+            </Button>
           </>
-        ) : ( // Full header for normal/maximized floating widgets
+        ) : ( // Full header for normal/maximized/minimized floating widgets
           <>
             <div 
               className={cn("flex-1 min-w-0", isDraggable && "cursor-grab")}
               {...(isDraggable && { ...listeners, ...attributes })}
             >
-              <CardTitle className="text-lg font-medium leading-none">
+              <CardTitle className={cn(
+                "font-medium leading-none",
+                isVisuallyMinimized ? "text-sm" : "text-lg"
+              )}>
                 {title}
               </CardTitle>
             </div>
@@ -185,7 +170,7 @@ export function Widget({
       <div
         ref={setNodeRef}
         className={cn(
-          "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-full flex flex-col", // Changed to rounded-full
+          "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-full flex flex-col",
           "transition-all duration-300 ease-in-out",
           "w-12 h-12", // Fixed size for the button in the dock
           "pointer-events-auto",
@@ -199,6 +184,7 @@ export function Widget({
     );
   }
 
+  // For floating widgets (normal, minimized, maximized, or closed)
   return (
     <div
       ref={setNodeRef} // Apply draggable ref here to the outer div
@@ -212,12 +198,13 @@ export function Widget({
         position: 'absolute', // Ensure positioning
       }}
       className={cn(
-        "bg-background/40 border-white/20 shadow-lg rounded-lg flex flex-col", // Changed bg-card to bg-background/40
+        "bg-background/40 border-white/20 shadow-lg rounded-lg flex flex-col",
         "transition-all duration-300 ease-in-out",
         isTopmost ? "backdrop-blur-2xl" : "backdrop-blur-xl",
         isResizable ? "resize" : "",
         isMinimized && !isPinned ? "cursor-pointer" : "",
-        isMobile ? "relative w-full h-auto pointer-events-auto" : "pointer-events-auto" // Mobile styling: relative, full width, auto height, margin
+        isMobile ? "relative w-full h-auto pointer-events-auto" : "pointer-events-auto", // Mobile styling: relative, full width, auto height, margin
+        isClosed && "hidden" // Hide if closed
       )}
       onClick={isMinimized && !isPinned ? () => onMinimize(id) : undefined}
       onMouseDown={onBringToFront}

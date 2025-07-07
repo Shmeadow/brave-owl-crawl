@@ -28,6 +28,7 @@ import { FocusSessionProvider } from "@/context/focus-session-provider";
 import { WelcomeBackModal } from "@/components/welcome-back-modal";
 import { useGoals } from "@/hooks/use-goals";
 import { PinnedWidgetsDock } from "@/components/pinned-widgets-dock"; // Import PinnedWidgetsDock
+import { useWidget } from "@/components/widget/widget-provider"; // Import useWidget to get pinnedWidgets
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
@@ -110,9 +111,11 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     return <>{children}</>;
   }
 
+  // Render the main application layout
   return (
     <AmbientSoundProvider>
       <FocusSessionProvider>
+        {/* WidgetProvider wraps everything that needs widget context */}
         <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea}>
           <div className="relative h-screen bg-transparent">
             {activeEffect === 'rain' && <RainEffect />}
@@ -135,6 +138,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             />
             <PlayingSoundsBar isMobile={isMobile} />
             <Sidebar isMobile={isMobile} />
+            
+            {/* Main content area, where widgets and page content live */}
             <div
               className="absolute top-16 right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
               style={{ left: `${sidebarCurrentWidth}px` }}
@@ -143,17 +148,16 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
                 <div className="p-4 sm:p-6 lg:p-8 h-full">
                   {children}
                   {isDashboard && (
-                    <div className={cn(
-                      "w-full h-full",
-                      isMobile ? "flex flex-col items-center gap-4 py-4" : "fixed inset-0 z-[903] pointer-events-none"
-                    )}>
-                      <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} isMobile={isMobile} />
-                    </div>
+                    // WidgetContainer now renders ALL widgets, managing their visibility internally
+                    <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} isMobile={isMobile} />
                   )}
                 </div>
               </main>
             </div>
             
+            {/* PinnedWidgetsDock is now a sibling to WidgetContainer, ensuring independence */}
+            {isDashboard && <IndependentPinnedWidgetsDock isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />}
+
             {isDashboard && isMobile && (
               <MobileControls>
                 <PomodoroWidget 
@@ -183,5 +187,18 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
         </WidgetProvider>
       </FocusSessionProvider>
     </AmbientSoundProvider>
+  );
+}
+
+// Create a wrapper component for PinnedWidgetsDock to access useWidget
+function IndependentPinnedWidgetsDock({ isCurrentRoomWritable, mainContentArea }: { isCurrentRoomWritable: boolean; mainContentArea: any }) {
+  const { activeWidgets } = useWidget();
+  const pinnedWidgets = activeWidgets.filter(widget => widget.isPinned);
+  return (
+    <PinnedWidgetsDock
+      pinnedWidgets={pinnedWidgets}
+      mainContentArea={mainContentArea}
+      isCurrentRoomWritable={isCurrentRoomWritable}
+    />
   );
 }

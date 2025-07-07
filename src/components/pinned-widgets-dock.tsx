@@ -3,7 +3,7 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LayoutGrid } from "lucide-react";
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Gamepad2, BookOpen, Goal, WandSparkles } from "lucide-react"; // Import all icons
 import { cn } from "@/lib/utils";
 import { Widget } from "@/components/widget/widget";
 import { WidgetState } from "@/hooks/widgets/types";
@@ -11,20 +11,19 @@ import { useWidget } from "@/components/widget/widget-provider";
 import { DOCKED_WIDGET_WIDTH, DOCKED_WIDGET_HEIGHT, DOCKED_WIDGET_HORIZONTAL_GAP, BOTTOM_DOCK_OFFSET } from "@/hooks/widgets/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-// Define WIDGET_COMPONENTS here or import from a central place if available
-// For now, re-define necessary parts for this component's scope
+// Define WIDGET_COMPONENTS_MAP with actual icons
 const WIDGET_COMPONENTS_MAP = {
-  "spaces": { icon: LayoutGrid, content: () => null }, // Content is not rendered here, just icon
-  "sounds": { icon: LayoutGrid, content: () => null },
-  "calendar": { icon: LayoutGrid, content: () => null },
-  "timer": { icon: LayoutGrid, content: () => null },
-  "tasks": { icon: LayoutGrid, content: () => null },
-  "notes": { icon: LayoutGrid, content: () => null },
-  "media": { icon: LayoutGrid, content: () => null },
-  "games": { icon: LayoutGrid, content: () => null },
-  "flash-cards": { icon: LayoutGrid, content: () => null },
-  "goal-focus": { icon: LayoutGrid, content: () => null },
-  "background-effects": { icon: LayoutGrid, content: () => null },
+  "spaces": { icon: LayoutGrid, content: () => null, title: "Spaces" },
+  "sounds": { icon: Volume2, content: () => null, title: "Sounds" },
+  "calendar": { icon: Calendar, content: () => null, title: "Calendar" },
+  "timer": { icon: Timer, content: () => null, title: "Timer" },
+  "tasks": { icon: ListTodo, content: () => null, title: "Tasks" },
+  "notes": { icon: NotebookPen, content: () => null, title: "Notes" },
+  "media": { icon: Image, content: () => null, title: "Media" },
+  "games": { icon: Gamepad2, content: () => null, title: "Games" },
+  "flash-cards": { icon: BookOpen, content: () => null, title: "Flash Cards" },
+  "goal-focus": { icon: Goal, content: () => null, title: "Goal Focus" },
+  "background-effects": { icon: WandSparkles, content: () => null, title: "Backgrounds" },
 };
 
 interface PinnedWidgetsDockProps {
@@ -35,9 +34,10 @@ interface PinnedWidgetsDockProps {
     width: number;
     height: number;
   };
+  isCurrentRoomWritable: boolean; // Pass this down
 }
 
-export function PinnedWidgetsDock({ pinnedWidgets, mainContentArea }: PinnedWidgetsDockProps) {
+export function PinnedWidgetsDock({ pinnedWidgets, mainContentArea, isCurrentRoomWritable }: PinnedWidgetsDockProps) {
   const {
     bringWidgetToFront,
     minimizeWidget,
@@ -78,6 +78,8 @@ export function PinnedWidgetsDock({ pinnedWidgets, mainContentArea }: PinnedWidg
     >
       {pinnedWidgets.map((widget, index) => {
         const WidgetIcon = WIDGET_COMPONENTS_MAP[widget.id as keyof typeof WIDGET_COMPONENTS_MAP]?.icon;
+        const widgetTitle = WIDGET_COMPONENTS_MAP[widget.id as keyof typeof WIDGET_COMPONENTS_MAP]?.title || widget.title;
+        
         // Position is not relevant for rendering inside the dock, but needed for unpinning
         const widgetRelativePosition = {
           x: index * (DOCKED_WIDGET_WIDTH + DOCKED_WIDGET_HORIZONTAL_GAP),
@@ -88,7 +90,7 @@ export function PinnedWidgetsDock({ pinnedWidgets, mainContentArea }: PinnedWidg
           <Widget
             key={widget.id}
             id={widget.id}
-            title={widget.title}
+            title={widgetTitle}
             icon={WidgetIcon}
             content={() => null} // Content is not rendered here, only in main container
             position={widgetRelativePosition} // Position relative to dock
@@ -97,6 +99,7 @@ export function PinnedWidgetsDock({ pinnedWidgets, mainContentArea }: PinnedWidg
             isMinimized={true} // Always minimized when pinned
             isMaximized={false}
             isPinned={true}
+            isClosed={false} // Pinned widgets are always visible
             isTopmost={false} // Not topmost in the traditional sense
             onSizeChange={(newSize) => updateWidgetSize(widget.id, newSize)}
             onBringToFront={() => bringWidgetToFront(widget.id)}
@@ -104,7 +107,7 @@ export function PinnedWidgetsDock({ pinnedWidgets, mainContentArea }: PinnedWidg
             onMaximize={maximizeWidget}
             onPin={togglePinned} // This will unpin the widget
             onClose={closeWidget}
-            isCurrentRoomWritable={true} // Pinned widgets are always interactive
+            isCurrentRoomWritable={isCurrentRoomWritable} // Pass writability
             mainContentArea={mainContentArea} // Pass main content area for unpinning calculations
             isMobile={isMobile}
             isInsideDock={true} // Indicate it's inside the dock

@@ -55,6 +55,7 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
           },
           isMinimized: true,
           isMaximized: false,
+          isClosed: false, // Pinned widgets are always visible
         };
       }
       return widget;
@@ -67,6 +68,8 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
 
     const loadWidgetStates = async () => {
       setLoading(true);
+      let loadedWidgetStates: WidgetState[] = [];
+
       if (session && supabase) {
         setIsLoggedInMode(true);
         // 1. Try to fetch from Supabase
@@ -81,33 +84,7 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
         }
 
         if (supabaseWidgets && supabaseWidgets.length > 0) {
-          const loadedWidgets = supabaseWidgets.map((w: DbWidgetState) => fromDbWidgetState(w)).filter((w: WidgetState) => initialWidgetConfigs[w.id]);
-          const reClampedWidgets = loadedWidgets.map((widget: WidgetState) => {
-            // Clamp current position
-            const clampedCurrentPos = clampPosition(
-              widget.position.x,
-              widget.position.y,
-              widget.size.width,
-              widget.size.height,
-              mainContentArea
-            );
-            // Clamp normal position if it exists, otherwise use clamped current
-            const clampedNormalPos = widget.normalPosition ? clampPosition(
-              widget.normalPosition.x,
-              widget.normalPosition.y,
-              widget.normalSize?.width || initialWidgetConfigs[widget.id].initialWidth,
-              widget.normalSize?.height || initialWidgetConfigs[widget.id].initialHeight,
-              mainContentArea
-            ) : clampedCurrentPos;
-
-            return {
-              ...widget,
-              position: clampedCurrentPos,
-              normalPosition: clampedNormalPos,
-            };
-          });
-          setActiveWidgets(reClampedWidgets); // Pinned widgets will be recalculated after this
-          // console.log("Loaded widget states from Supabase."); // Removed for cleaner logs
+          loadedWidgetStates = supabaseWidgets.map((w: DbWidgetState) => fromDbWidgetState(w)).filter((w: WidgetState) => initialWidgetConfigs[w.id]);
         } else {
           // 2. If no Supabase data, check local storage for migration
           const savedState = localStorage.getItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
@@ -115,72 +92,88 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
             try {
               const parsedState: WidgetState[] = JSON.parse(savedState);
               const validWidgets = parsedState.filter((w: WidgetState) => initialWidgetConfigs[w.id]);
-              const reClampedWidgets = validWidgets.map((widget: WidgetState) => {
-                const clampedCurrentPos = clampPosition(
-                  widget.position.x,
-                  widget.position.y,
-                  widget.size.width,
-                  widget.size.height,
-                  mainContentArea
-                );
-                const clampedNormalPos = widget.normalPosition ? clampPosition(
-                  widget.normalPosition.x,
-                  widget.normalPosition.y,
-                  widget.normalSize?.width || initialWidgetConfigs[widget.id].initialWidth,
-                  widget.normalSize?.height || initialWidgetConfigs[widget.id].initialHeight,
-                  mainContentArea
-                ) : clampedCurrentPos;
-
-                return {
-                  ...widget,
-                  position: clampedCurrentPos,
-                  normalPosition: clampedNormalPos,
-                };
-              });
-
+              
               // Migrate to Supabase
               const { error: insertError } = await supabase
                 .from('user_widget_states')
-                .insert(reClampedWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id)));
+                .insert(validWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id)));
 
               if (insertError) {
                 console.error("Error migrating local widget states to Supabase:", insertError);
                 toast.error("Error migrating local widget settings.");
               } else {
-                setActiveWidgets(reClampedWidgets); // Pinned widgets will be recalculated after this
+                loadedWidgetStates = validWidgets;
                 localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
-                // toast.success("Local widget settings migrated to your account!"); // Removed for cleaner logs
               }
             } catch (e) {
               console.error("Error parsing local storage widget states:", e);
-              setActiveWidgets([]);
+              loadedWidgetStates = [];
             }
           } else {
             // 3. If neither, start with empty state (new user)
-            setActiveWidgets([]);
+            loadedWidgetStates = [];
           }
         }
       } else {
         // User is a guest (not logged in)
         setIsLoggedInMode(false);
-        // Always start with an empty screen for guests, ignoring local storage.
-        setActiveWidgets([]);
-        // Clear local storage to ensure it's empty for the next visit too.
-        localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
+        // For guests, always start with an empty screen, ignoring local storage.
+        loadedWidgetStates = [];
+        localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY); // Clear any previous guest state
       }
+
+      // Initialize all widgets based on initialWidgetConfigs, marking them as closed by default
+      const allWidgets: WidgetState[] = Object.keys(initialWidgetConfigs).map(id => {
+        const config = initialWidgetConfigs[id];
+        const existingState = loadedWidgetStates.find(w => w.id === id);
+
+        if (existingState) {
+          // Clamp positions for existing widgets
+          const clampedCurrentPos = clampPosition(
+            existingState.position.x,
+            existingState.position.y,
+            existingState.size.width,
+            existingState.size.height,
+            mainContentArea
+          );
+          const clampedNormalPos = existingState.normalPosition ? clampPosition(
+            existingState.normalPosition.x,
+            existingState.normalPosition.y,
+            existingState.normalSize?.width || config.initialWidth,
+            existingState.normalSize?.height || config.initialHeight,
+            mainContentArea
+          ) : clampedCurrentPos;
+
+          return {
+            ...existingState,
+            position: clampedCurrentPos,
+            normalPosition: clampedNormalPos,
+            isClosed: existingState.isClosed || false, // Ensure isClosed is set, default to false if undefined
+          };
+        } else {
+          // Default state for widgets not found in persistence (closed by default)
+          return {
+            id,
+            title: id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '), // Basic title from ID
+            position: clampPosition(config.initialPosition.x, config.initialPosition.y, config.initialWidth, config.initialHeight, mainContentArea),
+            size: { width: config.initialWidth, height: config.initialHeight },
+            zIndex: 903, // Base zIndex
+            isMinimized: false,
+            isMaximized: false,
+            isPinned: false,
+            isClosed: true, // New widgets are closed by default
+            normalPosition: clampPosition(config.initialPosition.x, config.initialPosition.y, config.initialWidth, config.initialHeight, mainContentArea),
+            normalSize: { width: config.initialWidth, height: config.initialHeight },
+          };
+        }
+      });
+      
+      setActiveWidgets(recalculatePinnedWidgets(allWidgets));
       setLoading(false);
     };
 
     loadWidgetStates();
   }, [session, supabase, authLoading, initialWidgetConfigs, mainContentArea, recalculatePinnedWidgets]);
-
-  // Apply pinned widget recalculation after activeWidgets are set
-  useEffect(() => {
-    if (!loading && activeWidgets.length > 0 && mainContentArea.width > 0) {
-      setActiveWidgets(prev => recalculatePinnedWidgets(prev));
-    }
-  }, [loading, activeWidgets.length, mainContentArea, recalculatePinnedWidgets]);
-
 
   // Save state to Supabase or local storage whenever activeWidgets changes
   const isInitialSaveLoad = useRef(true); // Use a different ref for saving
