@@ -33,7 +33,7 @@ const WIDGET_CONFIGS = {
   "spaces": { initialPosition: { x: 150, y: 100 }, initialWidth: 600, initialHeight: 700 },
   "sounds": { initialPosition: { x: 800, y: 150 }, initialWidth: 500, initialHeight: 600 },
   "calendar": { initialPosition: { x: 200, y: 200 }, initialWidth: 800, initialHeight: 700 },
-  "timer": { initialPosition: { x: 900, y: 250 }, initialWidth: 300, initialHeight: 220 },
+  "timer": { initialPosition: { x: 900, y: 250 }, initialWidth: 240, initialHeight: 160 },
   "tasks": { initialPosition: { x: 250, y: 300 }, initialWidth: 500, initialHeight: 600 },
   "notes": { initialPosition: { x: 700, y: 350 }, initialWidth: 500, initialHeight: 600 },
   "media": { initialPosition: { x: 300, y: 400 }, initialWidth: 600, initialHeight: 500 },
