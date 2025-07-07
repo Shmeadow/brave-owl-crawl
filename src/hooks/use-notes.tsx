@@ -29,7 +29,7 @@ export function useNotes() {
       if (session && supabase) {
         // User is logged in
         setIsLoggedInMode(true);
-        console.log("User logged in. Checking for local notes to migrate...");
+        // console.log("User logged in. Checking for local notes to migrate..."); // Removed for cleaner logs
 
         // 1. Load local notes (if any)
         const localNotesString = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -57,7 +57,7 @@ export function useNotes() {
 
           // 3. Migrate local notes to Supabase if they don't already exist
           if (localNotes.length > 0) {
-            console.log(`Found ${localNotes.length} local notes. Attempting migration...`);
+            // console.log(`Found ${localNotes.length} local notes. Attempting migration...`); // Removed for cleaner logs
             for (const localNote of localNotes) {
               // Check if a similar note (by content) already exists in Supabase for this user
               const existsInSupabase = mergedNotes.some(
@@ -81,7 +81,7 @@ export function useNotes() {
                   toast.error("Error migrating some local notes.");
                 } else if (newSupabaseNote) {
                   mergedNotes.push(newSupabaseNote as NoteData);
-                  console.log("Migrated local note:", newSupabaseNote.content);
+                  // console.log("Migrated local note:", newSupabaseNote.content); // Removed for cleaner logs
                 }
               }
             }

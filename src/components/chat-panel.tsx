@@ -47,7 +47,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
 
   const fetchMessages = useCallback(async (roomId: string) => {
     if (!supabase) {
-      console.warn("Supabase client not available for fetching messages.");
+      // console.warn("Supabase client not available for fetching messages."); // Removed for cleaner logs
       toast.error("Chat unavailable: Supabase client not initialized.");
       return;
     }

@@ -59,9 +59,9 @@ export default async function RootLayout({
   let isCozyThemeGloballyEnabled = true; // Default to true
 
   // Log the environment variables to help diagnose
-  console.log('Server-side Supabase URL:', supabaseUrl ? 'Loaded' : 'Undefined');
-  console.log('Server-side Supabase Anon Key:', supabaseAnonKey ? 'Loaded' : 'Undefined');
-  console.log('Attempting to initialize server-side Supabase client with URL:', supabaseUrl, 'and Anon Key (first 5 chars):', supabaseAnonKey?.substring(0, 5) + '...'); // Corrected substring
+  // console.log('Server-side Supabase URL:', supabaseUrl ? 'Loaded' : 'Undefined'); // Removed for cleaner logs
+  // console.log('Server-side Supabase Anon Key:', supabaseAnonKey ? 'Loaded' : 'Undefined'); // Removed for cleaner logs
+  // console.log('Attempting to initialize server-side Supabase client with URL:', supabaseUrl, 'and Anon Key (first 5 chars):', supabaseAnonKey?.substring(0, 5) + '...'); // Removed for cleaner logs
 
   if (supabaseUrl && supabaseAnonKey) {
     try {

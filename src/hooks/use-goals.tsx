@@ -29,7 +29,7 @@ export function useGoals() {
       if (session && supabase) {
         // User is logged in
         setIsLoggedInMode(true);
-        console.log("User logged in. Checking for local goals to migrate...");
+        // console.log("User logged in. Checking for local goals to migrate..."); // Removed for cleaner logs
 
         // 1. Load local goals (if any)
         const localGoalsString = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -57,7 +57,7 @@ export function useGoals() {
 
           // 3. Migrate local goals to Supabase if they don't already exist
           if (localGoals.length > 0) {
-            console.log(`Found ${localGoals.length} local goals. Attempting migration...`);
+            // console.log(`Found ${localGoals.length} local goals. Attempting migration...`); // Removed for cleaner logs
             for (const localGoal of localGoals) {
               // Check if a similar goal (by title) already exists in Supabase for this user
               const existsInSupabase = mergedGoals.some(
@@ -81,7 +81,7 @@ export function useGoals() {
                   toast.error("Error migrating some local goals.");
                 } else if (newSupabaseGoal) {
                   mergedGoals.push(newSupabaseGoal as GoalData);
-                  console.log("Migrated local goal:", newSupabaseGoal.title);
+                  // console.log("Migrated local goal:", newSupabaseGoal.title); // Removed for cleaner logs
                 }
               }
             }

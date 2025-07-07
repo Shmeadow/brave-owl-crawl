@@ -36,6 +36,7 @@ export function useAppSettings() {
       setSettings(null);
     } else {
       setSettings(data as AppSettings);
+      // console.log("Loaded app settings from Supabase."); // Removed for cleaner logs
     }
     setLoading(false);
   }, [supabase]);

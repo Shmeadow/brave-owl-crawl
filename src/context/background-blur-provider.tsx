@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useSupabase } from '@/integrations/supabase/auth';
 import { toast } from 'sonner';
 
@@ -12,12 +12,14 @@ interface BackgroundBlurContextType {
 const BackgroundBlurContext = createContext<BackgroundBlurContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_KEY = 'app_background_blur';
+const DEBOUNCE_DELAY = 500; // milliseconds
 
 export function BackgroundBlurProvider({ children }: { children: React.ReactNode }) {
   const { supabase, session, loading: authLoading } = useSupabase();
   const [blur, setBlurState] = useState(4); // Default to 4px blur
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Effect to load blur setting
   useEffect(() => {
@@ -41,7 +43,8 @@ export function BackgroundBlurProvider({ children }: { children: React.ReactNode
 
         if (supabasePrefs && supabasePrefs.background_blur !== null) {
           setBlurState(supabasePrefs.background_blur);
-          console.log("Loaded background blur from Supabase.");
+          document.documentElement.style.setProperty('--background-blur-px', `${supabasePrefs.background_blur}px`);
+          // console.log("Loaded background blur from Supabase."); // Removed for cleaner logs
         } else {
           // 2. If no Supabase data, check local storage for migration
           const savedBlur = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -58,8 +61,9 @@ export function BackgroundBlurProvider({ children }: { children: React.ReactNode
                 toast.error("Error migrating local blur settings.");
               } else {
                 setBlurState(parsedBlur);
+                document.documentElement.style.setProperty('--background-blur-px', `${parsedBlur}px`);
                 localStorage.removeItem(LOCAL_STORAGE_KEY);
-                toast.success("Local blur settings migrated to your account!");
+                // toast.success("Local blur settings migrated to your account!"); // Removed for cleaner logs
               }
             }
           } else {
@@ -72,6 +76,7 @@ export function BackgroundBlurProvider({ children }: { children: React.ReactNode
               console.error("Error inserting default blur into Supabase:", insertError);
             } else {
               setBlurState(4);
+              document.documentElement.style.setProperty('--background-blur-px', `4px`);
             }
           }
         }
@@ -83,10 +88,12 @@ export function BackgroundBlurProvider({ children }: { children: React.ReactNode
           const parsedBlur = parseInt(savedBlur, 10);
           if (!isNaN(parsedBlur)) {
             setBlurState(parsedBlur);
+            document.documentElement.style.setProperty('--background-blur-px', `${parsedBlur}px`);
           }
         } else {
           // Set default for guests if no local storage
           setBlurState(4);
+          document.documentElement.style.setProperty('--background-blur-px', `4px`);
           localStorage.setItem(LOCAL_STORAGE_KEY, '4');
         }
       }
@@ -96,25 +103,31 @@ export function BackgroundBlurProvider({ children }: { children: React.ReactNode
     loadBlur();
   }, [session, supabase, authLoading]);
 
-  const setBlur = useCallback(async (value: number) => {
+  const setBlur = useCallback((value: number) => {
     setBlurState(value);
     document.documentElement.style.setProperty('--background-blur-px', `${value}px`);
 
-    if (isLoggedInMode && session && supabase) {
-      const { error } = await supabase
-        .from('user_preferences')
-        .upsert({ user_id: session.user.id, background_blur: value }, { onConflict: 'user_id' });
-
-      if (error) {
-        console.error("Error updating blur in Supabase:", error);
-        toast.error("Failed to save blur preference.");
-      } else {
-        toast.success("Blur setting saved to your account!");
-      }
-    } else if (!loading) { // Only save to local storage if not logged in and initial load is complete
-      localStorage.setItem(LOCAL_STORAGE_KEY, value.toString());
-      toast.success("Blur setting saved locally!");
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
     }
+
+    debounceTimeoutRef.current = setTimeout(async () => {
+      if (isLoggedInMode && session && supabase) {
+        const { error } = await supabase
+          .from('user_preferences')
+          .upsert({ user_id: session.user.id, background_blur: value }, { onConflict: 'user_id' });
+
+        if (error) {
+          console.error("Error updating blur in Supabase:", error);
+          toast.error("Failed to save blur preference.");
+        } else {
+          // toast.success("Blur setting saved to your account!"); // Removed for cleaner logs
+        }
+      } else if (!loading) { // Only save to local storage if not logged in and initial load is complete
+        localStorage.setItem(LOCAL_STORAGE_KEY, value.toString());
+        // toast.success("Blur setting saved locally!"); // Removed for cleaner logs
+      }
+    }, DEBOUNCE_DELAY);
   }, [isLoggedInMode, session, supabase, loading]);
 
   return (

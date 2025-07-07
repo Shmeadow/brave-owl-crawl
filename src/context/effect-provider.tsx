@@ -43,7 +43,7 @@ export function EffectProvider({ children }: { children: React.ReactNode }) {
 
         if (supabasePrefs && supabasePrefs.active_effect) {
           setActiveEffectState(supabasePrefs.active_effect as EffectType);
-          console.log("Loaded active effect from Supabase.");
+          // console.log("Loaded active effect from Supabase."); // Removed for cleaner logs
         } else {
           // 2. If no Supabase data, check local storage for migration
           const savedEffect = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -59,7 +59,7 @@ export function EffectProvider({ children }: { children: React.ReactNode }) {
             } else {
               setActiveEffectState(savedEffect as EffectType);
               localStorage.removeItem(LOCAL_STORAGE_KEY);
-              toast.success("Local effect settings migrated to your account!");
+              // toast.success("Local effect settings migrated to your account!"); // Removed for cleaner logs
             }
           } else {
             // 3. If neither, set default and insert into Supabase
@@ -104,11 +104,11 @@ export function EffectProvider({ children }: { children: React.ReactNode }) {
         console.error("Error updating effect in Supabase:", error);
         toast.error("Failed to save effect preference.");
       } else {
-        toast.success("Effect saved to your account!");
+        // toast.success("Effect saved to your account!"); // Removed for cleaner logs
       }
     } else if (!loading) { // Only save to local storage if not logged in and initial load is complete
       localStorage.setItem(LOCAL_STORAGE_KEY, effect);
-      toast.success("Effect saved locally!");
+      // toast.success("Effect saved locally!"); // Removed for cleaner logs
     }
   }, [isLoggedInMode, session, supabase, loading]);
 

@@ -65,7 +65,7 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
   // These callbacks are passed to the YouTube player. They are now stable because their
   // dependencies are empty, and they access state setters through a ref.
   const onPlayerReady = useCallback((event: any) => {
-    console.log("YouTube Player Ready:", event.target);
+    // console.log("YouTube Player Ready:", event.target); // Removed for cleaner logs
     stateSettersRef.current.setPlayerReady(true);
     event.target.setVolume(volume);
     stateSettersRef.current.setIsMuted(event.target.isMuted());
@@ -140,7 +140,7 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
 
       if (playerRef.current) {
         if (currentContentIdRef.current !== newContentId) {
-          console.log("YouTube player exists, loading new content:", newContentId, "Type:", newContentType);
+          // console.log("YouTube player exists, loading new content:", newContentId, "Type:", newContentType); // Removed for cleaner logs
           if (newContentType === 'video') {
             playerRef.current.loadVideoById(newContentId);
           } else if (newContentType === 'playlist') {
@@ -149,7 +149,7 @@ export function useYouTubePlayer(embedUrl: string | null, iframeRef: React.RefOb
           currentContentIdRef.current = newContentId;
         }
       } else {
-        console.log("Creating new YouTube player for content:", newContentId, "Type:", newContentType);
+        // console.log("Creating new YouTube player for content:", newContentId, "Type:", newContentType); // Removed for cleaner logs
         const playerOptions: any = {
           events: {
             'onReady': onPlayerReady,

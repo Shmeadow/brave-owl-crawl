@@ -47,10 +47,10 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }:
     e.stopPropagation(); // Prevent any parent click handlers
     if (!isCurrentRoomWritable) {
       toast.error("You do not have permission to control sounds in this room.");
-      console.log("[AmbientSoundItem] Blocked play: Room not writable.");
+      // console.log("[AmbientSoundItem] Blocked play: Room not writable."); // Removed for cleaner logs
       return;
     }
-    console.log(`[AmbientSoundItem] Attempting to play: ${name}. Ready: ${isReady}. Writable: ${isCurrentRoomWritable}`);
+    // console.log(`[AmbientSoundItem] Attempting to play: ${name}. Ready: ${isReady}. Writable: ${isCurrentRoomWritable}`); // Removed for cleaner logs
     play();
     toast.info(`Playing ${name}`);
   };

@@ -103,7 +103,7 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
             };
           });
           setActiveWidgets(reClampedWidgets); // Pinned widgets will be recalculated after this
-          console.log("Loaded widget states from Supabase.");
+          // console.log("Loaded widget states from Supabase."); // Removed for cleaner logs
         } else {
           // 2. If no Supabase data, check local storage for migration
           const savedState = localStorage.getItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
@@ -143,7 +143,7 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
               } else {
                 setActiveWidgets(reClampedWidgets); // Pinned widgets will be recalculated after this
                 localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
-                toast.success("Local widget settings migrated to your account!");
+                // toast.success("Local widget settings migrated to your account!"); // Removed for cleaner logs
               }
             } catch (e) {
               console.error("Error parsing local storage widget states:", e);
@@ -238,12 +238,12 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
             console.error("Error saving widget states to Supabase:", insertError);
             toast.error("Failed to save widget layout.");
           } else {
-            // toast.success("Widget layout saved to your account!"); // Too frequent
+            // toast.success("Widget layout saved to your account!"); // Too frequent, removed
           }
         }
       } else {
         localStorage.setItem(LOCAL_STORAGE_WIDGET_STATE_KEY, JSON.stringify(activeWidgets));
-        // toast.success("Widget layout saved locally!"); // Too frequent
+        // toast.success("Widget layout saved locally!"); // Too frequent, removed
       }
     };
 

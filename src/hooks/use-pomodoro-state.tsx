@@ -102,7 +102,7 @@ export function usePomodoroState() {
       setLoading(true);
       if (session && supabase) {
         setIsLoggedInMode(true);
-        console.log("User logged in. Checking for local pomodoro settings to migrate...");
+        // console.log("User logged in. Checking for local pomodoro settings to migrate..."); // Removed for cleaner logs
 
         // 1. Fetch user's existing settings from Supabase
         const { data: supabaseSettings, error: fetchError } = await supabase
@@ -129,7 +129,7 @@ export function usePomodoroState() {
                       prevState.mode === 'short-break' ? supabaseSettings.short_break_time :
                       supabaseSettings.long_break_time,
           }));
-          console.log("Loaded pomodoro settings from Supabase.");
+          // console.log("Loaded pomodoro settings from Supabase."); // Removed for cleaner logs
         } else {
           // No settings in Supabase, check local storage for migration
           const localCustomTimesString = localStorage.getItem(LOCAL_STORAGE_CUSTOM_TIMES_KEY);
@@ -142,7 +142,7 @@ export function usePomodoroState() {
           }
 
           if (localCustomTimes !== DEFAULT_TIMES) {
-            console.log("Found local pomodoro settings. Attempting migration...");
+            // console.log("Found local pomodoro settings. Attempting migration..."); // Removed for cleaner logs
             const { data: newSupabaseSettings, error: insertError } = await supabase
               .from('pomodoro_settings')
               .insert({
@@ -353,7 +353,7 @@ export function usePomodoroState() {
     }));
   }, []);
 
-  const handleTimeInputBlur = useCallback(() => {
+  const handleTimeInputBlur = useCallback(async () => { // Made async to await Supabase call
     setState(prevState => {
       const newTime = parseTimeToSeconds(prevState.editableTimeString);
       if (!isNaN(newTime) && newTime >= 0) {

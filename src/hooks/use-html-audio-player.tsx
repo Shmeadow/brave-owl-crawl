@@ -34,7 +34,7 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
   // 1. Initialize audio element and attach core event listeners
   useEffect(() => {
     if (!audioRef.current) {
-      console.log("[useHtmlAudioPlayer] Initializing new Audio element.");
+      // console.log("[useHtmlAudioPlayer] Initializing new Audio element."); // Removed for cleaner logs
       audioRef.current = new Audio();
       audioRef.current.loop = true;
       audioRef.current.volume = audioVolume;
@@ -43,17 +43,17 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
 
       const handlePlay = () => {
         setAudioIsPlaying(true);
-        console.log(`[useHtmlAudioPlayer] Audio element reported 'play' event for: ${audioRef.current?.src}`);
+        // console.log(`[useHtmlAudioPlayer] Audio element reported 'play' event for: ${audioRef.current?.src}`); // Removed for cleaner logs
       };
       const handlePause = () => {
         setAudioIsPlaying(false);
-        console.log(`[useHtmlAudioPlayer] Audio element reported 'pause' event for: ${audioRef.current?.src}`);
+        // console.log(`[useHtmlAudioPlayer] Audio element reported 'pause' event for: ${audioRef.current?.src}`); // Removed for cleaner logs
       };
       const handleVolumeChange = () => {
         if (audioRef.current) {
           setAudioVolumeState(audioRef.current.volume);
           setAudioIsMuted(audioRef.current.muted || audioRef.current.volume === 0);
-          console.log(`[useHtmlAudioPlayer] Volume changed to: ${audioRef.current.volume}, Muted: ${audioRef.current.muted}`);
+          // console.log(`[useHtmlAudioPlayer] Volume changed to: ${audioRef.current.volume}, Muted: ${audioRef.current.muted}`); // Removed for cleaner logs
         }
       };
       const handleError = (e: Event) => {
@@ -64,16 +64,16 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
       };
       const handleCanPlayThrough = () => {
         setIsReadyToPlay(true);
-        console.log(`[useHtmlAudioPlayer] 'canplaythrough' event for: ${audioRef.current?.src}`);
+        // console.log(`[useHtmlAudioPlayer] 'canplaythrough' event for: ${audioRef.current?.src}`); // Removed for cleaner logs
       };
       const handleWaiting = () => {
         setIsReadyToPlay(false); // Not ready if buffering
-        console.log(`[useHtmlAudioPlayer] 'waiting' event for: ${audioRef.current?.src}`);
+        // console.log(`[useHtmlAudioPlayer] 'waiting' event for: ${audioRef.current?.src}`); // Removed for cleaner logs
       };
       const handleLoadedMetadata = () => {
         if (audioRef.current) {
           setAudioDuration(audioRef.current.duration);
-          console.log(`[useHtmlAudioPlayer] 'loadedmetadata' event. Duration: ${audioRef.current.duration}s`);
+          // console.log(`[useHtmlAudioPlayer] 'loadedmetadata' event. Duration: ${audioRef.current.duration}s`); // Removed for cleaner logs
         }
       };
       const handleTimeUpdate = () => {
@@ -87,7 +87,7 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
         if (audioRef.current) {
           audioRef.current.currentTime = 0;
         }
-        console.log("[useHtmlAudioPlayer] Audio ended.");
+        // console.log("[useHtmlAudioPlayer] Audio ended."); // Removed for cleaner logs
       };
 
 
@@ -103,7 +103,7 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
 
       return () => {
         if (audioRef.current) {
-          console.log("[useHtmlAudioPlayer] Cleaning up Audio element event listeners.");
+          // console.log("[useHtmlAudioPlayer] Cleaning up Audio element event listeners."); // Removed for cleaner logs
           audioRef.current.removeEventListener('play', handlePlay);
           audioRef.current.removeEventListener('pause', handlePause);
           audioRef.current.removeEventListener('volumechange', handleVolumeChange);
@@ -127,7 +127,7 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
     if (!audioRef.current) return;
 
     if (src && src !== audioRef.current.src) {
-      console.log(`[useHtmlAudioPlayer] Setting new source: ${src}`);
+      // console.log(`[useHtmlAudioPlayer] Setting new source: ${src}`); // Removed for cleaner logs
       setAudioIsPlaying(false); // Always pause when source changes
       setAudioCurrentTime(0);
       setAudioDuration(0);
@@ -136,7 +136,7 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
       audioRef.current.load(); // Reload media when src changes
     } else if (!src && audioRef.current.src) {
       // If src becomes null, clear the audio element's source
-      console.log("[useHtmlAudioPlayer] Clearing audio source.");
+      // console.log("[useHtmlAudioPlayer] Clearing audio source."); // Removed for cleaner logs
       setAudioIsPlaying(false);
       setAudioCurrentTime(0);
       setAudioDuration(0);
@@ -149,15 +149,15 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
   // 3. Sync `audioIsPlaying` state with audio element, only if ready
   useEffect(() => {
     if (!audioRef.current || !isReadyToPlay) {
-      console.log(`[useHtmlAudioPlayer] Play/Pause sync skipped. Player ready: ${isReadyToPlay}, Audio element: ${!!audioRef.current}`);
+      // console.log(`[useHtmlAudioPlayer] Play/Pause sync skipped. Player ready: ${isReadyToPlay}, Audio element: ${!!audioRef.current}`); // Removed for cleaner logs
       return;
     }
 
     if (audioIsPlaying) {
-      console.log(`[useHtmlAudioPlayer] Attempting to play audio via state change for: ${audioRef.current.src}`);
+      // console.log(`[useHtmlAudioPlayer] Attempting to play audio via state change for: ${audioRef.current.src}`); // Removed for cleaner logs
       audioRef.current.play()
         .then(() => {
-          console.log(`[useHtmlAudioPlayer] Play promise resolved for: ${audioRef.current?.src}`);
+          // console.log(`[useHtmlAudioPlayer] Play promise resolved for: ${audioRef.current?.src}`); // Removed for cleaner logs
         })
         .catch(error => {
           console.error(`[useHtmlAudioPlayer] Play promise rejected for ${audioRef.current?.src}:`, error);
@@ -165,7 +165,7 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
           setAudioIsPlaying(false); // Revert state if play fails
         });
     } else {
-      console.log(`[useHtmlAudioPlayer] Attempting to pause audio via state change for: ${audioRef.current.src}`);
+      // console.log(`[useHtmlAudioPlayer] Attempting to pause audio via state change for: ${audioRef.current.src}`); // Removed for cleaner logs
       audioRef.current.pause();
     }
   }, [audioIsPlaying, isReadyToPlay]); // Depend on isReadyToPlay
@@ -174,7 +174,7 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = audioIsMuted ? 0 : audioVolume;
-      console.log(`[useHtmlAudioPlayer] Volume/Mute sync. Volume: ${audioRef.current.volume}, Muted: ${audioRef.current.muted}`);
+      // console.log(`[useHtmlAudioPlayer] Volume/Mute sync. Volume: ${audioRef.current.volume}, Muted: ${audioRef.current.muted}`); // Removed for cleaner logs
     }
   }, [audioVolume, audioIsMuted]);
 
@@ -205,7 +205,7 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
     if (audioRef.current) {
       audioRef.current.currentTime = seconds;
       setAudioCurrentTime(seconds);
-      console.log(`[useHtmlAudioPlayer] Seeked to: ${seconds}s`);
+      // console.log(`[useHtmlAudioPlayer] Seeked to: ${seconds}s`); // Removed for cleaner logs
     }
   }, []);
 
@@ -213,7 +213,7 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
     if (audioRef.current) {
       audioRef.current.currentTime = Math.min(audioRef.current.currentTime + 10, audioDuration);
       setAudioCurrentTime(audioRef.current.currentTime);
-      console.log(`[useHtmlAudioPlayer] Skipped forward to: ${audioRef.current.currentTime}s`);
+      // console.log(`[useHtmlAudioPlayer] Skipped forward to: ${audioRef.current.currentTime}s`); // Removed for cleaner logs
     }
   }, [audioDuration]);
 
@@ -221,7 +221,7 @@ export function useHtmlAudioPlayer(src: string | null): UseHtmlAudioPlayerResult
     if (audioRef.current) {
       audioRef.current.currentTime = Math.max(audioRef.current.currentTime - 10, 0);
       setAudioCurrentTime(audioRef.current.currentTime);
-      console.log(`[useHtmlAudioPlayer] Skipped backward to: ${audioRef.current.currentTime}s`);
+      // console.log(`[useHtmlAudioPlayer] Skipped backward to: ${audioRef.current.currentTime}s`); // Removed for cleaner logs
     }
   }, []);
 

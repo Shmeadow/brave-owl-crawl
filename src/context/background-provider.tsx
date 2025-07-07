@@ -84,8 +84,9 @@ function BackgroundManager({ url, isVideo, isMirrored }: { url: string; isVideo:
 export function BackgroundProvider({ children }: { children: React.ReactNode }) {
   const { supabase, session, loading: authLoading } = useSupabase();
   const [background, setBackgroundState] = useState<BackgroundState>(() => {
-    // Default to ani28.mp4 for SSR and initial client render
-    return { url: '/animated/ani28.mp4', isVideo: true, isMirrored: false };
+    // Default to a random background for SSR and initial client render
+    const randomBg = getRandomBackground();
+    return { url: randomBg.url, isVideo: randomBg.isVideo, isMirrored: false };
   });
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
@@ -116,7 +117,7 @@ export function BackgroundProvider({ children }: { children: React.ReactNode }) 
             isVideo: supabasePrefs.is_video_background ?? false,
             isMirrored: supabasePrefs.is_mirrored_background ?? false,
           });
-          console.log("Loaded background from Supabase.");
+          // console.log("Loaded background from Supabase."); // Removed for cleaner logs
         } else {
           // 2. If no Supabase data, check local storage for migration
           const savedUrl = localStorage.getItem(LOCAL_STORAGE_BG_KEY);
@@ -145,11 +146,11 @@ export function BackgroundProvider({ children }: { children: React.ReactNode }) 
               localStorage.removeItem(LOCAL_STORAGE_BG_KEY);
               localStorage.removeItem(LOCAL_STORAGE_BG_TYPE_KEY);
               localStorage.removeItem(LOCAL_STORAGE_BG_MIRRORED_KEY);
-              toast.success("Local background settings migrated to your account!");
+              // toast.success("Local background settings migrated to your account!"); // Removed for cleaner logs
             }
           } else {
-            // 3. If neither, set default (ani28.mp4) and insert into Supabase
-            const defaultBg = { url: '/animated/ani28.mp4', isVideo: true, isMirrored: false };
+            // 3. If neither, set a random default and insert into Supabase
+            const defaultBg = getRandomBackground();
             const { error: insertError } = await supabase
               .from('user_preferences')
               .upsert({
@@ -180,8 +181,8 @@ export function BackgroundProvider({ children }: { children: React.ReactNode }) 
             isMirrored: savedMirrored === 'true',
           });
         } else {
-          // Set default for guests if no local storage
-          const defaultBg = { url: '/animated/ani28.mp4', isVideo: true, isMirrored: false };
+          // Set a random default for guests if no local storage
+          const defaultBg = getRandomBackground();
           setBackgroundState(defaultBg);
           localStorage.setItem(LOCAL_STORAGE_BG_KEY, defaultBg.url);
           localStorage.setItem(LOCAL_STORAGE_BG_TYPE_KEY, defaultBg.isVideo ? 'video' : 'image');
@@ -212,13 +213,13 @@ export function BackgroundProvider({ children }: { children: React.ReactNode }) 
         console.error("Error updating background in Supabase:", error);
         toast.error("Failed to save background preference.");
       } else {
-        toast.success("Background saved to your account!");
+        // toast.success("Background saved to your account!"); // Removed for cleaner logs
       }
     } else if (!loading) { // Only save to local storage if not logged in and initial load is complete
       localStorage.setItem(LOCAL_STORAGE_BG_KEY, url);
       localStorage.setItem(LOCAL_STORAGE_BG_TYPE_KEY, isVideo ? 'video' : 'image');
       localStorage.setItem(LOCAL_STORAGE_BG_MIRRORED_KEY, String(isMirrored));
-      toast.success("Background saved locally!");
+      // toast.success("Background saved locally!"); // Removed for cleaner logs
     }
   }, [isLoggedInMode, session, supabase, loading]);
 

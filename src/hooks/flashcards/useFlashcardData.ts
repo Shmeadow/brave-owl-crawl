@@ -18,7 +18,7 @@ export function useFlashcardData() {
     if (session && supabase) {
       // User is logged in
       setIsLoggedInMode(true);
-      console.log("User logged in. Checking for local cards to migrate...");
+      // console.log("User logged in. Checking for local cards to migrate..."); // Removed for cleaner logs
 
       // 1. Load local cards (if any)
       const localCardsString = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -46,7 +46,7 @@ export function useFlashcardData() {
 
         // 3. Migrate local cards to Supabase if they don't already exist
         if (localCards.length > 0) {
-          console.log(`Found ${localCards.length} local cards. Attempting migration...`);
+          // console.log(`Found ${localCards.length} local cards. Attempting migration...`); // Removed for cleaner logs
           for (const localCard of localCards) {
             // Check if a similar card (by front/back) already exists in Supabase
             const existsInSupabase = mergedCards.some(
@@ -76,7 +76,7 @@ export function useFlashcardData() {
                 toast.error("Error migrating some local cards.");
               } else if (newSupabaseCard) {
                 mergedCards.push(newSupabaseCard as CardData);
-                console.log("Migrated local card:", newSupabaseCard.front);
+                // console.log("Migrated local card:", newSupabaseCard.front); // Removed for cleaner logs
               }
             }
           }

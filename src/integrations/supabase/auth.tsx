@@ -29,12 +29,12 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
   // This runs only once per component instance on the client side.
   const supabaseClient = useMemo(() => {
     if (typeof window !== 'undefined') {
-      console.log("SessionContextProvider: Creating Supabase client...");
+      // console.log("SessionContextProvider: Creating Supabase client..."); // Removed for cleaner logs
       const client = createBrowserClient();
       if (!client) {
         console.error("SessionContextProvider: Supabase client failed to initialize.");
       } else {
-        console.log("SessionContextProvider: Supabase client created successfully.");
+        // console.log("SessionContextProvider: Supabase client created successfully."); // Removed for cleaner logs
       }
       return client;
     }
@@ -80,20 +80,20 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
 
   useEffect(() => {
     if (!supabaseClient) { // Wait for supabaseClient to be ready
-      if (loading) {
-        console.log("SessionContextProvider: Waiting for Supabase client to be ready...");
-      }
+      // if (loading) { // Removed for cleaner logs
+      //   console.log("SessionContextProvider: Waiting for Supabase client to be ready..."); // Removed for cleaner logs
+      // }
       return;
     }
 
-    console.log("SessionContextProvider: Supabase client is ready. Setting up auth state listener.");
+    // console.log("SessionContextProvider: Supabase client is ready. Setting up auth state listener."); // Removed for cleaner logs
     const handleAuthStateChange = async (_event: string, currentSession: Session | null) => {
       setSession(currentSession);
       if (currentSession) {
-        console.log("Auth state changed: User is logged in. Fetching profile...");
+        // console.log("Auth state changed: User is logged in. Fetching profile..."); // Removed for cleaner logs
         await fetchProfile(currentSession.user.id, supabaseClient);
       } else {
-        console.log("Auth state changed: User is logged out. Clearing profile.");
+        // console.log("Auth state changed: User is logged out. Clearing profile."); // Removed for cleaner logs
         setProfile(null);
       }
       setLoading(false);
@@ -101,7 +101,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
 
     // Initial session check
     supabaseClient.auth.getSession().then(({ data: { session: initialSession } }) => {
-      console.log("Initial Supabase session fetched.");
+      // console.log("Initial Supabase session fetched."); // Removed for cleaner logs
       handleAuthStateChange('INITIAL_LOAD', initialSession);
     }).catch(error => {
       console.error("Error fetching initial Supabase session:", error);
@@ -111,7 +111,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
     const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(handleAuthStateChange);
 
     return () => {
-      console.log("Cleaning up Supabase auth state listener.");
+      // console.log("Cleaning up Supabase auth state listener."); // Removed for cleaner logs
       subscription.unsubscribe();
     };
   }, [supabaseClient, fetchProfile, loading]);
