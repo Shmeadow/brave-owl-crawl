@@ -29,6 +29,10 @@ export function useWidgetActions({
 }: UseWidgetActionsProps) {
   const [maxZIndex, setMaxZIndex] = useState(903); // Initial z-index for new widgets
 
+  // Constants for initial placement near sidebar
+  const SIDEBAR_OPEN_OFFSET_X = 80; // Distance from sidebar's left edge
+  const SIDEBAR_OPEN_OFFSET_Y = 80; // Distance from header's top edge
+
   // This function is now primarily for calculating the *target* position for pinned widgets
   // within the conceptual dock area, even if they are rendered by a separate component.
   const recalculatePinnedWidgets = useCallback((currentWidgets: WidgetState[]) => {
@@ -75,8 +79,8 @@ export function useWidgetActions({
       if (existingWidget) {
         // If widget exists, just make it visible and bring to front
         const restoredPosition = existingWidget.normalPosition || clampPosition(
-          config.initialPosition.x,
-          config.initialPosition.y,
+          mainContentArea.left + SIDEBAR_OPEN_OFFSET_X, // Default to near sidebar if no normalPosition
+          mainContentArea.top + SIDEBAR_OPEN_OFFSET_Y,
           config.initialWidth,
           config.initialHeight,
           mainContentArea
@@ -100,10 +104,8 @@ export function useWidgetActions({
         return recalculatePinnedWidgets(updatedWidgets);
       } else {
         // If widget does not exist (shouldn't happen with new persistence model, but as fallback)
-        const offsetAmount = 20;
-        const offsetIndex = prev.length % 5; // Use prev.length for offset
-        const initialX = mainContentArea.left + offsetIndex * offsetAmount;
-        const initialY = mainContentArea.top + offsetIndex * offsetAmount;
+        const initialX = mainContentArea.left + SIDEBAR_OPEN_OFFSET_X;
+        const initialY = mainContentArea.top + SIDEBAR_OPEN_OFFSET_Y;
 
         const clampedInitialPos = clampPosition(
           initialX,
@@ -283,7 +285,13 @@ export function useWidgetActions({
               isMinimized: false, // Unpinning makes it normal
               isMaximized: false,
               isClosed: false, // Ensure visible
-              position: widget.normalPosition || initialWidgetConfigs[id].initialPosition, // Restore or use initial
+              position: widget.normalPosition || clampPosition(
+                mainContentArea.left + SIDEBAR_OPEN_OFFSET_X, // Default to near sidebar if no normalPosition
+                mainContentArea.top + SIDEBAR_OPEN_OFFSET_Y,
+                initialWidgetConfigs[id].initialWidth,
+                initialWidgetConfigs[id].initialHeight,
+                mainContentArea
+              ), // Restore or use initial
               size: widget.normalSize || { width: initialWidgetConfigs[id].initialWidth, height: initialWidgetConfigs[id].initialHeight }, // Restore or use initial
               previousPosition: undefined, // Clear previous state
               previousSize: undefined,
@@ -305,7 +313,7 @@ export function useWidgetActions({
       });
       return recalculatePinnedWidgets(updatedWidgets); // Recalculate positions of all pinned widgets
     });
-  }, [initialWidgetConfigs, setActiveWidgets, recalculatePinnedWidgets]);
+  }, [initialWidgetConfigs, mainContentArea, setActiveWidgets, recalculatePinnedWidgets]);
 
   const closeWidget = useCallback((id: string) => {
     setActiveWidgets(prev => {
@@ -336,8 +344,8 @@ export function useWidgetActions({
             if (widget.isClosed) {
               // Open it
               const restoredPosition = widget.normalPosition || clampPosition(
-                config.initialPosition.x,
-                config.initialPosition.y,
+                mainContentArea.left + SIDEBAR_OPEN_OFFSET_X, // Default to near sidebar if no normalPosition
+                mainContentArea.top + SIDEBAR_OPEN_OFFSET_Y,
                 config.initialWidth,
                 config.initialHeight,
                 mainContentArea
@@ -370,10 +378,8 @@ export function useWidgetActions({
       } else {
         // This case should ideally not happen if all widgets are pre-initialized in persistence.
         // But as a fallback, add it as a new, open widget.
-        const offsetAmount = 20;
-        const offsetIndex = prev.length % 5;
-        const initialX = mainContentArea.left + offsetIndex * offsetAmount;
-        const initialY = mainContentArea.top + offsetIndex * offsetAmount;
+        const initialX = mainContentArea.left + SIDEBAR_OPEN_OFFSET_X;
+        const initialY = mainContentArea.top + SIDEBAR_OPEN_OFFSET_Y;
 
         const clampedInitialPos = clampPosition(
           initialX,
