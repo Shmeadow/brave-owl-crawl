@@ -5,10 +5,15 @@ import { useAmbientSound } from '@/context/ambient-sound-provider';
 import { allAmbientSounds } from '@/lib/sounds';
 import { Card } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 const soundMap = new Map(allAmbientSounds.map(sound => [sound.url, sound]));
 
-export function PlayingSoundsBar() {
+interface PlayingSoundsBarProps {
+  isMobile: boolean;
+}
+
+export function PlayingSoundsBar({ isMobile }: PlayingSoundsBarProps) {
   const { soundsState } = useAmbientSound();
 
   const playingSounds = Array.from(soundsState.entries())
@@ -21,7 +26,10 @@ export function PlayingSoundsBar() {
   }
 
   return (
-    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[902] pointer-events-none">
+    <div className={cn(
+      "fixed left-1/2 -translate-x-1/2 z-[902] pointer-events-none",
+      isMobile ? "bottom-40" : "top-20"
+    )}>
       <Card className="bg-background/60 backdrop-blur-xl border-white/20 shadow-lg rounded-full p-1.5 pointer-events-auto">
         <div className="flex items-center gap-2">
           <TooltipProvider>

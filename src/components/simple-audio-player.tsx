@@ -202,8 +202,8 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
   if (isMobile) {
     return (
       <div className={cn(
-        "fixed bottom-4 left-4 right-4 z-[900] transition-all duration-300 ease-in-out",
-        "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-auto",
+        "transition-all duration-300 ease-in-out",
+        "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full",
         isMobileExpanded ? "h-auto p-2" : "h-16 p-2 items-center justify-between flex-row"
       )}>
         {isMobileExpanded ? (
