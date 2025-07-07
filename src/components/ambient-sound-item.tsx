@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react"; // Import useEffect
 import { Button } from "@/components/ui/button";
 import { Play, Music, CloudRain, Wind, Coffee, Building, Waves, Sun, Snowflake, Keyboard, BookOpen, Volume2, Pause, VolumeX, Droplet, WavesIcon, TrainFront, Cloud, Leaf, Bird, Flame, Footprints, TreePine, Bug, Moon, Speaker } from "lucide-react"; // Import Pause icon, VolumeX, and more specific icons
 import useClientAudio from "@/hooks/useClientAudio";
@@ -44,6 +44,11 @@ const getSoundIcon = (name: string, category: string) => {
 export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }: AmbientSoundItemProps) {
   const { play, pause, isPlaying, volume, isMuted, setVolume, toggleMute } = useClientAudio(url);
 
+  // Debugging log for isPlaying prop
+  useEffect(() => {
+    console.log(`[AmbientSoundItem] ${name} - isPlaying prop: ${isPlaying}`);
+  }, [isPlaying, name]);
+
   const handlePlayPauseClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent any parent click handlers
     if (!isCurrentRoomWritable) {
@@ -81,7 +86,7 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }:
     <div
       className={cn(
         "flex flex-col p-2 rounded-md border shadow-sm transition-all duration-200",
-        isPlaying ? "bg-white/10 border-white/30" : "bg-card backdrop-blur-xl border-border hover:bg-muted/50", // Transparent glass when playing
+        isPlaying ? "bg-primary/20 border-primary" : "bg-card backdrop-blur-xl border-border hover:bg-muted/50", // More distinct playing state
         !isCurrentRoomWritable && "opacity-70 cursor-not-allowed"
       )}
     >
