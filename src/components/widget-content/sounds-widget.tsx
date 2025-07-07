@@ -43,7 +43,7 @@ const allAmbientSounds = [
   // Music & Abstract Sounds
   { name: "Lofi Beats", url: "/sound/lofi_beats.mp3", category: "Music" },
   // Removed "Calm Piano" as it was causing an error
-  { name: "Space Ambience", url: "/sound/space_ambience.mp3", category: "Abstract" },
+  { name: "Space Ambience", url: "/sound/space_ambience.mpory", category: "Abstract" },
   { name: "Zen Garden", url: "/sound/zen_garden.mp3", category: "Abstract" },
 
   // Productivity Sounds
@@ -107,15 +107,6 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
         </h2>
       </div>
       <div className="p-4 pt-2 border-b border-border space-y-3">
-        <div className="relative">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search sounds..."
-            className="pl-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
         <div>
           <Label htmlFor="category-select" className="sr-only">Filter by Category</Label>
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
@@ -129,6 +120,15 @@ export function SoundsWidget({ isCurrentRoomWritable }: SoundsWidgetProps) {
               ))}
             </SelectContent>
           </Select>
+        </div>
+        <div className="relative">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search sounds..."
+            className="pl-8"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
       </div>
 
