@@ -16,15 +16,17 @@ interface PlayingSoundsBarProps {
 export function PlayingSoundsBar({ isMobile }: PlayingSoundsBarProps) {
   const { soundsState, togglePlay } = useAmbientSound();
 
-  // Show all sounds that have been activated (playing or paused)
-  const activeSounds = Array.from(soundsState.entries()).map(([url, state]) => {
-    const soundDetails = soundMap.get(url);
-    if (!soundDetails) return null;
-    return {
-      ...soundDetails,
-      isPlaying: state.isPlaying,
-    };
-  }).filter(Boolean);
+  // Show only sounds that are currently playing.
+  const activeSounds = Array.from(soundsState.entries())
+    .filter(([_, state]) => state.isPlaying)
+    .map(([url, state]) => {
+      const soundDetails = soundMap.get(url);
+      if (!soundDetails) return null;
+      return {
+        ...soundDetails,
+        isPlaying: state.isPlaying,
+      };
+    }).filter(Boolean);
 
   if (activeSounds.length === 0) {
     return null;
@@ -47,18 +49,13 @@ export function PlayingSoundsBar({ isMobile }: PlayingSoundsBarProps) {
                     <button
                       onClick={() => togglePlay(sound.url, sound.name)}
                       className="relative flex items-center justify-center h-6 w-6 bg-primary/10 rounded-full focus:outline-none focus:ring-2 focus:ring-primary overflow-hidden"
-                      aria-label={`Toggle ${sound.name}`}
+                      aria-label={`Pause ${sound.name}`}
                     >
                       <Icon className="h-4 w-4 text-primary" />
-                      {!sound.isPlaying && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-0.5 h-[141.4%] bg-red-500 transform -rotate-45"></div>
-                        </div>
-                      )}
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom">
-                    <p>{sound.name} ({sound.isPlaying ? 'Playing' : 'Paused'})</p>
+                    <p>Pause {sound.name}</p>
                   </TooltipContent>
                 </Tooltip>
               );

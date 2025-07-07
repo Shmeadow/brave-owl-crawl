@@ -51,12 +51,6 @@ export function AmbientSoundProvider({ children }: { children: React.ReactNode }
       player.volume = currentState.volume;
       audioPlayersRef.current.set(url, player);
 
-      player.oncanplaythrough = () => {
-        if (!currentState.isPlaying) { // Check if it should be playing
-          player?.play().catch(e => console.error("Autoplay failed", e));
-          updateState(url, { isPlaying: true });
-        }
-      };
       player.onerror = () => {
         toast.error(`Failed to load sound: ${name}`);
         updateState(url, { isPlaying: false });
@@ -71,6 +65,7 @@ export function AmbientSoundProvider({ children }: { children: React.ReactNode }
       player.play().catch(e => {
         toast.error(`Could not play ${name}. Please interact with the page first.`);
         console.error("Play error:", e);
+        updateState(url, { isPlaying: false }); // Revert state on error
       });
       updateState(url, { isPlaying: true });
       toast.info(`Playing ${name}`);
