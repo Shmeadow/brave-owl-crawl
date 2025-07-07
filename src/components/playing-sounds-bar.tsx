@@ -34,7 +34,7 @@ export function PlayingSoundsBar() {
                       <Icon className="h-4 w-4 text-primary" />
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent side="bottom">
                     <p>{sound!.name}</p>
                   </TooltipContent>
                 </Tooltip>
