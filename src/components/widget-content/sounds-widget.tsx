@@ -42,7 +42,7 @@ const allAmbientSounds = [
 
   // Music & Abstract Sounds
   { name: "Lofi Beats", url: "/sound/lofi_beats.mp3", category: "Music" },
-  { name: "Calm Piano", url: "/sound/calm_piano.mp3", category: "Music" },
+  // Removed "Calm Piano" as it was causing an error
   { name: "Space Ambience", url: "/sound/space_ambience.mp3", category: "Abstract" },
   { name: "Zen Garden", url: "/sound/zen_garden.mp3", category: "Abstract" },
 
