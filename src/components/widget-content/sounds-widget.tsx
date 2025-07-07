@@ -18,36 +18,36 @@ interface SoundsWidgetProps {
 // Supported formats typically include .mp3, .ogg, .wav
 const allAmbientSounds = [
   // Nature Sounds
-  { name: "Beach Ocean", url: "/sound/beach_ocean.mp3", category: "Nature" },
-  { name: "Rain", url: "/sound/rain.mp3", category: "Nature" },
-  { name: "Forest Birds", url: "/sound/forest_birds.mp3", category: "Nature" },
-  { name: "Thunderstorm", url: "/sound/thunderstorm.mp3", category: "Nature" },
-  { name: "River Flow", url: "/sound/river_flow.mp3", category: "Nature" },
-  { name: "Fireplace Crackle", url: "/sound/fireplace_crackle.mp3", category: "Nature" },
-  { name: "Ocean Waves", url: "/sound/ocean_waves.mp3", category: "Nature" },
-  { name: "Wind Chimes", url: "/sound/wind_chimes.mp3", category: "Nature" },
-  { name: "Thunder", url: "/sound/thunder.mp3", category: "Nature" },
+  { name: "Beach Ocean", url: "/sound/beach_ocean.ogg", category: "Nature" },
+  { name: "Rain", url: "/sound/rain.ogg", category: "Nature" },
+  { name: "Forest Birds", url: "/sound/forest_birds.ogg", category: "Nature" },
+  { name: "Thunderstorm", url: "/sound/thunderstorm.ogg", category: "Nature" },
+  { name: "River Flow", url: "/sound/river_flow.ogg", category: "Nature" },
+  { name: "Fireplace Crackle", url: "/sound/fireplace_crackle.ogg", category: "Nature" },
+  { name: "Ocean Waves", url: "/sound/ocean_waves.ogg", category: "Nature" },
+  { name: "Wind Chimes", url: "/sound/wind_chimes.ogg", category: "Nature" },
+  { name: "Thunder", url: "/sound/thunder.ogg", category: "Nature" },
 
   // Cafe & City Sounds
-  { name: "Coffee Shop", url: "/sound/coffee_shop.mp3", category: "Cafe" },
-  { name: "City Ambience", url: "/sound/city_ambience.mp3", category: "City" },
-  { name: "Train Ride", url: "/sound/train_ride.mp3", category: "City" },
-  { name: "City Traffic", url: "/sound/city_traffic.mp3", category: "City" },
-  { name: "Library Ambience", url: "/sound/library_ambience.mp3", category: "City" },
+  { name: "Coffee Shop", url: "/sound/coffee_shop.ogg", category: "Cafe" },
+  { name: "City Ambience", url: "/sound/city_ambience.ogg", category: "City" },
+  { name: "Train Ride", url: "/sound/train_ride.ogg", category: "City" },
+  { name: "City Traffic", url: "/sound/city_traffic.ogg", category: "City" },
+  { name: "Library Ambience", url: "/sound/library_ambience.ogg", category: "City" },
 
   // Noise Sounds
-  { name: "White Noise", url: "/sound/white_noise.mp3", category: "Noise" },
-  { name: "Brown Noise", url: "/sound/brown_noise.mp3", category: "Noise" },
-  { name: "Pink Noise", url: "/sound/pink_noise.mp3", category: "Noise" },
+  { name: "White Noise", url: "/sound/white_noise.ogg", category: "Noise" },
+  { name: "Brown Noise", url: "/sound/brown_noise.ogg", category: "Noise" },
+  { name: "Pink Noise", url: "/sound/pink_noise.ogg", category: "Noise" },
 
   // Music & Abstract Sounds
-  { name: "Lofi Beats", url: "/sound/lofi_beats.mp3", category: "Music" },
+  { name: "Lofi Beats", url: "/sound/lofi_beats.ogg", category: "Music" },
   // Removed "Calm Piano" as it was causing an error
-  { name: "Space Ambience", url: "/sound/space_ambience.mp3", category: "Abstract" },
-  { name: "Zen Garden", url: "/sound/zen_garden.mp3", category: "Abstract" },
+  { name: "Space Ambience", url: "/sound/space_ambience.ogg", category: "Abstract" },
+  { name: "Zen Garden", url: "/sound/zen_garden.ogg", category: "Abstract" },
 
   // Productivity Sounds
-  { name: "Keyboard Typing", url: "/sound/keyboard_typing.mp3", category: "Productivity" },
+  { name: "Keyboard Typing", url: "/sound/keyboard_typing.ogg", category: "Productivity" },
 ];
 
 // Helper function to get a more specific icon based on sound name/category
