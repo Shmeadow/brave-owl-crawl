@@ -5,7 +5,6 @@ import { toast } from "sonner"; // Ensure toast is imported
 export default function useClientAudio(src: string) {
   // Create the Audio object once when the component mounts
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isReady, setIsReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false); // Track playing state
 
   // Initialize audio element and attach event listeners once
@@ -17,20 +16,17 @@ export default function useClientAudio(src: string) {
 
       const audio = audioRef.current;
 
-      const onCanPlay = () => {
-        setIsReady(true);
-      };
+      // Removed onCanPlay as we're simplifying readiness
       const onError = (e: Event) => {
         console.error(`[useClientAudio] load error for ${audio.src}`, e);
         toast.error(`Failed to load audio: ${audio.src.split('/').pop()}.`);
-        setIsReady(false);
         setIsPlaying(false); // Stop playing on error
       };
       const onPlay = () => setIsPlaying(true);
       const onPause = () => setIsPlaying(false);
       const onEnded = () => setIsPlaying(false); // Also handle when loop ends (though loop is true)
 
-      audio.addEventListener("canplaythrough", onCanPlay);
+      // Removed "canplaythrough" listener
       audio.addEventListener("error", onError);
       audio.addEventListener("play", onPlay);
       audio.addEventListener("pause", onPause);
@@ -39,7 +35,7 @@ export default function useClientAudio(src: string) {
       return () => {
         // Cleanup listeners when component unmounts
         audio.pause();
-        audio.removeEventListener("canplaythrough", onCanPlay);
+        // Removed "canplaythrough" listener cleanup
         audio.removeEventListener("error", onError);
         audio.removeEventListener("play", onPlay);
         audio.removeEventListener("pause", onPause);
@@ -57,7 +53,6 @@ export default function useClientAudio(src: string) {
     if (audio.src !== src) {
       audio.src = src;
       audio.load(); // Load the new source
-      setIsReady(false); // Reset ready state when source changes
       setIsPlaying(false); // Pause when source changes
     }
   }, [src]); // Dependency on src: runs when src prop changes
@@ -68,14 +63,9 @@ export default function useClientAudio(src: string) {
       console.warn("[useClientAudio] Audio element not initialized.");
       return;
     }
-    if (!isReady) {
-      console.warn(`[useClientAudio] Audio not ready yet for ${audio.src}. Attempting to play anyway.`);
-      // Attempt to play even if not 'canplaythrough' yet, as some browsers might allow it.
-      // The 'play' promise will resolve/reject based on actual readiness.
-    }
     try {
       await audio.play();
-      // setIsPlaying(true); // State updated by 'play' event listener
+      // isPlaying state will be updated by the 'play' event listener
     } catch (err: any) {
       console.error(`[useClientAudio] play error for ${audio.src}:`, err);
       if (err.name === "NotAllowedError") {
@@ -85,15 +75,15 @@ export default function useClientAudio(src: string) {
       }
       setIsPlaying(false); // Ensure state is correct if play fails
     }
-  }, [isReady]);
+  }, []); // No dependencies needed as audioRef.current is stable
 
   const pause = useCallback(() => {
     const audio = audioRef.current;
     if (audio && isPlaying) {
       audio.pause();
-      // setIsPlaying(false); // State updated by 'pause' event listener
+      // isPlaying state will be updated by the 'pause' event listener
     }
   }, [isPlaying]);
 
-  return { play, pause, isReady, isPlaying };
+  return { play, pause, isPlaying }; // Removed isReady from return
 }

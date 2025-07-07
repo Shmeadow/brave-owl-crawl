@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Music, Loader2, CloudRain, Wind, Coffee, Building, Waves, Sun, Snowflake, Keyboard, BookOpen, Volume2, Pause } from "lucide-react"; // Import Pause icon
+import { Play, Music, CloudRain, Wind, Coffee, Building, Waves, Sun, Snowflake, Keyboard, BookOpen, Volume2, Pause } from "lucide-react"; // Import Pause icon
 import useClientAudio from "@/hooks/useClientAudio"; // Import the new hook
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -41,7 +41,7 @@ const getSoundIcon = (name: string, category: string) => {
 
 
 export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }: AmbientSoundItemProps) {
-  const { play, pause, isReady, isPlaying } = useClientAudio(url); // Destructure isPlaying
+  const { play, pause, isPlaying } = useClientAudio(url); // Removed isReady from destructured values
 
   const handlePlayPauseClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent any parent click handlers
@@ -64,17 +64,14 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }:
       className={cn(
         "flex items-center justify-between p-2 rounded-md border border-border bg-card backdrop-blur-xl shadow-sm transition-all duration-200",
         isPlaying ? "bg-primary/10 border-primary" : "hover:bg-muted/50", // Indicate if playing
-        !isReady && "opacity-70 cursor-wait", // Indicate loading state
+        // Removed !isReady and opacity-70 cursor-wait
         !isCurrentRoomWritable && "opacity-70 cursor-not-allowed"
       )}
     >
       {/* Icon and Name Area */}
       <div className="flex items-center gap-2 flex-grow min-w-0">
-        {!isReady ? (
-          <Loader2 className="h-5 w-5 animate-spin text-primary" />
-        ) : (
-          getSoundIcon(name, category)
-        )}
+        {/* Removed conditional rendering for Loader2 */}
+        {getSoundIcon(name, category)}
         <span className="font-medium text-sm truncate text-foreground">{name}</span>
       </div>
 
@@ -85,7 +82,7 @@ export function AmbientSoundItem({ name, url, isCurrentRoomWritable, category }:
           size="icon"
           className="h-8 w-8 text-muted-foreground hover:text-primary"
           onClick={handlePlayPauseClick}
-          disabled={!isReady || !isCurrentRoomWritable} // Disable if not ready or not writable
+          disabled={!isCurrentRoomWritable} // Only disable if not writable
         >
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           <span className="sr-only">{isPlaying ? `Pause ${name}` : `Play ${name}`}</span>
