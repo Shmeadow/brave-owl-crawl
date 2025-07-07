@@ -45,7 +45,7 @@ export default function LoginPage() {
           <Auth
             supabaseClient={supabase}
             appearance={{ theme: ThemeSupa }}
-            providers={[]} // Removed 'google' and 'github' to enable email/password only
+            providers={['google']} // Enabled 'google' provider
             theme="light"
             redirectTo="/dashboard"
           />
