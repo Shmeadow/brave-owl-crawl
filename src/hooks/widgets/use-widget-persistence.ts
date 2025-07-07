@@ -157,39 +157,10 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
       } else {
         // User is a guest (not logged in)
         setIsLoggedInMode(false);
-        const savedState = localStorage.getItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
-        if (savedState) {
-          try {
-            const parsedState: WidgetState[] = JSON.parse(savedState);
-            const validWidgets = parsedState.filter((w: WidgetState) => initialWidgetConfigs[w.id]);
-            const reClampedWidgets = validWidgets.map((widget: WidgetState) => {
-              const clampedPos = clampPosition(
-                widget.position.x,
-                widget.position.y,
-                widget.size.width,
-                widget.size.height,
-                mainContentArea
-              );
-              return {
-                ...widget,
-                position: clampedPos,
-                normalPosition: widget.normalPosition ? clampPosition(
-                  widget.normalPosition.x,
-                  widget.normalPosition.y,
-                  widget.normalSize?.width || initialWidgetConfigs[widget.id].initialWidth,
-                  widget.normalSize?.height || initialWidgetConfigs[widget.id].initialHeight,
-                  mainContentArea
-                ) : clampedPos,
-              };
-            });
-            setActiveWidgets(reClampedWidgets); // Pinned widgets will be recalculated after this
-          } catch (e) {
-            console.error("Error parsing local storage widget states:", e);
-            setActiveWidgets([]);
-          }
-        } else {
-          setActiveWidgets([]);
-        }
+        // Always start with an empty screen for guests, ignoring local storage.
+        setActiveWidgets([]);
+        // Clear local storage to ensure it's empty for the next visit too.
+        localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
       }
       setLoading(false);
     };
@@ -242,8 +213,7 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
           }
         }
       } else {
-        localStorage.setItem(LOCAL_STORAGE_WIDGET_STATE_KEY, JSON.stringify(activeWidgets));
-        // toast.success("Widget layout saved locally!"); // Too frequent, removed
+        // For guests, do not save the layout to local storage to ensure a clean start.
       }
     };
 

@@ -163,23 +163,12 @@ export function BackgroundProvider({ children, initialBackground }: { children: 
       } else {
         // User is a guest (not logged in)
         setIsLoggedInMode(false);
-        const savedUrl = localStorage.getItem(LOCAL_STORAGE_BG_KEY);
-        const savedType = localStorage.getItem(LOCAL_STORAGE_BG_TYPE_KEY);
-        const savedMirrored = localStorage.getItem(LOCAL_STORAGE_BG_MIRRORED_KEY);
-
-        if (savedUrl) {
-          setBackgroundState({
-            url: savedUrl,
-            isVideo: savedType === 'video',
-            isMirrored: savedMirrored === 'true',
-          });
-        } else {
-          // Set the initialBackground from props for guests if no local storage
-          setBackgroundState(initialBackground); // Use initialBackground here
-          localStorage.setItem(LOCAL_STORAGE_BG_KEY, initialBackground.url);
-          localStorage.setItem(LOCAL_STORAGE_BG_TYPE_KEY, initialBackground.isVideo ? 'video' : 'image');
-          localStorage.setItem(LOCAL_STORAGE_BG_MIRRORED_KEY, String(initialBackground.isMirrored));
-        }
+        // Always use the random initial background for guests and don't load from local storage.
+        setBackgroundState(initialBackground);
+        // Clear any previously saved background to ensure a random one on next visit.
+        localStorage.removeItem(LOCAL_STORAGE_BG_KEY);
+        localStorage.removeItem(LOCAL_STORAGE_BG_TYPE_KEY);
+        localStorage.removeItem(LOCAL_STORAGE_BG_MIRRORED_KEY);
       }
       setLoading(false);
     };
