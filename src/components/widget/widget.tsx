@@ -3,12 +3,13 @@
 import React, { useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Minimize, Maximize, Pin, PinOff, X } from "lucide-react";
+import { Maximize, Pin, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDraggable } from "@dnd-kit/core";
 import { ResizableBox } from "@/components/resizable-box";
 import type { ResizeCallbackData } from 'react-resizable';
 import { DOCKED_WIDGET_WIDTH, DOCKED_WIDGET_HEIGHT, MINIMIZED_WIDGET_WIDTH, MINIMIZED_WIDGET_HEIGHT } from "@/hooks/widgets/types"; // Import constants
+import { WidgetHeader } from './widget-header';
 
 interface WidgetProps {
   id: string;
@@ -25,7 +26,6 @@ interface WidgetProps {
   zIndex: number;
   onSizeChange: (newSize: { width: number; height: number }) => void;
   onBringToFront: () => void;
-  onMinimize: (id: string) => void;
   onMaximize: (id: string) => void;
   onPin: (id: string) => void;
   onClose: (id: string) => void;
@@ -55,7 +55,6 @@ export function Widget({
   zIndex,
   onSizeChange,
   onBringToFront,
-  onMinimize,
   onMaximize,
   onPin,
   onClose,
@@ -102,57 +101,21 @@ export function Widget({
       "w-full h-full flex flex-col overflow-hidden",
       isInsideDock ? "bg-transparent border-none shadow-none" : "bg-transparent" // No background/border/shadow if inside dock
     )}>
-      <CardHeader
-        className={cn(
-          "flex flex-row items-center justify-between space-y-0",
-          isVisuallyMinimized ? "p-2 h-12" : "pb-2",
-          isInsideDock ? "p-0 h-auto" : "" // Minimal padding if inside dock
-        )}
-      >
-        {isInsideDock ? ( // Simplified header for docked widgets (icon only, unpin on click)
-          <>
-            <div 
-              className={cn("flex items-center justify-center flex-1 min-w-0 h-full")} // Centered icon
-            >
-              <Icon className="h-6 w-6 text-primary" /> {/* Changed from h-8 w-8 to h-6 w-6 */}
-              <span className="sr-only">{title}</span> {/* Screen reader only title */}
-            </div>
-            {/* Removed X button from pinned widgets */}
-          </>
-        ) : ( // Full header for normal/maximized/minimized floating widgets
-          <>
-            <div 
-              className={cn("flex-1 min-w-0", isDraggable && "cursor-grab")}
-              {...(isDraggable && { ...listeners, ...attributes })}
-            >
-              <CardTitle className={cn(
-                "font-medium leading-none",
-                isVisuallyMinimized ? "text-sm" : "text-lg"
-              )}>
-                {title}
-              </CardTitle>
-            </div>
-            <div className="flex gap-1">
-              {!isMobile && ( // Hide minimize/maximize/pin on mobile
-                <>
-                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMinimize(id); }} title="Minimize">
-                    <Minimize className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onMaximize(id); }} title="Maximize">
-                    <Maximize className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(id); }} title="Pin">
-                    <Pin className="h-4 w-4" />
-                  </Button>
-                </>
-              )}
-              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onClose(id); }} title="Close">
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </>
-        )}
-      </CardHeader>
+      <div {...(isDraggable ? { ...listeners, ...attributes } : {})}>
+        <WidgetHeader
+          title={title}
+          icon={Icon}
+          onMaximize={() => onMaximize(id)}
+          onClose={() => onClose(id)}
+          onTogglePin={() => onPin(id)}
+          isMaximized={isMaximized}
+          isPinned={isPinned}
+          isDraggable={isDraggable}
+          isResizable={isResizable}
+          isInsideDock={isInsideDock}
+          isCurrentRoomWritable={isCurrentRoomWritable}
+        />
+      </div>
 
       {!isVisuallyMinimized && !isInsideDock && ( // Only render content if not minimized and not inside dock
         <CardContent className="flex-grow p-0 overflow-y-auto">
@@ -177,7 +140,10 @@ export function Widget({
         onClick={() => onPin(id)} // Clicking a docked widget unpins it
         onMouseDown={onBringToFront}
       >
-        {renderWidgetContent}
+        <div className="flex items-center justify-center flex-1 min-w-0 h-full">
+          <Icon className="h-6 w-6 text-primary" />
+          <span className="sr-only">{title}</span>
+        </div>
       </div>
     );
   }
@@ -204,7 +170,6 @@ export function Widget({
         isMobile ? "relative w-full h-auto pointer-events-auto" : "pointer-events-auto", // Mobile styling: relative, full width, auto height, margin
         isClosed && "hidden" // Hide if closed
       )}
-      onClick={isMinimized && !isPinned ? () => onMinimize(id) : undefined}
       onMouseDown={onBringToFront}
     >
       {isMobile ? (
@@ -221,7 +186,7 @@ export function Widget({
           minConstraints={[200, 150]}
           maxConstraints={[mainContentArea.width, mainContentArea.height]}
           className="w-full h-full"
-          resizeHandles={isResizable ? ["se"] : []}
+          resizeHandles={isResizable ? ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'] : []}
         >
           {renderWidgetContent}
         </ResizableBox>

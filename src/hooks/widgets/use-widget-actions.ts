@@ -13,6 +13,7 @@ import {
   MINIMIZED_WIDGET_WIDTH, // Import here
   MINIMIZED_WIDGET_HEIGHT, // Import here
 } from './types'; // Corrected import path
+import { useSidebar } from "@/components/sidebar/sidebar-context";
 
 interface UseWidgetActionsProps {
   activeWidgets: WidgetState[];
@@ -28,6 +29,7 @@ export function useWidgetActions({
   mainContentArea,
 }: UseWidgetActionsProps) {
   const [maxZIndex, setMaxZIndex] = useState(903); // Initial z-index for new widgets
+  const { activePanel, setActivePanel } = useSidebar();
 
   // Constants for initial placement near sidebar
   const SIDEBAR_OPEN_OFFSET_X = 80; // Distance from sidebar's left edge
@@ -199,49 +201,6 @@ export function useWidgetActions({
     });
   }, [maxZIndex, setActiveWidgets]);
 
-  const minimizeWidget = useCallback((id: string) => {
-    updateAndRecalculate(prev => {
-      const updatedWidgets = prev.map((widget: WidgetState) => {
-        if (widget.id === id) {
-          if (widget.isMinimized) {
-            // It's minimized, restore to normal
-            return {
-              ...widget,
-              isMinimized: false,
-              isClosed: false, // Ensure visible
-              position: widget.normalPosition!,
-              size: widget.normalSize!,
-            };
-          } else {
-            // It's normal or maximized, so minimize it.
-            const normalSizeToSave = widget.isMaximized ? widget.normalSize! : widget.size;
-            const normalPositionToSave = widget.isMaximized ? widget.normalPosition! : widget.position;
-            
-            return {
-              ...widget,
-              isMinimized: true,
-              isMaximized: false, // Ensure it's not maximized
-              isPinned: false, // Minimizing unpins it
-              isClosed: false, // Ensure visible
-              normalSize: normalSizeToSave,
-              normalPosition: normalPositionToSave,
-              size: { width: MINIMIZED_WIDGET_WIDTH, height: MINIMIZED_WIDGET_HEIGHT },
-              position: clampPosition(
-                normalPositionToSave.x,
-                normalPositionToSave.y,
-                MINIMIZED_WIDGET_WIDTH,
-                MINIMIZED_WIDGET_HEIGHT,
-                mainContentArea
-              ),
-            };
-          }
-        }
-        return widget;
-      });
-      return updatedWidgets; // Recalculation happens in updateAndRecalculate
-    });
-  }, [mainContentArea, updateAndRecalculate]);
-
   const maximizeWidget = useCallback((id: string) => {
     updateAndRecalculate(prev => {
       const updatedWidgets = prev.map((widget: WidgetState) => {
@@ -323,13 +282,16 @@ export function useWidgetActions({
   }, [initialWidgetConfigs, mainContentArea, updateAndRecalculate]);
 
   const closeWidget = useCallback((id: string) => {
+    if (id === activePanel) {
+      setActivePanel('spaces'); // Or some other default panel
+    }
     updateAndRecalculate(prev => {
       const updated = prev.map((widget: WidgetState) =>
         widget.id === id ? { ...widget, isClosed: true, isMinimized: false, isMaximized: false, isPinned: false } : widget
       );
       return updated; // Recalculation happens in updateAndRecalculate
     });
-  }, [updateAndRecalculate]);
+  }, [updateAndRecalculate, activePanel, setActivePanel]);
 
   const toggleWidget = useCallback((id: string, title: string) => {
     updateAndRecalculate(prev => {
@@ -427,7 +389,6 @@ export function useWidgetActions({
     updateWidgetPosition,
     updateWidgetSize,
     bringWidgetToFront,
-    minimizeWidget,
     maximizeWidget,
     togglePinned,
     closeWidget,

@@ -15,7 +15,6 @@ interface WidgetContextType {
   updateWidgetPosition: (id: string, newPosition: { x: number; y: number }) => void;
   updateWidgetSize: (id: string, newSize: { width: number; height: number }) => void;
   bringWidgetToFront: (id: string) => void;
-  minimizeWidget: (id: string) => void;
   maximizeWidget: (id: string) => void;
   togglePinned: (id: string) => void;
   closeWidget: (id: string) => void; // Now sets isClosed to true
@@ -40,7 +39,6 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
     updateWidgetPosition,
     updateWidgetSize,
     bringWidgetToFront,
-    minimizeWidget,
     maximizeWidget,
     togglePinned,
     closeWidget,
@@ -66,7 +64,6 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       updateWidgetPosition,
       updateWidgetSize,
       bringWidgetToFront,
-      minimizeWidget,
       maximizeWidget,
       togglePinned,
       closeWidget,
@@ -80,7 +77,6 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       updateWidgetPosition,
       updateWidgetSize,
       bringWidgetToFront,
-      minimizeWidget,
       maximizeWidget,
       togglePinned,
       closeWidget,

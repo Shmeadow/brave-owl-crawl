@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Session, SupabaseClient } from '@supabase/supabase-js';
 import { createBrowserClient } from './client';
+import { toast } from 'sonner';
 
 export interface UserProfile {
   id: string;
@@ -40,6 +41,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Make internalFetchProfile a stable callback that only depends on its own setters
   const internalFetchProfile = useCallback(async (userId: string, client: SupabaseClient) => {
@@ -81,9 +83,18 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
       return;
     }
 
+    // Set a timeout to prevent infinite loading screen
+    timeoutRef.current = setTimeout(() => {
+      console.warn("Supabase auth loading timed out. Proceeding with app.");
+      toast.warning("Could not verify session in time. You may need to log in again.");
+      setLoading(false);
+    }, 7000); // 7 second timeout
+
     // This callback handles auth state changes and fetches profile.
-    // It's defined inside useEffect to capture supabaseClient and internalFetchProfile from the effect's scope.
     const handleAuthStateChange = async (_event: string, currentSession: Session | null) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
       setSession(currentSession); // Update session state
       if (currentSession) {
         await internalFetchProfile(currentSession.user.id, supabaseClient); // Use the stable internalFetchProfile
@@ -98,6 +109,9 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
       handleAuthStateChange('INITIAL_LOAD', initialSession);
     }).catch(error => {
       console.error("Error fetching initial Supabase session:", error);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
       setLoading(false); // Ensure loading is false even if initial fetch fails
     });
 
@@ -106,6 +120,9 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
 
     // Cleanup function: unsubscribe when the component unmounts or dependencies change
     return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
       subscription.unsubscribe();
     };
   }, [supabaseClient, internalFetchProfile]); // Dependencies: supabaseClient (stable) and internalFetchProfile (stable)

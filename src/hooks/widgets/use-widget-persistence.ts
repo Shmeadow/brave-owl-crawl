@@ -29,6 +29,7 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
   const mounted = useRef(false);
+  const hasLoadedForSession = useRef<string | null>(null);
 
   useEffect(() => {
     mounted.current = true;
@@ -66,8 +67,12 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
   useEffect(() => {
     if (authLoading || !mounted.current || mainContentArea.width === 0) return; // Wait for mainContentArea to be valid
 
+    const currentSessionId = session?.user?.id || 'guest';
+    if (currentSessionId === hasLoadedForSession.current) return; // Don't reload for the same session
+
     const loadWidgetStates = async () => {
       setLoading(true);
+      hasLoadedForSession.current = currentSessionId;
       let loadedWidgetStates: WidgetState[] = [];
 
       if (session && supabase) {

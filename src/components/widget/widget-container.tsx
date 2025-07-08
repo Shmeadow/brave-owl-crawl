@@ -53,7 +53,6 @@ export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobi
     updateWidgetPosition,
     updateWidgetSize,
     bringWidgetToFront,
-    minimizeWidget,
     maximizeWidget,
     togglePinned,
     closeWidget,
@@ -112,7 +111,6 @@ export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobi
               isTopmost={isTopmost}
               onSizeChange={(newSize) => updateWidgetSize(widget.id, newSize)}
               onBringToFront={() => bringWidgetToFront(widget.id)}
-              onMinimize={minimizeWidget}
               onMaximize={maximizeWidget}
               onPin={togglePinned}
               onClose={closeWidget}

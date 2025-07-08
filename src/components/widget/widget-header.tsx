@@ -2,17 +2,15 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Minimize2, Maximize2, X, Pin, PinOff } from 'lucide-react';
+import { Maximize2, X, Pin, PinOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface WidgetHeaderProps {
   title: string;
   icon: React.ElementType;
-  onMinimize: () => void;
   onMaximize: () => void;
   onClose: () => void;
   onTogglePin: () => void;
-  isMinimized: boolean;
   isMaximized: boolean;
   isPinned: boolean;
   isDraggable: boolean;
@@ -24,11 +22,9 @@ interface WidgetHeaderProps {
 export function WidgetHeader({
   title,
   icon: Icon,
-  onMinimize,
   onMaximize,
   onClose,
   onTogglePin,
-  isMinimized,
   isMaximized,
   isPinned,
   isDraggable,
@@ -63,16 +59,6 @@ export function WidgetHeader({
             <span className="sr-only">{isPinned ? "Unpin Widget" : "Pin Widget"}</span>
           </Button>
         )}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={(e) => { e.stopPropagation(); onMinimize(); }}
-          className="h-7 w-7"
-          title={isMinimized ? "Restore Widget" : "Minimize Widget"}
-        >
-          <Minimize2 className="h-4 w-4" />
-          <span className="sr-only">{isMinimized ? "Restore Widget" : "Minimize Widget"}</span>
-        </Button>
         <Button
           variant="ghost"
           size="icon"

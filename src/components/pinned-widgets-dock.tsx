@@ -40,7 +40,6 @@ interface PinnedWidgetsDockProps {
 export function PinnedWidgetsDock({ pinnedWidgets, mainContentArea, isCurrentRoomWritable }: PinnedWidgetsDockProps) {
   const {
     bringWidgetToFront,
-    minimizeWidget,
     maximizeWidget,
     togglePinned,
     closeWidget,
@@ -110,7 +109,6 @@ export function PinnedWidgetsDock({ pinnedWidgets, mainContentArea, isCurrentRoo
             isTopmost={false} // Not topmost in the traditional sense
             onSizeChange={(newSize) => updateWidgetSize(widget.id, newSize)}
             onBringToFront={() => bringWidgetToFront(widget.id)}
-            onMinimize={minimizeWidget}
             onMaximize={maximizeWidget}
             onPin={togglePinned} // This will unpin the widget
             onClose={closeWidget}

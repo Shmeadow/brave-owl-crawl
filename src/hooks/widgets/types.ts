@@ -54,6 +54,8 @@ export interface WidgetConfig {
   initialHeight: number;
 }
 
+export const EDGE_PADDING = 16; // Padding from the edge of the main content area
+
 export const DOCKED_WIDGET_WIDTH = 48; // Changed to match h-12 w-12
 export const DOCKED_WIDGET_HEIGHT = 48; // Changed to match h-12 w-12
 export const DOCKED_WIDGET_HORIZONTAL_GAP = 4;
@@ -65,10 +67,13 @@ export const MINIMIZED_WIDGET_HEIGHT = 48;
 export const LOCAL_STORAGE_WIDGET_STATE_KEY = 'active_widget_states';
 
 export const clampPosition = (x: number, y: number, width: number, height: number, bounds: MainContentArea) => {
-  const maxX = bounds.left + bounds.width - width;
-  const maxY = bounds.top + bounds.height - height;
-  const clampedX = Math.max(bounds.left, Math.min(x, maxX));
-  const clampedY = Math.max(bounds.top, Math.min(y, maxY));
+  const maxX = bounds.left + bounds.width - width - EDGE_PADDING;
+  const maxY = bounds.top + bounds.height - height - EDGE_PADDING;
+  const minX = bounds.left + EDGE_PADDING;
+  const minY = bounds.top + EDGE_PADDING;
+
+  const clampedX = Math.max(minX, Math.min(x, maxX));
+  const clampedY = Math.max(minY, Math.min(y, maxY));
   return { x: clampedX, y: clampedY };
 };
 
