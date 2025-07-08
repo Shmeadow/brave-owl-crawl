@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 export interface NotificationData {
   id: string;
-  user_id: string | null; // Null for guest notifications
+  user_id: string | null;
   message: string;
   is_read: boolean;
   created_at: string;
@@ -15,12 +15,11 @@ export interface NotificationData {
 const LOCAL_STORAGE_KEY = 'guest_notifications';
 
 export function useNotifications() {
-  const { supabase, session, loading: authLoading, profile } = useSupabase(); // Get profile here
+  const { supabase, session, loading: authLoading, profile } = useSupabase();
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
 
-  // Moved addNotification declaration here to fix TS2448/TS2454
   const addNotification = useCallback(async (message: string, targetUserId?: string) => {
     const userId = targetUserId || session?.user?.id || null;
 
@@ -33,10 +32,10 @@ export function useNotifications() {
       if (error) {
         toast.error("Error adding notification: " + error.message);
         console.error("Error adding notification (Supabase):", error);
-      } else if (data && userId === session?.user?.id) { // Only add to current state if it's for the current user
+      } else if (data && userId === session?.user?.id) {
         setNotifications(prev => [data as NotificationData, ...prev]);
       }
-    } else if (!isLoggedInMode && !targetUserId) { // Only add to local storage if guest and no specific target
+    } else if (!isLoggedInMode && !targetUserId) {
       const newNotification: NotificationData = {
         id: crypto.randomUUID(),
         user_id: null,
@@ -52,7 +51,6 @@ export function useNotifications() {
     setLoading(true);
     if (session && supabase) {
       setIsLoggedInMode(true);
-      // Attempt to migrate local notifications first
       const localNotificationsString = localStorage.getItem(LOCAL_STORAGE_KEY);
       let localNotifications: NotificationData[] = [];
       try {
@@ -66,7 +64,7 @@ export function useNotifications() {
         .from('notifications')
         .select('*')
         .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false }); // Order by newest first
+        .order('created_at', { ascending: false });
 
       if (fetchError) {
         toast.error("Error fetching notifications: " + fetchError.message);
@@ -101,7 +99,6 @@ export function useNotifications() {
           localStorage.removeItem(LOCAL_STORAGE_KEY);
           toast.success("Local notifications migrated!");
         }
-        // Sort again after merging to ensure correct order
         mergedNotifications.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         setNotifications(mergedNotifications);
       }
@@ -132,15 +129,13 @@ export function useNotifications() {
     }
   }, [notifications, isLoggedInMode, loading]);
 
-  // Logic for one-time welcome notification
   useEffect(() => {
     if (!loading && session && profile && !profile.welcome_notification_sent) {
       addNotification("Welcome to Productivity Hub! Explore your new workspace.");
-      // Mark notification as sent in profile
       supabase?.from('profiles')
         .update({ welcome_notification_sent: true })
         .eq('id', profile.id)
-        .then(({ error }) => {
+        .then(({ error }: { error: any }) => {
           if (error) console.error("Error updating welcome_notification_sent:", error);
         });
     }
@@ -232,6 +227,6 @@ export function useNotifications() {
     markAsRead,
     markAllAsRead,
     deleteReadNotifications,
-    fetchNotifications, // Expose for manual refresh
+    fetchNotifications,
   };
 }

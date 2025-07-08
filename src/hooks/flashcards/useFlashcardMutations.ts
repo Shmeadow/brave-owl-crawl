@@ -41,7 +41,6 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
         newStatus = 'Learning';
       }
     } else {
-      // Demote status on incorrect answer
       switch (cardToUpdate.status) {
         case 'Mastered':
           newStatus = 'Advanced';
@@ -99,17 +98,15 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
     let newEaseFactor: number = cardToUpdate.ease_factor || 2.5;
 
     if (grade === 'Again') {
-        newInterval = 1; // Reset interval
+        newInterval = 1;
         newEaseFactor = Math.max(1.3, newEaseFactor - 0.2);
     } else {
-        // For 'Hard', 'Good', 'Easy'
         if (grade === 'Hard') {
             newEaseFactor = Math.max(1.3, newEaseFactor - 0.15);
         }
         if (grade === 'Easy') {
             newEaseFactor += 0.15;
         }
-        // 'Good' does not change ease factor
 
         if (cardToUpdate.interval_days === 0) {
             newInterval = 1;
@@ -323,7 +320,7 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
         toast.error("Error moving cards: " + error.message);
       } else if (data) {
         setCards(prev => prev.map(c => {
-          const updatedCard = data.find(uc => uc.id === c.id);
+          const updatedCard = data.find((uc: any) => uc.id === c.id);
           return updatedCard ? updatedCard as CardData : c;
         }));
         toast.success(`${cardIds.length} cards moved.`);
