@@ -101,21 +101,21 @@ export function Widget({
       "w-full h-full flex flex-col overflow-hidden",
       isInsideDock ? "bg-transparent border-none shadow-none" : "bg-transparent" // No background/border/shadow if inside dock
     )}>
-      <div {...(isDraggable ? { ...listeners, ...attributes } : {})}>
-        <WidgetHeader
-          title={title}
-          icon={Icon}
-          onMaximize={() => onMaximize(id)}
-          onClose={() => onClose(id)}
-          onTogglePin={() => onPin(id)}
-          isMaximized={isMaximized}
-          isPinned={isPinned}
-          isDraggable={isDraggable}
-          isResizable={isResizable}
-          isInsideDock={isInsideDock}
-          isCurrentRoomWritable={isCurrentRoomWritable}
-        />
-      </div>
+      <WidgetHeader
+        title={title}
+        icon={Icon}
+        onMaximize={() => onMaximize(id)}
+        onClose={() => onClose(id)}
+        onTogglePin={() => onPin(id)}
+        isMaximized={isMaximized}
+        isPinned={isPinned}
+        isDraggable={isDraggable}
+        isResizable={isResizable}
+        isInsideDock={isInsideDock}
+        isCurrentRoomWritable={isCurrentRoomWritable}
+        listeners={isDraggable ? listeners : undefined}
+        attributes={isDraggable ? attributes : undefined}
+      />
 
       {!isVisuallyMinimized && !isInsideDock && ( // Only render content if not minimized and not inside dock
         <CardContent className="flex-grow p-0 overflow-y-auto">

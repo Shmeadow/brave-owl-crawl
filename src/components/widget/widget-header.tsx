@@ -4,6 +4,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Maximize2, X, Pin, PinOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useDraggable } from '@dnd-kit/core';
 
 interface WidgetHeaderProps {
   title: string;
@@ -17,6 +18,8 @@ interface WidgetHeaderProps {
   isResizable: boolean;
   isInsideDock: boolean;
   isCurrentRoomWritable: boolean;
+  listeners?: ReturnType<typeof useDraggable>['listeners'];
+  attributes?: ReturnType<typeof useDraggable>['attributes'];
 }
 
 export function WidgetHeader({
@@ -31,6 +34,8 @@ export function WidgetHeader({
   isResizable,
   isInsideDock,
   isCurrentRoomWritable,
+  listeners,
+  attributes,
 }: WidgetHeaderProps) {
   return (
     <div
@@ -39,6 +44,8 @@ export function WidgetHeader({
         isDraggable ? "cursor-grab" : "cursor-default",
         isInsideDock && "hidden"
       )}
+      {...listeners}
+      {...attributes}
     >
       <div className="flex items-center flex-grow min-w-0">
         <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary mr-2">
@@ -52,6 +59,7 @@ export function WidgetHeader({
             variant="ghost"
             size="icon"
             onClick={(e) => { e.stopPropagation(); onTogglePin(); }}
+            onMouseDown={(e) => e.stopPropagation()}
             className="h-7 w-7"
             title={isPinned ? "Unpin Widget" : "Pin Widget"}
           >
@@ -63,6 +71,7 @@ export function WidgetHeader({
           variant="ghost"
           size="icon"
           onClick={(e) => { e.stopPropagation(); onMaximize(); }}
+          onMouseDown={(e) => e.stopPropagation()}
           className="h-7 w-7"
           title={isMaximized ? "Restore Widget" : "Maximize Widget"}
         >
@@ -73,6 +82,7 @@ export function WidgetHeader({
           variant="ghost"
           size="icon"
           onClick={(e) => { e.stopPropagation(); onClose(); }}
+          onMouseDown={(e) => e.stopPropagation()}
           className="h-7 w-7"
           title="Close Widget"
         >
