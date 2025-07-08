@@ -69,7 +69,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
         setProfile(newProfile as UserProfile);
       }
     }
-  }, [setProfile]);
+  }, []);
 
   const refreshProfile = useCallback(async () => {
     if (session?.user?.id && supabaseClient) {
@@ -78,54 +78,53 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
   }, [session, internalFetchProfile, supabaseClient]);
 
   useEffect(() => {
-    if (!supabaseClient) { // If supabaseClient is null, it means env vars are missing or client creation failed.
-      setLoading(false); // In this case, stop loading to prevent infinite spinner.
+    if (!supabaseClient) {
+      setLoading(false);
       return;
     }
 
-    // Set a timeout to prevent infinite loading screen
+    // Set a timeout as a fallback to prevent infinite loading
     timeoutRef.current = setTimeout(() => {
       console.warn("Supabase auth loading timed out. Proceeding with app.");
       toast.warning("Could not verify session in time. You may need to log in again.");
-      setLoading(false);
-    }, 7000); // 7 second timeout
+      if (loading) setLoading(false);
+    }, 7000);
 
-    // This callback handles auth state changes and fetches profile.
-    const handleAuthStateChange = async (_event: string, currentSession: Session | null) => {
+    // This function now only handles setting state and fetching profile in the background
+    const processSession = (session: Session | null) => {
+      setSession(session);
+      if (session?.user?.id) {
+        internalFetchProfile(session.user.id, supabaseClient);
+      } else {
+        setProfile(null);
+      }
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      setSession(currentSession); // Update session state
-      if (currentSession) {
-        await internalFetchProfile(currentSession.user.id, supabaseClient); // Use the stable internalFetchProfile
-      } else {
-        setProfile(null); // Clear profile if no session
-      }
-      setLoading(false); // Always set loading to false after auth state is processed
+      setLoading(false); // Unblock the app as soon as session is processed
     };
 
-    // Initial session check when the component mounts or supabaseClient becomes available
-    supabaseClient.auth.getSession().then(({ data: { session: initialSession } }) => {
-      handleAuthStateChange('INITIAL_LOAD', initialSession);
+    // Initial session check
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      processSession(session);
     }).catch(error => {
       console.error("Error fetching initial Supabase session:", error);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      setLoading(false); // Ensure loading is false even if initial fetch fails
+      processSession(null); // Treat error as a logged-out state
     });
 
-    // Subscribe to real-time auth state changes
-    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(handleAuthStateChange);
+    // Subscribe to subsequent auth state changes
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+      processSession(session);
+    });
 
-    // Cleanup function: unsubscribe when the component unmounts or dependencies change
+    // Cleanup
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      subscription.unsubscribe();
+      subscription?.unsubscribe();
     };
-  }, [supabaseClient, internalFetchProfile]); // Dependencies: supabaseClient (stable) and internalFetchProfile (stable)
+  }, [supabaseClient, internalFetchProfile]);
 
   const value = useMemo(() => ({
     supabase: supabaseClient,
