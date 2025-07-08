@@ -32,8 +32,6 @@
     --sidebar-background: 210 40% 98%;
     --sidebar-foreground: 222.2 47.4% 11.2%;
     --gold: 45 90% 55%;
-    --day-start: 210 80% 70%;
-    --day-end: 220 60% 30%;
     --background-blur-px: 0px; /* New blur variable */
   }
 
@@ -65,8 +63,6 @@
     --sidebar-background: 222.2 84% 4.9%;
     --sidebar-foreground: 210 40% 98%;
     --gold: 45 90% 55%;
-    --day-start: 210 80% 70%;
-    --day-end: 220 60% 30%;
   }
 
   [data-theme="cozy"] {
@@ -107,23 +103,5 @@
 @layer utilities {
   .backface-hidden {
     backface-visibility: hidden;
-  }
-
-  @keyframes shimmer {
-    100% {
-      transform: translateX(100%);
-    }
-  }
-
-  .shimmer-effect::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, hsla(0,0%,100%,0), hsla(0,0%,100%,0.2), hsla(0,0%,100%,0));
-    transform: translateX(-100%);
-    animation: shimmer 2.5s linear infinite;
   }
 }
