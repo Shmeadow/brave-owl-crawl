@@ -27,6 +27,23 @@ export function AnimatedBackgroundPreviewItem({ videoUrl, isActive, onClick, pre
     }
   };
 
+  const handleMouseEnter = () => {
+    const video = videoElementRef.current;
+    if (video) {
+      video.play().catch(err => console.error("Preview play error:", err));
+    }
+  };
+
+  const handleMouseLeave = () => {
+    const video = videoElementRef.current;
+    if (video) {
+      video.pause();
+      if (previewOffset !== undefined) {
+        video.currentTime = previewOffset;
+      }
+    }
+  };
+
   return (
     <div
       className={cn(
@@ -34,6 +51,8 @@ export function AnimatedBackgroundPreviewItem({ videoUrl, isActive, onClick, pre
         isActive ? "ring-2 ring-primary ring-offset-2" : "hover:ring-2 hover:ring-primary/50"
       )}
       onClick={() => onClick(videoUrl, true)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {!videoError ? (
         <video
@@ -42,7 +61,6 @@ export function AnimatedBackgroundPreviewItem({ videoUrl, isActive, onClick, pre
           className="absolute inset-0 w-full h-full object-cover"
           preload="auto"
           muted
-          loop
           playsInline
           onError={handleVideoError}
           onLoadedData={handleLoadedData}
