@@ -3,7 +3,7 @@
 import React, { createContext, useState, useCallback } from 'react';
 import { MagicNotification, NotificationProps } from '@/components/magic-notification';
 
-type NotificationOptions = Omit<NotificationProps, 'id' | 'onDismiss'>;
+export type NotificationOptions = Omit<NotificationProps, 'id' | 'onDismiss'>;
 
 interface NotificationContextType {
   addNotification: (options: NotificationOptions) => void;
