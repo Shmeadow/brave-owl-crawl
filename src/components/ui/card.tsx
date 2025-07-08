@@ -1,34 +1,19 @@
-"use client"
-
 import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
-const cardVariants = cva(
-  "rounded-xl border bg-card text-card-foreground shadow",
-  {
-    variants: {
-      variant: {
-        default: "",
-      },
-      size: {
-        default: "",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
-)
-
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof cardVariants>
+  React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn(cardVariants(), className)} {...props} />
+  <div
+    ref={ref}
+    className={cn(
+      "rounded-lg border bg-card/50 text-card-foreground shadow-sm backdrop-blur-lg border-white/10",
+      className
+    )}
+    {...props}
+  />
 ))
 Card.displayName = "Card"
 
@@ -51,7 +36,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "font-semibold leading-none tracking-tight",
+      "text-2xl font-semibold leading-none tracking-tight",
       className
     )}
     {...props}
