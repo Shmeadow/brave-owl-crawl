@@ -53,12 +53,12 @@ export function WidgetHeader({
         </div>
         <h4 className="text-sm font-semibold truncate">{title}</h4>
       </div>
-      <div className="flex items-center space-x-1" onMouseDown={(e) => e.stopPropagation()}>
+      <div className="flex items-center space-x-1">
         {isCurrentRoomWritable && (
           <Button
             variant="ghost"
             size="icon"
-            onClick={onTogglePin}
+            onMouseDown={(e) => { e.stopPropagation(); onTogglePin(); }}
             className="h-7 w-7"
             title={isPinned ? "Unpin Widget" : "Pin Widget"}
           >
@@ -69,7 +69,7 @@ export function WidgetHeader({
         <Button
           variant="ghost"
           size="icon"
-          onClick={onMaximize}
+          onMouseDown={(e) => { e.stopPropagation(); onMaximize(); }}
           className="h-7 w-7"
           title={isMaximized ? "Restore Widget" : "Maximize Widget"}
         >
@@ -79,7 +79,7 @@ export function WidgetHeader({
         <Button
           variant="ghost"
           size="icon"
-          onClick={onClose}
+          onMouseDown={(e) => { e.stopPropagation(); onClose(); }}
           className="h-7 w-7"
           title="Close Widget"
         >
