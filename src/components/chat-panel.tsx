@@ -16,7 +16,7 @@ import {
   DrawerTitle,
   DrawerDescription,
   DrawerTrigger,
-} from "@/components/ui/drawer";
+} from "@/components/ui/drawer"; // Import Drawer components
 
 interface Message {
   id: string;
@@ -35,7 +35,7 @@ interface ChatPanelProps {
   unreadCount: number;
   currentRoomId: string | null;
   isCurrentRoomWritable: boolean;
-  isMobile: boolean;
+  isMobile: boolean; // New prop
 }
 
 export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnreadMessages, unreadCount, currentRoomId, isCurrentRoomWritable, isMobile }: ChatPanelProps) {
@@ -47,6 +47,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
 
   const fetchMessages = useCallback(async (roomId: string) => {
     if (!supabase) {
+      // console.warn("Supabase client not available for fetching messages."); // Removed for cleaner logs
       toast.error("Chat unavailable: Supabase client not initialized.");
       return;
     }
@@ -62,7 +63,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
         console.error("Error fetching messages from Supabase:", error.message, "Details:", error.details, "Hint:", error.hint);
         toast.error("Failed to load chat messages: " + error.message);
       } else if (data) {
-        const formattedMessages = data.map((msg: any) => {
+        const formattedMessages = data.map(msg => {
           const authorName = (profile && profile.id === msg.user_id)
             ? (profile.first_name || profile.last_name || 'You')
             : msg.user_id?.substring(0, 8) || 'Guest';
@@ -91,7 +92,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
     const channelName = `chat_room_${currentRoomId}`;
     const subscription = supabase
       .channel(channelName)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `room_id=eq.${currentRoomId}` }, async (payload: { new: any }) => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `room_id=eq.${currentRoomId}` }, async (payload) => {
         const newMsg = payload.new as Message;
         
         const authorName = (profile && profile.id === newMsg.user_id)
@@ -175,6 +176,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
     }
   };
 
+  // Render logic based on isMobile
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onToggleOpen}>
@@ -295,6 +297,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
     );
   }
 
+  // Desktop rendering (original logic)
   return (
     <Card className={cn(
       "h-[400px] w-80 flex flex-col bg-card backdrop-blur-xl border-white/20",

@@ -31,7 +31,6 @@ export function getYouTubeEmbedUrl(url: string): string | null {
   }
 
   // Common player parameters for background playback:
-  // mute=1: Ensures no audio plays from the background video
   // autoplay=1: Starts playing automatically
   // loop=1: Loops the video/playlist (requires playlist parameter for single videos)
   // controls=0: Hides player controls for custom UI
@@ -43,7 +42,7 @@ export function getYouTubeEmbedUrl(url: string): string | null {
   // enablejsapi=1: Enables JavaScript API for programmatic control
   // origin: Crucial for API to work, will be set by the player itself
 
-  const commonParams = 'autoplay=1&loop=1&controls=0&modestbranding=1&rel=0&disablekb=1&fs=0&iv_load_policy=3&enablejsapi=1&mute=1';
+  const commonParams = 'autoplay=1&loop=1&controls=0&modestbranding=1&rel=0&disablekb=1&fs=0&iv_load_policy=3&enablejsapi=1';
 
   if (type === 'video') {
     // For single videos, 'playlist' parameter with the same video ID is needed for looping.

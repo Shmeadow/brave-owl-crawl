@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
-import { useSupabase } from "@/integrations/supabase/auth";
+import { useSupabase } from "@/integrations/supabase/auth"; // Import useSupabase
 
 export type PomodoroMode = 'focus' | 'short-break' | 'long-break';
 
@@ -19,6 +19,19 @@ interface PomodoroState {
   editableTimeString: string;
 }
 
+// Define an interface for the structure of the saved state in local storage
+interface SavedPomodoroState {
+  mode: PomodoroMode;
+  timeLeft: number;
+  isRunning: boolean;
+  customTimes?: { // customTimes might be optional if not always present in old saved states
+    'focus'?: number;
+    'short-break'?: number;
+    'long-break'?: number;
+  };
+}
+
+// Define interface for Supabase data
 interface SupabasePomodoroSettings {
   id: string;
   user_id: string;
@@ -30,13 +43,15 @@ interface SupabasePomodoroSettings {
 }
 
 const DEFAULT_TIMES = {
-  'focus': 30 * 60,
-  'short-break': 5 * 60,
-  'long-break': 15 * 60,
+  'focus': 30 * 60, // 30 minutes
+  'short-break': 5 * 60, // 5 minutes
+  'long-break': 15 * 60, // 15 minutes
 };
 
-const LOCAL_STORAGE_CUSTOM_TIMES_KEY = 'pomodoro_custom_times';
+const LOCAL_STORAGE_KEY = 'pomodoro_state';
+const LOCAL_STORAGE_CUSTOM_TIMES_KEY = 'pomodoro_custom_times'; // Separate key for custom times
 
+// Helper to convert seconds to HH:MM:SS format
 export const formatTime = (totalSeconds: number) => {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -47,34 +62,39 @@ export const formatTime = (totalSeconds: number) => {
     .join(":");
 };
 
+// Helper to convert HH:MM:SS string to seconds
 export const parseTimeToSeconds = (timeString: string): number => {
   const parts = timeString.split(':').map(Number);
   if (parts.length === 3) {
     return parts[0] * 3600 + parts[1] * 60 + parts[2];
-  } else if (parts.length === 2) {
+  } else if (parts.length === 2) { // MM:SS format
     return parts[0] * 60 + parts[1];
-  } else if (parts.length === 1) {
+  } else if (parts.length === 1) { // SS format (if user just types seconds)
     return parts[0];
   }
-  return 0;
+  return 0; // Invalid format
 };
 
 export function usePomodoroState() {
   const { supabase, session, loading: authLoading } = useSupabase();
-  const [state, setState] = useState<PomodoroState>({
-    mode: 'focus',
-    timeLeft: DEFAULT_TIMES.focus,
-    isRunning: false,
-    customTimes: DEFAULT_TIMES,
-    isEditingTime: false,
-    editableTimeString: '',
+  const [state, setState] = useState<PomodoroState>(() => {
+    // Initial state for SSR, will be hydrated on client
+    return {
+      mode: 'focus',
+      timeLeft: DEFAULT_TIMES.focus,
+      isRunning: false,
+      customTimes: DEFAULT_TIMES,
+      isEditingTime: false,
+      editableTimeString: '',
+    };
   });
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
-  const settingsIdRef = useRef<string | null>(null);
+  const settingsIdRef = useRef<string | null>(null); // To store the Supabase settings ID
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Effect to handle initial load and auth state changes
   useEffect(() => {
     if (authLoading) return;
 
@@ -82,17 +102,21 @@ export function usePomodoroState() {
       setLoading(true);
       if (session && supabase) {
         setIsLoggedInMode(true);
+        // console.log("User logged in. Checking for local pomodoro settings to migrate..."); // Removed for cleaner logs
+
+        // 1. Fetch user's existing settings from Supabase
         const { data: supabaseSettings, error: fetchError } = await supabase
           .from('pomodoro_settings')
           .select('*')
           .eq('user_id', session.user.id)
           .single();
 
-        if (fetchError && fetchError.code !== 'PGRST116') {
+        if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 means no rows found
           toast.error("Error fetching pomodoro settings: " + fetchError.message);
           console.error("Error fetching pomodoro settings (Supabase):", fetchError);
           setState(prevState => ({ ...prevState, customTimes: DEFAULT_TIMES, timeLeft: DEFAULT_TIMES.focus }));
         } else if (supabaseSettings) {
+          // Settings found in Supabase
           settingsIdRef.current = supabaseSettings.id;
           setState(prevState => ({
             ...prevState,
@@ -105,7 +129,9 @@ export function usePomodoroState() {
                       prevState.mode === 'short-break' ? supabaseSettings.short_break_time :
                       supabaseSettings.long_break_time,
           }));
+          // console.log("Loaded pomodoro settings from Supabase."); // Removed for cleaner logs
         } else {
+          // No settings in Supabase, check local storage for migration
           const localCustomTimesString = localStorage.getItem(LOCAL_STORAGE_CUSTOM_TIMES_KEY);
           let localCustomTimes: typeof DEFAULT_TIMES = DEFAULT_TIMES;
           try {
@@ -116,6 +142,7 @@ export function usePomodoroState() {
           }
 
           if (localCustomTimes !== DEFAULT_TIMES) {
+            // console.log("Found local pomodoro settings. Attempting migration..."); // Removed for cleaner logs
             const { data: newSupabaseSettings, error: insertError } = await supabase
               .from('pomodoro_settings')
               .insert({
@@ -144,10 +171,11 @@ export function usePomodoroState() {
                           prevState.mode === 'short-break' ? newSupabaseSettings.short_break_time :
                           newSupabaseSettings.long_break_time,
               }));
-              localStorage.removeItem(LOCAL_STORAGE_CUSTOM_TIMES_KEY);
+              localStorage.removeItem(LOCAL_STORAGE_CUSTOM_TIMES_KEY); // Clear local storage after migration
               toast.success("Local pomodoro settings migrated to your account!");
             }
           } else {
+            // No settings in Supabase and no local settings, insert defaults
             const { data: newSupabaseSettings, error: insertError } = await supabase
               .from('pomodoro_settings')
               .insert({
@@ -178,6 +206,7 @@ export function usePomodoroState() {
           }
         }
       } else {
+        // User is a guest (not logged in)
         setIsLoggedInMode(false);
         const storedCustomTimesString = localStorage.getItem(LOCAL_STORAGE_CUSTOM_TIMES_KEY);
         let loadedCustomTimes: typeof DEFAULT_TIMES = DEFAULT_TIMES;
@@ -204,6 +233,7 @@ export function usePomodoroState() {
     loadPomodoroSettings();
   }, [session, supabase, authLoading]);
 
+  // Effect to save custom times to local storage when in guest mode
   useEffect(() => {
     if (!isLoggedInMode && !loading) {
       localStorage.setItem(LOCAL_STORAGE_CUSTOM_TIMES_KEY, JSON.stringify(state.customTimes));
@@ -222,6 +252,7 @@ export function usePomodoroState() {
     const newTimeLeft = state.customTimes[newMode];
 
     if (isLoggedInMode && session && supabase && settingsIdRef.current) {
+      // Update Supabase if logged in
       const updateData: Partial<SupabasePomodoroSettings> = {
         focus_time: state.customTimes.focus,
         short_break_time: state.customTimes['short-break'],
@@ -243,7 +274,7 @@ export function usePomodoroState() {
       ...prevState,
       mode: newMode,
       timeLeft: newTimeLeft,
-      isRunning: shouldStopRunning ? false : prevState.isRunning,
+      isRunning: shouldStopRunning ? false : prevState.isRunning, // Only stop if explicitly told
       isEditingTime: false,
       editableTimeString: '',
     }));
@@ -270,8 +301,8 @@ export function usePomodoroState() {
         return {
           ...prevState,
           mode: nextMode,
-          timeLeft: prevState.customTimes[nextMode],
-          isRunning: false,
+          timeLeft: prevState.customTimes[nextMode], // Set to default time for next mode
+          isRunning: false, // Crucial: Stop running, user must manually start next session
           isEditingTime: false,
           editableTimeString: '',
         };
@@ -297,7 +328,7 @@ export function usePomodoroState() {
   }, [getCurrentModeTime]);
 
   const handleReset = useCallback(() => {
-    resetTimer(state.mode, true);
+    resetTimer(state.mode, true); // Always stop running on explicit reset
     toast.warning("Timer reset.");
   }, [state.mode, resetTimer]);
 
@@ -322,12 +353,13 @@ export function usePomodoroState() {
     }));
   }, []);
 
-  const handleTimeInputBlur = useCallback(async () => {
+  const handleTimeInputBlur = useCallback(async () => { // Made async to await Supabase call
     setState(prevState => {
       const newTime = parseTimeToSeconds(prevState.editableTimeString);
       if (!isNaN(newTime) && newTime >= 0) {
         const updatedCustomTimes = { ...prevState.customTimes, [prevState.mode]: newTime };
 
+        // Save to Supabase if logged in
         if (isLoggedInMode && session && supabase && settingsIdRef.current) {
           const updateData: Partial<SupabasePomodoroSettings> = {
             focus_time: updatedCustomTimes.focus,
@@ -339,7 +371,7 @@ export function usePomodoroState() {
             .update(updateData)
             .eq('id', settingsIdRef.current)
             .eq('user_id', session.user.id)
-            .then(({ error }: { error: any }) => {
+            .then(({ error }) => {
               if (error) {
                 console.error("Error updating pomodoro settings in Supabase:", error);
                 toast.error("Failed to save settings to your account.");
@@ -348,6 +380,7 @@ export function usePomodoroState() {
               }
             });
         } else if (!isLoggedInMode) {
+          // Save to local storage if guest
           localStorage.setItem(LOCAL_STORAGE_CUSTOM_TIMES_KEY, JSON.stringify(updatedCustomTimes));
           toast.success("Timer time updated and saved locally!");
         }
@@ -362,7 +395,7 @@ export function usePomodoroState() {
         toast.error("Invalid time format. Please use HH:MM:SS.");
         return {
           ...prevState,
-          timeLeft: prevState.customTimes[prevState.mode],
+          timeLeft: prevState.customTimes[prevState.mode], // Revert to current mode's default if invalid
           isEditingTime: false,
         };
       }
@@ -373,14 +406,17 @@ export function usePomodoroState() {
     setState(prevState => ({ ...prevState, editableTimeString: value }));
   }, []);
 
+  // New function to update custom times from settings modal
   const setCustomTime = useCallback(async (mode: PomodoroMode, newTimeInSeconds: number) => {
     setState(prevState => {
       const updatedCustomTimes = {
         ...prevState.customTimes,
         [mode]: newTimeInSeconds,
       };
+      // If the current mode's time is being updated, also update timeLeft
       const newTimeLeft = prevState.mode === mode ? newTimeInSeconds : prevState.timeLeft;
 
+      // Save to Supabase if logged in
       if (isLoggedInMode && session && supabase && settingsIdRef.current) {
         const updateData: Partial<SupabasePomodoroSettings> = {
           focus_time: updatedCustomTimes.focus,
@@ -392,7 +428,7 @@ export function usePomodoroState() {
           .update(updateData)
           .eq('id', settingsIdRef.current)
           .eq('user_id', session.user.id)
-          .then(({ error }: { error: any }) => {
+          .then(({ error }) => {
             if (error) {
               console.error("Error updating pomodoro settings in Supabase:", error);
               toast.error("Failed to save settings to your account.");
@@ -401,6 +437,7 @@ export function usePomodoroState() {
             }
           });
       } else if (!isLoggedInMode) {
+        // Save to local storage if guest
         localStorage.setItem(LOCAL_STORAGE_CUSTOM_TIMES_KEY, JSON.stringify(updatedCustomTimes));
         toast.success("Pomodoro settings saved locally!");
       }
@@ -426,6 +463,6 @@ export function usePomodoroState() {
     handleSwitchMode,
     handleTimeDisplayClick,
     handleTimeInputBlur,
-    setCustomTime,
+    setCustomTime, // Expose the new function
   };
 }

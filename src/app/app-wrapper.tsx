@@ -27,9 +27,8 @@ import { MobileControls } from "@/components/mobile-controls";
 import { FocusSessionProvider } from "@/context/focus-session-provider";
 import { WelcomeBackModal } from "@/components/welcome-back-modal";
 import { useGoals } from "@/hooks/use-goals";
-import { PinnedWidgetsDock } from "@/components/pinned-widgets-dock";
-import { useWidget } from "@/components/widget/widget-provider";
-import { DynamicBackground } from "@/components/dynamic-background";
+import { PinnedWidgetsDock } from "@/components/pinned-widgets-dock"; // Import PinnedWidgetsDock
+import { useWidget } from "@/components/widget/widget-provider"; // Import useWidget to get pinnedWidgets
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
@@ -119,7 +118,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
         {/* WidgetProvider wraps everything that needs widget context */}
         <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea}>
           <div className="relative h-screen bg-transparent">
-            <DynamicBackground />
             {activeEffect === 'rain' && <RainEffect />}
             {activeEffect === 'snow' && <SnowEffect />}
             {activeEffect === 'raindrops' && <RaindropsEffect />}

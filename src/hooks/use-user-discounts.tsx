@@ -28,7 +28,7 @@ export function useUserDiscounts() {
       console.error('Error fetching used discounts:', error);
       setUsedDiscounts([]);
     } else {
-      setUsedDiscounts(data.map((d: any) => d.billing_cycle as BillingCycle));
+      setUsedDiscounts(data.map(d => d.billing_cycle as BillingCycle));
     }
     setLoading(false);
   }, [session, supabase]);
@@ -52,7 +52,7 @@ export function useUserDiscounts() {
       console.error('Error recording discount usage:', error);
     } else {
       toast.success(`Your one-time ${cycle} discount has been applied!`);
-      fetchUsedDiscounts();
+      fetchUsedDiscounts(); // Re-fetch to update state
     }
   };
 

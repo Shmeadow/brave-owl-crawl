@@ -17,6 +17,7 @@ export function useSidebarPreference() {
     setMounted(true);
   }, []);
 
+  // Effect to load sidebar preference
   useEffect(() => {
     if (authLoading || !mounted) return;
 
@@ -24,6 +25,7 @@ export function useSidebarPreference() {
       setLoading(true);
       if (session && supabase) {
         setIsLoggedInMode(true);
+        // 1. Try to fetch from Supabase
         const { data: supabasePrefs, error: fetchError } = await supabase
           .from('user_preferences')
           .select('is_sidebar_always_open')
@@ -37,10 +39,13 @@ export function useSidebarPreference() {
 
         if (supabasePrefs && supabasePrefs.is_sidebar_always_open !== null) {
           setIsAlwaysOpenState(supabasePrefs.is_sidebar_always_open);
+          // console.log("Loaded sidebar preference from Supabase."); // Removed for cleaner logs
         } else {
+          // 2. If no Supabase data, check local storage for migration
           const savedPreference = localStorage.getItem(LOCAL_STORAGE_SIDEBAR_PREFERENCE_KEY);
           if (savedPreference !== null) {
             const parsedPreference = savedPreference === 'true';
+            // Migrate to Supabase
             const { error: insertError } = await supabase
               .from('user_preferences')
               .upsert({ user_id: session.user.id, is_sidebar_always_open: parsedPreference }, { onConflict: 'user_id' });
@@ -51,8 +56,10 @@ export function useSidebarPreference() {
             } else {
               setIsAlwaysOpenState(parsedPreference);
               localStorage.removeItem(LOCAL_STORAGE_SIDEBAR_PREFERENCE_KEY);
+              // toast.success("Local sidebar settings migrated to your account!"); // Removed for cleaner logs
             }
           } else {
+            // 3. If neither, set default and insert into Supabase
             const { error: insertError } = await supabase
               .from('user_preferences')
               .upsert({ user_id: session.user.id, is_sidebar_always_open: false }, { onConflict: 'user_id' });
@@ -65,11 +72,13 @@ export function useSidebarPreference() {
           }
         }
       } else {
+        // User is a guest (not logged in)
         setIsLoggedInMode(false);
         const savedPreference = localStorage.getItem(LOCAL_STORAGE_SIDEBAR_PREFERENCE_KEY);
         if (savedPreference !== null) {
           setIsAlwaysOpenState(savedPreference === 'true');
         } else {
+          // Set default for guests if no local storage
           setIsAlwaysOpenState(false);
           localStorage.setItem(LOCAL_STORAGE_SIDEBAR_PREFERENCE_KEY, 'false');
         }
@@ -87,14 +96,17 @@ export function useSidebarPreference() {
         supabase
           .from('user_preferences')
           .upsert({ user_id: session.user.id, is_sidebar_always_open: newPreference }, { onConflict: 'user_id' })
-          .then(({ error }: { error: any }) => {
+          .then(({ error }) => {
             if (error) {
               console.error("Error updating sidebar preference in Supabase:", error);
               toast.error("Failed to save sidebar preference.");
+            } else {
+              // toast.success("Sidebar preference saved to your account!"); // Removed for cleaner logs
             }
           });
-      } else if (mounted && !loading) {
+      } else if (mounted && !loading) { // Only save to local storage if not logged in and initial load is complete
         localStorage.setItem(LOCAL_STORAGE_SIDEBAR_PREFERENCE_KEY, String(newPreference));
+        // toast.success("Sidebar preference saved locally!"); // Removed for cleaner logs
       }
       return newPreference;
     });

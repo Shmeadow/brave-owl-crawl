@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, createContext, useContext } from 'react';
-import { supabase } from './client';
-import { Session, User } from '@supabase/supabase-js';
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
+import { Session, SupabaseClient } from '@supabase/supabase-js';
+import { createBrowserClient } from './client';
 
 export interface UserProfile {
   id: string;
@@ -12,97 +12,124 @@ export interface UserProfile {
   role: string | null;
   time_format_24h: boolean | null;
   welcome_notification_sent: boolean | null;
-  personal_room_id?: string | null;
+  personal_room_id: string | null; // Added personal_room_id
 }
 
-interface AuthContextType {
+interface SupabaseContextType {
+  supabase: SupabaseClient | null;
   session: Session | null;
   profile: UserProfile | null;
   loading: boolean;
-  signOut: () => Promise<void>;
-  supabase: typeof supabase;
-  refreshProfile: () => void;
+  refreshProfile: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const SupabaseContext = createContext<SupabaseContextType | undefined>(undefined);
 
-export function SupabaseAuthProvider({ children }: { children: React.ReactNode }) {
+export function SessionContextProvider({ children }: { children: React.ReactNode }) {
+  const supabaseClient = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      const client = createBrowserClient();
+      if (!client) {
+        console.error("SessionContextProvider: Supabase client failed to initialize.");
+      }
+      return client;
+    }
+    return null; // Return null on server or if window is not defined
+  }, []); // Empty dependency array ensures it runs only once
+
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (user: User) => {
-    const { data, error } = await supabase
+  // Make internalFetchProfile a stable callback that only depends on its own setters
+  const internalFetchProfile = useCallback(async (userId: string, client: SupabaseClient) => {
+    const { data, error } = await client
       .from('profiles')
-      .select('*')
-      .eq('id', user.id)
+      .select('id, first_name, last_name, profile_image_url, role, time_format_24h, welcome_notification_sent, personal_room_id')
+      .eq('id', userId)
       .single();
-    
-    if (error && error.code !== 'PGRST116') {
-      console.error("Profile fetch error:", error.message);
-      return null;
-    }
-    return data as UserProfile | null;
-  };
 
-  const refreshProfile = async () => {
-    if (session?.user) {
-      const userProfile = await fetchProfile(session.user);
-      setProfile(userProfile);
+    if (error && error.code !== 'PGRST116') {
+      console.error("Error fetching user profile:", error);
+      setProfile(null);
+    } else if (data) {
+      setProfile(data as UserProfile);
+    } else {
+      // If no profile found, create a default one
+      const { data: newProfile, error: insertError } = await client
+        .from('profiles')
+        .insert({ id: userId, first_name: null, last_name: null, profile_image_url: null, role: 'user', time_format_24h: true, welcome_notification_sent: false })
+        .select('id, first_name, last_name, profile_image_url, role, time_format_24h, welcome_notification_sent, personal_room_id')
+        .single();
+      if (insertError) {
+        console.error("Error creating default profile:", insertError);
+      } else if (newProfile) {
+        setProfile(newProfile as UserProfile);
+      }
     }
-  };
+  }, [setProfile]);
+
+  const refreshProfile = useCallback(async () => {
+    if (session?.user?.id && supabaseClient) {
+      await internalFetchProfile(session.user.id, supabaseClient);
+    }
+  }, [session, internalFetchProfile, supabaseClient]);
 
   useEffect(() => {
-    const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      if (session?.user) {
-        await fetchProfile(session.user).then(setProfile);
+    if (!supabaseClient) { // If supabaseClient is null, it means env vars are missing or client creation failed.
+      setLoading(false); // In this case, stop loading to prevent infinite spinner.
+      return;
+    }
+
+    // This callback handles auth state changes and fetches profile.
+    // It's defined inside useEffect to capture supabaseClient and internalFetchProfile from the effect's scope.
+    const handleAuthStateChange = async (_event: string, currentSession: Session | null) => {
+      setSession(currentSession); // Update session state
+      if (currentSession) {
+        await internalFetchProfile(currentSession.user.id, supabaseClient); // Use the stable internalFetchProfile
+      } else {
+        setProfile(null); // Clear profile if no session
       }
-      setLoading(false);
+      setLoading(false); // Always set loading to false after auth state is processed
     };
 
-    getInitialSession();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session);
-      if (session?.user) {
-        const userProfile = await fetchProfile(session.user);
-        setProfile(userProfile);
-      } else {
-        setProfile(null);
-      }
-      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
-        setLoading(false);
-      }
+    // Initial session check when the component mounts or supabaseClient becomes available
+    supabaseClient.auth.getSession().then(({ data: { session: initialSession } }) => {
+      handleAuthStateChange('INITIAL_LOAD', initialSession);
+    }).catch(error => {
+      console.error("Error fetching initial Supabase session:", error);
+      setLoading(false); // Ensure loading is false even if initial fetch fails
     });
 
+    // Subscribe to real-time auth state changes
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(handleAuthStateChange);
+
+    // Cleanup function: unsubscribe when the component unmounts or dependencies change
     return () => {
-      authListener.subscription.unsubscribe();
+      subscription.unsubscribe();
     };
-  }, []);
+  }, [supabaseClient, internalFetchProfile]); // Dependencies: supabaseClient (stable) and internalFetchProfile (stable)
 
-  const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) console.error("Sign out error:", error.message);
-  };
-
-  const value = {
+  const value = useMemo(() => ({
+    supabase: supabaseClient,
     session,
     profile,
     loading,
-    signOut,
-    supabase,
-    refreshProfile,
-  };
+    refreshProfile
+  }), [supabaseClient, session, profile, loading, refreshProfile]);
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  // Always render children, the 'loading' state will manage content visibility
+  return (
+    <SupabaseContext.Provider value={value}>
+      {children}
+    </SupabaseContext.Provider>
+  );
 }
 
 export const useSupabase = () => {
-  const context = useContext(AuthContext);
+  const context = useContext(SupabaseContext);
   if (context === undefined) {
-    throw new Error('useSupabase must be used within a SupabaseAuthProvider');
+    throw new Error('useSupabase must be used within a SessionContextProvider');
   }
   return context;
 };

@@ -16,7 +16,7 @@ import {
   DOCKED_WIDGET_HEIGHT,
   DOCKED_WIDGET_HORIZONTAL_GAP,
   BOTTOM_DOCK_OFFSET,
-} from './types';
+} from './types'; // Corrected import path
 
 interface UseWidgetPersistenceProps {
   initialWidgetConfigs: { [key: string]: WidgetConfig };
@@ -62,11 +62,9 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
     });
   }, [mainContentArea]);
 
-  // Effect to load state from Supabase or local storage on mount/auth change
+  // Load state from Supabase or local storage on mount/auth change
   useEffect(() => {
-    // Only run if component is mounted and auth loading is complete
-    // Do NOT include mainContentArea in dependencies here, as it would re-trigger loading on layout changes.
-    if (authLoading || !mounted.current) return; 
+    if (authLoading || !mounted.current || mainContentArea.width === 0) return; // Wait for mainContentArea to be valid
 
     const loadWidgetStates = async () => {
       setLoading(true);
@@ -105,7 +103,7 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
                 toast.error("Error migrating local widget settings.");
               } else {
                 loadedWidgetStates = validWidgets;
-                localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY); // Clear local storage after successful migration
+                localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
               }
             } catch (e) {
               console.error("Error parsing local storage widget states:", e);
@@ -119,42 +117,31 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
       } else {
         // User is a guest (not logged in)
         setIsLoggedInMode(false);
-        // For guests, load from local storage if available, otherwise start empty.
-        // Do NOT clear local storage here, only during migration.
-        const savedState = localStorage.getItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
-        if (savedState) {
-          try {
-            const parsedState: WidgetState[] = JSON.parse(savedState);
-            loadedWidgetStates = parsedState.filter((w: WidgetState) => initialWidgetConfigs[w.id]);
-          } catch (e) {
-            console.error("Error parsing local storage widget states:", e);
-            loadedWidgetStates = [];
-          }
-        } else {
-          loadedWidgetStates = [];
-        }
+        // For guests, always start with an empty screen, ignoring local storage.
+        loadedWidgetStates = [];
+        localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY); // Clear any previous guest state
       }
 
-      // Initialize all widgets based on initialWidgetConfigs, merging with loaded states
+      // Initialize all widgets based on initialWidgetConfigs, marking them as closed by default
       const allWidgets: WidgetState[] = Object.keys(initialWidgetConfigs).map(id => {
         const config = initialWidgetConfigs[id];
         const existingState = loadedWidgetStates.find(w => w.id === id);
 
         if (existingState) {
-          // Clamp positions for existing widgets during initial load
+          // Clamp positions for existing widgets
           const clampedCurrentPos = clampPosition(
             existingState.position.x,
             existingState.position.y,
             existingState.size.width,
             existingState.size.height,
-            mainContentArea // Use mainContentArea here for initial clamping
+            mainContentArea
           );
           const clampedNormalPos = existingState.normalPosition ? clampPosition(
             existingState.normalPosition.x,
             existingState.normalPosition.y,
             existingState.normalSize?.width || config.initialWidth,
             existingState.normalSize?.height || config.initialHeight,
-            mainContentArea // Use mainContentArea here for initial clamping
+            mainContentArea
           ) : clampedCurrentPos;
 
           return {
@@ -186,39 +173,7 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
     };
 
     loadWidgetStates();
-  }, [session, supabase, authLoading, initialWidgetConfigs, mounted]); // mainContentArea is still needed here for initial clamping
-
-  // Effect to re-clamp floating widget positions when mainContentArea changes
-  useEffect(() => {
-    if (!mounted.current || loading || activeWidgets.length === 0 || mainContentArea.width === 0) return;
-
-    const needsReclamping = activeWidgets.some(widget => {
-      if (!widget.isMaximized && !widget.isPinned && !widget.isClosed) {
-        const clamped = clampPosition(widget.position.x, widget.position.y, widget.size.width, widget.size.height, mainContentArea);
-        return clamped.x !== widget.position.x || clamped.y !== widget.position.y;
-      }
-      return false;
-    });
-
-    if (needsReclamping) {
-      setActiveWidgets(prevWidgets => {
-        return prevWidgets.map(widget => {
-          if (!widget.isMaximized && !widget.isPinned && !widget.isClosed) { // Only re-clamp floating, open widgets
-            const clampedPosition = clampPosition(
-              widget.position.x,
-              widget.position.y,
-              widget.size.width,
-              widget.size.height,
-              mainContentArea
-            );
-            return { ...widget, position: clampedPosition };
-          }
-          return widget;
-        });
-      });
-    }
-  }, [mainContentArea, activeWidgets, loading]); // Depend on mainContentArea and activeWidgets (to trigger on initial load or if widgets change)
-
+  }, [session, supabase, authLoading, initialWidgetConfigs, mainContentArea, recalculatePinnedWidgets]);
 
   // Save state to Supabase or local storage whenever activeWidgets changes
   const isInitialSaveLoad = useRef(true); // Use a different ref for saving
@@ -257,9 +212,7 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
           }
         }
       } else {
-        // For guests, save the layout to local storage
-        localStorage.setItem(LOCAL_STORAGE_WIDGET_STATE_KEY, JSON.stringify(activeWidgets));
-        // toast.success("Widget layout saved locally!"); // Removed for cleaner logs
+        // For guests, do not save the layout to local storage to ensure a clean start.
       }
     };
 
