@@ -269,45 +269,39 @@ export function useWidgetActions({
 
   const togglePinned = useCallback((id: string) => {
     updateAndRecalculate(prev => {
-      const updatedWidgets = prev.map((widget: WidgetState) => {
+      return prev.map((widget: WidgetState) => {
         if (widget.id === id) {
           if (widget.isPinned) {
-            // It's pinned, unpin it and restore to normal position/size
+            // UNPINNING: Restore from the state saved before pinning.
             return {
               ...widget,
               isPinned: false,
-              isMinimized: false, // Unpinning makes it normal
-              isMaximized: false,
-              isClosed: false, // Ensure visible
-              position: widget.normalPosition || clampPosition(
-                mainContentArea.left + SIDEBAR_OPEN_OFFSET_X, // Default to near sidebar if no normalPosition
-                mainContentArea.top + SIDEBAR_OPEN_OFFSET_Y,
-                initialWidgetConfigs[id].initialWidth,
-                initialWidgetConfigs[id].initialHeight,
-                mainContentArea
-              ), // Restore or use initial
-              size: widget.normalSize || { width: initialWidgetConfigs[id].initialWidth, height: initialWidgetConfigs[id].initialHeight }, // Restore or use initial
-              previousPosition: undefined, // Clear previous state
-              previousSize: undefined,
+              isMinimized: false, // Unpinning always restores to a non-minimized state for now.
+              position: widget.previousPosition!,
+              size: widget.previousSize!,
+              // Infer if it was maximized based on the restored size.
+              isMaximized: widget.previousSize?.width === mainContentArea.width && widget.previousSize?.height === mainContentArea.height,
+              previousPosition: undefined, // Clear the previous state
+              previousSize: undefined, // Clear the previous state
             };
           } else {
-            // It's not pinned, pin it. Save current normal state.
+            // PINNING: Save the current state before changing it.
             return {
               ...widget,
               isPinned: true,
-              isMinimized: true, // Pinned widgets are always minimized
-              isMaximized: false,
-              isClosed: false, // Ensure visible
-              normalPosition: widget.position, // Save current position as normal
-              normalSize: widget.size, // Save current size as normal
+              isMinimized: true,  // Pinned state is a form of minimized state.
+              isMaximized: false, // A pinned widget is never maximized.
+              previousPosition: widget.position, // Save current position
+              previousSize: widget.size,       // Save current size
+              // Importantly, we DO NOT touch normalPosition or normalSize here.
+              // They hold the state for un-maximizing.
             };
           }
         }
         return widget;
       });
-      return updatedWidgets; // Recalculation happens in updateAndRecalculate
     });
-  }, [initialWidgetConfigs, mainContentArea, updateAndRecalculate]);
+  }, [mainContentArea, updateAndRecalculate]);
 
   const closeWidget = useCallback((id: string) => {
     if (id === activePanel) {
