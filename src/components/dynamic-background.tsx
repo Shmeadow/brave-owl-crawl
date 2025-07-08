@@ -16,7 +16,7 @@ export function DynamicBackground() {
         <iframe
           key={backgroundUrl}
           src={youtubeEmbedUrl}
-          className="absolute top-1/2 left-1/2 min-w-full min-h-full w-auto h-auto object-cover transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+          className="absolute top-1/2 left-1/2 w-screen h-[56.25vw] min-h-screen min-w-[177.77vh] transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
           frameBorder="0"
           allow="autoplay; encrypted-media"
           title="YouTube Background"
