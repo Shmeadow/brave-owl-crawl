@@ -72,7 +72,7 @@ export function PinnedWidgetsDock({ pinnedWidgets, mainContentArea, isCurrentRoo
   return (
     <Card
       className={cn(
-        "fixed z-[902] bg-background/40 backdrop-blur-xl border-white/20 shadow-lg rounded-full p-1.5 transition-all duration-300 ease-in-out",
+        "fixed z-[902] bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-full p-1.5 transition-all duration-300 ease-in-out",
         "flex items-center gap-2", // Changed to horizontal flex layout
       )}
       style={{

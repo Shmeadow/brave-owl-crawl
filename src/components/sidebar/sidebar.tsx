@@ -117,7 +117,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
       ref={sidebarRef}
       className={cn(
         "fixed top-16 z-[902] flex flex-col items-center py-4",
-        "bg-transparent backdrop-blur-xl shadow-lg shadow-black/30 transition-transform duration-300 ease-in-out",
+        "bg-card/40 backdrop-blur-xl shadow-lg shadow-black/30 transition-transform duration-300 ease-in-out",
         `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]`,
         "rounded-r-lg",
         isMobile

@@ -162,7 +162,7 @@ export function Widget({
         position: 'absolute', // Ensure positioning
       }}
       className={cn(
-        "bg-background/40 border-white/20 shadow-lg rounded-lg flex flex-col",
+        "bg-card/40 border-white/20 shadow-lg rounded-lg flex flex-col",
         "transition-all duration-300 ease-in-out",
         isTopmost ? "backdrop-blur-2xl" : "backdrop-blur-xl",
         isResizable ? "resize" : "",
