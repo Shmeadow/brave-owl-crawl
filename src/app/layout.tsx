@@ -12,7 +12,6 @@ import { EffectProvider } from "@/context/effect-provider";
 import { ClientOnlyWrapper } from '@/components/client-only-wrapper';
 import { SpeedInsights } from "@vercel/speed-insights/next"; // Corrected import for Next.js App Router
 import { getRandomBackground } from '@/lib/backgrounds'; // Import getRandomBackground
-import { TamaguiProvider } from "@/components/tamagui-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -99,15 +98,13 @@ export default async function RootLayout({
                   disableTransitionOnChange
                   isCozyThemeGloballyEnabled={isCozyThemeGloballyEnabled}
                 >
-                  <TamaguiProvider>
-                    <SidebarProvider>
-                      <ClientOnlyWrapper>
-                        <AppWrapper initialWidgetConfigs={WIDGET_CONFIGS}>
-                          {children}
-                        </AppWrapper>
-                      </ClientOnlyWrapper>
-                    </SidebarProvider>
-                  </TamaguiProvider>
+                  <SidebarProvider>
+                    <ClientOnlyWrapper>
+                      <AppWrapper initialWidgetConfigs={WIDGET_CONFIGS}>
+                        {children}
+                      </AppWrapper>
+                    </ClientOnlyWrapper>
+                  </SidebarProvider>
                 </ThemeProvider>
               </BackgroundProvider>
             </EffectProvider>
