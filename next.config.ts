@@ -1,4 +1,14 @@
+import { withTamagui } from '@tamagui/next-plugin'
 import type { Configuration } from 'webpack';
+
+const tamaguiPlugin = withTamagui({
+  config: './tamagui.config.ts',
+  components: ['tamagui'],
+  importsWhitelist: ['constants.js', 'colors.js'],
+  outputCSS: process.env.NODE_ENV === 'production' ? './public/tamagui.css' : null,
+  logTimings: true,
+  disableExtraction: process.env.NODE_ENV === 'development',
+});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -18,7 +28,6 @@ const nextConfig = {
       }
     ]
   },
-
   webpack: (config: Configuration) => {
     if (
       process.env.NODE_ENV === 'development' &&
@@ -32,7 +41,8 @@ const nextConfig = {
       });
     }
     return config;
-  }
+  },
+  transpilePackages: ['react-native-web'],
 };
 
-export default nextConfig;
+export default tamaguiPlugin(nextConfig);
