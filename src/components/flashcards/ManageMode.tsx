@@ -1,188 +1,185 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FlashcardList } from "./FlashcardList";
-import { FlashcardFormModal } from "./flashcard-form-modal";
-import { CardData, Category } from "@/hooks/use-flashcards";
-import { PlusCircle, Trash2, Edit } from "lucide-react";
-import { toast } from "sonner";
+import React, { useState, useMemo } from 'react';
+import { CategorySidebar } from './CategorySidebar';
+import { FlashcardList } from './FlashcardList';
+import { FlashcardForm } from './FlashcardForm';
+import { ImportExport } from './ImportExport';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { LayoutGrid, FolderInput, Trash, X } from 'lucide-react';
+import { CardData, Category } from '@/hooks/flashcards/types';
+import { OrganizeCardModal } from './OrganizeCardModal';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
+import { useFlashcards } from '@/hooks/use-flashcards';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ManageModeProps {
   cards: CardData[];
+  onAddCard: (card: { front: string; back: string; category_id?: string | null }) => void;
+  onDeleteCard: (id: string) => void;
+  onUpdateCard: (cardData: { id?: string; front: string; back: string; category_id?: string | null }) => void;
+  onBulkImport: (cards: { front: string; back: string }[], categoryId: string | null) => Promise<number>;
   categories: Category[];
-  onAdd: (cardData: { front: string; back: string; category_id?: string | null }) => void;
-  onUpdate: (cardData: { id?: string; front: string; back: string; category_id?: string | null }) => void;
-  onDelete: (id: string) => void;
-  onDeleteMultiple: (ids: string[]) => void;
-  isCurrentRoomWritable: boolean;
+  onAddCategory: (name: string) => Promise<Category | null>;
+  onDeleteCategory: (id: string, deleteContents: boolean) => Promise<boolean>;
+  onUpdateCategory: (id: string, name: string) => void;
+  onUpdateCardCategory: (cardId: string, newCategoryId: string | null) => void;
 }
 
 export function ManageMode({
   cards,
+  onAddCard,
+  onDeleteCard,
+  onUpdateCard,
+  onBulkImport,
   categories,
-  onAdd,
-  onUpdate,
-  onDelete,
-  onDeleteMultiple,
-  isCurrentRoomWritable,
+  onAddCategory,
+  onDeleteCategory,
+  onUpdateCategory,
+  onUpdateCardCategory,
 }: ManageModeProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCard, setEditingCard] = useState<CardData | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
+  const { fetchCards, handleBulkDelete, handleBulkMove } = useFlashcards();
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all' | null>('all');
+  const [organizingCard, setOrganizingCard] = useState<CardData | null>(null);
+  const [columns, setColumns] = useState(3);
   const [selectionMode, setSelectionMode] = useState(false);
-  const [selectedCards, setSelectedCards] = useState<Set<string>>(new Set());
+  const [selectedCardIds, setSelectedCardIds] = useState<Set<string>>(new Set());
+  const [isBulkMoveOpen, setIsBulkMoveOpen] = useState(false);
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
+  const [bulkMoveCategoryId, setBulkMoveCategoryId] = useState<string | null>(null);
 
   const filteredCards = useMemo(() => {
-    return cards.filter((card) => {
-      const matchesSearch =
-        card.front.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        card.back.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = categoryFilter === "all" || card.category_id === categoryFilter;
-      return matchesSearch && matchesCategory;
+    if (selectedCategoryId === 'all') return cards;
+    return cards.filter(card => card.category_id === selectedCategoryId);
+  }, [cards, selectedCategoryId]);
+
+  const handleDeleteCategoryWrapper = async (id: string, deleteContents: boolean) => {
+    const success = await onDeleteCategory(id, deleteContents);
+    if (success) fetchCards();
+  };
+
+  const toggleSelection = (cardId: string) => {
+    setSelectedCardIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(cardId)) newSet.delete(cardId);
+      else newSet.add(cardId);
+      return newSet;
     });
-  }, [cards, searchTerm, categoryFilter]);
-
-  const handleAddClick = () => {
-    if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to add flashcards in this room.");
-      return;
-    }
-    setEditingCard(null);
-    setIsModalOpen(true);
   };
 
-  const handleEditClick = (card: CardData) => {
-    if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to edit flashcards in this room.");
-      return;
-    }
-    setEditingCard(card);
-    setIsModalOpen(true);
-  };
-
-  const handleDeleteCard = (id: string) => {
-    if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to delete flashcards in this room.");
-      return;
-    }
-    onDelete(id);
-  };
-
-  const handleSaveCard = (data: { id?: string; front: string; back: string; category_id?: string | null }) => {
-    if (editingCard) {
-      onUpdate({ ...data, id: editingCard.id });
-    } else {
-      onAdd(data);
-    }
-    setIsModalOpen(false);
-    setEditingCard(null);
-  };
-
-  const handleCardSelect = (cardId: string) => {
-    if (!selectionMode) return;
-    const newSelectedCards = new Set(selectedCards);
-    if (newSelectedCards.has(cardId)) {
-      newSelectedCards.delete(cardId);
-    } else {
-      newSelectedCards.add(cardId);
-    }
-    setSelectedCards(newSelectedCards);
-  };
-
-  const toggleSelectionMode = () => {
+  const handleToggleSelectionMode = () => {
     setSelectionMode(!selectionMode);
-    setSelectedCards(new Set());
+    setSelectedCardIds(new Set());
   };
 
-  const handleDeleteSelected = () => {
-    if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to delete flashcards in this room.");
-      return;
-    }
-    if (selectedCards.size > 0) {
-      onDeleteMultiple(Array.from(selectedCards));
-      setSelectedCards(new Set());
-      setSelectionMode(false);
-    }
+  const handleConfirmBulkDelete = async () => {
+    await handleBulkDelete(Array.from(selectedCardIds));
+    setIsBulkDeleteOpen(false);
+    handleToggleSelectionMode();
+  };
+
+  const handleConfirmBulkMove = async () => {
+    await handleBulkMove(Array.from(selectedCardIds), bulkMoveCategoryId);
+    setIsBulkMoveOpen(false);
+    handleToggleSelectionMode();
   };
 
   return (
-    <div className="h-full w-full flex flex-col">
-      <div className="flex flex-col sm:flex-row items-center gap-4 p-4 border-b border-border">
-        <Input
-          placeholder="Search flashcards..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-xs"
+    <div className="flex flex-col md:flex-row gap-6 w-full">
+      <div className="w-full md:w-1/3 flex flex-col gap-6">
+        <CategorySidebar
+          categories={categories}
+          selectedCategoryId={selectedCategoryId}
+          onSelectCategory={setSelectedCategoryId}
+          onAddCategory={onAddCategory}
+          onDeleteCategory={handleDeleteCategoryWrapper}
+          onUpdateCategory={onUpdateCategory}
         />
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {categories.map((cat) => (
-              <SelectItem key={cat.id} value={cat.id}>
-                {cat.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <div className="flex items-center gap-2 ml-auto">
+        <Card>
+          <CardHeader><CardTitle>View Options</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="columns-slider">Columns: {columns}</Label>
+              <div className="flex items-center gap-4">
+                <LayoutGrid className="h-5 w-5 text-muted-foreground" />
+                <Slider id="columns-slider" value={[columns]} onValueChange={(v) => setColumns(v[0])} min={1} max={3} step={1} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Import/Export</CardTitle></CardHeader>
+          <CardContent className="p-0">
+            <ImportExport cards={cards} onBulkImport={onBulkImport} categories={categories} onAddCategory={onAddCategory} />
+          </CardContent>
+        </Card>
+      </div>
+      <div className="w-full md:w-2/3 flex flex-col gap-6">
+        <FlashcardForm
+          onSave={(cardData) => onAddCard(cardData)}
+          editingCard={null}
+          onCancel={() => {}}
+          categories={categories}
+          selectedCategoryId={selectedCategoryId}
+        />
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Your Flashcards ({filteredCards.length})</h2>
           {selectionMode ? (
-            <>
-              <Button variant="outline" onClick={toggleSelectionMode}>
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleDeleteSelected}
-                disabled={selectedCards.size === 0 || !isCurrentRoomWritable}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete ({selectedCards.size})
-              </Button>
-            </>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">{selectedCardIds.size} selected</span>
+              <Button variant="outline" size="sm" onClick={() => setIsBulkMoveOpen(true)} disabled={selectedCardIds.size === 0}><FolderInput className="mr-2 h-4 w-4" /> Move</Button>
+              <Button variant="destructive" size="sm" onClick={() => setIsBulkDeleteOpen(true)} disabled={selectedCardIds.size === 0}><Trash className="mr-2 h-4 w-4" /> Delete</Button>
+              <Button variant="ghost" size="icon" onClick={handleToggleSelectionMode}><X className="h-4 w-4" /></Button>
+            </div>
           ) : (
-            <>
-              <Button variant="outline" onClick={toggleSelectionMode}>
-                <Edit className="mr-2 h-4 w-4" />
-                Select
-              </Button>
-              <Button onClick={handleAddClick} disabled={!isCurrentRoomWritable}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Flashcard
-              </Button>
-            </>
+            <Button variant="outline" onClick={handleToggleSelectionMode}>Select Cards</Button>
           )}
         </div>
-      </div>
-
-      <div className="flex-1 overflow-hidden">
         <FlashcardList
           flashcards={filteredCards}
-          onEdit={handleEditClick}
-          onDelete={handleDeleteCard}
+          onUpdate={onUpdateCard}
+          onDelete={onDeleteCard}
+          onOrganize={setOrganizingCard}
+          columns={columns}
+          rowHeight={120}
           selectionMode={selectionMode}
-          selectedCards={selectedCards}
-          onCardSelect={handleCardSelect}
-          isCurrentRoomWritable={isCurrentRoomWritable}
-        />
-      </div>
-
-      {isModalOpen && (
-        <FlashcardFormModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSave={handleSaveCard}
-          initialData={editingCard}
+          selectedCardIds={selectedCardIds}
+          onToggleSelection={toggleSelection}
           categories={categories}
         />
-      )}
+      </div>
+      <OrganizeCardModal card={organizingCard} categories={categories} isOpen={!!organizingCard} onClose={() => setOrganizingCard(null)} onUpdateCategory={onUpdateCardCategory} />
+      <Dialog open={isBulkMoveOpen} onOpenChange={setIsBulkMoveOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Move {selectedCardIds.size} Cards</DialogTitle></DialogHeader>
+          <div className="py-4">
+            <Label>Move to Category</Label>
+            <Select onValueChange={(value) => setBulkMoveCategoryId(value === 'null' ? null : value)} defaultValue="null">
+              <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="null">Uncategorized</SelectItem>
+                {categories.map((cat) => <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsBulkMoveOpen(false)}>Cancel</Button>
+            <Button onClick={handleConfirmBulkMove}>Move Cards</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Are you sure?</DialogTitle><DialogDescription>This will permanently delete {selectedCardIds.size} selected flashcards. This action cannot be undone.</DialogDescription></DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsBulkDeleteOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleConfirmBulkDelete}>Delete Cards</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
