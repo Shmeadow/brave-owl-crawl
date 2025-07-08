@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Progress } from "@/components/ui/progress";
 import { useSupabase } from "@/integrations/supabase/auth";
-import { cn } from "@/lib/utils"; // Import cn
+import { cn } from "@/lib/utils";
 
 // Helper function to format time manually
 const formatTimeManual = (date: Date, use24Hour: boolean) => {
@@ -78,8 +77,11 @@ export function ClockDisplay({ className }: ClockDisplayProps) {
         <div id="clock" className="text-2xl font-bold leading-none text-foreground">{currentTimeStr}</div>
         <div id="date" className="text-sm leading-none">{currentDateStr}</div>
       </div>
-      <div className="w-full mt-1">
-        <Progress value={dailyProgress} className="h-1.5 [&>*]:transition-all [&>*]:duration-1000 [&>*]:ease-linear [&>*]:bg-gradient-to-r [&>*]:from-day-start [&>*]:to-day-end" />
+      <div className="w-full mt-1 h-2 bg-muted/50 rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-day-start to-day-end transition-all duration-1000 ease-linear shadow-[0_0_4px_hsl(var(--day-start))]"
+          style={{ width: `${dailyProgress}%` }}
+        />
       </div>
     </div>
   );
