@@ -74,7 +74,7 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count 
         <div
           className={cn(
             "absolute inset-0 w-full h-full backface-hidden rounded-lg flex flex-col p-4",
-            "bg-card backdrop-blur-xl border-white/20 text-card-foreground shadow-md",
+            "bg-card/40 backdrop-blur-xl border-white/20 text-card-foreground shadow-md",
           )}
         >
           <CardContent className="flex-grow flex items-center justify-center text-center text-xl font-semibold">

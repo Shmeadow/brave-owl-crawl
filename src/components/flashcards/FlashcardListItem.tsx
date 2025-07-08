@@ -47,7 +47,7 @@ export function FlashcardListItem({
   return (
     <li
       className={cn(
-        "flex flex-col justify-between bg-muted backdrop-blur-xl p-4 rounded-lg shadow-sm border border-border transition-all duration-200",
+        "flex flex-col justify-between bg-muted/40 backdrop-blur-xl p-4 rounded-lg shadow-sm border border-border transition-all duration-200",
         selectionMode ? "cursor-pointer" : "hover:shadow-lg hover:border-primary/50",
         isSelected && "ring-2 ring-primary border-primary"
       )}

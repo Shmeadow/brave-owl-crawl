@@ -192,7 +192,7 @@ export function FlashcardApp() {
       <h1 className="text-3xl font-bold text-foreground text-center">Flashcard Deck</h1>
       
       {!isLoggedInMode && (
-        <Card className="w-full bg-card backdrop-blur-xl border-white/20">
+        <Card className="w-full bg-card/40 backdrop-blur-xl border-white/20">
           <CardContent className="text-center text-sm text-muted-foreground p-2">
             You are currently browsing as a guest. Your cards are saved locally. Log in to save them to your account!
           </CardContent>
@@ -227,7 +227,7 @@ export function FlashcardApp() {
       </div>
 
       {currentMode === 'test' && (
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md bg-card/40 backdrop-blur-xl border-white/20">
             <CardContent className="p-4">
                 <Label>Test Type</Label>
                 <ToggleGroup type="single" value={testType} onValueChange={(value) => value && setTestType(value as 'text' | 'choices')} disabled={cards.length < 4} className="mt-1 grid grid-cols-2">
