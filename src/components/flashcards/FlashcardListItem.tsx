@@ -1,47 +1,45 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Edit, Trash2, FolderCog } from 'lucide-react';
-import { CardData, Category } from '@/hooks/flashcards/types';
-import { cn } from '@/lib/utils';
-import { FlashcardForm } from './FlashcardForm';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Edit, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { CardData } from "@/hooks/use-flashcards";
+import { toast } from "sonner";
 
 interface FlashcardListItemProps {
   card: CardData;
-  onUpdate: (cardData: { id?: string; front: string; back: string; category_id?: string | null }) => void;
-  onDelete: (id: string) => void;
-  onOrganize: (card: CardData) => void;
-  rowHeight: number;
   selectionMode: boolean;
   isSelected: boolean;
-  onToggleSelection: (id: string) => void;
-  categories: Category[];
+  onSelect: (cardId: string) => void;
+  onEdit: (card: CardData) => void;
+  onDelete: (cardId: string) => void;
+  isCurrentRoomWritable: boolean;
 }
 
-export function FlashcardListItem({
-  card,
-  onUpdate,
-  onDelete,
-  onOrganize,
-  rowHeight,
-  selectionMode,
-  isSelected,
-  onToggleSelection,
-  categories,
-}: FlashcardListItemProps) {
-  const [isEditingPopoverOpen, setIsEditingPopoverOpen] = useState(false);
-
-  const handleClick = () => {
+export function FlashcardListItem({ card, selectionMode, isSelected, onSelect, onEdit, onDelete, isCurrentRoomWritable }: FlashcardListItemProps) {
+  const handleSelect = () => {
     if (selectionMode) {
-      onToggleSelection(card.id);
+      onSelect(card.id);
     }
   };
 
-  const handleSaveEdit = (updatedData: { id?: string; front: string; back: string; category_id?: string | null }) => {
-    onUpdate(updatedData);
-    setIsEditingPopoverOpen(false);
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to edit flashcards in this room.");
+      return;
+    }
+    onEdit(card);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isCurrentRoomWritable) {
+      toast.error("You do not have permission to delete flashcards in this room.");
+      return;
+    }
+    onDelete(card.id);
   };
 
   return (
@@ -51,67 +49,40 @@ export function FlashcardListItem({
         selectionMode ? "cursor-pointer" : "hover:shadow-lg hover:border-primary/50",
         isSelected && "ring-2 ring-primary border-primary"
       )}
-      style={{ minHeight: `${rowHeight}px` }}
-      onClick={handleClick}
+      onClick={handleSelect}
     >
-      <div className="flex-grow overflow-hidden mb-3">
-        <p className="font-semibold text-foreground text-base mb-2 truncate" title={card.front}>{card.front}</p>
-        <p className="text-muted-foreground text-sm line-clamp-3">{card.back}</p>
-      </div>
-      <div className="flex items-center justify-between mt-auto pt-3 border-t border-border/50">
-        <p className="text-xs text-muted-foreground">
-          Created: {new Date(card.created_at).toLocaleDateString()}
-        </p>
-        <div className="flex gap-1">
-          <Button
-            onClick={(e) => { e.stopPropagation(); onOrganize(card); }}
-            size="icon"
-            variant="ghost"
-            className="h-7 w-7 text-muted-foreground hover:text-primary"
-            title="Organize flashcard"
-            disabled={selectionMode}
-          >
-            <FolderCog className="h-4 w-4" />
-          </Button>
-          <Popover open={isEditingPopoverOpen} onOpenChange={setIsEditingPopoverOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                onClick={(e) => e.stopPropagation()}
-                size="icon"
-                variant="ghost"
-                className="h-7 w-7 text-muted-foreground hover:text-primary"
-                title="Edit flashcard"
-                disabled={selectionMode}
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent
-              className="w-80 z-[1100]"
-              onClick={(e) => e.stopPropagation()}
-              side="bottom"
-              align="end"
-            >
-              <FlashcardForm
-                editingCard={card}
-                onSave={handleSaveEdit}
-                onCancel={() => setIsEditingPopoverOpen(false)}
-                categories={categories}
-                selectedCategoryId={card.category_id ?? null}
-              />
-            </PopoverContent>
-          </Popover>
-          <Button
-            onClick={(e) => { e.stopPropagation(); onDelete(card.id); }}
-            size="icon"
-            variant="ghost"
-            className="h-7 w-7 text-muted-foreground hover:text-destructive"
-            title="Delete flashcard"
-            disabled={selectionMode}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+      <div>
+        <div className="mb-2">
+          <p className="text-xs text-muted-foreground">Front</p>
+          <p className="font-medium break-words">{card.front}</p>
         </div>
+        <div className="border-t border-border my-2"></div>
+        <div>
+          <p className="text-xs text-muted-foreground">Back</p>
+          <p className="font-medium break-words">{card.back}</p>
+        </div>
+      </div>
+      <div className="flex items-center justify-end gap-1 mt-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={handleEdit}
+          disabled={!isCurrentRoomWritable}
+        >
+          <Edit className="h-4 w-4" />
+          <span className="sr-only">Edit</span>
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-red-500 hover:bg-red-100 hover:text-red-600"
+          onClick={handleDelete}
+          disabled={!isCurrentRoomWritable}
+        >
+          <Trash2 className="h-4 w-4" />
+          <span className="sr-only">Delete</span>
+        </Button>
       </div>
     </li>
   );
