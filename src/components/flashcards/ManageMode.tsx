@@ -98,7 +98,7 @@ export function ManageMode({
           onDeleteCategory={handleDeleteCategoryWrapper}
           onUpdateCategory={onUpdateCategory}
         />
-        <Card className="bg-card/40 backdrop-blur-xl border-white/20">
+        <Card>
           <CardHeader><CardTitle>View Options</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -110,7 +110,7 @@ export function ManageMode({
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-card/40 backdrop-blur-xl border-white/20">
+        <Card>
           <CardHeader><CardTitle>Import/Export</CardTitle></CardHeader>
           <CardContent className="p-0">
             <ImportExport cards={cards} onBulkImport={onBulkImport} categories={categories} onAddCategory={onAddCategory} />

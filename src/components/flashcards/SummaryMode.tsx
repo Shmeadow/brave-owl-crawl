@@ -69,7 +69,7 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
 
   if (!summaryData || sessions.length === 0) {
     return (
-      <Card className="text-center p-8 bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-lg">
+      <Card className="text-center p-8 bg-card backdrop-blur-xl border-white/20 rounded-lg shadow-lg">
         <CardHeader>
           <CardTitle className="text-xl font-semibold mb-4">No summary available.</CardTitle>
         </CardHeader>
@@ -89,7 +89,7 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
       {results.map((result, index) => (
         <li key={`${result.cardId}-${index}`} className={cn(
           "p-3 rounded-md shadow-sm border",
-          result.isCorrect ? 'bg-green-500/10 dark:bg-green-900/20 border-green-200/50 dark:border-green-800/30' : 'bg-red-500/10 dark:bg-red-900/20 border-red-200/50 dark:border-red-800/30'
+          result.isCorrect ? 'bg-green-50/70 dark:bg-green-900/20 border-green-200/50 dark:border-green-800/30' : 'bg-red-50/70 dark:bg-red-900/20 border-red-200/50 dark:border-red-800/30'
         )}>
           <div className="flex items-center justify-between mb-1">
             <p className="font-semibold text-md text-foreground">Term: <span className="text-primary">{result.term}</span></p>
@@ -104,7 +104,7 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
 
   return (
     <div className="w-full space-y-6">
-      <Card className="bg-card/40 backdrop-blur-xl border-white/20 p-6 rounded-xl shadow-lg w-full">
+      <Card className="bg-card backdrop-blur-xl border-white/20 p-6 rounded-xl shadow-lg w-full">
         <CardHeader className="p-0 pb-6">
           <CardTitle className="text-3xl font-bold text-foreground text-center">
             Session Summary
@@ -112,15 +112,15 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
         </CardHeader>
         <CardContent className="p-0">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mb-6">
-            <div className="bg-muted/40 p-4 rounded-lg shadow-sm border border-border">
+            <div className="bg-muted p-4 rounded-lg shadow-sm border border-border">
               <p className="text-lg font-semibold text-foreground">Total Cards Reviewed</p>
               <p className="text-4xl font-bold text-primary">{overallTotal}</p>
             </div>
-            <div className="bg-green-500/20 p-4 rounded-lg shadow-sm border border-green-200/50 dark:border-green-800/50">
+            <div className="bg-green-100/70 dark:bg-green-900/30 p-4 rounded-lg shadow-sm border border-green-200/50 dark:border-green-800/50">
               <p className="text-lg font-semibold text-green-800 dark:text-green-300">Correct Answers</p>
               <p className="text-4xl font-bold text-green-900 dark:text-green-200">{overallCorrect}</p>
             </div>
-            <div className="bg-red-500/20 p-4 rounded-lg shadow-sm border border-red-200/50 dark:border-red-800/50">
+            <div className="bg-red-100/70 dark:bg-red-900/30 p-4 rounded-lg shadow-sm border border-red-200/50 dark:border-red-800/50">
               <p className="text-lg font-semibold text-red-800 dark:text-red-300">Incorrect Answers</p>
               <p className="text-4xl font-bold text-red-900 dark:text-red-200">{overallTotal - overallCorrect}</p>
             </div>
@@ -152,7 +152,7 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
           )}
         </CardContent>
       </Card>
-      <Card className="bg-card/40 backdrop-blur-xl border-white/20">
+      <Card>
         <CardHeader><CardTitle>Deck Actions</CardTitle></CardHeader>
         <CardContent className="space-y-2">
           <Button onClick={onResetProgress} variant="destructive" className="w-full">

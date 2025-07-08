@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, ArrowRight, Repeat, Shuffle, Flag } from 'lucide-react';
 import { CardData, Category } from '@/hooks/flashcards/types';
 import { toast } from 'sonner';
@@ -71,12 +71,12 @@ export function LearnMode({ flashcards, onGradeCard, goToSummary }: LearnModePro
   };
 
   if (flashcards.length === 0) {
-    return <Card className="text-center p-8 bg-card/40 backdrop-blur-xl border-white/20"><CardContent>No flashcards to learn! Add some in "Manage Deck".</CardContent></Card>;
+    return <Card className="text-center p-8"><CardContent>No flashcards to learn! Add some in "Manage Deck".</CardContent></Card>;
   }
 
   return (
     <div className="flex flex-col md:flex-row gap-6 w-full">
-      <Card className="w-full md:w-1/4 bg-card/40 backdrop-blur-xl border-white/20">
+      <Card className="w-full md:w-1/4">
         <CardContent className="p-4 space-y-4">
           <div>
             <Label>Category</Label>
@@ -139,7 +139,7 @@ export function LearnMode({ flashcards, onGradeCard, goToSummary }: LearnModePro
             </div>
           </>
         ) : (
-          <Card className="text-center p-8 bg-card/40 backdrop-blur-xl border-white/20"><CardContent>No cards in this category.</CardContent></Card>
+          <Card className="text-center p-8"><CardContent>No cards in this category.</CardContent></Card>
         )}
       </div>
     </div>

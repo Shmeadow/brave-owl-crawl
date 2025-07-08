@@ -119,7 +119,7 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType }: TestModePro
 
   if (flashcards.length === 0) {
     return (
-      <Card className="text-center p-8 w-full bg-card/40 backdrop-blur-xl border-white/20">
+      <Card className="text-center p-8 w-full">
         <CardContent>
           <p className="text-lg">No flashcards to test.</p>
           <p className="text-muted-foreground">Please add cards in the "Manage Deck" tab.</p>
@@ -131,7 +131,7 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType }: TestModePro
   if (isComplete) {
     const correctCount = sessionResults.filter(r => r.isCorrect).length;
     return (
-      <Card className="text-center p-8 w-full max-w-lg mx-auto bg-card/40 backdrop-blur-xl border-white/20">
+      <Card className="text-center p-8 w-full max-w-lg mx-auto">
         <CardHeader>
           <CardTitle className="text-3xl">Test Complete!</CardTitle>
         </CardHeader>
@@ -162,14 +162,14 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType }: TestModePro
   }
 
   if (!currentCard) {
-    return <Card className="text-center p-8 w-full bg-card/40 backdrop-blur-xl border-white/20"><CardContent>Loading test...</CardContent></Card>;
+    return <Card className="text-center p-8 w-full"><CardContent>Loading test...</CardContent></Card>;
   }
 
   const progressPercentage = testDeck.length > 0 ? ((currentIndex + 1) / testDeck.length) * 100 : 0;
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-4 relative">
-      <Card className="bg-card/40 backdrop-blur-xl border-white/20">
+      <Card>
         <CardHeader className="flex flex-row justify-between items-center">
           <CardTitle>Test Mode</CardTitle>
           <div className="text-sm text-muted-foreground">Card {currentIndex + 1} / {testDeck.length}</div>

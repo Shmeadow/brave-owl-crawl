@@ -235,7 +235,7 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
       <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto py-4">
         <h1 className="text-3xl font-bold text-foreground">Your Calendar</h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
-          <Card className="p-4 flex flex-col items-center bg-card/40 backdrop-blur-xl border-white/20">
+          <Card className="p-4 flex flex-col items-center bg-card backdrop-blur-xl border-white/20">
             <CardHeader className="w-full text-center pb-4">
               <CardTitle className="text-xl">Select a Date</CardTitle>
             </CardHeader>
@@ -251,7 +251,7 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
             </CardContent>
           </Card>
 
-          <Card className="p-4 flex flex-col bg-card/40 backdrop-blur-xl border-white/20">
+          <Card className="p-4 flex flex-col bg-card backdrop-blur-xl border-white/20">
             <CardHeader className="w-full text-center pb-4">
               <CardTitle className="text-xl">
                 Events for {date ? format(date, 'PPP') : 'Selected Date'}
@@ -302,7 +302,7 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
                   <ScrollArea className="flex-1 max-h-[300px] lg:max-h-[unset]">
                     <div className="space-y-2 pr-2">
                       {selectedDayEvents.map((event) => (
-                        <div key={event.id} className="flex items-center justify-between p-2 border rounded-md bg-muted/40 backdrop-blur-xl">
+                        <div key={event.id} className="flex items-center justify-between p-2 border rounded-md bg-muted backdrop-blur-md">
                           <div>
                             <p className="font-medium text-sm">{event.title}</p>
                             {event.description && <p className="text-xs text-muted-foreground">{event.description}</p>}
