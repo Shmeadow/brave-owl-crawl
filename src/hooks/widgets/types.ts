@@ -64,6 +64,9 @@ export const BOTTOM_DOCK_OFFSET = 16;
 export const MINIMIZED_WIDGET_WIDTH = 224;
 export const MINIMIZED_WIDGET_HEIGHT = 48;
 
+export const SIDEBAR_OPEN_OFFSET_X = 20;
+export const SIDEBAR_OPEN_OFFSET_Y = 20;
+
 export const LOCAL_STORAGE_WIDGET_STATE_KEY = 'active_widget_states';
 
 export const clampPosition = (x: number, y: number, width: number, height: number, bounds: MainContentArea) => {

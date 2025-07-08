@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import {
   WidgetState,
   MainContentArea,
@@ -10,9 +10,11 @@ import {
   DOCKED_WIDGET_HEIGHT,
   DOCKED_WIDGET_HORIZONTAL_GAP,
   BOTTOM_DOCK_OFFSET,
-  MINIMIZED_WIDGET_WIDTH, // Import here
-  MINIMIZED_WIDGET_HEIGHT, // Import here
-} from './types'; // Corrected import path
+  MINIMIZED_WIDGET_WIDTH,
+  MINIMIZED_WIDGET_HEIGHT,
+  SIDEBAR_OPEN_OFFSET_X,
+  SIDEBAR_OPEN_OFFSET_Y,
+} from './types';
 import { useSidebar } from "@/components/sidebar/sidebar-context";
 
 interface UseWidgetActionsProps {
@@ -31,9 +33,35 @@ export function useWidgetActions({
   const [maxZIndex, setMaxZIndex] = useState(903); // Initial z-index for new widgets
   const { activePanel, setActivePanel } = useSidebar();
 
-  // Constants for initial placement near sidebar
-  const SIDEBAR_OPEN_OFFSET_X = 80; // Distance from sidebar's left edge
-  const SIDEBAR_OPEN_OFFSET_Y = 80; // Distance from header's top edge
+  // This effect will run whenever the main content area changes (e.g., sidebar toggles).
+  // It ensures that any maximized widget is resized to fit the new available space.
+  useEffect(() => {
+    // Don't run if the area is not calculated yet
+    if (mainContentArea.width === 0 || mainContentArea.height === 0) {
+      return;
+    }
+
+    // Use the functional form of setActiveWidgets to get the latest state
+    // without needing activeWidgets in the dependency array, preventing loops.
+    setActiveWidgets(prevWidgets => {
+      const hasMaximizedWidget = prevWidgets.some(w => w.isMaximized);
+      if (!hasMaximizedWidget) {
+        return prevWidgets; // No change needed if no widgets are maximized
+      }
+
+      // If there is a maximized widget, update its dimensions
+      return prevWidgets.map(widget => {
+        if (widget.isMaximized) {
+          return {
+            ...widget,
+            position: { x: mainContentArea.left, y: mainContentArea.top },
+            size: { width: mainContentArea.width, height: mainContentArea.height },
+          };
+        }
+        return widget;
+      });
+    });
+  }, [mainContentArea, setActiveWidgets]); // Dependency on mainContentArea is key
 
   // This function is now primarily for calculating the *target* position for pinned widgets
   // within the conceptual dock area, even if they are rendered by a separate component.
