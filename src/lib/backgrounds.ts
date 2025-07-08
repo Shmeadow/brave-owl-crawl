@@ -10,12 +10,11 @@ export const staticImages: Background[] = [
 ];
 
 export const animatedBackgrounds: Background[] = [
-  { url: 'https://cdn.pixabay.com/video/2024/02/26/200823-919331549_large.mp4', is_video: true, previewOffset: 5 },
-  { url: 'https://cdn.pixabay.com/video/2023/08/25/177111-856840379_large.mp4', is_video: true, previewOffset: 10 },
-  { url: 'https://cdn.pixabay.com/video/2023/09/14/180013-864514099_large.mp4', is_video: true, previewOffset: 3 },
-  { url: 'https://cdn.pixabay.com/video/2023/02/03/149301-796894311_large.mp4', is_video: true, previewOffset: 8 },
-  { url: 'https://cdn.pixabay.com/video/2022/11/16/139158-772022391_large.mp4', is_video: true, previewOffset: 2 },
-  { url: 'https://cdn.pixabay.com/video/2024/05/27/212056-943923571_large.mp4', is_video: true, previewOffset: 6 },
+  { url: 'https://www.youtube.com/watch?v=M3n9irByaLA', is_video: true },
+  { url: 'https://www.youtube.com/watch?v=edn7FurOFxM', is_video: true },
+  { url: 'https://www.youtube.com/watch?v=IC38LWnquWw', is_video: true },
+  { url: 'https://www.youtube.com/watch?v=yf5NOyy1SXU', is_video: true },
+  { url: 'https://www.youtube.com/watch?v=kLZ4plrttPI', is_video: true },
 ];
 
 export function getRandomBackground(type: 'default' | 'any' = 'any'): Background {
