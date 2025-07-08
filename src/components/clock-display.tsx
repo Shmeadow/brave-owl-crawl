@@ -79,9 +79,11 @@ export function ClockDisplay({ className }: ClockDisplayProps) {
       </div>
       <div className="w-full mt-1 h-2 bg-muted/50 rounded-full overflow-hidden">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-day-start to-day-end transition-all duration-1000 ease-linear shadow-[0_0_4px_hsl(var(--day-start))]"
+          className="relative h-full rounded-full bg-gradient-to-r from-day-start to-day-end transition-all duration-1000 ease-linear shadow-[0_0_4px_hsl(var(--day-start))] overflow-hidden shimmer-effect"
           style={{ width: `${dailyProgress}%` }}
-        />
+        >
+          {/* Shimmer effect is applied via CSS pseudo-element */}
+        </div>
       </div>
     </div>
   );
