@@ -10,11 +10,11 @@ export const staticImages: Background[] = [
 ];
 
 export const animatedBackgrounds: Background[] = [
-  { url: 'https://www.youtube.com/watch?v=M3n9irByaLA', is_video: true },
-  { url: 'https://www.youtube.com/watch?v=edn7FurOFxM', is_video: true },
-  { url: 'https://www.youtube.com/watch?v=IC38LWnquWw', is_video: true },
-  { url: 'https://www.youtube.com/watch?v=yf5NOyy1SXU', is_video: true },
-  { url: 'https://www.youtube.com/watch?v=kLZ4plrttPI', is_video: true },
+  { url: '/videos/animated/lofi_girl_study.mp4', is_video: true, previewOffset: 5 },
+  { url: '/videos/animated/train_window_rain.mp4', is_video: true, previewOffset: 3 },
+  { url: '/videos/animated/cozy_room_fireplace.mp4', is_video: true, previewOffset: 2 },
+  { url: '/videos/animated/fantasy_library.mp4', is_video: true, previewOffset: 4 },
+  { url: '/videos/animated/space_view.mp4', is_video: true, previewOffset: 6 },
 ];
 
 export function getRandomBackground(type: 'default' | 'any' = 'any'): Background {

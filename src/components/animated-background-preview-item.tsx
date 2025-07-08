@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState, useRef } from 'react';
-import { Image as ImageIcon, Youtube } from 'lucide-react';
+import { Image as ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getYouTubeContentIdAndType } from '@/lib/utils';
 
 interface AnimatedBackgroundPreviewItemProps {
   videoUrl: string;
@@ -15,10 +14,6 @@ interface AnimatedBackgroundPreviewItemProps {
 export function AnimatedBackgroundPreviewItem({ videoUrl, isActive, onClick, previewOffset }: AnimatedBackgroundPreviewItemProps) {
   const [videoError, setVideoError] = useState(false);
   const videoElementRef = useRef<HTMLVideoElement>(null);
-
-  const isYouTube = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be');
-  const { id: youtubeId } = isYouTube ? getYouTubeContentIdAndType(videoUrl) : { id: null };
-  const thumbnailUrl = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null;
 
   const handleVideoError = () => {
     setVideoError(true);
@@ -40,14 +35,7 @@ export function AnimatedBackgroundPreviewItem({ videoUrl, isActive, onClick, pre
       )}
       onClick={() => onClick(videoUrl, true)}
     >
-      {isYouTube && thumbnailUrl ? (
-        <>
-          <img src={thumbnailUrl} alt="YouTube thumbnail" className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 text-white opacity-0 group-hover:opacity-100 transition-opacity">
-            <Youtube className="h-8 w-8" />
-          </div>
-        </>
-      ) : !videoError ? (
+      {!videoError ? (
         <video
           ref={videoElementRef}
           src={videoUrl}
