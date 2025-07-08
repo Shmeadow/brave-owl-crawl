@@ -3,7 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useSupabase } from "@/integrations/supabase/auth";
-import { SidebarProvider } from "@/components/sidebar/sidebar-context";
+import { useSidebar } from "@/components/sidebar/sidebar-context";
+import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
+import { Toaster } from "@/components/ui/sonner";
+import { Sidebar } from "@/components/sidebar/sidebar";
 import { LoadingScreen } from "@/components/loading-screen";
 import { WidgetProvider } from "@/components/widget/widget-provider";
 import { WidgetContainer } from "@/components/widget/widget-container";
@@ -16,27 +19,36 @@ import { RainEffect } from "@/components/effects/rain-effect";
 import { SnowEffect } from "@/components/effects/snow-effect";
 import { RaindropsEffect } from "@/components/effects/raindrops-effect";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useNotifications } from "@/hooks/use-notifications";
+import { cn } from "@/lib/utils";
 import { AmbientSoundProvider } from "@/context/ambient-sound-provider";
 import { PlayingSoundsBar } from "@/components/playing-sounds-bar";
 import { MobileControls } from "@/components/mobile-controls";
 import { FocusSessionProvider } from "@/context/focus-session-provider";
 import { WelcomeBackModal } from "@/components/welcome-back-modal";
 import { useGoals } from "@/hooks/use-goals";
-import { PinnedWidgetsDock } from "@/components/pinned-widgets-dock";
-import { useWidget } from "@/components/widget/widget-provider";
-import { MagicDock } from "@/components/magic-dock";
+import { PinnedWidgetsDock } from "@/components/pinned-widgets-dock"; // Import PinnedWidgetsDock
+import { useWidget } from "@/components/widget/widget-provider"; // Import useWidget to get pinnedWidgets
 
-const HEADER_HEIGHT = 64;
+// Constants for layout dimensions
+const HEADER_HEIGHT = 64; // px
+const SIDEBAR_WIDTH_DESKTOP = 60; // px
 
 export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
   const { loading, session, profile } = useSupabase();
   const pathname = usePathname();
+  const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
+  const { isAlwaysOpen, mounted } = useSidebarPreference();
   const { isCurrentRoomWritable } = useCurrentRoom();
   const { activeEffect } = useEffects();
   const isMobile = useIsMobile();
+  const { addNotification } = useNotifications();
   const { goals } = useGoals();
 
+  const [sidebarCurrentWidth, setSidebarCurrentWidth] = useState(0);
   const [mainContentArea, setMainContentArea] = useState({ left: 0, top: 0, width: 0, height: 0 });
+
+  // State for Header and related components
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [isPomodoroMinimized, setIsPomodoroMinimized] = useState(true);
@@ -45,12 +57,18 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const chatPanelWidth = isChatOpen ? 320 : 56;
   const isDashboard = pathname === '/dashboard';
 
-  const handleNewUnreadMessage = () => setUnreadChatCount((prev) => prev + 1);
-  const handleClearUnreadMessages = () => setUnreadChatCount(0);
+  const handleNewUnreadMessage = () => {
+    setUnreadChatCount((prev) => prev + 1);
+  };
+
+  const handleClearUnreadMessages = () => {
+    setUnreadChatCount(0);
+  };
 
   useEffect(() => {
+    // Show welcome back modal only once per session
     const welcomeBackShown = sessionStorage.getItem('welcomeBackShown');
-    if (!welcomeBackShown && session) {
+    if (!welcomeBackShown && session) { // Only show if logged in
       setShowWelcomeBack(true);
       sessionStorage.setItem('welcomeBackShown', 'true');
     }
@@ -59,13 +77,23 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const firstIncompleteGoal = goals.find(g => !g.completed) || null;
 
   useEffect(() => {
+    const newSidebarWidth = isMobile ? 0 : (mounted && isAlwaysOpen || isSidebarOpen ? SIDEBAR_WIDTH_DESKTOP : 0);
+    setSidebarCurrentWidth(newSidebarWidth);
+
+    if (isMobile && isSidebarOpen && !isAlwaysOpen) {
+      setIsSidebarOpen(false);
+    }
+  }, [isSidebarOpen, isAlwaysOpen, mounted, isMobile, setIsSidebarOpen]);
+
+  useEffect(() => {
     const calculateArea = () => {
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
+
       setMainContentArea({
-        left: 0,
+        left: isMobile ? 0 : sidebarCurrentWidth,
         top: HEADER_HEIGHT,
-        width: windowWidth,
+        width: isMobile ? windowWidth : windowWidth - sidebarCurrentWidth,
         height: windowHeight - HEADER_HEIGHT,
       });
     };
@@ -73,7 +101,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     calculateArea();
     window.addEventListener('resize', calculateArea);
     return () => window.removeEventListener('resize', calculateArea);
-  }, []);
+  }, [sidebarCurrentWidth, isMobile]);
 
   if (loading) {
     return <LoadingScreen />;
@@ -83,9 +111,11 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     return <>{children}</>;
   }
 
+  // Render the main application layout
   return (
     <AmbientSoundProvider>
       <FocusSessionProvider>
+        {/* WidgetProvider wraps everything that needs widget context */}
         <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea}>
           <div className="relative h-screen bg-transparent">
             {activeEffect === 'rain' && <RainEffect />}
@@ -98,7 +128,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               onClearUnreadMessages={handleClearUnreadMessages}
               unreadChatCount={unreadChatCount}
               isMobile={isMobile}
-              onToggleSidebar={() => {}} // No-op for now, can be used for mobile drawer later
+              onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
             />
             <WelcomeBackModal
               isOpen={showWelcomeBack}
@@ -107,17 +137,25 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               firstGoal={firstIncompleteGoal}
             />
             <PlayingSoundsBar isMobile={isMobile} />
-            <MagicDock />
+            <Sidebar isMobile={isMobile} />
             
-            <main className="flex-1 relative overflow-y-auto bg-transparent pt-16">
-              <div className="p-4 sm:p-6 lg:p-8 h-full">
-                {children}
-                {isDashboard && (
-                  <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} isMobile={isMobile} />
-                )}
-              </div>
-            </main>
+            {/* Main content area, where widgets and page content live */}
+            <div
+              className="absolute top-16 right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
+              style={{ left: `${sidebarCurrentWidth}px` }}
+            >
+              <main className="flex-1 relative overflow-y-auto bg-transparent">
+                <div className="p-4 sm:p-6 lg:p-8 h-full">
+                  {children}
+                  {isDashboard && (
+                    // WidgetContainer now renders ALL widgets, managing their visibility internally
+                    <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} isMobile={isMobile} />
+                  )}
+                </div>
+              </main>
+            </div>
             
+            {/* PinnedWidgetsDock is now a sibling to WidgetContainer, ensuring independence */}
             {isDashboard && <IndependentPinnedWidgetsDock isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />}
 
             {isDashboard && isMobile && (
@@ -143,6 +181,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
                 <SimpleAudioPlayer isMobile={isMobile} />
               </>
             )}
+
+            <Toaster />
           </div>
         </WidgetProvider>
       </FocusSessionProvider>
@@ -150,6 +190,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   );
 }
 
+// Create a wrapper component for PinnedWidgetsDock to access useWidget
 function IndependentPinnedWidgetsDock({ isCurrentRoomWritable, mainContentArea }: { isCurrentRoomWritable: boolean; mainContentArea: any }) {
   const { activeWidgets } = useWidget();
   const pinnedWidgets = activeWidgets.filter(widget => widget.isPinned);

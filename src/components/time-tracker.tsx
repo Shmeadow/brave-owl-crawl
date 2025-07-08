@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, RotateCcw } from "lucide-react";
-import { useNotification } from "@/hooks/use-notification";
+import { toast } from "sonner";
 
 interface TimeTrackerProps {
   isCurrentRoomWritable: boolean;
@@ -13,7 +13,6 @@ export function TimeTracker({ isCurrentRoomWritable }: TimeTrackerProps) {
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const { addNotification } = useNotification();
 
   useEffect(() => {
     if (isRunning) {
@@ -42,47 +41,47 @@ export function TimeTracker({ isCurrentRoomWritable }: TimeTrackerProps) {
 
   const handleStartPause = () => {
     if (!isCurrentRoomWritable) {
-      addNotification({ title: 'Permission Denied', message: "You do not have permission to control the time tracker in this room.", type: 'error' });
+      toast.error("You do not have permission to control the time tracker in this room.");
       return;
     }
     setIsRunning(!isRunning);
-    addNotification({ title: 'Time Tracker', message: isRunning ? "Tracking paused." : "Tracking started!", type: 'info' });
+    toast.info(isRunning ? "Time tracking paused." : "Time tracking started!");
   };
 
   const handleReset = () => {
     if (!isCurrentRoomWritable) {
-      addNotification({ title: 'Permission Denied', message: "You do not have permission to reset the time tracker in this room.", type: 'error' });
+      toast.error("You do not have permission to reset the time tracker in this room.");
       return;
     }
     setIsRunning(false);
     setTime(0);
-    addNotification({ title: 'Time Tracker', message: "Tracking reset.", type: 'warning' });
+    toast.warning("Time tracking reset.");
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full gap-3">
-      <div className="text-5xl font-bold font-mono text-foreground tabular-nums">
+    <div className="flex flex-col items-center justify-center h-full w-full gap-4">
+      <div className="text-6xl font-bold font-mono text-foreground tabular-nums">
         {formatTime(time)}
       </div>
-      <div className="flex gap-3">
+      <div className="flex gap-4">
         <Button 
           onClick={handleStartPause} 
           size="icon" 
-          className="h-10 w-10 rounded-full"
+          className="h-12 w-12 rounded-full"
           disabled={!isCurrentRoomWritable}
           aria-label={isRunning ? "Pause" : "Start"}
         >
-          {isRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+          {isRunning ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
         </Button>
         <Button 
           onClick={handleReset} 
           size="icon" 
           variant="secondary" 
-          className="h-10 w-10 rounded-full"
+          className="h-12 w-12 rounded-full"
           disabled={!isCurrentRoomWritable}
           aria-label="Reset"
         >
-          <RotateCcw className="h-5 w-5" />
+          <RotateCcw className="h-6 w-6" />
         </Button>
       </div>
     </div>

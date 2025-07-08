@@ -10,9 +10,8 @@ import { BackgroundProvider } from "@/context/background-provider";
 import { BackgroundBlurProvider } from "@/context/background-blur-provider";
 import { EffectProvider } from "@/context/effect-provider";
 import { ClientOnlyWrapper } from '@/components/client-only-wrapper';
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { getRandomBackground } from '@/lib/backgrounds';
-import { NotificationProvider } from "@/context/notification-provider";
+import { SpeedInsights } from "@vercel/speed-insights/next"; // Corrected import for Next.js App Router
+import { getRandomBackground } from '@/lib/backgrounds'; // Import getRandomBackground
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +28,7 @@ export const metadata: Metadata = {
   description: "Your all-in-one productivity tool.",
 };
 
+// Define initial configurations for all widgets here to pass to WidgetProvider
 const WIDGET_CONFIGS = {
   "spaces": { initialPosition: { x: 150, y: 100 }, initialWidth: 600, initialHeight: 600 },
   "sounds": { initialPosition: { x: 800, y: 150 }, initialWidth: 400, initialHeight: 500 },
@@ -43,14 +43,23 @@ const WIDGET_CONFIGS = {
   "background-effects": { initialPosition: { x: 900, y: 100 }, initialWidth: 400, initialHeight: 500 },
 };
 
+// Constants for layout dimensions (needed for mainContentArea calculation)
+const HEADER_HEIGHT = 64; // px
+const SIDEBAR_WIDTH = 60; // px
+const CHAT_PANEL_WIDTH_OPEN = 320; // px
+const CHAT_PANEL_WIDTH_CLOSED = 56; // px
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Server-side Supabase client for fetching app settings
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  let isCozyThemeGloballyEnabled = true;
+  let isCozyThemeGloballyEnabled = true; // Default to true
+
+  // Generate a random background on the server
   const initialBackground = getRandomBackground();
 
   if (supabaseUrl && supabaseAnonKey) {
@@ -62,7 +71,7 @@ export default async function RootLayout({
         .single();
 
       if (error) {
-        console.error("Error fetching server-side app settings:", error.message || error);
+        console.error("Error fetching server-side app settings:", error.message || error); // Log error message
       } else if (data) {
         isCozyThemeGloballyEnabled = data.is_cozy_theme_enabled;
       }
@@ -70,7 +79,7 @@ export default async function RootLayout({
       console.error("Error initializing server-side Supabase client or fetching settings:", e);
     }
   } else {
-    console.warn('Supabase environment variables not set for server-side fetching.');
+    console.warn('Supabase environment variables not set for server-side fetching. NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is missing.');
   }
 
   return (
@@ -79,29 +88,27 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
         <SessionContextProvider>
-          <NotificationProvider>
-            <BackgroundBlurProvider>
-              <EffectProvider>
-                <BackgroundProvider initialBackground={initialBackground}>
-                  <ThemeProvider
-                    attribute="class"
-                    defaultTheme="system"
-                    enableSystem
-                    disableTransitionOnChange
-                    isCozyThemeGloballyEnabled={isCozyThemeGloballyEnabled}
-                  >
-                    <SidebarProvider>
-                      <ClientOnlyWrapper>
-                        <AppWrapper initialWidgetConfigs={WIDGET_CONFIGS}>
-                          {children}
-                        </AppWrapper>
-                      </ClientOnlyWrapper>
-                    </SidebarProvider>
-                  </ThemeProvider>
-                </BackgroundProvider>
-              </EffectProvider>
-            </BackgroundBlurProvider>
-          </NotificationProvider>
+          <BackgroundBlurProvider>
+            <EffectProvider>
+              <BackgroundProvider initialBackground={initialBackground}>
+                <ThemeProvider
+                  attribute="class"
+                  defaultTheme="system"
+                  enableSystem
+                  disableTransitionOnChange
+                  isCozyThemeGloballyEnabled={isCozyThemeGloballyEnabled}
+                >
+                  <SidebarProvider>
+                    <ClientOnlyWrapper>
+                      <AppWrapper initialWidgetConfigs={WIDGET_CONFIGS}>
+                        {children}
+                      </AppWrapper>
+                    </ClientOnlyWrapper>
+                  </SidebarProvider>
+                </ThemeProvider>
+              </BackgroundProvider>
+            </EffectProvider>
+          </BackgroundBlurProvider>
         </SessionContextProvider>
         <SpeedInsights />
       </body>
