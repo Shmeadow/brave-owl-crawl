@@ -22,17 +22,16 @@ export function SidebarItem({ icon: Icon, label, isActive, onClick, isExpanded }
           <Button
             variant="ghost"
             className={cn(
-              "relative h-12 w-12 rounded-full transition-all duration-200 flex items-center justify-center", // Fixed size and centered content
+              "relative h-11 w-11 rounded-full transition-all duration-200 flex items-center justify-center", // Reduced size
               "bg-transparent text-white/70 hover:bg-white/10 hover:text-white",
               isActive && "bg-white/20 text-white ring-inset ring-2 ring-white/50 box-border"
             )}
             onClick={onClick}
           >
-            <Icon className="h-6 w-6" /> {/* No conditional margin-bottom */}
+            <Icon className="h-5 w-5" /> {/* Reduced icon size */}
             <span className="sr-only">{label}</span>
           </Button>
         </TooltipTrigger>
-        {/* TooltipContent always appears on hover, regardless of isExpanded */}
         <TooltipContent side="right" className="ml-2">
           {label}
         </TooltipContent>

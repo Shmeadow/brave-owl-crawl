@@ -10,6 +10,7 @@ export interface GoalData {
   title: string;
   completed: boolean;
   created_at: string;
+  completed_at: string | null; // New field
 }
 
 const LOCAL_STORAGE_KEY = 'guest_goals';
@@ -29,9 +30,6 @@ export function useGoals() {
       if (session && supabase) {
         // User is logged in
         setIsLoggedInMode(true);
-        // console.log("User logged in. Checking for local goals to migrate..."); // Removed for cleaner logs
-
-        // 1. Load local goals (if any)
         const localGoalsString = localStorage.getItem(LOCAL_STORAGE_KEY);
         let localGoals: GoalData[] = [];
         try {
@@ -41,7 +39,6 @@ export function useGoals() {
           localGoals = [];
         }
 
-        // 2. Fetch user's existing goals from Supabase
         const { data: supabaseGoals, error: fetchError } = await supabase
           .from('goals')
           .select('*')
@@ -55,11 +52,8 @@ export function useGoals() {
         } else {
           let mergedGoals = [...(supabaseGoals as GoalData[])];
 
-          // 3. Migrate local goals to Supabase if they don't already exist
           if (localGoals.length > 0) {
-            // console.log(`Found ${localGoals.length} local goals. Attempting migration...`); // Removed for cleaner logs
             for (const localGoal of localGoals) {
-              // Check if a similar goal (by title) already exists in Supabase for this user
               const existsInSupabase = mergedGoals.some(
                 sg => sg.title === localGoal.title
               );
@@ -71,7 +65,8 @@ export function useGoals() {
                     user_id: session.user.id,
                     title: localGoal.title,
                     completed: localGoal.completed,
-                    created_at: localGoal.created_at || new Date().toISOString(), // Ensure created_at
+                    created_at: localGoal.created_at || new Date().toISOString(),
+                    completed_at: localGoal.completed_at || null,
                   })
                   .select()
                   .single();
@@ -81,11 +76,9 @@ export function useGoals() {
                   toast.error("Error migrating some local goals.");
                 } else if (newSupabaseGoal) {
                   mergedGoals.push(newSupabaseGoal as GoalData);
-                  // console.log("Migrated local goal:", newSupabaseGoal.title); // Removed for cleaner logs
                 }
               }
             }
-            // Clear local storage after migration attempt
             localStorage.removeItem(LOCAL_STORAGE_KEY);
             toast.success("Local goals migrated to your account!");
           }
@@ -145,6 +138,7 @@ export function useGoals() {
         title: title,
         completed: false,
         created_at: new Date().toISOString(),
+        completed_at: null,
       };
       setGoals((prevGoals) => [...prevGoals, newGoal]);
       toast.success("Goal added successfully (saved locally)!");
@@ -156,11 +150,12 @@ export function useGoals() {
     if (!goalToUpdate) return;
 
     const newCompletedStatus = !currentCompleted;
+    const newCompletedAt = newCompletedStatus ? new Date().toISOString() : null;
 
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase
         .from('goals')
-        .update({ completed: newCompletedStatus })
+        .update({ completed: newCompletedStatus, completed_at: newCompletedAt })
         .eq('id', goalId)
         .eq('user_id', session.user.id)
         .select()
@@ -179,7 +174,7 @@ export function useGoals() {
       }
     } else {
       setGoals(prevGoals => prevGoals.map(goal =>
-        goal.id === goalId ? { ...goal, completed: newCompletedStatus } : goal
+        goal.id === goalId ? { ...goal, completed: newCompletedStatus, completed_at: newCompletedAt } : goal
       ));
       if (newCompletedStatus) {
         toast.success("🎉 Goal Complete! Great job!");

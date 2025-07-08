@@ -19,10 +19,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SpacesWidget } from "@/components/widget-content/spaces-widget";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useRooms } from "@/hooks/use-rooms";
+import { toast } from "sonner";
+import Link from "next/link";
 import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
-import { useRooms } from "@/hooks/use-rooms"; // Import useRooms for join functionality
-import { toast } from "sonner"; // Import toast for notifications
-import Link from "next/link"; // Import Link
 
 interface HeaderProps {
   onToggleChat: () => void;
@@ -38,9 +38,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
   const { session } = useSupabase();
   const router = useRouter();
   const { currentRoomName, currentRoomId, isCurrentRoomWritable, setCurrentRoom } = useCurrentRoom();
-  const { handleJoinRoomByRoomId } = useRooms(); // Use the hook for joining rooms
-
-  // Removed roomInput state and handleJoinRoom function
+  const { handleJoinRoomByRoomId } = useRooms();
 
   const handleCopyRoomId = () => {
     if (currentRoomId) {
@@ -61,7 +59,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
             onClick={onToggleSidebar}
             title="Open Menu"
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-5 w-5" />
             <span className="sr-only">Open Menu</span>
           </Button>
         )}
@@ -70,12 +68,11 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         </Link>
         <Link href="/dashboard" className="flex items-center space-x-2 mr-4">
           <Button variant="ghost" size="icon" title="Home">
-            <Home className="h-6 w-6" />
+            <Home className="h-5 w-5" />
             <span className="sr-only">Home</span>
           </Button>
         </Link>
 
-        {/* This div will contain the dynamic room/user info and take flexible space */}
         <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
           {!isMobile && currentRoomId && (
             <span
@@ -106,16 +103,14 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         </div>
       </div>
 
-      <div className="flex items-center gap-4 ml-auto pr-4">
-        {/* Removed Join Room Input and Button */}
-
+      <div className="flex items-center gap-2 ml-auto pr-4">
         <ClockDisplay className="hidden md:flex" />
         <BackgroundBlurSlider className="hidden md:flex" />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" title="Manage Spaces">
-              <LayoutGrid className="h-6 w-6" />
+              <LayoutGrid className="h-5 w-5" />
               <span className="sr-only">Manage Spaces</span>
             </Button>
           </DropdownMenuTrigger>
@@ -139,7 +134,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
             title="Open Chat"
             className="relative"
           >
-            <MessageSquare className="h-6 w-6" />
+            <MessageSquare className="h-5 w-5" />
             <span className="sr-only">Open Chat</span>
             {unreadChatCount > 0 && (
               <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
