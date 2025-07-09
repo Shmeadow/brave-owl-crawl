@@ -74,16 +74,20 @@ export function TimeAndProgressDisplay({ className }: TimeAndProgressDisplayProp
       let newGradient;
       if (nowTime < sunrise) {
         // Night to sunrise (dark blue-purple to muted orange-brown)
-        newGradient = 'linear-gradient(to right, hsl(240 20% 15%), hsl(30 40% 30%))';
+        // Start with a deep night color, transition to a pre-dawn/early morning hue
+        newGradient = 'linear-gradient(to right, hsl(240 20% 10%), hsl(25 30% 25%))';
       } else if (nowTime < times.solarNoon.getTime()) {
         // Sunrise to noon (muted green to soft yellow)
-        newGradient = 'linear-gradient(to right, hsl(120 20% 50%), hsl(40 60% 70%))';
+        // Transition from a vibrant morning gold to a bright day yellow
+        newGradient = 'linear-gradient(to right, hsl(45 90% 55%), hsl(50 80% 70%))'; // Using --gold and a brighter yellow
       } else if (nowTime < sunset) {
         // Noon to sunset (soft yellow to warm orange)
-        newGradient = 'linear-gradient(to right, hsl(40 60% 70%), hsl(15 70% 50%))';
+        // Transition from bright day yellow to a rich sunset orange
+        newGradient = 'linear-gradient(to right, hsl(50 80% 70%), hsl(15 85% 55%))'; // Brighter yellow to more saturated orange
       } else {
         // Sunset to night (warm orange to dark blue-purple)
-        newGradient = 'linear-gradient(to right, hsl(15 70% 50%), hsl(240 20% 15%))';
+        // Transition from rich sunset orange back to deep night color
+        newGradient = 'linear-gradient(to right, hsl(15 85% 55%), hsl(240 20% 10%))';
       }
       setGradient(newGradient);
     };
@@ -106,7 +110,7 @@ export function TimeAndProgressDisplay({ className }: TimeAndProgressDisplayProp
         <div id="clock" className="text-xl font-bold leading-none text-foreground">{currentTimeStr}</div>
         <div id="date" className="text-xs leading-none">{currentDateStr}</div>
       </div>
-      <div className="w-full mt-1 h-2 bg-muted/50 rounded-full overflow-hidden relative"> {/* Changed h-1.5 to h-2 */}
+      <div className="w-full mt-1 h-2 rounded-full overflow-hidden relative" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
         <div
           className="h-full rounded-full transition-all duration-1000 ease-linear relative overflow-hidden"
           style={{ width: `${dailyProgress}%`, background: gradient }}
