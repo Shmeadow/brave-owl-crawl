@@ -38,13 +38,79 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
       return;
     }
 
-    // If direct join is attempted without invitation, inform user
+    // If room has a password, prevent direct join by ID
+    if (room.password_hash) {
+      toast.error("This room is password protected. Please use the 'Join by Password' section.");
+      return;
+    }
+
+    // For non-password protected rooms, direct join is not allowed without invitation
     toast.info("You need an invitation from the room owner to join this room.");
     // Optionally, you could add logic here to prompt sending an invitation request to the owner.
 
   }, [session, supabase, rooms]);
 
-  // Removed handleJoinRoomByPassword
+  const handleJoinRoomByPassword = useCallback(async (roomId: string, passwordAttempt: string) => {
+    if (!session?.user?.id || !supabase) {
+      toast.error("You must be logged in to join a room.");
+      return;
+    }
+
+    const room = rooms.find(r => r.id === roomId);
+
+    if (!room) {
+      toast.error("Room not found.");
+      return;
+    }
+
+    if (!room.password_hash) {
+      toast.error("This room does not require a password. Use 'Join by ID' instead.");
+      return;
+    }
+
+    if (room.creator_id === session.user.id) {
+      toast.info("You are the creator of this room.");
+      return;
+    }
+
+    if (room.is_member) {
+      toast.info("You are already a member of this room.");
+      return;
+    }
+
+    // Use the check_password RPC function
+    const { data: passwordMatch, error: rpcError } = await supabase.rpc('check_password', {
+      _password_attempt: passwordAttempt,
+      _password_hash: room.password_hash,
+    });
+
+    if (rpcError) {
+      console.error("Error checking password:", rpcError);
+      toast.error("An error occurred while verifying password.");
+      return;
+    }
+
+    if (!passwordMatch) {
+      toast.error("Incorrect password.");
+      return;
+    }
+
+    // If password matches, insert into room_members
+    const { error: memberInsertError } = await supabase
+      .from('room_members')
+      .insert({ room_id: roomId, user_id: session.user.id });
+
+    if (memberInsertError) {
+      toast.error("Error joining room: " + memberInsertError.message);
+      console.error("Error inserting room member:", memberInsertError);
+      return;
+    }
+
+    toast.success(`You successfully joined "${room.name}"!`);
+    fetchRooms(); // Re-fetch rooms to update membership status
+    addNotification(`You joined the room: "${room.name}".`);
+
+  }, [session, supabase, rooms, fetchRooms, addNotification]);
 
   const handleLeaveRoom = useCallback(async (roomId: string) => {
     if (!session?.user?.id || !supabase) {
@@ -164,6 +230,7 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
 
   return {
     handleJoinRoomByRoomId,
+    handleJoinRoomByPassword,
     handleLeaveRoom,
     handleKickUser,
     handleAcceptInvitation,
