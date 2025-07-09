@@ -26,17 +26,21 @@ export function LoginFeatureSection() {
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.7, ease: "easeOut" }}
       className={cn(
-        "relative hidden lg:flex flex-col items-center justify-center p-10",
-        "bg-background/50 backdrop-blur-xl border-l border-white/20"
+        "relative hidden lg:flex flex-col items-center justify-center",
+        "bg-background/50 backdrop-blur-xl border-l border-white/20",
+        "py-20 px-12", // Increased vertical padding and horizontal padding
+        "text-center" // Ensure text is centered
       )}
     >
-      <div className="text-center mb-8">
-        <h2 className="text-4xl font-bold text-foreground mb-2">Welcome to CozyHub</h2>
-        <p className="text-xl text-muted-foreground">
+      <div className="text-center mb-12"> {/* Increased mb-8 to mb-12 */}
+        <h2 className="text-5xl font-extrabold text-foreground mb-4 leading-tight"> {/* Increased font size, weight, and added leading-tight */}
+          Welcome to <span className="text-primary">CozyHub</span>
+        </h2>
+        <p className="text-2xl text-muted-foreground max-w-2xl mx-auto"> {/* Increased font size, added max-width */}
           Your all-in-one productivity and focus sanctuary.
         </p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full"> {/* Increased gap-6 to gap-8, max-w-3xl to max-w-4xl */}
         {features.map((feature, index) => (
           <LoginFeatureCard
             key={index}
