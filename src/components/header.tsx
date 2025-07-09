@@ -25,6 +25,7 @@ import { NotificationsDropdown } from "@/components/notifications/notifications-
 import { useWidget } from "@/components/widget/widget-provider";
 import { RoomSettingsDialog } from "@/components/room-settings-dialog";
 import { UserNameCapsule } from "./user-name-capsule"; // Import new component
+import { cn } from "@/lib/utils"; // Import cn for styling
 
 interface HeaderProps {
   onToggleChat: () => void;
@@ -71,45 +72,50 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
             <span className="sr-only">Open Menu</span>
           </Button>
         )}
-        <Link href="/dashboard" className="flex items-center space-x-2 mr-4">
-          <h1 className="text-2xl font-bold text-primary">CozyHub</h1>
-        </Link>
-        <Link href="/dashboard" className="flex items-center space-x-2 mr-4">
-          <Button variant="ghost" size="icon" title="Home">
-            <Home className="h-5 w-5" />
-            <span className="sr-only">Home</span>
-          </Button>
-        </Link>
+        <div className={cn(
+          "bg-card/50 backdrop-blur-xl border border-white/20 rounded-full px-4 py-2",
+          "flex items-center gap-2"
+        )}>
+          <Link href="/dashboard" className="flex items-center space-x-2">
+            <h1 className="text-2xl font-bold text-primary">CozyHub</h1>
+          </Link>
+          <Link href="/dashboard" className="flex items-center space-x-2">
+            <Button variant="ghost" size="icon" title="Home">
+              <Home className="h-5 w-5" />
+              <span className="sr-only">Home</span>
+            </Button>
+          </Link>
 
-        <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
-          <h1 className="text-xl font-semibold flex items-center gap-2 overflow-hidden whitespace-nowrap text-ellipsis flex-1 min-w-0">
-            {!isMobile && session?.user?.id && (
-              <span
-                className="text-sm font-mono text-muted-foreground cursor-pointer flex items-center gap-1 hover:text-foreground transition-colors flex-shrink-0"
-                onClick={() => {
-                  navigator.clipboard.writeText(session.user.id);
-                  toast.success("Your User ID copied to clipboard!");
-                }}
-                title="Copy Your User ID"
-              >
-                ({session.user.id.substring(0, 6)})
-                <Copy className="h-3 w-3" />
-              </span>
-            )}
-            <span className="truncate">{currentRoomName}</span>
-            {isOwnerOfCurrentRoom && currentRoomId && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsRoomSettingsOpen(true)}
-                title="Room Settings"
-                className="ml-1 h-7 w-7 text-muted-foreground hover:text-primary"
-              >
-                <Settings className="h-4 w-4" />
-                <span className="sr-only">Room Settings</span>
-              </Button>
-            )}
-          </h1>
+          <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
+            <h1 className="text-xl font-semibold flex items-center gap-2 overflow-hidden whitespace-nowrap text-ellipsis flex-1 min-w-0">
+              {!isMobile && session?.user?.id && (
+                <span
+                  className="text-sm font-mono text-muted-foreground cursor-pointer flex items-center gap-1 hover:text-foreground transition-colors flex-shrink-0"
+                  onClick={() => {
+                    navigator.clipboard.writeText(session.user.id);
+                    toast.success("Your User ID copied to clipboard!");
+                  }}
+                  title="Copy Your User ID"
+                >
+                  ({session.user.id.substring(0, 6)})
+                  <Copy className="h-3 w-3" />
+                </span>
+              )}
+              <span className="truncate">{currentRoomName}</span>
+              {isOwnerOfCurrentRoom && currentRoomId && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsRoomSettingsOpen(true)}
+                  title="Room Settings"
+                  className="ml-1 h-7 w-7 text-muted-foreground hover:text-primary"
+                >
+                  <Settings className="h-4 w-4" />
+                  <span className="sr-only">Room Settings</span>
+                </Button>
+              )}
+            </h1>
+          </div>
         </div>
       </div>
 

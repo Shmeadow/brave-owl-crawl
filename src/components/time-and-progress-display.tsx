@@ -106,7 +106,7 @@ export function TimeAndProgressDisplay({ className }: TimeAndProgressDisplayProp
         <div id="clock" className="text-xl font-bold leading-none text-foreground">{currentTimeStr}</div>
         <div id="date" className="text-xs leading-none">{currentDateStr}</div>
       </div>
-      <div className="w-24 mt-1 h-1.5 bg-muted/50 rounded-full overflow-hidden relative">
+      <div className="w-full mt-1 h-1.5 bg-muted/50 rounded-full overflow-hidden relative">
         <div
           className="h-full rounded-full transition-all duration-1000 ease-linear relative overflow-hidden"
           style={{ width: `${dailyProgress}%`, background: gradient }}
