@@ -12,7 +12,7 @@
 
 .plantShape {
   position: absolute;
-  background-color: hsl(var(--foreground) / 0.2); /* Increased base transparency */
+  background-color: black; /* Changed to solid black */
   border-radius: 50%; /* Start with circular shapes */
   filter: blur(30px); /* Heavy blur for soft edges */
   transform-origin: center center; /* Ensure rotation is from center */

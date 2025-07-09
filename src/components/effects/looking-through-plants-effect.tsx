@@ -59,8 +59,8 @@ export function LookingThroughPlantsEffect() {
       // Random rotation for variety
       shape.style.transform = `rotate(${Math.random() * 360}deg)`;
 
-      // Random opacity
-      shape.style.opacity = `${0.2 + Math.random() * 0.3}`; // More noticeable opacity (0.2 to 0.5)
+      // Removed: Random opacity, as shapes are now solid black
+      // shape.style.opacity = `${0.2 + Math.random() * 0.3}`; 
 
       container.appendChild(shape);
       shapes.push(shape);
