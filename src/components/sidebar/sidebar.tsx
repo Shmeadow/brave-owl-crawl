@@ -116,10 +116,10 @@ export function Sidebar({ isMobile }: SidebarProps) {
     <div
       ref={sidebarRef}
       className={cn(
-        "fixed top-16 z-[902] flex flex-col items-center py-4",
-        "bg-card/40 backdrop-blur-xl shadow-lg shadow-black/30 transition-transform duration-300 ease-in-out",
+        "fixed top-16 z-[902] flex flex-col items-center py-2", // Reduced py-4 to py-2
+        "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg", // Added new container styles
+        "transition-transform duration-300 ease-in-out",
         `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]`,
-        "rounded-r-lg",
         isMobile
           ? `w-[${SIDEBAR_WIDTH_MOBILE}px] ${actualSidebarOpen ? "translate-x-0" : "-translate-x-full"}` // Mobile off-canvas
           : `w-[${actualSidebarOpen ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_DESKTOP}px] ${actualSidebarOpen ? "translate-x-0" : "-translate-x-full"}` // Desktop fixed
@@ -127,7 +127,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="flex flex-col gap-2 overflow-y-auto">
+      <div className="flex flex-col gap-1 overflow-y-auto"> {/* Reduced gap-2 to gap-1 */}
         {navItems.map((item) => (
           <SidebarItem
             key={item.id}
@@ -139,7 +139,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
           />
         ))}
       </div>
-      <div className="mt-auto pt-4">
+      <div className="mt-auto pt-2"> {/* Reduced pt-4 to pt-2 */}
         {!isMobile && ( // Only show dock/undock button on desktop
           <SidebarItem
             icon={mounted && isAlwaysOpen ? ChevronLeft : ChevronRight}
