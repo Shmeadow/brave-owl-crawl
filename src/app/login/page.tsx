@@ -6,7 +6,7 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { Loader2 } from "lucide-react";
 import { redirect, useRouter } from "next/navigation";
-import { LoginFeatureSection } from "@/components/login-feature-section";
+// Removed: import { LoginFeatureSection } from "@/components/login-feature-section";
 import { cn } from "@/lib/utils";
 
 export default function LoginPage() {
@@ -92,7 +92,7 @@ export default function LoginPage() {
           />
         </div>
       </div>
-      <LoginFeatureSection />
+      {/* Removed: <LoginFeatureSection /> */}
     </div>
   );
 }
