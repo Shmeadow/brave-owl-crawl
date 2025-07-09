@@ -76,16 +76,6 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         </Link>
 
         <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
-          {!isMobile && currentRoomId && (
-            <span
-              className="text-sm font-mono text-muted-foreground cursor-pointer flex items-center gap-1 hover:text-foreground transition-colors flex-shrink-0"
-              onClick={handleCopyRoomId}
-              title="Copy Room ID"
-            >
-              ({currentRoomId.substring(0, 8)}...)
-              <Copy className="h-3 w-3" />
-            </span>
-          )}
           <h1 className="text-xl font-semibold flex items-center gap-2 overflow-hidden whitespace-nowrap text-ellipsis flex-1 min-w-0">
             {!isMobile && session?.user?.id && (
               <span

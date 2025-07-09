@@ -27,8 +27,6 @@ export function JoinRoomSection() {
       toast.error("Please enter a Room ID.");
       return;
     }
-    // In the new system, handleJoinRoomByRoomId will only allow joining if the user is already a member.
-    // If the user is not a member, it will show an error.
     await handleJoinRoomByRoomId(roomIdInput.trim());
     setRoomIdInput("");
   };
@@ -53,7 +51,7 @@ export function JoinRoomSection() {
           <LogIn className="mr-2 h-4 w-4" /> Join Room
         </Button>
         <p className="text-sm text-muted-foreground text-center">
-          You can only join rooms you have been invited to by the creator.
+          Enter a Room ID to join.
         </p>
       </CardContent>
     </Card>

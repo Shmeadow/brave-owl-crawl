@@ -28,19 +28,33 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
       return;
     }
 
-    if (room.creator_id === session.user.id || room.is_member) {
-      toast.info("You are already in this room.");
+    if (room.creator_id === session.user.id) {
+      toast.info("You are the creator of this room.");
       return;
     }
 
-    // In the new invite-only system, a user can only "join" if they are already a member.
-    // The act of "joining" here means switching to an already accessible room.
-    // Actual membership is managed by the creator via handleAddRoomMember.
-    toast.error("You are not invited to this room. Only invited members can join.");
-    // If you wanted to allow a "request to join" flow, this is where it would go.
-    // For now, it's strictly invite-only (creator adds you).
+    if (room.is_member) {
+      toast.info("You are already a member of this room.");
+      return;
+    }
 
-  }, [session, supabase, rooms]);
+    // Attempt to insert the user into room_members
+    const { data: newMember, error: insertError } = await supabase
+      .from('room_members')
+      .insert({ room_id: roomId, user_id: session.user.id })
+      .select()
+      .single();
+
+    if (insertError) {
+      toast.error("Error joining room: " + insertError.message);
+      console.error("Error joining room:", insertError);
+    } else if (newMember) {
+      toast.success(`Successfully joined room: "${room.name}"!`);
+      fetchRooms(); // Re-fetch rooms to update membership status
+      addNotification(`You joined the room: "${room.name}".`);
+    }
+
+  }, [session, supabase, rooms, fetchRooms, addNotification]);
 
   // Removed handleJoinRoomByPassword
 
