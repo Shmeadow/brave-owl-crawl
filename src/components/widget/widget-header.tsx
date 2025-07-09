@@ -42,7 +42,7 @@ export function WidgetHeader({
       className={cn(
         "flex items-center justify-between p-2 border-b border-border/50 bg-background/80 backdrop-blur-md",
         isDraggable ? "cursor-grab" : "cursor-default",
-        isInsideDock && "hidden"
+        isInsideDock && "hidden" // Hide header if inside dock
       )}
       {...listeners}
       {...attributes}

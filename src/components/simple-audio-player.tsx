@@ -9,6 +9,13 @@ import { cn, getYouTubeEmbedUrl } from '@/lib/utils';
 import { useSupabase } from '@/integrations/supabase/auth';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Import Popover components
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"; // Import Drawer components
 
 // Import new modular components
 import { PlayerDisplay } from './audio-player/player-display';
@@ -28,7 +35,7 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
   const [stagedInputUrl, setStagedInputUrl] = useState('');
   const [committedMediaUrl, setCommittedMediaUrl] = useState('');
   const [playerType, setPlayerType] = useState<'audio' | 'youtube' | 'spotify' | null>(null);
-  const [isUrlInputPopoverOpen, setIsUrlInputPopoverOpen] = useState(false); // State for popover
+  const [isUrlInputOpen, setIsUrlInputOpen] = useState(false); // State for popover/drawer
   const [displayMode, setDisplayMode] = useState<'normal' | 'maximized' | 'minimized'>(() => {
     if (typeof window !== 'undefined') {
       const savedMode = localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY);
@@ -179,7 +186,7 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
 
   const loadNewMedia = () => {
     setCommittedMediaUrl(stagedInputUrl);
-    setIsUrlInputPopoverOpen(false); // Close popover after loading
+    setIsUrlInputOpen(false); // Close popover/drawer after loading
   };
 
   const currentPlaybackTime = playerType === 'youtube' ? youtubeCurrentTime : (playerType === 'spotify' ? spotifyCurrentTime : audioCurrentTime);
@@ -199,11 +206,20 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
     setIsMobileExpanded(prev => !prev);
   };
 
+  const renderMediaInput = (
+    <MediaInput
+      inputUrl={stagedInputUrl}
+      setInputUrl={setStagedInputUrl}
+      onLoadMedia={loadNewMedia}
+      onClosePopover={() => setIsUrlInputOpen(false)}
+    />
+  );
+
   if (isMobile) {
     return (
       <div className={cn(
         "transition-all duration-300 ease-in-out",
-        "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full",
+        "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full", // Applied styling here
         isMobileExpanded ? "h-auto p-2" : "h-16 p-2 items-center justify-between flex-row"
       )}>
         {isMobileExpanded ? (
@@ -232,26 +248,26 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
 
             {/* Main Player Row: URL Input Toggle and Controls */}
             <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
-              {/* URL Input Toggle */}
-              <Popover open={isUrlInputPopoverOpen} onOpenChange={setIsUrlInputPopoverOpen}>
-                <PopoverTrigger asChild>
+              {/* URL Input Toggle (Drawer for mobile) */}
+              <Drawer open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
+                <DrawerTrigger asChild>
                   <button
                     className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
                     title="Change Media URL"
                   >
                     <Link size={12} className="mr-0.5" />
-                    {isUrlInputPopoverOpen ? 'Hide URL' : 'Embed URL'}
+                    {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
                   </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-64 p-0 z-[901] bg-popover/80 backdrop-blur-lg border-white/20">
-                  <MediaInput
-                    inputUrl={stagedInputUrl}
-                    setInputUrl={setStagedInputUrl}
-                    onLoadMedia={loadNewMedia}
-                    onClosePopover={() => setIsUrlInputPopoverOpen(false)}
-                  />
-                </PopoverContent>
-              </Popover>
+                </DrawerTrigger>
+                <DrawerContent className="h-auto max-h-[90vh] flex flex-col">
+                  <DrawerHeader>
+                    <DrawerTitle>Embed Media URL</DrawerTitle>
+                  </DrawerHeader>
+                  <div className="p-4">
+                    {renderMediaInput}
+                  </div>
+                </DrawerContent>
+              </Drawer>
 
               <PlayerControls
                 playerType={playerType}
@@ -338,7 +354,7 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
       displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-[500px] flex flex-col items-center justify-center'
     )}>
       <div className={cn(
-        "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full",
+        "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full", // Applied styling here
         displayMode === 'normal' && 'p-1',
         displayMode === 'maximized' && 'p-4 items-center justify-center',
         displayMode === 'minimized' && 'hidden'
@@ -368,23 +384,18 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
 
         <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
           <div className="flex-grow min-w-0">
-            <Popover open={isUrlInputPopoverOpen} onOpenChange={setIsUrlInputPopoverOpen}>
+            <Popover open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
               <PopoverTrigger asChild>
                 <button
                   className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
                   title="Change Media URL"
                 >
                   <Link size={12} className="mr-0.5" />
-                  {isUrlInputPopoverOpen ? 'Hide URL' : 'Embed URL'}
+                  {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-64 p-0 z-[901] bg-popover/80 backdrop-blur-lg border-white/20">
-                <MediaInput
-                  inputUrl={stagedInputUrl}
-                  setInputUrl={setStagedInputUrl}
-                  onLoadMedia={loadNewMedia}
-                  onClosePopover={() => setIsUrlInputPopoverOpen(false)}
-                />
+                {renderMediaInput}
               </PopoverContent>
             </Popover>
           </div>

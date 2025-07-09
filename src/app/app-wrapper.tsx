@@ -156,7 +156,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             </div>
             
             {/* PinnedWidgetsDock is now a sibling to WidgetContainer, ensuring independence */}
-            {isDashboard && <IndependentPinnedWidgetsDock isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />}
+            {isDashboard && !isMobile && <IndependentPinnedWidgetsDock isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />}
 
             {isDashboard && isMobile && (
               <MobileControls>
