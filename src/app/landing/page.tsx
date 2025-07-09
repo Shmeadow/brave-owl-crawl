@@ -6,7 +6,7 @@ import Image from 'next/image'; // Import Image component
 
 export default function LandingPage() {
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center text-center overflow-hidden">
+    <div className="relative min-h-screen flex flex-col items-center justify-start overflow-hidden"> {/* Changed justify-center to justify-start */}
       {/* Background Image for Hero Section */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -22,7 +22,7 @@ export default function LandingPage() {
 
       {/* Hero Section Content */}
       <div className={cn(
-        "relative z-10 flex flex-col items-center justify-center h-screen px-4 py-16 text-white",
+        "relative z-10 flex flex-col items-center justify-center min-h-[70vh] px-4 py-16 text-white w-full", // Changed h-screen to min-h-[70vh]
         "bg-transparent" // Ensure no card background here
       )}>
         <h1 className="text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">
@@ -45,8 +45,8 @@ export default function LandingPage() {
         </p>
       </div>
 
-      {/* Login Feature Section (below the fold) */}
-      <div className="relative z-10 w-full bg-background py-16 px-4"> {/* Solid background for this section */}
+      {/* Login Feature Section */}
+      <div className="relative z-10 w-full bg-transparent py-12 px-4"> {/* Changed bg-background to bg-transparent, reduced py-16 to py-12 */}
         <LoginFeatureSection className="w-full max-w-4xl mx-auto" />
       </div>
     </div>
