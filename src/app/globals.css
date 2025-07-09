@@ -119,8 +119,8 @@
     top: 0;
     left: 0;
     height: 100%;
-    width: 50%; /* Adjust width of the shimmer */
-    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0) 100%);
-    animation: shimmer 1.5s infinite linear;
+    width: 30%; /* Adjusted width of the shimmer */
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0) 100%); /* Adjusted opacity */
+    animation: shimmer 3s infinite linear; /* Adjusted speed */
   }
 }
