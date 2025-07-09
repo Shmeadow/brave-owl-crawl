@@ -1,16 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { Loader2 } from "lucide-react";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { LoginFeatureSection } from "@/components/login-feature-section";
 import { cn } from "@/lib/utils";
 
 export default function LoginPage() {
   const { supabase, session, loading } = useSupabase();
+  const router = useRouter();
+  const loginFormRef = useRef<HTMLDivElement>(null);
 
   if (loading) {
     return (
@@ -35,13 +37,27 @@ export default function LoginPage() {
     );
   }
 
+  const handleDismiss = (event: React.MouseEvent<HTMLDivElement>) => {
+    // Check if the click occurred outside the login form itself
+    if (loginFormRef.current && !loginFormRef.current.contains(event.target as Node)) {
+      router.push('/landing');
+    }
+  };
+
   return (
-    <div className="w-full lg:grid lg:h-screen lg:grid-cols-2 xl:h-screen">
+    <div
+      className="w-full lg:grid lg:h-screen lg:grid-cols-2 xl:h-screen"
+      onClick={handleDismiss}
+    >
       <div className="flex items-center justify-center py-12">
-        <div className={cn(
-          "mx-auto grid w-full max-w-sm gap-6 p-4 rounded-lg shadow-lg", // Changed w-[350px] to w-full max-w-sm, and p-6 to p-4
-          "bg-card/50 backdrop-blur-xl border-white/20"
-        )}>
+        <div
+          ref={loginFormRef}
+          className={cn(
+            "mx-auto grid w-full max-w-sm gap-6 p-4 rounded-lg shadow-lg",
+            "bg-card/50 backdrop-blur-xl border-white/20"
+          )}
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="grid gap-2 text-center">
             <h1 className="text-3xl font-bold">Create an Account</h1>
             <p className="text-balance text-muted-foreground">
