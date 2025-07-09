@@ -91,7 +91,7 @@ export function PlayerControls({
           step="0.01"
           value={currentVolume}
           onChange={handleVolumeChange}
-          className="w-10 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
+          className="w-16 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
           disabled={isVolumeControlDisabled}
         />
       </div>
