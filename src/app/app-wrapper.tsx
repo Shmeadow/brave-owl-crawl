@@ -157,12 +157,14 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             />
             {/* New container for Notifications and Time/Progress Display */}
             {!isMobile && (
-              <div className="fixed top-16 right-4 z-[902] flex items-center gap-2">
+              <>
                 {session && (
-                  <DynamicNotificationsDropdown />
+                  <div className="fixed top-16 right-[172px] z-[902]"> {/* Positioned to the left of the clock */}
+                    <DynamicNotificationsDropdown />
+                  </div>
                 )}
-                <DynamicTimeAndProgressDisplay />
-              </div>
+                <DynamicTimeAndProgressDisplay /> {/* This component is already fixed right-4 */}
+              </>
             )}
             <DynamicWelcomeBackModal
               isOpen={showWelcomeBack}

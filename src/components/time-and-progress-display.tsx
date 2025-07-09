@@ -97,7 +97,7 @@ export function TimeAndProgressDisplay({ className }: TimeAndProgressDisplayProp
   return (
     <div
       className={cn(
-        "bg-card/50 backdrop-blur-xl border border-white/20 rounded-lg p-2", // Removed fixed positioning and right-4
+        "fixed top-16 right-4 z-[902] bg-card/50 backdrop-blur-xl border border-white/20 rounded-lg p-2 w-[160px]", // Added fixed width
         "flex flex-col items-center text-sm font-mono text-muted-foreground",
         className
       )}
