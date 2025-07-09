@@ -57,7 +57,7 @@ export function JoinRoomSection() {
             </SelectTrigger>
             <SelectContent>
               {myCreatedRooms.length === 0 && (
-                <SelectItem value="" disabled>No rooms created by you</SelectItem>
+                <SelectItem value="no-rooms-placeholder" disabled>No rooms created by you</SelectItem>
               )}
               {myCreatedRooms.map(room => (
                 <SelectItem key={room.id} value={room.id}>

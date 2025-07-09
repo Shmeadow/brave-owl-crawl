@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import Image from "next/image"; // Import next/image
+import { SelectItem } from "@/components/ui/select"; // Explicitly import SelectItem
 
 interface MyRoomsSectionProps {
   myCreatedRooms: RoomData[];
