@@ -21,6 +21,8 @@ export function useCurrentRoom() {
 
   const [currentRoomName, setCurrentRoomNameState] = useState<string>(() => {
     if (typeof window !== 'undefined') {
+      // For guest users or initial load, default to "My Room".
+      // For logged-in users, this will be overwritten by their personal room name fetched from Supabase.
       return localStorage.getItem(LOCAL_STORAGE_CURRENT_ROOM_NAME_KEY) || "My Room";
     }
     return "My Room";
@@ -64,7 +66,7 @@ export function useCurrentRoom() {
 
     // User is logged in
     let targetRoomId: string | null = null;
-    let targetRoomName: string = "My Room";
+    let targetRoomName: string = "My Room"; // Default for logged-in if no specific room found
 
     // 1. Try to use personal_room_id from profile
     if (profile?.personal_room_id) {
@@ -95,6 +97,8 @@ export function useCurrentRoom() {
       if (targetRoomId) {
         toast.info(`Switched to room: ${targetRoomName}`);
       } else {
+        // This case means logged in but no personal room and no other created rooms.
+        // This should ideally not happen if handle_new_user always creates a personal room.
         toast.info("No personal room found. Defaulting to 'My Room'.");
       }
     }

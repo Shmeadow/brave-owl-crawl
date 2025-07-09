@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Bell, Search, Menu, LayoutGrid, MessageSquare, Copy, BarChart2 } from "lucide-react"; // Added BarChart2
+import { Home, Bell, Search, Menu, LayoutGrid, MessageSquare, Copy, BarChart2, Settings } from "lucide-react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,8 @@ import { useRooms } from "@/hooks/use-rooms";
 import { toast } from "sonner";
 import Link from "next/link";
 import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
-import { useWidget } from "@/components/widget/widget-provider"; // Import useWidget
+import { useWidget } from "@/components/widget/widget-provider";
+import { RoomSettingsDialog } from "@/components/room-settings-dialog";
 
 interface HeaderProps {
   onToggleChat: () => void;
@@ -39,8 +40,13 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
   const { session } = useSupabase();
   const router = useRouter();
   const { currentRoomName, currentRoomId, isCurrentRoomWritable, setCurrentRoom } = useCurrentRoom();
-  const { handleJoinRoomByRoomId } = useRooms();
-  const { toggleWidget } = useWidget(); // Use toggleWidget
+  const { rooms, handleJoinRoomByRoomId } = useRooms();
+  const { toggleWidget } = useWidget();
+
+  const [isRoomSettingsOpen, setIsRoomSettingsOpen] = useState(false);
+
+  const currentRoom = rooms.find(room => room.id === currentRoomId) || null; // Ensure null instead of undefined
+  const isOwnerOfCurrentRoom = !!(currentRoom && session?.user?.id === currentRoom.creator_id); // Ensure boolean
 
   const handleCopyRoomId = () => {
     if (currentRoomId) {
@@ -91,6 +97,18 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
               </span>
             )}
             <span className="truncate">{currentRoomName}</span>
+            {isOwnerOfCurrentRoom && currentRoomId && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsRoomSettingsOpen(true)}
+                title="Room Settings"
+                className="ml-1 h-7 w-7 text-muted-foreground hover:text-primary"
+              >
+                <Settings className="h-4 w-4" />
+                <span className="sr-only">Room Settings</span>
+              </Button>
+            )}
           </h1>
         </div>
       </div>
@@ -148,6 +166,12 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         )}
         <UserNav />
       </div>
+      <RoomSettingsDialog
+        isOpen={isRoomSettingsOpen}
+        onClose={() => setIsRoomSettingsOpen(false)}
+        currentRoom={currentRoom}
+        isOwnerOfCurrentRoom={isOwnerOfCurrentRoom}
+      />
     </header>
   );
 });

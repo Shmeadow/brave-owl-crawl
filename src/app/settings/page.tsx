@@ -6,7 +6,7 @@ import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRooms } from "@/hooks/use-rooms";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RoomOwnerControlsSection } from "@/components/spaces-widget/room-owner-controls-section";
+// import { RoomOwnerControlsSection } from "@/components/spaces-widget/room-owner-controls-section"; // Removed import
 
 export default function SettingsPage() {
   const { session, loading: authLoading } = useSupabase();
@@ -39,10 +39,14 @@ export default function SettingsPage() {
 
       {currentRoomId && currentRoom ? (
         isOwnerOfCurrentRoom ? (
-          <RoomOwnerControlsSection
-            currentRoom={currentRoom}
-            isOwnerOfCurrentRoom={isOwnerOfCurrentRoom}
-          />
+          <Card className="w-full bg-card backdrop-blur-xl border-white/20">
+            <CardHeader>
+              <CardTitle className="text-foreground">Room Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="text-muted-foreground">
+              Room-specific settings for &quot;{currentRoomName}&quot; can be managed directly from the header when you are in this room, or via the &quot;Manage Spaces&quot; widget.
+            </CardContent>
+          </Card>
         ) : (
           <Card className="w-full bg-card backdrop-blur-xl border-white/20">
             <CardHeader>
