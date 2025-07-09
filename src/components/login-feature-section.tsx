@@ -6,7 +6,11 @@ import { LayoutGrid, Timer, ListTodo, Goal, NotebookPen, BookOpen, Volume2, Imag
 import { LoginFeatureCard } from './login-feature-card';
 import { cn } from '@/lib/utils';
 
-export function LoginFeatureSection() {
+interface LoginFeatureSectionProps {
+  className?: string; // Allow external classes
+}
+
+export function LoginFeatureSection({ className }: LoginFeatureSectionProps) { // Accept className
   const features = [
     { icon: LayoutGrid, title: "Personalized Dashboard", description: "Organize your workspace with draggable widgets.", delay: 0.2 },
     { icon: Timer, title: "Focus Timer", description: "Boost productivity with customizable Pomodoro sessions.", delay: 0.3 },
@@ -26,18 +30,16 @@ export function LoginFeatureSection() {
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.7, ease: "easeOut" }}
       className={cn(
-        "relative hidden lg:flex flex-col items-center justify-center",
-        "bg-background/50 backdrop-blur-xl border-l border-white/20",
-        "py-8 px-6", // Reduced vertical and horizontal padding further
-        "text-center"
+        "relative flex flex-col items-center justify-center text-center", // Keep core layout
+        className // Apply external classes
       )}
     >
-      <div className="text-center mb-6"> {/* Reduced mb-8 to mb-6 */}
-        <h2 className="text-4xl font-extrabold text-foreground mb-2 leading-tight"> {/* Reduced mb-3 to mb-2 */}
-          Welcome to <span className="text-primary">CozyHub</span>
+      <div className="text-center mb-6">
+        <h2 className="text-4xl font-extrabold text-foreground mb-2 leading-tight">
+          Features of <span className="text-primary">CozyHub</span>
         </h2>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Your all-in-one productivity and focus sanctuary.
+          Discover what makes CozyHub your ultimate productivity companion.
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl w-full">
