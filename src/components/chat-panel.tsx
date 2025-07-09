@@ -297,11 +297,12 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
     );
   }
 
-  // Desktop rendering (original logic)
+  // Desktop rendering
   return (
     <Card className={cn(
-      "h-[400px] w-80 flex flex-col bg-card/40 backdrop-blur-xl border-white/20",
-      "transition-all duration-300 ease-in-out"
+      "fixed bottom-4 right-4 h-[400px] w-80 flex flex-col bg-card/40 backdrop-blur-xl border-white/20 z-[900]",
+      "transition-all duration-300 ease-in-out",
+      !isOpen && "hidden" // Hide if not open
     )}>
       <CardHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
         <CardTitle className="text-lg">

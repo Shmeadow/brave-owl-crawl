@@ -38,23 +38,11 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
       return;
     }
 
-    // Attempt to insert the user into room_members
-    const { data: newMember, error: insertError } = await supabase
-      .from('room_members')
-      .insert({ room_id: roomId, user_id: session.user.id })
-      .select()
-      .single();
+    // If direct join is attempted without invitation, inform user
+    toast.info("You need an invitation from the room owner to join this room.");
+    // Optionally, you could add logic here to prompt sending an invitation request to the owner.
 
-    if (insertError) {
-      toast.error("Error joining room: " + insertError.message);
-      console.error("Error joining room:", insertError);
-    } else if (newMember) {
-      toast.success(`Successfully joined room: "${room.name}"!`);
-      fetchRooms(); // Re-fetch rooms to update membership status
-      addNotification(`You joined the room: "${room.name}".`);
-    }
-
-  }, [session, supabase, rooms, fetchRooms, addNotification]);
+  }, [session, supabase, rooms]);
 
   // Removed handleJoinRoomByPassword
 
@@ -118,9 +106,67 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
     }
   }, [session, supabase, fetchRooms, addNotification, rooms]);
 
+  const handleAcceptInvitation = useCallback(async (invitationId: string, roomId: string, roomName: string, senderId: string) => {
+    if (!session?.user?.id || !supabase) {
+      toast.error("You must be logged in to accept invitations.");
+      return;
+    }
+
+    // 1. Add user to room_members
+    const { error: memberInsertError } = await supabase
+      .from('room_members')
+      .insert({ room_id: roomId, user_id: session.user.id });
+
+    if (memberInsertError) {
+      toast.error("Error joining room: " + memberInsertError.message);
+      console.error("Error inserting room member:", memberInsertError);
+      return;
+    }
+
+    // 2. Update invitation status
+    const { error: invitationUpdateError } = await supabase
+      .from('room_invitations')
+      .update({ status: 'accepted' })
+      .eq('id', invitationId)
+      .eq('receiver_id', session.user.id);
+
+    if (invitationUpdateError) {
+      toast.error("Error updating invitation status: " + invitationUpdateError.message);
+      console.error("Error updating invitation status:", invitationUpdateError);
+      // Even if invitation update fails, the user is already a member, so proceed.
+    }
+
+    toast.success(`You successfully joined "${roomName}"!`);
+    fetchRooms(); // Re-fetch rooms to update membership status
+    addNotification(`Your invitation to "${roomName}" was accepted.`, senderId); // Notify the sender
+  }, [session, supabase, fetchRooms, addNotification]);
+
+  const handleRejectInvitation = useCallback(async (invitationId: string, roomName: string, senderId: string) => {
+    if (!session?.user?.id || !supabase) {
+      toast.error("You must be logged in to reject invitations.");
+      return;
+    }
+
+    const { error } = await supabase
+      .from('room_invitations')
+      .update({ status: 'rejected' })
+      .eq('id', invitationId)
+      .eq('receiver_id', session.user.id);
+
+    if (error) {
+      toast.error("Error rejecting invitation: " + error.message);
+      console.error("Error rejecting invitation:", error);
+    } else {
+      toast.info(`You rejected the invitation to "${roomName}".`);
+      addNotification(`Your invitation to "${roomName}" was rejected.`, senderId); // Notify the sender
+    }
+  }, [session, supabase, addNotification]);
+
   return {
     handleJoinRoomByRoomId,
     handleLeaveRoom,
     handleKickUser,
+    handleAcceptInvitation,
+    handleRejectInvitation,
   };
 }

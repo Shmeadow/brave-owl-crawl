@@ -19,7 +19,7 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
   const handleCreateRoom = useCallback(async (name: string) => { // Removed isPublic parameter
     if (!session?.user?.id || !supabase) {
       toast.error("You must be logged in to create a room.");
-      return;
+      return { data: null, error: { message: "Not logged in" } }; // Return error object
     }
 
     const randomBg = getRandomBackground();
@@ -38,20 +38,23 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
     if (error) {
       toast.error("Error creating room: " + error.message);
       console.error("Error creating room:", error);
+      return { data: null, error }; // Return error object
     } else if (data) {
       toast.success(`Room "${data.name}" created successfully!`);
       setRooms((prevRooms) => [...prevRooms, { ...data, is_member: true } as RoomData]);
       addNotification(`You created a new room: "${data.name}".`);
+      return { data: data as RoomData, error: null }; // Return data object
     }
+    return { data: null, error: { message: "Unknown error creating room" } }; // Fallback
   }, [session, supabase, setRooms, addNotification]);
 
   // Removed handleToggleRoomPublicStatus
   // Removed handleToggleGuestWriteAccess
   // Removed handleSetRoomPassword
 
-  const handleAddRoomMember = useCallback(async (roomId: string, userIdToAdd: string) => {
+  const handleSendRoomInvitation = useCallback(async (roomId: string, receiverId: string) => {
     if (!session?.user?.id || !supabase) {
-      toast.error("You must be logged in to add members.");
+      toast.error("You must be logged in to send invitations.");
       return;
     }
 
@@ -64,7 +67,7 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
 
     if (roomError || !room) {
       toast.error("Room not found or access denied.");
-      console.error("Error fetching room for adding member:", roomError);
+      console.error("Error fetching room for sending invitation:", roomError);
       return;
     }
 
@@ -73,39 +76,52 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
       return;
     }
 
-    if (userIdToAdd === session.user.id) {
-      toast.info("You are already the creator of this room.");
+    if (receiverId === session.user.id) {
+      toast.info("You cannot send an invitation to yourself.");
       return;
     }
 
-    // Check if user is already a member
+    // Check if receiver is already a member
     const { data: existingMember, error: memberCheckError } = await supabase
       .from('room_members')
       .select('id')
       .eq('room_id', roomId)
-      .eq('user_id', userIdToAdd)
+      .eq('user_id', receiverId)
       .single();
 
     if (existingMember) {
-      toast.info("User is already a member of this room.");
+      toast.info("This user is already a member of this room.");
       return;
     }
 
-    const { data: newMember, error: insertError } = await supabase
-      .from('room_members')
-      .insert({ room_id: roomId, user_id: userIdToAdd })
+    // Check if a pending invitation already exists
+    const { data: existingInvitation, error: invitationCheckError } = await supabase
+      .from('room_invitations')
+      .select('id')
+      .eq('room_id', roomId)
+      .eq('receiver_id', receiverId)
+      .eq('status', 'pending')
+      .single();
+
+    if (existingInvitation) {
+      toast.info("A pending invitation for this user already exists for this room.");
+      return;
+    }
+
+    const { data: newInvitation, error: insertError } = await supabase
+      .from('room_invitations')
+      .insert({ room_id: roomId, sender_id: session.user.id, receiver_id: receiverId, status: 'pending' })
       .select()
       .single();
 
     if (insertError) {
-      toast.error("Error adding member: " + insertError.message);
-      console.error("Error adding member:", insertError);
-    } else if (newMember) {
-      toast.success("Member added successfully!");
-      fetchRooms(); // Re-fetch to update room_members list
-      addNotification(`You were added to the room: "${room.name}".`, userIdToAdd); // Notify the added user
+      toast.error("Error sending invitation: " + insertError.message);
+      console.error("Error sending invitation:", insertError);
+    } else if (newInvitation) {
+      toast.success("Invitation sent successfully!");
+      addNotification(`You received an invitation to join "${room.name}".`, receiverId); // Notify the invited user
     }
-  }, [session, supabase, fetchRooms, addNotification]);
+  }, [session, supabase, addNotification]);
 
   const handleDeleteRoom = useCallback(async (roomId: string) => {
     if (!session?.user?.id || !supabase) {
@@ -130,9 +146,10 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
       return;
     }
 
+    // Perform a soft delete by setting deleted_at timestamp
     const { error } = await supabase
       .from('rooms')
-      .delete()
+      .update({ deleted_at: new Date().toISOString() })
       .eq('id', roomId)
       .eq('creator_id', session.user.id); // Ensure only creator can delete
 
@@ -140,7 +157,7 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
       toast.error("Error deleting room: " + error.message);
       console.error("Error deleting room:", error);
     } else {
-      setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId));
+      setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId)); // Remove from local state immediately
       toast.success("Room deleted successfully.");
       addNotification(`You deleted the room: "${roomToDelete.name}".`);
     }
@@ -148,7 +165,7 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
 
   return {
     handleCreateRoom,
-    handleAddRoomMember,
+    handleSendRoomInvitation, // Renamed and updated
     handleDeleteRoom,
   };
 }

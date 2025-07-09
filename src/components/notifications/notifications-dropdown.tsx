@@ -14,18 +14,19 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNotifications } from "@/hooks/use-notifications";
 import { cn } from "@/lib/utils";
+import { RoomInvitationsList } from "./room-invitations-list"; // Import new component
 
 interface NotificationsDropdownProps {
 }
 
 export function NotificationsDropdown({}: NotificationsDropdownProps) {
-  const { notifications, loading, unreadCount, markAsRead, markAllAsRead, addNotification, deleteReadNotifications } = useNotifications();
+  const { notifications, roomInvitations, loading, unreadCount, markAsRead, markAllAsRead, addNotification, deleteReadNotifications } = useNotifications();
 
   useEffect(() => {
-    if (!loading && notifications.length === 0) {
+    if (!loading && notifications.length === 0 && roomInvitations.length === 0) {
       addNotification("Welcome to Productivity Hub! Explore your new workspace.");
     }
-  }, [loading, notifications.length, addNotification]);
+  }, [loading, notifications.length, roomInvitations.length, addNotification]);
 
   const hasReadNotifications = notifications.some(n => n.is_read);
 
@@ -45,6 +46,16 @@ export function NotificationsDropdown({}: NotificationsDropdownProps) {
       <DropdownMenuContent className="w-72 z-[1003] bg-popover/80 backdrop-blur-lg" align="end" forceMount>
         <DropdownMenuLabel>Notifications ({unreadCount} unread)</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        
+        {roomInvitations.length > 0 && (
+          <>
+            <DropdownMenuLabel className="text-sm font-semibold px-2 pt-2">Room Invitations</DropdownMenuLabel>
+            <RoomInvitationsList invitations={roomInvitations} />
+            <DropdownMenuSeparator />
+          </>
+        )}
+
+        <DropdownMenuLabel className="text-sm font-semibold px-2 pt-2">General Notifications</DropdownMenuLabel>
         <ScrollArea className="h-48">
           {loading ? (
             <p className="p-2 text-sm text-muted-foreground text-center">Loading notifications...</p>

@@ -9,10 +9,12 @@ import { PlusCircle } from "lucide-react";
 import { useRooms } from "@/hooks/use-rooms";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
+import { useCurrentRoom } from "@/hooks/use-current-room"; // Import useCurrentRoom
 
 export function CreateRoomSection() {
   const { session } = useSupabase();
   const { handleCreateRoom } = useRooms();
+  const { setCurrentRoom } = useCurrentRoom(); // Use setCurrentRoom
 
   const [newRoomName, setNewRoomName] = useState("");
 
@@ -25,8 +27,12 @@ export function CreateRoomSection() {
       toast.error("Room name cannot be empty.");
       return;
     }
-    await handleCreateRoom(newRoomName.trim()); // Removed isPublic parameter
-    setNewRoomName("");
+    // handleCreateRoom now returns the created room data
+    const { data, error } = await handleCreateRoom(newRoomName.trim());
+    if (!error && data) {
+      setNewRoomName("");
+      setCurrentRoom(data.id, data.name); // Set the newly created room as current
+    }
   };
 
   return (

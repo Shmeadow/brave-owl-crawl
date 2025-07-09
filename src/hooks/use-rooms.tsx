@@ -11,24 +11,28 @@ export function useRooms() {
   const { rooms, loading, fetchRooms } = useRoomFetching();
   const {
     handleCreateRoom,
-    handleAddRoomMember, // New function
+    handleSendRoomInvitation, // Renamed and updated
     handleDeleteRoom,
   } = useRoomManagement({ setRooms: (newRooms) => {}, fetchRooms }); // Pass a dummy setRooms, as fetchRooms will update the state in useRoomFetching
   const {
     handleJoinRoomByRoomId,
     handleLeaveRoom,
     handleKickUser,
+    handleAcceptInvitation, // New
+    handleRejectInvitation, // New
   } = useRoomMembership({ rooms, fetchRooms });
 
   return {
     rooms,
     loading,
     handleCreateRoom,
-    handleAddRoomMember, // New function
+    handleSendRoomInvitation, // New function
     handleDeleteRoom,
     handleJoinRoomByRoomId,
     handleLeaveRoom,
     handleKickUser,
+    handleAcceptInvitation, // New
+    handleRejectInvitation, // New
     fetchRooms, // Expose fetchRooms for manual refresh if needed
   };
 }

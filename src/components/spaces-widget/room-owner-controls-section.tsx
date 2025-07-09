@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserMinus, UserPlus } from "lucide-react"; // Added UserPlus
+import { UserMinus, Send } from "lucide-react"; // Changed UserPlus to Send
 import { useRooms, RoomData, RoomMember } from "@/hooks/use-rooms";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
@@ -20,13 +20,13 @@ interface RoomOwnerControlsSectionProps {
 export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: RoomOwnerControlsSectionProps) {
   const { supabase, session, profile } = useSupabase();
   const {
-    handleAddRoomMember, // New function
+    handleSendRoomInvitation, // New function
     handleKickUser,
     fetchRooms, // To re-fetch members after kick
   } = useRooms();
   const { setCurrentRoom } = useCurrentRoom(); // Import setCurrentRoom to update local state
 
-  const [memberUserIdInput, setMemberUserIdInput] = useState(""); // For adding new member
+  const [receiverIdInput, setReceiverIdInput] = useState(""); // For sending new invitation
   const [selectedUserToKick, setSelectedUserToKick] = useState<string | null>(null);
   const [roomMembers, setRoomMembers] = useState<RoomMember[]>([]);
   const [editedRoomName, setEditedRoomName] = useState(currentRoom.name); // State for editing room name
@@ -70,18 +70,18 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
     fetchRoomMembers();
   }, [supabase, currentRoom.id, isOwnerOfCurrentRoom, fetchRooms]);
 
-  const handleAddMember = useCallback(async () => {
+  const handleSendInvitation = useCallback(async () => {
     if (!currentRoom.id || !isOwnerOfCurrentRoom) {
-      toast.error("You must be the owner of the current room to add members.");
+      toast.error("You must be the owner of the current room to send invitations.");
       return;
     }
-    if (!memberUserIdInput.trim()) {
-      toast.error("User ID cannot be empty.");
+    if (!receiverIdInput.trim()) {
+      toast.error("Recipient User ID cannot be empty.");
       return;
     }
-    await handleAddRoomMember(currentRoom.id, memberUserIdInput.trim());
-    setMemberUserIdInput("");
-  }, [currentRoom.id, isOwnerOfCurrentRoom, memberUserIdInput, handleAddRoomMember]);
+    await handleSendRoomInvitation(currentRoom.id, receiverIdInput.trim());
+    setReceiverIdInput("");
+  }, [currentRoom.id, isOwnerOfCurrentRoom, receiverIdInput, handleSendRoomInvitation]);
 
   const handleKickSelectedUser = useCallback(async () => {
     if (!currentRoom.id || !isOwnerOfCurrentRoom || !selectedUserToKick) {
@@ -142,21 +142,21 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
             Update Room Name
           </Button>
         </div>
-        {/* Add Member */}
+        {/* Send Invitation */}
         <div className="space-y-2">
-          <Label htmlFor="add-member-user-id">Add Member (by User ID)</Label>
+          <Label htmlFor="send-invitation-user-id">Send Invitation (by User ID)</Label>
           <Input
-            id="add-member-user-id"
-            placeholder="Enter User ID"
-            value={memberUserIdInput}
-            onChange={(e) => setMemberUserIdInput(e.target.value)}
+            id="send-invitation-user-id"
+            placeholder="Enter Recipient User ID"
+            value={receiverIdInput}
+            onChange={(e) => setReceiverIdInput(e.target.value)}
           />
-          <Button onClick={handleAddMember} className="w-full">
-            <UserPlus className="mr-2 h-4 w-4" /> Add Member
+          <Button onClick={handleSendInvitation} className="w-full">
+            <Send className="mr-2 h-4 w-4" /> Send Invitation
           </Button>
         </div>
         <p className="text-sm text-muted-foreground">
-          Add users to this room by their unique User ID. They will then be able to join.
+          Send an invitation to another user by their unique User ID. They will receive a notification to join.
         </p>
 
         {/* Kick Users */}

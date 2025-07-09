@@ -23,7 +23,7 @@ interface MyRoomsSectionProps {
 export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSectionProps) {
   const { session } = useSupabase();
   const {
-    handleAddRoomMember, // New function
+    handleSendRoomInvitation, // New function
     handleLeaveRoom,
     handleDeleteRoom,
   } = useRooms();
@@ -60,7 +60,7 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
 
   const handleAddMemberSubmit = async () => {
     if (selectedRoomForMember && memberUserIdInput.trim()) {
-      await handleAddRoomMember(selectedRoomForMember, memberUserIdInput.trim());
+      await handleSendRoomInvitation(selectedRoomForMember, memberUserIdInput.trim());
       setMemberUserIdInput("");
       setIsAddMemberDialogOpen(false);
     } else {

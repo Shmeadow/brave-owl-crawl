@@ -12,11 +12,23 @@ export interface NotificationData {
   created_at: string;
 }
 
+export interface RoomInvitationData {
+  id: string;
+  room_id: string;
+  sender_id: string;
+  receiver_id: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  created_at: string;
+  rooms: { name: string } | null; // Joined to get room name
+  profiles: { first_name: string | null; last_name: string | null } | null; // Joined to get sender name
+}
+
 const LOCAL_STORAGE_KEY = 'guest_notifications';
 
 export function useNotifications() {
   const { supabase, session, loading: authLoading, profile } = useSupabase(); // Get profile here
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
+  const [roomInvitations, setRoomInvitations] = useState<RoomInvitationData[]>([]); // New state for invitations
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
 
@@ -105,6 +117,41 @@ export function useNotifications() {
         mergedNotifications.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         setNotifications(mergedNotifications);
       }
+
+      // Fetch room invitations
+      const { data: invitations, error: invitationsError } = await supabase
+        .from('room_invitations')
+        .select(`
+          id,
+          room_id,
+          sender_id,
+          receiver_id,
+          status,
+          created_at,
+          rooms (name),
+          profiles:sender_id (first_name, last_name)
+        `)
+        .eq('receiver_id', session.user.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (invitationsError) {
+        console.error("Error fetching room invitations:", invitationsError);
+        setRoomInvitations([]);
+      } else {
+        // Explicitly map to ensure correct types for nested objects
+        setRoomInvitations(invitations.map((inv: any) => ({
+          id: inv.id,
+          room_id: inv.room_id,
+          sender_id: inv.sender_id,
+          receiver_id: inv.receiver_id,
+          status: inv.status,
+          created_at: inv.created_at,
+          rooms: inv.rooms ? { name: inv.rooms.name } : null, // Ensure it's an object, not an array
+          profiles: inv.profiles ? { first_name: inv.profiles.first_name, last_name: inv.profiles.last_name } : null, // Ensure it's an object, not an array
+        })) as RoomInvitationData[]);
+      }
+
     } else {
       setIsLoggedInMode(false);
       const storedNotificationsString = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -116,6 +163,7 @@ export function useNotifications() {
         loadedNotifications = [];
       }
       setNotifications(loadedNotifications.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+      setRoomInvitations([]); // No invitations for guests
     }
     setLoading(false);
   }, [session, supabase, authLoading]);
@@ -145,6 +193,64 @@ export function useNotifications() {
         });
     }
   }, [loading, session, profile, addNotification, supabase]);
+
+  // Realtime subscription for new room invitations
+  useEffect(() => {
+    if (!supabase || !session?.user?.id) return;
+
+    const channel = supabase
+      .channel(`room_invitations_for_${session.user.id}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'room_invitations',
+        filter: `receiver_id=eq.${session.user.id}`
+      }, async (payload) => {
+        const newInvitation = payload.new as RoomInvitationData;
+        // Fetch room name and sender profile for the new invitation
+        const { data: roomData, error: roomError } = await supabase
+          .from('rooms')
+          .select('name')
+          .eq('id', newInvitation.room_id)
+          .single();
+        const { data: senderProfileData, error: senderProfileError } = await supabase
+          .from('profiles')
+          .select('first_name, last_name')
+          .eq('id', newInvitation.sender_id)
+          .single();
+
+        if (roomError) console.error("Error fetching room for new invitation:", roomError);
+        if (senderProfileError) console.error("Error fetching sender profile for new invitation:", senderProfileError);
+
+        const senderName = senderProfileData ? `${senderProfileData.first_name || ''} ${senderProfileData.last_name || ''}`.trim() || `User (${newInvitation.sender_id.substring(0, 8)}...)` : `User (${newInvitation.sender_id.substring(0, 8)}...)`;
+        const roomName = roomData?.name || `Room (${newInvitation.room_id.substring(0, 8)}...)`;
+
+        setRoomInvitations(prev => [{
+          ...newInvitation,
+          rooms: roomData,
+          profiles: senderProfileData,
+        }, ...prev]);
+        addNotification(`You have a new invitation from ${senderName} to join "${roomName}".`);
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'room_invitations',
+        filter: `receiver_id=eq.${session.user.id}`
+      }, (payload) => {
+        const updatedInvitation = payload.new as RoomInvitationData;
+        if (updatedInvitation.status !== 'pending') {
+          // Remove non-pending invitations from the list
+          setRoomInvitations(prev => prev.filter(inv => inv.id !== updatedInvitation.id));
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, session, addNotification]);
+
 
   const markAsRead = useCallback(async (notificationId: string) => {
     const notificationToUpdate = notifications.find(n => n.id === notificationId);
@@ -221,10 +327,11 @@ export function useNotifications() {
     }
   }, [notifications, isLoggedInMode, session, supabase]);
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = notifications.filter(n => !n.is_read).length + roomInvitations.length; // Include invitations in unread count
 
   return {
     notifications,
+    roomInvitations, // Expose room invitations
     loading,
     isLoggedInMode,
     unreadCount,
