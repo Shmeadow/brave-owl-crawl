@@ -12,8 +12,8 @@
 
 .plantShape {
   position: absolute;
-  background-color: black; /* Changed to solid black */
-  border-radius: 50%; /* Start with circular shapes */
+  /* Removed background-color and border-radius as we are now using images */
   filter: blur(30px); /* Heavy blur for soft edges */
   transform-origin: center center; /* Ensure rotation is from center */
+  object-fit: cover; /* Ensure images cover their allocated space */
 }

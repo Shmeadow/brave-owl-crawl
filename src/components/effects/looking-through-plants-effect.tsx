@@ -3,6 +3,14 @@
 import React, { useEffect, useRef } from 'react';
 import styles from './looking-through-plants.module.css';
 
+// Assume these image paths exist in your public/plants folder
+const plantImages = [
+  "/plants/plant1.png",
+  "/plants/plant2.png",
+  "/plants/plant3.png",
+  // Add more plant image paths here if you have them
+];
+
 export function LookingThroughPlantsEffect() {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -11,11 +19,13 @@ export function LookingThroughPlantsEffect() {
     if (!container) return;
 
     const numShapes = 8; // Number of plant shapes
-    const shapes: HTMLDivElement[] = [];
+    const shapes: HTMLImageElement[] = []; // Changed to HTMLImageElement
 
     for (let i = 0; i < numShapes; i++) {
-      const shape = document.createElement('div');
+      const shape = document.createElement('img'); // Changed to img element
       shape.className = styles.plantShape;
+      shape.src = plantImages[Math.floor(Math.random() * plantImages.length)]; // Randomly select a plant image
+      shape.alt = "Plant overlay"; // Add alt text for accessibility
 
       // Random size for the shapes
       const size = `${150 + Math.random() * 250}px`; // 150px to 400px
@@ -23,7 +33,6 @@ export function LookingThroughPlantsEffect() {
       shape.style.height = size;
 
       // Random position near the edges
-      // We'll place them randomly and then use transforms to push them partially off-screen
       const edgeOffset = 50; // Max offset from edge in pixels
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
@@ -58,10 +67,7 @@ export function LookingThroughPlantsEffect() {
 
       // Random rotation for variety
       shape.style.transform = `rotate(${Math.random() * 360}deg)`;
-
-      // Removed: Random opacity, as shapes are now solid black
-      // shape.style.opacity = `${0.2 + Math.random() * 0.3}`; 
-
+      
       container.appendChild(shape);
       shapes.push(shape);
     }
@@ -69,7 +75,7 @@ export function LookingThroughPlantsEffect() {
     return () => {
       shapes.forEach(s => s.remove());
     };
-  }, []); // Empty dependency array means it runs once on mount, and re-runs if component remounts (e.g., effect changes)
+  }, []);
 
   return (
     <div ref={containerRef} className={styles.plantsContainer}></div>
