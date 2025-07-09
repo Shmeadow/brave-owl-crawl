@@ -63,7 +63,7 @@ export function Widget({
   isMobile,
   isInsideDock = false, // Default to false
 }: WidgetProps) {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ // Destructure isDragging
     id: `widget-${id}`,
     data: { id, type: "widget", initialPosition: position },
     disabled: isPinned || isMaximized || isMobile || isInsideDock || isClosed, // Disable dragging if closed
@@ -166,6 +166,7 @@ export function Widget({
       className={cn(
         "bg-card/40 border-white/20 shadow-lg rounded-lg flex flex-col",
         "transition-all duration-300 ease-in-out",
+        isDragging && "transition-none", // Disable transitions during drag
         isTopmost ? "backdrop-blur-2xl" : "backdrop-blur-xl",
         isResizable ? "resize" : "",
         isMinimized && !isPinned ? "cursor-pointer" : "",

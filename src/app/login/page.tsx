@@ -45,7 +45,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className="flex items-center justify-center min-h-screen bg-background" // Simplified styling for centering
+      className="flex items-center justify-center min-h-screen" // Removed bg-background
       onClick={handleDismiss}
     >
       <div
