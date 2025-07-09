@@ -131,6 +131,10 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
           <span className="sr-only">Stats & Progress</span>
         </Button>
 
+        {session && (
+          <NotificationsDropdown />
+        )}
+
         <UserNameCapsule /> {/* New User Name Capsule */}
         <BackgroundBlurSlider className="hidden md:flex" />
 
@@ -150,10 +154,6 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
 
         <UpgradeButton />
         <ThemeToggle />
-        {session && (
-          // NotificationsDropdown is now rendered outside the Header in AppWrapper
-          null
-        )}
         {session && (
           <Button
             variant="ghost"

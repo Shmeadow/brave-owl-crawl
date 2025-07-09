@@ -155,17 +155,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               isMobile={isMobile}
               onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
             />
-            {/* New container for Notifications and Time/Progress Display */}
-            {!isMobile && (
-              <>
-                {session && (
-                  <div className="fixed top-16 right-[172px] z-[902]"> {/* Positioned to the left of the clock */}
-                    <DynamicNotificationsDropdown />
-                  </div>
-                )}
-                <DynamicTimeAndProgressDisplay /> {/* This component is already fixed right-4 */}
-              </>
-            )}
+            {/* Time and Progress Display is now inside Header */}
+            {/* NotificationsDropdown is now inside Header */}
             <DynamicWelcomeBackModal
               isOpen={showWelcomeBack}
               onClose={() => setShowWelcomeBack(false)}

@@ -25,9 +25,17 @@ export function useRoomFetching() {
       const { data: createdRooms, error: createdError } = await supabase
         .from('rooms')
         .select(`
-          *,
+          id,
+          creator_id,
+          name,
+          created_at,
+          background_url,
+          is_video_background,
           room_members(user_id),
-          creator:profiles!creator_id(first_name, last_name)
+          password_hash,
+          type,
+          closes_at,
+          deleted_at
         `)
         .eq('creator_id', session.user.id)
         .is('deleted_at', null) // Ensure not soft-deleted
@@ -48,9 +56,17 @@ export function useRoomFetching() {
         .select(`
           room_id,
           rooms (
-            *,
+            id,
+            creator_id,
+            name,
+            created_at,
+            background_url,
+            is_video_background,
             room_members(user_id),
-            creator:profiles!creator_id(first_name, last_name)
+            password_hash,
+            type,
+            closes_at,
+            deleted_at
           )
         `)
         .eq('user_id', session.user.id);
@@ -69,9 +85,17 @@ export function useRoomFetching() {
       const { data: publicRooms, error: publicRoomsError } = await supabase
         .from('rooms')
         .select(`
-          *,
+          id,
+          creator_id,
+          name,
+          created_at,
+          background_url,
+          is_video_background,
           room_members(user_id),
-          creator:profiles!creator_id(first_name, last_name)
+          password_hash,
+          type,
+          closes_at,
+          deleted_at
         `)
         .eq('type', 'public')
         .is('deleted_at', null)
@@ -95,9 +119,17 @@ export function useRoomFetching() {
       const { data: publicRooms, error: publicRoomsError } = await supabase
         .from('rooms')
         .select(`
-          *,
+          id,
+          creator_id,
+          name,
+          created_at,
+          background_url,
+          is_video_background,
           room_members(user_id),
-          creator:profiles!creator_id(first_name, last_name)
+          password_hash,
+          type,
+          closes_at,
+          deleted_at
         `)
         .eq('type', 'public')
         .is('deleted_at', null)

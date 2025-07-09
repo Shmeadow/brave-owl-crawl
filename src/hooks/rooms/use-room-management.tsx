@@ -33,7 +33,19 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
         is_video_background: randomBg.isVideo,
         type: type, // Set the room type
       })
-      .select('*, creator:profiles(first_name, last_name)')
+      .select(`
+        id,
+        creator_id,
+        name,
+        created_at,
+        background_url,
+        is_video_background,
+        room_members(user_id),
+        password_hash,
+        type,
+        closes_at,
+        deleted_at
+      `) // Select only necessary fields, remove direct creator join
       .single();
 
     if (error) {

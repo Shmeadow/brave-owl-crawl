@@ -2,11 +2,10 @@
 
 import React, { useRef } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
-import { Auth } from "@supabase/auth-ui-react";
-import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { Loader2 } from "lucide-react";
 import { redirect, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { AuthForm } from "@/components/auth/auth-form.tsx"; // Confirmed path and extension
 
 export default function LoginPage() {
   const { supabase, session, loading } = useSupabase();
@@ -45,7 +44,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className="flex items-center justify-center min-h-screen" // Removed bg-background
+      className="flex items-center justify-center min-h-screen"
       onClick={handleDismiss}
     >
       <div
@@ -56,38 +55,7 @@ export default function LoginPage() {
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="grid gap-2 text-center">
-          <h1 className="text-3xl font-bold">Sign In / Sign Up</h1>
-          <p className="text-balance text-muted-foreground">
-            Access your personalized workspace.
-          </p>
-        </div>
-        <Auth
-          supabaseClient={supabase}
-          appearance={{ theme: ThemeSupa }}
-          providers={["google", "github"]}
-          theme="light"
-          view="sign_in"
-          redirectTo="/dashboard"
-          localization={{
-            variables: {
-              sign_up: {
-                email_label: 'Email address',
-                password_label: 'Create a password',
-                button_label: 'Create account',
-                social_provider_text: 'Sign up with {{provider}}',
-                link_text: "Already have an account? Sign in",
-              },
-              sign_in: {
-                email_label: 'Email address',
-                password_label: 'Your password',
-                button_label: 'Sign in',
-                social_provider_text: 'Sign in with {{provider}}',
-                link_text: "Don't have an account? Create one",
-              },
-            },
-          }}
-        />
+        <AuthForm onAuthSuccess={() => router.push('/dashboard')} />
       </div>
     </div>
   );

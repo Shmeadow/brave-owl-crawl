@@ -44,15 +44,13 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
     toast.success("Room ID copied to clipboard!");
   };
 
-  const getRoomCreatorName = (room: RoomData) => {
+  const getRoomCreatorDisplay = (room: RoomData) => {
     if (session?.user?.id === room.creator_id) {
       return "You";
     }
-    if (room.creator) {
-      const name = [room.creator.first_name, room.creator.last_name].filter(Boolean).join(' ');
-      return name || `User (${room.creator_id.substring(0, 4)}...)`;
-    }
-    return `User (${room.creator_id.substring(0, 4)}...)`;
+    // Since we removed the direct 'creator' join, we can't get their name easily here.
+    // Display a generic "Another User" or a truncated ID.
+    return `Another User (${room.creator_id.substring(0, 4)}...)`;
   };
 
   const openAddMemberDialog = (roomId: string) => {
@@ -189,7 +187,7 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
                         {room.type === 'private' && room.password_hash && ' (Password Protected)'}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Created by: {getRoomCreatorName(room)}
+                        Created by: {getRoomCreatorDisplay(room)}
                       </p>
                       {room.closes_at && (
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
