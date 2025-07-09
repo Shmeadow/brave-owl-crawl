@@ -4,17 +4,17 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Trash2, LogIn, LogOut, Copy, UserPlus } from "lucide-react"; // Added UserPlus icon
+import { Trash2, LogIn, LogOut, Copy, UserPlus, Lock, Globe } from "lucide-react"; // Added Lock and Globe icons
 import { useRooms, RoomData } from "@/hooks/use-rooms";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"; // Import Dialog components
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import Image from "next/image"; // Import next/image
-import { SelectItem } from "@/components/ui/select"; // Explicitly import SelectItem
+import Image from "next/image";
+import { SelectItem } from "@/components/ui/select";
 
 interface MyRoomsSectionProps {
   myCreatedRooms: RoomData[];
@@ -24,14 +24,14 @@ interface MyRoomsSectionProps {
 export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSectionProps) {
   const { session } = useSupabase();
   const {
-    handleSendRoomInvitation, // New function
+    handleSendRoomInvitation,
     handleLeaveRoom,
     handleDeleteRoom,
   } = useRooms();
   const { currentRoomId, setCurrentRoom } = useCurrentRoom();
 
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
-  const [memberEmailInput, setMemberEmailInput] = useState(""); // Changed to email
+  const [memberEmailInput, setMemberEmailInput] = useState("");
   const [selectedRoomForMember, setSelectedRoomForMember] = useState<string | null>(null);
 
   const handleEnterRoom = (room: RoomData) => {
@@ -102,8 +102,11 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
                     </div>
                     <div className="flex-1 pr-2 mb-2 sm:mb-0">
                       <p className="font-medium text-sm">{room.name} (Created by You)</p>
-                      <p className="text-xs text-muted-foreground">Private Room</p>
-                      {/* Display Room ID and copy button */}
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        {room.type === 'public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                        {room.type === 'public' ? 'Public Room' : 'Private Room'}
+                        {room.type === 'private' && room.password_hash && ' (Password Protected)'}
+                      </p>
                       <div className="flex items-center mt-1">
                         <p className="text-xs text-primary">Room ID: <span className="font-bold">{room.id.substring(0, 8)}...</span></p>
                         <Button
@@ -174,6 +177,11 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
                     </div>
                     <div className="flex-1 pr-2">
                       <p className="font-medium text-sm">{room.name} (Joined)</p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        {room.type === 'public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                        {room.type === 'public' ? 'Public Room' : 'Private Room'}
+                        {room.type === 'private' && room.password_hash && ' (Password Protected)'}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         Created by: {getRoomCreatorName(room)}
                       </p>

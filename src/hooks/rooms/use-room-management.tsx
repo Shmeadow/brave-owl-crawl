@@ -16,7 +16,7 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
   const { supabase, session } = useSupabase();
   const { addNotification } = useNotifications(); // Use the notifications hook
 
-  const handleCreateRoom = useCallback(async (name: string) => { // Removed isPublic parameter
+  const handleCreateRoom = useCallback(async (name: string, type: 'public' | 'private') => { // Added type parameter
     if (!session?.user?.id || !supabase) {
       toast.error("You must be logged in to create a room.");
       return { data: null, error: { message: "Not logged in" } }; // Return error object
@@ -31,6 +31,7 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
         name: name,
         background_url: randomBg.url,
         is_video_background: randomBg.isVideo,
+        type: type, // Set the room type
       })
       .select('*, creator:profiles(first_name, last_name)')
       .single();
@@ -48,9 +49,103 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
     return { data: null, error: { message: "Unknown error creating room" } }; // Fallback
   }, [session, supabase, setRooms, addNotification]);
 
-  // Removed handleToggleRoomPublicStatus
-  // Removed handleToggleGuestWriteAccess
-  // Removed handleSetRoomPassword
+  const handleUpdateRoomType = useCallback(async (roomId: string, newType: 'public' | 'private') => {
+    if (!session?.user?.id || !supabase) {
+      toast.error("You must be logged in to update room settings.");
+      return;
+    }
+
+    const { data: room, error: fetchRoomError } = await supabase
+      .from('rooms')
+      .select('creator_id, name, password_hash')
+      .eq('id', roomId)
+      .single();
+
+    if (fetchRoomError || !room) {
+      toast.error("Room not found or access denied.");
+      console.error("Error fetching room for type update:", fetchRoomError);
+      return;
+    }
+
+    if (room.creator_id !== session.user.id) {
+      toast.error("You can only change the type of rooms you created.");
+      return;
+    }
+
+    let updateData: { type: 'public' | 'private'; password_hash?: string | null } = { type: newType };
+
+    // If changing to public, remove any password
+    if (newType === 'public' && room.password_hash) {
+      updateData.password_hash = null;
+    }
+
+    const { error } = await supabase
+      .from('rooms')
+      .update(updateData)
+      .eq('id', roomId)
+      .eq('creator_id', session.user.id);
+
+    if (error) {
+      toast.error("Error updating room type: " + error.message);
+      console.error("Error updating room type:", error);
+    } else {
+      toast.success(`Room "${room.name}" is now ${newType}.`);
+      fetchRooms(); // Re-fetch to update local state and other components
+    }
+  }, [session, supabase, fetchRooms]);
+
+  const handleSetRoomPassword = useCallback(async (roomId: string, password: string | null) => {
+    if (!session?.user?.id || !supabase) {
+      toast.error("You must be logged in to set a room password.");
+      return;
+    }
+
+    const { data: room, error: fetchRoomError } = await supabase
+      .from('rooms')
+      .select('creator_id, name, type')
+      .eq('id', roomId)
+      .single();
+
+    if (fetchRoomError || !room) {
+      toast.error("Room not found or access denied.");
+      console.error("Error fetching room for password update:", fetchRoomError);
+      return;
+    }
+
+    if (room.creator_id !== session.user.id) {
+      toast.error("You can only set passwords for rooms you created.");
+      return;
+    }
+
+    if (room.type === 'public' && password) {
+      toast.error("Cannot set a password for a public room. Change room type to private first.");
+      return;
+    }
+
+    try {
+      const response = await fetch('https://mrdupsekghsnbooyrdmj.supabase.co/functions/v1/set-room-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ roomId, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error("Error setting password: " + (data.error || "Unknown error"));
+        console.error("Error setting password:", data.error);
+      } else {
+        toast.success(password ? "Room password set successfully!" : "Room password removed successfully!");
+        fetchRooms(); // Re-fetch to update local state
+      }
+    } catch (error) {
+      toast.error("Failed to set password due to network error.");
+      console.error("Network error setting password:", error);
+    }
+  }, [session, supabase, fetchRooms]);
 
   const handleSendRoomInvitation = useCallback(async (roomId: string, receiverEmail: string) => { // Changed receiverId to receiverEmail
     if (!session?.user?.id || !supabase) {
@@ -196,7 +291,9 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
 
   return {
     handleCreateRoom,
-    handleSendRoomInvitation, // Renamed and updated
+    handleUpdateRoomType, // New
+    handleSetRoomPassword, // New
+    handleSendRoomInvitation,
     handleDeleteRoom,
   };
 }

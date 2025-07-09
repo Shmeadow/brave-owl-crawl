@@ -5,25 +5,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Send, Lock, Eye, EyeOff } from "lucide-react"; // Added Lock, Eye, EyeOff icons
+import { Send, Lock, Eye, EyeOff, Globe } from "lucide-react"; // Added Globe icon
 import { useRooms } from "@/hooks/use-rooms";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function JoinRoomSection() {
   const { session } = useSupabase();
-  const { handleSendRoomInvitation, handleJoinRoomByRoomId, handleJoinRoomByPassword, rooms } = useRooms(); // Get rooms to filter for owned rooms
+  const { handleSendRoomInvitation, handleJoinRoomByRoomId, handleJoinRoomByPassword, rooms } = useRooms();
   const { currentRoomId, setCurrentRoom } = useCurrentRoom();
 
   const myCreatedRooms = rooms.filter(room => room.creator_id === session?.user?.id);
 
-  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(myCreatedRooms.length > 0 ? myCreatedRooms[0].id : null); // Use select for room ID
-  const [receiverEmail, setReceiverEmail] = useState(""); // Changed to email
-  const [joinRoomId, setJoinRoomId] = useState(""); // For joining by ID
-  const [joinPassword, setJoinPassword] = useState(""); // For joining by password
-  const [showPassword, setShowPassword] = useState(false); // To toggle password visibility
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(myCreatedRooms.length > 0 ? myCreatedRooms[0].id : null);
+  const [receiverEmail, setReceiverEmail] = useState("");
+  const [joinRoomId, setJoinRoomId] = useState("");
+  const [joinPassword, setJoinPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSendInvitationSubmit = async () => {
     if (!session) {
@@ -53,11 +53,6 @@ export function JoinRoomSection() {
     }
     const roomToJoin = rooms.find(r => r.id === joinRoomId.trim());
     if (roomToJoin) {
-      // If room has a password, direct join by ID is not allowed
-      if (roomToJoin.password_hash) {
-        toast.error("This room is password protected. Please use the 'Join by Password' section.");
-        return;
-      }
       await handleJoinRoomByRoomId(joinRoomId.trim());
       setCurrentRoom(roomToJoin.id, roomToJoin.name);
       setJoinRoomId("");
@@ -78,10 +73,6 @@ export function JoinRoomSection() {
     const roomToJoin = rooms.find(r => r.id === joinRoomId.trim());
     if (!roomToJoin) {
       toast.error("Room not found.");
-      return;
-    }
-    if (!roomToJoin.password_hash) {
-      toast.error("This room does not require a password. Use 'Join by ID' instead.");
       return;
     }
     await handleJoinRoomByPassword(joinRoomId.trim(), joinPassword.trim());
@@ -113,7 +104,7 @@ export function JoinRoomSection() {
               )}
               {myCreatedRooms.map(room => (
                 <SelectItem key={room.id} value={room.id}>
-                  {room.name}
+                  {room.name} ({room.type === 'public' ? 'Public' : 'Private'})
                 </SelectItem>
               ))}
             </SelectContent>
@@ -156,16 +147,16 @@ export function JoinRoomSection() {
             disabled={!session}
           />
           <Button onClick={handleJoinById} className="w-full" disabled={!session || !joinRoomId.trim()}>
-            <Lock className="mr-2 h-4 w-4" /> Join Room (No Password)
+            <Globe className="mr-2 h-4 w-4" /> Join Public Room
           </Button>
           <p className="text-sm text-muted-foreground">
-            Join a public room or a private room that does not require a password.
+            Join a public room directly using its ID.
           </p>
         </div>
 
         {/* Section: Join by Password */}
         <div className="space-y-2">
-          <Label htmlFor="join-room-password">Join by Password</Label>
+          <Label htmlFor="join-room-password">Join Private Room by Password</Label>
           <Input
             id="join-room-id-password"
             placeholder="Enter Room ID"
@@ -195,7 +186,7 @@ export function JoinRoomSection() {
             </Button>
           </div>
           <Button onClick={handleJoinByPasswordSubmit} className="w-full" disabled={!session || !joinRoomId.trim() || !joinPassword.trim()}>
-            <Lock className="mr-2 h-4 w-4" /> Join Room (With Password)
+            <Lock className="mr-2 h-4 w-4" /> Join Private Room
           </Button>
           <p className="text-sm text-muted-foreground">
             Join a private room that is protected by a password.

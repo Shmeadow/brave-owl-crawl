@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserMinus, Send } from "lucide-react"; // Changed UserPlus to Send
+import { UserMinus, Send, Lock, Eye, EyeOff } from "lucide-react";
 import { useRooms, RoomData, RoomMember } from "@/hooks/use-rooms";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
-import { useCurrentRoom } from "@/hooks/use-current-room"; // Import useCurrentRoom
+import { useCurrentRoom } from "@/hooks/use-current-room";
 
 interface RoomOwnerControlsSectionProps {
   currentRoom: RoomData;
@@ -20,21 +20,29 @@ interface RoomOwnerControlsSectionProps {
 export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: RoomOwnerControlsSectionProps) {
   const { supabase, session, profile } = useSupabase();
   const {
-    handleSendRoomInvitation, // New function
+    handleSendRoomInvitation,
     handleKickUser,
-    fetchRooms, // To re-fetch members after kick
+    handleUpdateRoomType, // New
+    handleSetRoomPassword, // New
+    fetchRooms,
   } = useRooms();
-  const { setCurrentRoom } = useCurrentRoom(); // Import setCurrentRoom to update local state
+  const { setCurrentRoom } = useCurrentRoom();
 
-  const [receiverEmailInput, setReceiverEmailInput] = useState(""); // Changed to email
+  const [receiverEmailInput, setReceiverEmailInput] = useState("");
   const [selectedUserToKick, setSelectedUserToKick] = useState<string | null>(null);
   const [roomMembers, setRoomMembers] = useState<RoomMember[]>([]);
-  const [editedRoomName, setEditedRoomName] = useState(currentRoom.name); // State for editing room name
+  const [editedRoomName, setEditedRoomName] = useState(currentRoom.name);
+  const [roomType, setRoomType] = useState<'public' | 'private'>(currentRoom.type); // State for room type
+  const [roomPassword, setRoomPassword] = useState(""); // State for new password input
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Effect to update editedRoomName when currentRoom changes
+  // Effect to update local states when currentRoom prop changes
   useEffect(() => {
     setEditedRoomName(currentRoom.name);
-  }, [currentRoom.name]);
+    setRoomType(currentRoom.type);
+    // Do not set roomPassword from currentRoom.password_hash for security reasons.
+    // The input should only be for *setting* a new password.
+  }, [currentRoom]);
 
   // Fetch room members when currentRoom changes and user is owner
   useEffect(() => {
@@ -93,7 +101,7 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
   }, [currentRoom.id, isOwnerOfCurrentRoom, selectedUserToKick, handleKickUser]);
 
   const handleUpdateRoomName = async () => {
-    if (!currentRoom.id || !isOwnerOfCurrentRoom || !supabase || !session) { // Added null checks for supabase and session
+    if (!currentRoom.id || !isOwnerOfCurrentRoom || !supabase || !session) {
       toast.error("You must be the owner of the current room and logged in to change its name.");
       return;
     }
@@ -106,7 +114,7 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
       .from('rooms')
       .update({ name: editedRoomName.trim() })
       .eq('id', currentRoom.id)
-      .eq('creator_id', session.user.id) // Ensure only creator can update
+      .eq('creator_id', session.user.id)
       .select('name')
       .single();
 
@@ -115,9 +123,32 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
       console.error("Error updating room name:", error);
     } else if (data) {
       toast.success(`Room name updated to "${data.name}"!`);
-      setCurrentRoom(currentRoom.id, data.name); // Update the current room name in context
-      fetchRooms(); // Re-fetch to update the list of rooms
+      setCurrentRoom(currentRoom.id, data.name);
+      fetchRooms();
     }
+  };
+
+  const handleUpdateRoomTypeClick = async (newType: 'public' | 'private') => {
+    if (currentRoom.type === newType) return; // No change needed
+    await handleUpdateRoomType(currentRoom.id, newType);
+    setRoomType(newType); // Update local state after successful update
+  };
+
+  const handleSetPasswordClick = async () => {
+    if (roomType === 'public') {
+      toast.error("Cannot set a password for a public room. Change room type to private first.");
+      return;
+    }
+    if (!roomPassword.trim()) {
+      toast.error("Password cannot be empty.");
+      return;
+    }
+    await handleSetRoomPassword(currentRoom.id, roomPassword.trim());
+    setRoomPassword(""); // Clear password input after setting
+  };
+
+  const handleRemovePasswordClick = async () => {
+    await handleSetRoomPassword(currentRoom.id, null);
   };
 
   if (!isOwnerOfCurrentRoom || !currentRoom) {
@@ -142,6 +173,63 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
             Update Room Name
           </Button>
         </div>
+
+        {/* Room Type (Public/Private) */}
+        <div className="space-y-2">
+          <Label>Room Type</Label>
+          <Select value={roomType} onValueChange={handleUpdateRoomTypeClick}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select room type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="private">Private (Invite/Password Only)</SelectItem>
+              <SelectItem value="public">Public (Anyone Can Join by ID)</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-sm text-muted-foreground">
+            {roomType === 'private'
+              ? 'Only invited members or those with a password can join.'
+              : 'Anyone with the Room ID can join directly.'}
+          </p>
+        </div>
+
+        {/* Password Management (only for private rooms) */}
+        {roomType === 'private' && (
+          <div className="space-y-2">
+            <Label htmlFor="room-password">Room Password (Optional)</Label>
+            <div className="relative">
+              <Input
+                id="room-password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Set a password for this room"
+                value={roomPassword}
+                onChange={(e) => setRoomPassword(e.target.value)}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                onClick={() => setShowPassword(!showPassword)}
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
+            <Button onClick={handleSetPasswordClick} className="w-full" disabled={!roomPassword.trim()}>
+              <Lock className="mr-2 h-4 w-4" /> Set Password
+            </Button>
+            {currentRoom.password_hash && (
+              <Button onClick={handleRemovePasswordClick} variant="outline" className="w-full mt-2">
+                Remove Password
+              </Button>
+            )}
+            <p className="text-sm text-muted-foreground">
+              Set a password for this private room. Users can join using this password.
+            </p>
+          </div>
+        )}
+
         {/* Send Invitation */}
         <div className="space-y-2">
           <Label htmlFor="send-invitation-user-email">Send Invitation (by Email)</Label>
@@ -170,7 +258,7 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
               </SelectTrigger>
               <SelectContent>
                 {roomMembers.filter(member => member.user_id !== session?.user?.id).map(member => (
-                  <SelectItem key={member.user_id} value={member.user_id}> {/* Corrected from member.user.id to member.user_id */}
+                  <SelectItem key={member.user_id} value={member.user_id}>
                     {member.profiles?.[0]?.first_name || member.profiles?.[0]?.last_name || `User (${member.user_id.substring(0, 8)}...)`}
                   </SelectItem>
                 ))}

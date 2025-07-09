@@ -9,14 +9,16 @@ import { PlusCircle } from "lucide-react";
 import { useRooms } from "@/hooks/use-rooms";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
-import { useCurrentRoom } from "@/hooks/use-current-room"; // Import useCurrentRoom
+import { useCurrentRoom } from "@/hooks/use-current-room";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
 
 export function CreateRoomSection() {
   const { session } = useSupabase();
   const { handleCreateRoom } = useRooms();
-  const { setCurrentRoom } = useCurrentRoom(); // Use setCurrentRoom
+  const { setCurrentRoom } = useCurrentRoom();
 
   const [newRoomName, setNewRoomName] = useState("");
+  const [newRoomType, setNewRoomType] = useState<'public' | 'private'>('private'); // Default to private
 
   const handleCreateNewRoom = async () => {
     if (!session) {
@@ -27,11 +29,10 @@ export function CreateRoomSection() {
       toast.error("Room name cannot be empty.");
       return;
     }
-    // handleCreateRoom now returns the created room data
-    const { data, error } = await handleCreateRoom(newRoomName.trim());
+    const { data, error } = await handleCreateRoom(newRoomName.trim(), newRoomType); // Pass newRoomType
     if (!error && data) {
       setNewRoomName("");
-      setCurrentRoom(data.id, data.name); // Set the newly created room as current
+      setCurrentRoom(data.id, data.name);
     }
   };
 
@@ -50,6 +51,18 @@ export function CreateRoomSection() {
             onChange={(e) => setNewRoomName(e.target.value)}
             disabled={!session}
           />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="new-room-type">Room Type</Label>
+          <Select value={newRoomType} onValueChange={(value: 'public' | 'private') => setNewRoomType(value)} disabled={!session}>
+            <SelectTrigger id="new-room-type">
+              <SelectValue placeholder="Select room type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="private">Private (Invite/Password Only)</SelectItem>
+              <SelectItem value="public">Public (Anyone Can Join by ID)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <Button onClick={handleCreateNewRoom} className="w-full" disabled={!session}>
           <PlusCircle className="mr-2 h-4 w-4" /> Create Room

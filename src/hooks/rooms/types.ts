@@ -11,7 +11,8 @@ export interface RoomData {
     last_name: string | null;
   } | null;
   room_members: { user_id: string }[];
-  password_hash: string | null; // Added password_hash
+  password_hash: string | null;
+  type: 'public' | 'private'; // New: Room type
 }
 
 export interface RoomMember {

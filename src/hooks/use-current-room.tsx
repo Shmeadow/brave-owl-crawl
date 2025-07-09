@@ -3,14 +3,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { useSupabase } from "@/integrations/supabase/auth";
-import { useRooms } from "./use-rooms"; // Import useRooms
+import { useRooms } from "./use-rooms";
 
 const LOCAL_STORAGE_CURRENT_ROOM_ID_KEY = 'current_room_id';
 const LOCAL_STORAGE_CURRENT_ROOM_NAME_KEY = 'current_room_name';
 
 export function useCurrentRoom() {
-  const { supabase, session, profile, loading: authLoading } = useSupabase(); // Get profile here
-  const { rooms, loading: roomsLoading } = useRooms(); // Get rooms and their loading state
+  const { supabase, session, profile, loading: authLoading } = useSupabase();
+  const { rooms, loading: roomsLoading } = useRooms();
   
   const [currentRoomId, setCurrentRoomIdState] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
@@ -21,8 +21,6 @@ export function useCurrentRoom() {
 
   const [currentRoomName, setCurrentRoomNameState] = useState<string>(() => {
     if (typeof window !== 'undefined') {
-      // For guest users or initial load, default to "My Room".
-      // For logged-in users, this will be overwritten by their personal room name fetched from Supabase.
       return localStorage.getItem(LOCAL_STORAGE_CURRENT_ROOM_NAME_KEY) || "My Room";
     }
     return "My Room";
@@ -31,7 +29,6 @@ export function useCurrentRoom() {
   const [isCurrentRoomWritable, setIsCurrentRoomWritable] = useState(true);
 
   const setCurrentRoom = useCallback((id: string | null, name: string) => {
-    // Only update state if values are actually different
     setCurrentRoomIdState(prevId => {
       if (prevId !== id) {
         return id;
@@ -50,7 +47,6 @@ export function useCurrentRoom() {
   // Effect to synchronize current room with session and available rooms
   useEffect(() => {
     if (authLoading || roomsLoading) {
-      // Still loading auth or rooms, defer logic
       return;
     }
 
@@ -66,7 +62,7 @@ export function useCurrentRoom() {
 
     // User is logged in
     let targetRoomId: string | null = null;
-    let targetRoomName: string = "My Room"; // Default for logged-in if no specific room found
+    let targetRoomName: string = "My Room";
 
     // 1. Try to use personal_room_id from profile
     if (profile?.personal_room_id) {
@@ -75,8 +71,6 @@ export function useCurrentRoom() {
         targetRoomId = personalRoom.id;
         targetRoomName = personalRoom.name;
       } else {
-        // If personal_room_id exists in profile but room not found in `rooms` list,
-        // it might be a timing issue or data inconsistency. Log and try fallback.
         console.warn(`Personal room (ID: ${profile.personal_room_id}) not found in fetched rooms.`);
       }
     }
@@ -97,12 +91,10 @@ export function useCurrentRoom() {
       if (targetRoomId) {
         toast.info(`Switched to room: ${targetRoomName}`);
       } else {
-        // This case means logged in but no personal room and no other created rooms.
-        // This should ideally not happen if handle_new_user always creates a personal room.
         toast.info("No personal room found. Defaulting to 'My Room'.");
       }
     }
-  }, [authLoading, roomsLoading, session, profile, rooms, currentRoomId, currentRoomName]); // Added profile to dependencies
+  }, [authLoading, roomsLoading, session, profile, rooms, currentRoomId, currentRoomName]);
 
   // Effect to persist current room ID to local storage
   useEffect(() => {
@@ -125,7 +117,6 @@ export function useCurrentRoom() {
   // Effect to determine writability of the current room
   useEffect(() => {
     if (authLoading || roomsLoading) {
-      // Still loading auth or rooms, defer logic
       return;
     }
 
@@ -137,25 +128,22 @@ export function useCurrentRoom() {
     const room = rooms.find(r => r.id === currentRoomId);
 
     if (!room) {
-      // Room not found in the fetched list, assume not writable
-      setIsCurrentRoomWritable(false);
+      setIsCurrentRoomWritable(false); // Room not found in the fetched list, assume not writable
       return;
     }
 
     if (!session?.user?.id) {
-      // Not logged in, cannot write to any persistent room
-      setIsCurrentRoomWritable(false);
+      setIsCurrentRoomWritable(false); // Not logged in, cannot write to any persistent room
       return;
     }
 
-    // In the new system, only the creator has write access
+    // Only the creator has write access
     if (session.user.id === room.creator_id) {
       setIsCurrentRoomWritable(true);
       return;
     }
     
-    // Default to false if no conditions met
-    setIsCurrentRoomWritable(false);
+    setIsCurrentRoomWritable(false); // Default to false if no conditions met
   }, [currentRoomId, session, rooms, authLoading, roomsLoading]);
 
 

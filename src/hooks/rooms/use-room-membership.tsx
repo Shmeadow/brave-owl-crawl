@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
 import { RoomData } from "./types";
-import { useNotifications } from "@/hooks/use-notifications"; // Import useNotifications
+import { useNotifications } from "@/hooks/use-notifications";
 
 interface UseRoomMembershipProps {
   rooms: RoomData[];
@@ -13,7 +13,7 @@ interface UseRoomMembershipProps {
 
 export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps) {
   const { supabase, session } = useSupabase();
-  const { addNotification } = useNotifications(); // Use the notifications hook
+  const { addNotification } = useNotifications();
 
   const handleJoinRoomByRoomId = useCallback(async (roomId: string) => {
     if (!session?.user?.id || !supabase) {
@@ -38,17 +38,28 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
       return;
     }
 
-    // If room has a password, prevent direct join by ID
-    if (room.password_hash) {
-      toast.error("This room is password protected. Please use the 'Join by Password' section.");
+    // If room is private, it cannot be joined by ID directly (needs invite or password)
+    if (room.type === 'private') {
+      toast.error("This is a private room. You need an invitation or a password to join.");
       return;
     }
 
-    // For non-password protected rooms, direct join is not allowed without invitation
-    toast.info("You need an invitation from the room owner to join this room.");
-    // Optionally, you could add logic here to prompt sending an invitation request to the owner.
+    // For public rooms without password, allow direct join
+    const { error: memberInsertError } = await supabase
+      .from('room_members')
+      .insert({ room_id: roomId, user_id: session.user.id });
 
-  }, [session, supabase, rooms]);
+    if (memberInsertError) {
+      toast.error("Error joining room: " + memberInsertError.message);
+      console.error("Error inserting room member:", memberInsertError);
+      return;
+    }
+
+    toast.success(`You successfully joined "${room.name}"!`);
+    fetchRooms();
+    addNotification(`You joined the room: "${room.name}".`);
+
+  }, [session, supabase, rooms, fetchRooms, addNotification]);
 
   const handleJoinRoomByPassword = useCallback(async (roomId: string, passwordAttempt: string) => {
     if (!session?.user?.id || !supabase) {
@@ -63,11 +74,6 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
       return;
     }
 
-    if (!room.password_hash) {
-      toast.error("This room does not require a password. Use 'Join by ID' instead.");
-      return;
-    }
-
     if (room.creator_id === session.user.id) {
       toast.info("You are the creator of this room.");
       return;
@@ -75,6 +81,17 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
 
     if (room.is_member) {
       toast.info("You are already a member of this room.");
+      return;
+    }
+
+    // Only private rooms can be joined by password
+    if (room.type === 'public') {
+      toast.error("This is a public room and does not require a password. Use 'Join by Room ID' instead.");
+      return;
+    }
+
+    if (!room.password_hash) {
+      toast.error("This private room does not have a password set. You need an invitation to join.");
       return;
     }
 
@@ -107,7 +124,7 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
     }
 
     toast.success(`You successfully joined "${room.name}"!`);
-    fetchRooms(); // Re-fetch rooms to update membership status
+    fetchRooms();
     addNotification(`You joined the room: "${room.name}".`);
 
   }, [session, supabase, rooms, fetchRooms, addNotification]);
@@ -164,7 +181,7 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
       } else {
         toast.success("User kicked successfully!");
         fetchRooms();
-        addNotification(`You were kicked from the room: "${rooms.find(r => r.id === roomId)?.name || roomId.substring(0, 8) + '...'}"`, userIdToKick); // Notify the kicked user
+        addNotification(`You were kicked from the room: "${rooms.find(r => r.id === roomId)?.name || roomId.substring(0, 8) + '...'}"`, userIdToKick);
       }
     } catch (error) {
       toast.error("Failed to kick user due to network error.");
@@ -199,12 +216,11 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
     if (invitationUpdateError) {
       toast.error("Error updating invitation status: " + invitationUpdateError.message);
       console.error("Error updating invitation status:", invitationUpdateError);
-      // Even if invitation update fails, the user is already a member, so proceed.
     }
 
     toast.success(`You successfully joined "${roomName}"!`);
-    fetchRooms(); // Re-fetch rooms to update membership status
-    addNotification(`Your invitation to "${roomName}" was accepted.`, senderId); // Notify the sender
+    fetchRooms();
+    addNotification(`Your invitation to "${roomName}" was accepted.`, senderId);
   }, [session, supabase, fetchRooms, addNotification]);
 
   const handleRejectInvitation = useCallback(async (invitationId: string, roomName: string, senderId: string) => {
@@ -224,7 +240,7 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
       console.error("Error rejecting invitation:", error);
     } else {
       toast.info(`You rejected the invitation to "${roomName}".`);
-      addNotification(`Your invitation to "${roomName}" was rejected.`, senderId); // Notify the sender
+      addNotification(`Your invitation to "${roomName}" was rejected.`, senderId);
     }
   }, [session, supabase, addNotification]);
 

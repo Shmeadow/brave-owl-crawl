@@ -63,13 +63,48 @@ export function useRoomFetching() {
         userRooms = [...userRooms, ...joinedRooms];
       }
 
-      // Deduplicate rooms in case of any overlap (e.g., if a user is both creator and explicitly a member, though the latter should be prevented by logic)
+      // Fetch public rooms that the user is NOT a member of and did NOT create
+      const { data: publicRooms, error: publicRoomsError } = await supabase
+        .from('rooms')
+        .select(`
+          *,
+          room_members(user_id),
+          creator:profiles!creator_id(first_name, last_name)
+        `)
+        .eq('type', 'public')
+        .is('deleted_at', null)
+        .not('creator_id', 'eq', session.user.id)
+        .not('room_members.user_id', 'eq', session.user.id); // Filter out rooms where user is already a member
+
+      if (publicRoomsError) {
+        console.error("Error fetching public rooms:", publicRoomsError);
+      } else {
+        const newPublicRooms = (publicRooms as RoomData[]).map(room => ({ ...room, is_member: false }));
+        userRooms = [...userRooms, ...newPublicRooms];
+      }
+
+      // Deduplicate rooms in case of any overlap
       const uniqueRooms = Array.from(new Map(userRooms.map(room => [room.id, room])).values());
       setRooms(uniqueRooms);
 
     } else {
-      // If not logged in, clear rooms
-      setRooms([]);
+      // If not logged in, fetch only public rooms
+      const { data: publicRooms, error: publicRoomsError } = await supabase
+        .from('rooms')
+        .select(`
+          *,
+          room_members(user_id),
+          creator:profiles!creator_id(first_name, last_name)
+        `)
+        .eq('type', 'public')
+        .is('deleted_at', null);
+
+      if (publicRoomsError) {
+        console.error("Error fetching public rooms for guest:", publicRoomsError);
+        setRooms([]);
+      } else {
+        setRooms(publicRooms as RoomData[]);
+      }
     }
     
     setLoading(false);
