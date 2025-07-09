@@ -65,7 +65,7 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
 
   // Load state from Supabase or local storage on mount/auth change
   useEffect(() => {
-    if (authLoading || !mounted.current || mainContentArea.width === 0) return; // Wait for mainContentArea to be valid
+    if (authLoading || !mounted.current) return; // Removed `mainContentArea.width === 0`
 
     const currentSessionId = session?.user?.id || 'guest';
     if (currentSessionId === hasLoadedForSession.current) return; // Don't reload for the same session
