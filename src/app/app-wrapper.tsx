@@ -155,7 +155,15 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               isMobile={isMobile}
               onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
             />
-            {!isMobile && <DynamicTimeAndProgressDisplay className="fixed top-16 right-4 z-[902] bg-card/50 backdrop-blur-xl border border-white/20 rounded-lg p-2" />}
+            {/* New container for Notifications and Time/Progress Display */}
+            {!isMobile && (
+              <div className="fixed top-16 right-4 z-[902] flex items-center gap-2">
+                {session && (
+                  <DynamicNotificationsDropdown />
+                )}
+                <DynamicTimeAndProgressDisplay />
+              </div>
+            )}
             <DynamicWelcomeBackModal
               isOpen={showWelcomeBack}
               onClose={() => setShowWelcomeBack(false)}
@@ -219,7 +227,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               isCurrentRoomWritable={isCurrentRoomWritable}
               isMobile={isMobile}
             />
-            <DynamicNotificationsDropdown />
             <DynamicRoomSettingsDialog
               isOpen={false} // This needs to be managed by a state in Header or a parent
               onClose={() => {}}

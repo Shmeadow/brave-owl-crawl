@@ -73,20 +73,16 @@ export function TimeAndProgressDisplay({ className }: TimeAndProgressDisplayProp
 
       let newGradient;
       if (nowTime < sunrise) {
-        // Night to sunrise (dark blue-purple to muted orange-brown)
-        // Start with a deep night color, transition to a pre-dawn/early morning hue
+        // Night to sunrise (dark blue-purple to pre-dawn hue)
         newGradient = 'linear-gradient(to right, hsl(240 20% 10%), hsl(25 30% 25%))';
       } else if (nowTime < times.solarNoon.getTime()) {
-        // Sunrise to noon (muted green to soft yellow)
-        // Transition from a vibrant morning gold to a bright day yellow
-        newGradient = 'linear-gradient(to right, hsl(45 90% 55%), hsl(50 80% 70%))'; // Using --gold and a brighter yellow
+        // Sunrise to noon (morning gold to bright day yellow)
+        newGradient = 'linear-gradient(to right, hsl(45 90% 55%), hsl(50 80% 70%))';
       } else if (nowTime < sunset) {
-        // Noon to sunset (soft yellow to warm orange)
-        // Transition from bright day yellow to a rich sunset orange
-        newGradient = 'linear-gradient(to right, hsl(50 80% 70%), hsl(15 85% 55%))'; // Brighter yellow to more saturated orange
+        // Noon to sunset (bright day yellow to rich sunset orange)
+        newGradient = 'linear-gradient(to right, hsl(50 80% 70%), hsl(15 85% 55%))';
       } else {
-        // Sunset to night (warm orange to dark blue-purple)
-        // Transition from rich sunset orange back to deep night color
+        // Sunset to night (rich sunset orange back to deep night blue)
         newGradient = 'linear-gradient(to right, hsl(15 85% 55%), hsl(240 20% 10%))';
       }
       setGradient(newGradient);
@@ -101,7 +97,7 @@ export function TimeAndProgressDisplay({ className }: TimeAndProgressDisplayProp
   return (
     <div
       className={cn(
-        "fixed top-16 right-4 z-[902] bg-card/50 backdrop-blur-xl border border-white/20 rounded-lg p-2",
+        "bg-card/50 backdrop-blur-xl border border-white/20 rounded-lg p-2", // Removed fixed positioning and right-4
         "flex flex-col items-center text-sm font-mono text-muted-foreground",
         className
       )}

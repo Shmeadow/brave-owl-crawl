@@ -151,7 +151,8 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         <UpgradeButton />
         <ThemeToggle />
         {session && (
-          <NotificationsDropdown />
+          // NotificationsDropdown is now rendered outside the Header in AppWrapper
+          null
         )}
         {session && (
           <Button
