@@ -60,6 +60,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
 
   const chatPanelWidth = isChatOpen ? 320 : 56;
   const isDashboard = pathname === '/dashboard';
+  const isLoginPage = pathname === '/login'; // New: Check if it's the login page
 
   const handleNewUnreadMessage = () => {
     setUnreadChatCount((prev) => prev + 1);
@@ -120,7 +121,17 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     return <>{children}</>;
   }
 
-  // Render the main application layout
+  // If it's the login page, render only children and Toaster
+  if (isLoginPage) {
+    return (
+      <>
+        {children}
+        <Toaster />
+      </>
+    );
+  }
+
+  // Render the main application layout for all other pages
   return (
     <AmbientSoundProvider>
       <FocusSessionProvider>
