@@ -13,7 +13,7 @@ interface GoalFocusWidgetProps {
 }
 
 export function GoalFocusWidget({ isCurrentRoomWritable }: GoalFocusWidgetProps) {
-  const { goals, loading, isLoggedInMode, handleAddGoal, handleToggleComplete, handleDeleteGoal } = useGoals();
+  const { goals, loading, isLoggedInMode, handleAddGoal, handleToggleComplete, handleUpdateGoal, handleDeleteGoal } = useGoals();
   const [view, setView] = useState<'kickoff' | 'manage'>('kickoff');
 
   const hasIncompleteGoals = goals.some(g => !g.completed);
@@ -58,6 +58,7 @@ export function GoalFocusWidget({ isCurrentRoomWritable }: GoalFocusWidgetProps)
         <GoalList
           goals={goals}
           onToggleComplete={handleToggleComplete}
+          onUpdateGoal={handleUpdateGoal}
           onDelete={handleDeleteGoal}
           isCurrentRoomWritable={isCurrentRoomWritable}
         />

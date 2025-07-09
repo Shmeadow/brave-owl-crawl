@@ -464,5 +464,6 @@ export function usePomodoroState() {
     handleTimeDisplayClick,
     handleTimeInputBlur,
     setCustomTime, // Expose the new function
+    loading: loading, // Expose loading state
   };
 }

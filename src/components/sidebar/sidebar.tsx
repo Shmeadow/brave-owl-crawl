@@ -6,12 +6,12 @@ import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
 import { useWidget } from "@/components/widget/widget-provider";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
-import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Gamepad2, BookOpen, Goal, ChevronLeft, ChevronRight, WandSparkles } from "lucide-react"; // Corrected: WandSparkples to WandSparkles
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, BarChart2, BookOpen, Goal, ChevronLeft, ChevronRight, WandSparkles } from "lucide-react"; // Corrected: WandSparkples to WandSparkles, added BarChart2
 
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
 const SIDEBAR_WIDTH_EXPANDED = 120; // px - New width for expanded desktop sidebar (reduced from 180)
-const SIDEBAR_WIDTH_MOBILE = 200; // px for the off-canvas menu
 const HOT_ZONE_WIDTH = 20; // px (includes the 4px visible strip)
+const SIDEBAR_WIDTH_MOBILE = 250; // px - Define a width for mobile sidebar
 const UNDOCK_DELAY = 500; // ms
 const HEADER_HEIGHT_REM = 4; // 4rem = 64px
 
@@ -96,7 +96,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
     { id: "tasks", label: "Tasks", icon: ListTodo },
     { id: "notes", label: "Notes", icon: NotebookPen },
     { id: "media", label: "Media", icon: Image },
-    { id: "games", label: "Games", icon: Gamepad2 },
+    { id: "stats-progress", label: "Stats & Progress", icon: BarChart2 }, // Renamed from games
     { id: "flash-cards", label: "Flash Cards", icon: BookOpen },
     { id: "goal-focus", label: "Goal Focus", icon: Goal },
   ];

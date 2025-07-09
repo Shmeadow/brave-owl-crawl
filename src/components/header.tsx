@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Bell, Search, Menu, LayoutGrid, MessageSquare, Copy } from "lucide-react";
+import { Home, Bell, Search, Menu, LayoutGrid, MessageSquare, Copy, BarChart2 } from "lucide-react"; // Added BarChart2
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,7 @@ import { useRooms } from "@/hooks/use-rooms";
 import { toast } from "sonner";
 import Link from "next/link";
 import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
+import { useWidget } from "@/components/widget/widget-provider"; // Import useWidget
 
 interface HeaderProps {
   onToggleChat: () => void;
@@ -39,6 +40,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
   const router = useRouter();
   const { currentRoomName, currentRoomId, isCurrentRoomWritable, setCurrentRoom } = useCurrentRoom();
   const { handleJoinRoomByRoomId } = useRooms();
+  const { toggleWidget } = useWidget(); // Use toggleWidget
 
   const handleCopyRoomId = () => {
     if (currentRoomId) {
@@ -104,6 +106,17 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
       </div>
 
       <div className="flex items-center gap-2 ml-auto pr-4 bg-card/50 rounded-full px-4 py-2 border border-white/20">
+        {/* New Stats & Progress Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          title="Stats & Progress"
+          onClick={() => toggleWidget('stats-progress', 'Stats & Progress')}
+        >
+          <BarChart2 className="h-5 w-5" />
+          <span className="sr-only">Stats & Progress</span>
+        </Button>
+
         <ClockDisplay className="hidden md:flex" />
         <BackgroundBlurSlider className="hidden md:flex" />
 
