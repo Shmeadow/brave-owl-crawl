@@ -50,7 +50,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
   };
 
   return (
-    <header className="sticky top-0 z-[1002] w-full border-b border-transparent bg-transparent backdrop-blur-xl flex items-center h-16">
+    <header className="sticky top-0 z-[1002] w-full border-b border-transparent bg-transparent flex items-center h-16">
       <div className="flex items-center pl-4">
         {isMobile && (
           <Button
