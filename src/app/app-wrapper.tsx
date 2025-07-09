@@ -121,7 +121,9 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   }, [sidebarCurrentWidth, isMobile]);
 
   if (loading) {
-    return <LoadingScreen />;
+    return (
+      <LoadingScreen />
+    );
   }
   
   // If it's the pricing, login, or landing page, render only children and Toaster
@@ -153,7 +155,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               isMobile={isMobile}
               onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
             />
-            <DynamicTimeAndProgressDisplay className="fixed top-16 right-4 z-[902] bg-card/50 backdrop-blur-xl border border-white/20 rounded-lg p-2" /> {/* Now a fixed element */}
+            {!isMobile && <DynamicTimeAndProgressDisplay className="fixed top-16 right-4 z-[902] bg-card/50 backdrop-blur-xl border border-white/20 rounded-lg p-2" />}
             <DynamicWelcomeBackModal
               isOpen={showWelcomeBack}
               onClose={() => setShowWelcomeBack(false)}
