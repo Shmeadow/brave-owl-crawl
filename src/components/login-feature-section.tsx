@@ -28,19 +28,19 @@ export function LoginFeatureSection() {
       className={cn(
         "relative hidden lg:flex flex-col items-center justify-center",
         "bg-background/50 backdrop-blur-xl border-l border-white/20",
-        "py-20 px-12", // Increased vertical padding and horizontal padding
-        "text-center" // Ensure text is centered
+        "py-12 px-8", // Reduced vertical and horizontal padding
+        "text-center"
       )}
     >
-      <div className="text-center mb-12"> {/* Increased mb-8 to mb-12 */}
-        <h2 className="text-5xl font-extrabold text-foreground mb-4 leading-tight"> {/* Increased font size, weight, and added leading-tight */}
+      <div className="text-center mb-8"> {/* Reduced mb-12 to mb-8 */}
+        <h2 className="text-4xl font-extrabold text-foreground mb-3 leading-tight"> {/* Reduced text-5xl to text-4xl, mb-4 to mb-3 */}
           Welcome to <span className="text-primary">CozyHub</span>
         </h2>
-        <p className="text-2xl text-muted-foreground max-w-2xl mx-auto"> {/* Increased font size, added max-width */}
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto"> {/* Reduced text-2xl to text-xl */}
           Your all-in-one productivity and focus sanctuary.
         </p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full"> {/* Increased gap-6 to gap-8, max-w-3xl to max-w-4xl */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl w-full"> {/* Reduced gap-8 to gap-6, max-w-4xl to max-w-3xl */}
         {features.map((feature, index) => (
           <LoginFeatureCard
             key={index}
