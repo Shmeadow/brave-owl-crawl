@@ -353,7 +353,7 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
   return (
     <div className={cn(
       "fixed z-[900] transition-all duration-300 ease-in-out",
-      displayMode === 'normal' && `top-[110px] right-4 w-64`, // Adjusted top to 110px and width to w-64
+      displayMode === 'normal' && `top-[130px] right-4 w-64`, // Adjusted top to 130px and width to w-64
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-12',
       displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-[500px] flex flex-col items-center justify-center'
     )}>
@@ -387,7 +387,7 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
         )}
 
         <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
-          <div className="flex-grow min-w-0">
+          <div className="flex-shrink-0"> {/* Changed to flex-shrink-0 */}
             <Popover open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
               <PopoverTrigger asChild>
                 <button
