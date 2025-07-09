@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { UserNav } from "@/components/user-nav";
 import { UpgradeButton } from "@/components/upgrade-button";
 import { useCurrentRoom } from "@/hooks/use-current-room";
-import { ClockDisplay } from "@/components/clock-display";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BackgroundBlurSlider } from "@/components/background-blur-slider";
 import {
@@ -25,6 +24,7 @@ import Link from "next/link";
 import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
 import { useWidget } from "@/components/widget/widget-provider";
 import { RoomSettingsDialog } from "@/components/room-settings-dialog";
+import { UserNameCapsule } from "./user-name-capsule"; // Import new component
 
 interface HeaderProps {
   onToggleChat: () => void;
@@ -125,7 +125,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
           <span className="sr-only">Stats & Progress</span>
         </Button>
 
-        <ClockDisplay className="hidden md:flex" />
+        <UserNameCapsule /> {/* New User Name Capsule */}
         <BackgroundBlurSlider className="hidden md:flex" />
 
         <DropdownMenu>

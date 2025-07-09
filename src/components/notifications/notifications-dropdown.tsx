@@ -20,7 +20,7 @@ interface NotificationsDropdownProps {
 }
 
 export function NotificationsDropdown({}: NotificationsDropdownProps) {
-  const { notifications, roomInvitations, loading, unreadCount, markAsRead, markAllAsRead, addNotification, deleteReadNotifications } = useNotifications();
+  const { notifications, roomInvitations, loading, unreadCount, markAsRead, markAllAsRead, addNotification, deleteReadNotifications, handleDeleteNotification } = useNotifications();
 
   useEffect(() => {
     if (!loading && notifications.length === 0 && roomInvitations.length === 0) {
@@ -63,19 +63,33 @@ export function NotificationsDropdown({}: NotificationsDropdownProps) {
             <p className="p-2 text-sm text-muted-foreground text-center">No notifications yet.</p>
           ) : (
             notifications.map((notification) => (
-              <DropdownMenuItem
+              <div
                 key={notification.id}
                 className={cn(
-                  "flex flex-col items-start p-2 cursor-pointer",
+                  "flex items-center justify-between p-2",
                   !notification.is_read ? "bg-accent/50" : "opacity-80"
                 )}
-                onClick={() => markAsRead(notification.id)}
               >
-                <p className="text-sm font-medium">{notification.message}</p>
-                <p className="text-xs text-muted-foreground">
-                  {new Date(notification.created_at).toLocaleString()}
-                </p>
-              </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="flex flex-col items-start flex-1 p-0 h-auto cursor-pointer"
+                  onClick={() => markAsRead(notification.id)}
+                >
+                  <p className="text-sm font-medium">{notification.message}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(notification.created_at).toLocaleString()}
+                  </p>
+                </DropdownMenuItem>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-destructive flex-shrink-0"
+                  onClick={() => handleDeleteNotification(notification.id)}
+                  title="Delete notification"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only">Delete notification</span>
+                </Button>
+              </div>
             ))
           )}
         </ScrollArea>

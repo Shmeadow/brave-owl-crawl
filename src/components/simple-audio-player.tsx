@@ -25,6 +25,8 @@ import { ProgressBar } from './audio-player/progress-bar';
 import { MinimizedPlayerControls } from './audio-player/minimized-player-controls'; // New import
 
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
+const HEADER_HEIGHT = 64; // px
+const TIME_PROGRESS_BAR_HEIGHT = 64; // px
 
 interface SimpleAudioPlayerProps {
   isMobile: boolean;
@@ -92,6 +94,7 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
     seekTo: spotifySeekTo,
     connectToSpotify,
     disconnectFromSpotify,
+    transferPlayback,
     playTrack: spotifyPlayTrack,
   } = useSpotifyPlayer(session?.access_token || null);
 
@@ -349,7 +352,7 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
   return (
     <div className={cn(
       "fixed z-[900] transition-all duration-300 ease-in-out",
-      displayMode === 'normal' && 'top-20 right-4 w-80',
+      displayMode === 'normal' && `top-[${HEADER_HEIGHT + TIME_PROGRESS_BAR_HEIGHT + 16}px] right-4 w-80`, // Adjusted top
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-12',
       displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-[500px] flex flex-col items-center justify-center'
     )}>

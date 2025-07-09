@@ -29,10 +29,13 @@ import { WelcomeBackModal } from "@/components/welcome-back-modal";
 import { useGoals } from "@/hooks/use-goals";
 import { PinnedWidgetsDock } from "@/components/pinned-widgets-dock";
 import { useWidget } from "@/components/widget/widget-provider";
-import { checkAndClearClientData } from "@/lib/client-version"; // Import the new function
+import { checkAndClearClientData } from "@/lib/client-version";
+import { TimeAndProgressDisplay } from "@/components/time-and-progress-display"; // Import new component
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
+const TIME_PROGRESS_BAR_HEIGHT = 64; // px (height of the new bar)
+const TOTAL_HEADER_AREA_HEIGHT = HEADER_HEIGHT + TIME_PROGRESS_BAR_HEIGHT;
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
 
 export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
@@ -98,9 +101,9 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
 
       setMainContentArea({
         left: isMobile ? 0 : sidebarCurrentWidth,
-        top: HEADER_HEIGHT,
+        top: TOTAL_HEADER_AREA_HEIGHT, // Adjusted top to account for new bar
         width: isMobile ? windowWidth : windowWidth - sidebarCurrentWidth,
-        height: windowHeight - HEADER_HEIGHT,
+        height: windowHeight - TOTAL_HEADER_AREA_HEIGHT, // Adjusted height
       });
     };
 
@@ -136,6 +139,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               isMobile={isMobile}
               onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
             />
+            <TimeAndProgressDisplay /> {/* New Time and Progress Bar */}
             <WelcomeBackModal
               isOpen={showWelcomeBack}
               onClose={() => setShowWelcomeBack(false)}
@@ -148,8 +152,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             {/* Main content area, where widgets and page content live */}
             <div
               role="main" // Added role="main"
-              className="absolute top-16 right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
-              style={{ left: `${sidebarCurrentWidth}px` }}
+              className="absolute right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
+              style={{ left: `${sidebarCurrentWidth}px`, top: `${TOTAL_HEADER_AREA_HEIGHT}px` }}
             >
               <main className="flex-1 relative overflow-y-auto bg-transparent">
                 <div className="p-4 sm:p-6 lg:p-8 h-full">

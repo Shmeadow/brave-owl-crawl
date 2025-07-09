@@ -13,6 +13,8 @@ export interface RoomData {
   room_members: { user_id: string }[];
   password_hash: string | null;
   type: 'public' | 'private'; // New: Room type
+  closes_at: string | null; // New: Timestamp when the room closes
+  deleted_at: string | null; // New: Soft delete timestamp
 }
 
 export interface RoomMember {

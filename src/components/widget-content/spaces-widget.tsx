@@ -7,7 +7,7 @@ import { useSupabase } from "@/integrations/supabase/auth";
 import { CreateRoomSection } from "@/components/spaces-widget/create-room-section";
 import { MyRoomsSection } from "@/components/spaces-widget/my-rooms-section";
 import { JoinRoomSection } from "@/components/spaces-widget/join-room-section";
-import { RoomOwnerControlsSection } from "@/components/spaces-widget/room-owner-controls-section";
+// import { RoomOwnerControlsSection } from "@/components/spaces-widget/room-owner-controls-section"; // Removed import
 
 interface SpacesWidgetProps {
   isCurrentRoomWritable: boolean;
@@ -36,7 +36,7 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
   return (
     <div className="h-full w-full overflow-y-auto p-4">
       <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto py-4">
-        <h1 className="text-3xl font-bold text-foreground text-center">Explore & Manage Rooms</h1>
+        <h1 className="text-3xl font-bold text-foreground text-center">Explore Rooms</h1> {/* Renamed title */}
 
         {session && <CreateRoomSection />}
 
@@ -51,12 +51,7 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
 
         {/* PublicRoomsSection removed */}
 
-        {isOwnerOfCurrentRoom && currentRoomId && currentRoom && (
-          <RoomOwnerControlsSection
-            currentRoom={currentRoom}
-            isOwnerOfCurrentRoom={isOwnerOfCurrentRoom}
-          />
-        )}
+        {/* RoomOwnerControlsSection removed from here */}
 
         {!session && (
           <p className="text-sm text-muted-foreground mt-4 text-center">

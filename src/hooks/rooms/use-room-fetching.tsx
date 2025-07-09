@@ -18,6 +18,7 @@ export function useRoomFetching() {
 
     setLoading(true);
     let userRooms: RoomData[] = [];
+    const nowIso = new Date().toISOString(); // Get current time in ISO format
 
     if (session?.user?.id) {
       // Fetch rooms created by the user
@@ -29,6 +30,8 @@ export function useRoomFetching() {
           creator:profiles!creator_id(first_name, last_name)
         `)
         .eq('creator_id', session.user.id)
+        .is('deleted_at', null) // Ensure not soft-deleted
+        .gt('closes_at', nowIso) // Ensure not expired
         .order('created_at', { ascending: true });
 
       if (createdError) {
@@ -58,8 +61,7 @@ export function useRoomFetching() {
       } else {
         const joinedRooms = memberEntries
           .map((entry: any) => ({ ...entry.rooms, is_member: true }))
-          .filter((room: RoomData) => room.creator_id !== session.user.id); // Exclude rooms already fetched as created
-
+          .filter((room: RoomData) => room.creator_id !== session.user.id && room.deleted_at === null && room.closes_at && room.closes_at > nowIso); // Filter out expired/deleted
         userRooms = [...userRooms, ...joinedRooms];
       }
 
@@ -73,6 +75,7 @@ export function useRoomFetching() {
         `)
         .eq('type', 'public')
         .is('deleted_at', null)
+        .gt('closes_at', nowIso) // Ensure not expired
         .not('creator_id', 'eq', session.user.id)
         .not('room_members.user_id', 'eq', session.user.id); // Filter out rooms where user is already a member
 
@@ -97,7 +100,8 @@ export function useRoomFetching() {
           creator:profiles!creator_id(first_name, last_name)
         `)
         .eq('type', 'public')
-        .is('deleted_at', null);
+        .is('deleted_at', null)
+        .gt('closes_at', nowIso); // Ensure not expired
 
       if (publicRoomsError) {
         console.error("Error fetching public rooms for guest:", publicRoomsError);

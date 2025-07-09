@@ -30,7 +30,8 @@ export function useNotifications() {
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [roomInvitations, setRoomInvitations] = useState<RoomInvitationData[]>([]); // New state for invitations
   const [loading, setLoading] = useState(true);
-  const [isLoggedInMode, setIsLoggedInMode] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0); // New state for unread count
+  const [isLoggedInMode, setIsLoggedInMode] = useState(false); // Declare isLoggedInMode here
 
   // Moved addNotification declaration here to fix TS2448/TS2454
   const addNotification = useCallback(async (message: string, targetUserId?: string) => {
@@ -251,6 +252,11 @@ export function useNotifications() {
     };
   }, [supabase, session, addNotification]);
 
+  // Update unread count whenever notifications or invitations change
+  useEffect(() => {
+    const newUnreadCount = notifications.filter(n => !n.is_read).length + roomInvitations.length;
+    setUnreadCount(newUnreadCount);
+  }, [notifications, roomInvitations]);
 
   const markAsRead = useCallback(async (notificationId: string) => {
     const notificationToUpdate = notifications.find(n => n.id === notificationId);
@@ -327,7 +333,25 @@ export function useNotifications() {
     }
   }, [notifications, isLoggedInMode, session, supabase]);
 
-  const unreadCount = notifications.filter(n => !n.is_read).length + roomInvitations.length; // Include invitations in unread count
+  const handleDeleteNotification = useCallback(async (notificationId: string) => {
+    if (isLoggedInMode && session && supabase) {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', notificationId)
+        .eq('user_id', session.user.id);
+      if (error) {
+        toast.error("Error deleting notification: " + error.message);
+        console.error("Error deleting notification (Supabase):", error);
+      } else {
+        setNotifications(prev => prev.filter(n => n.id !== notificationId));
+        toast.success("Notification deleted.");
+      }
+    } else {
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      toast.success("Notification deleted (locally).");
+    }
+  }, [isLoggedInMode, session, supabase]);
 
   return {
     notifications,
@@ -339,6 +363,7 @@ export function useNotifications() {
     markAsRead,
     markAllAsRead,
     deleteReadNotifications,
+    handleDeleteNotification, // Expose new function
     fetchNotifications, // Expose for manual refresh
   };
 }
