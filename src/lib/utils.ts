@@ -69,3 +69,29 @@ export function getSpotifyEmbedUrl(url: string): string | null {
   }
   return null;
 }
+
+export function throttle<T extends (...args: any[]) => any>(func: T, limit: number): T {
+  let inThrottle: boolean;
+  let lastResult: any;
+  let lastArgs: any[];
+  let timeout: NodeJS.Timeout | null = null;
+
+  return function(this: any, ...args: any[]) {
+    const context = this;
+    lastArgs = args;
+
+    if (!inThrottle) {
+      inThrottle = true;
+      timeout = setTimeout(() => {
+        inThrottle = false;
+        timeout = null;
+        if (lastArgs) { // If there were calls during the throttle period, execute the last one
+          lastResult = func.apply(context, lastArgs);
+          lastArgs = [];
+        }
+      }, limit);
+      lastResult = func.apply(context, args);
+    }
+    return lastResult;
+  } as T;
+}

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { cn, throttle } from "@/lib/utils";
 import { CardData } from "@/hooks/flashcards/types";
 
 interface FlashCardProps {
@@ -39,6 +39,9 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count 
     setRotation({ x: rotateX, y: rotateY });
   };
 
+  // Throttling the mouse move event to improve performance
+  const throttledMouseMove = useRef(throttle(handleMouseMove, 16)).current; // Limit to ~60fps
+
   const handleMouseLeave = () => {
     setRotation({ x: 0, y: 0 });
   };
@@ -54,7 +57,7 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count 
         "hover:shadow-[0_0_15px_5px_hsl(var(--gold))] transition-shadow"
       )}
       onClick={onClick}
-      onMouseMove={handleMouseMove}
+      onMouseMove={throttledMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{
         perspective: '1000px',
