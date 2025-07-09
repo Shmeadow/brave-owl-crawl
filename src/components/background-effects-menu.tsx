@@ -8,8 +8,8 @@ import { useBackground } from "@/context/background-provider";
 import { useEffects } from "@/context/effect-provider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { staticImages, animatedBackgrounds } from "@/lib/backgrounds";
-import { AnimatedBackgroundPreviewItem } from "./animated-background-preview-item"; // Import the new component
-import Image from "next/image"; // Import next/image
+import { AnimatedBackgroundPreviewItem } from "./animated-background-preview-item";
+import Image from "next/image";
 
 export function BackgroundEffectsMenu() {
   const { background, setBackground } = useBackground();
@@ -52,7 +52,7 @@ export function BackgroundEffectsMenu() {
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       priority={false}
-                      unoptimized={true} // Added unoptimized prop
+                      unoptimized={true}
                     />
                     {isActive && (
                       <div className="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 text-white text-sm font-bold">
@@ -107,12 +107,6 @@ export function BackgroundEffectsMenu() {
               onClick={() => setEffect('raindrops')}
             >
               Raindrops Effect
-            </Button>
-            <Button
-              variant={activeEffect === 'plants' ? 'default' : 'outline'}
-              onClick={() => setEffect('plants')}
-            >
-              Looking Through Plants
             </Button>
           </div>
         </TabsContent>
