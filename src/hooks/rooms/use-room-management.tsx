@@ -52,9 +52,40 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
   // Removed handleToggleGuestWriteAccess
   // Removed handleSetRoomPassword
 
-  const handleSendRoomInvitation = useCallback(async (roomId: string, receiverId: string) => {
+  const handleSendRoomInvitation = useCallback(async (roomId: string, receiverEmail: string) => { // Changed receiverId to receiverEmail
     if (!session?.user?.id || !supabase) {
       toast.error("You must be logged in to send invitations.");
+      return;
+    }
+
+    // 1. Get receiver's user ID from email using Edge Function
+    let receiverId: string | null = null;
+    try {
+      const response = await fetch('https://mrdupsekghsnbooyrdmj.supabase.co/functions/v1/get-user-id-by-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`, // Use user's token for RLS
+        },
+        body: JSON.stringify({ email: receiverEmail }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error("Error finding user: " + (data.error || "User not found."));
+        console.error("Error finding user by email:", data.error);
+        return;
+      }
+      receiverId = data.userId;
+    } catch (error) {
+      toast.error("Failed to find user by email due to network error.");
+      console.error("Network error finding user by email:", error);
+      return;
+    }
+
+    if (!receiverId) {
+      toast.error("Could not find a user with that email address.");
       return;
     }
 

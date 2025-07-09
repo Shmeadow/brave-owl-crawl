@@ -27,7 +27,7 @@ export function OrganizeCardModal({ card, categories, isOpen, onClose, onUpdateC
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="z-[1100]">
         <DialogHeader>
           <DialogTitle>Organize Flashcard</DialogTitle>
           <DialogDescription>Move "{card.front}" to a different category.</DialogDescription>

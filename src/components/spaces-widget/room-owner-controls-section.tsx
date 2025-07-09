@@ -26,7 +26,7 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
   } = useRooms();
   const { setCurrentRoom } = useCurrentRoom(); // Import setCurrentRoom to update local state
 
-  const [receiverIdInput, setReceiverIdInput] = useState(""); // For sending new invitation
+  const [receiverEmailInput, setReceiverEmailInput] = useState(""); // Changed to email
   const [selectedUserToKick, setSelectedUserToKick] = useState<string | null>(null);
   const [roomMembers, setRoomMembers] = useState<RoomMember[]>([]);
   const [editedRoomName, setEditedRoomName] = useState(currentRoom.name); // State for editing room name
@@ -75,13 +75,13 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
       toast.error("You must be the owner of the current room to send invitations.");
       return;
     }
-    if (!receiverIdInput.trim()) {
-      toast.error("Recipient User ID cannot be empty.");
+    if (!receiverEmailInput.trim()) {
+      toast.error("Recipient Email Address cannot be empty.");
       return;
     }
-    await handleSendRoomInvitation(currentRoom.id, receiverIdInput.trim());
-    setReceiverIdInput("");
-  }, [currentRoom.id, isOwnerOfCurrentRoom, receiverIdInput, handleSendRoomInvitation]);
+    await handleSendRoomInvitation(currentRoom.id, receiverEmailInput.trim());
+    setReceiverEmailInput("");
+  }, [currentRoom.id, isOwnerOfCurrentRoom, receiverEmailInput, handleSendRoomInvitation]);
 
   const handleKickSelectedUser = useCallback(async () => {
     if (!currentRoom.id || !isOwnerOfCurrentRoom || !selectedUserToKick) {
@@ -144,19 +144,20 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
         </div>
         {/* Send Invitation */}
         <div className="space-y-2">
-          <Label htmlFor="send-invitation-user-id">Send Invitation (by User ID)</Label>
+          <Label htmlFor="send-invitation-user-email">Send Invitation (by Email)</Label>
           <Input
-            id="send-invitation-user-id"
-            placeholder="Enter Recipient User ID"
-            value={receiverIdInput}
-            onChange={(e) => setReceiverIdInput(e.target.value)}
+            id="send-invitation-user-email"
+            type="email"
+            placeholder="Enter Recipient Email Address"
+            value={receiverEmailInput}
+            onChange={(e) => setReceiverEmailInput(e.target.value)}
           />
           <Button onClick={handleSendInvitation} className="w-full">
             <Send className="mr-2 h-4 w-4" /> Send Invitation
           </Button>
         </div>
         <p className="text-sm text-muted-foreground">
-          Send an invitation to another user by their unique User ID. They will receive a notification to join.
+          Send an invitation to another user by their email address. They will receive a notification to join.
         </p>
 
         {/* Kick Users */}

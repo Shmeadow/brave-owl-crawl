@@ -10,31 +10,33 @@ import { useRooms } from "@/hooks/use-rooms";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
 
 export function JoinRoomSection() {
   const { session } = useSupabase();
-  const { handleSendRoomInvitation } = useRooms(); // Use handleSendRoomInvitation
+  const { handleSendRoomInvitation, rooms } = useRooms(); // Get rooms to filter for owned rooms
   const { currentRoomId } = useCurrentRoom();
 
-  const [roomIdInput, setRoomIdInput] = useState("");
-  const [receiverIdInput, setReceiverIdInput] = useState("");
+  const myCreatedRooms = rooms.filter(room => room.creator_id === session?.user?.id);
+
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(myCreatedRooms.length > 0 ? myCreatedRooms[0].id : null); // Use select for room ID
+  const [receiverEmail, setReceiverEmail] = useState(""); // Changed to email
 
   const handleSendInvitationSubmit = async () => {
     if (!session) {
       toast.error("You must be logged in to send invitations.");
       return;
     }
-    if (!roomIdInput.trim()) {
-      toast.error("Please enter a Room ID.");
+    if (!selectedRoomId) {
+      toast.error("Please select a room you own to send an invitation from.");
       return;
     }
-    if (!receiverIdInput.trim()) {
-      toast.error("Please enter the recipient's User ID.");
+    if (!receiverEmail.trim()) {
+      toast.error("Please enter the recipient's Email Address.");
       return;
     }
-    await handleSendRoomInvitation(roomIdInput.trim(), receiverIdInput.trim());
-    setRoomIdInput("");
-    setReceiverIdInput("");
+    await handleSendRoomInvitation(selectedRoomId, receiverEmail.trim());
+    setReceiverEmail("");
   };
 
   return (
@@ -44,30 +46,46 @@ export function JoinRoomSection() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="room-id-input">Room ID to Invite To</Label>
-          <Input
-            id="room-id-input"
-            placeholder="Enter Room ID"
-            value={roomIdInput}
-            onChange={(e) => setRoomIdInput(e.target.value)}
-            disabled={!session}
-          />
+          <Label htmlFor="room-select-input">Select Your Room</Label>
+          <Select
+            value={selectedRoomId || ""}
+            onValueChange={(value) => setSelectedRoomId(value)}
+            disabled={!session || myCreatedRooms.length === 0}
+          >
+            <SelectTrigger id="room-select-input">
+              <SelectValue placeholder="Select a room you own" />
+            </SelectTrigger>
+            <SelectContent>
+              {myCreatedRooms.length === 0 && (
+                <SelectItem value="" disabled>No rooms created by you</SelectItem>
+              )}
+              {myCreatedRooms.map(room => (
+                <SelectItem key={room.id} value={room.id}>
+                  {room.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {myCreatedRooms.length === 0 && (
+            <p className="text-sm text-muted-foreground">You need to create a room first to send invitations.</p>
+          )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="receiver-id-input">Recipient User ID</Label>
+          <Label htmlFor="receiver-email-input">Recipient Email Address</Label>
           <Input
-            id="receiver-id-input"
-            placeholder="Enter User ID of recipient"
-            value={receiverIdInput}
-            onChange={(e) => setReceiverIdInput(e.target.value)}
-            disabled={!session}
+            id="receiver-email-input"
+            type="email"
+            placeholder="Enter recipient's email"
+            value={receiverEmail}
+            onChange={(e) => setReceiverEmail(e.target.value)}
+            disabled={!session || !selectedRoomId}
           />
         </div>
-        <Button onClick={handleSendInvitationSubmit} className="w-full" disabled={!session}>
+        <Button onClick={handleSendInvitationSubmit} className="w-full" disabled={!session || !selectedRoomId}>
           <Send className="mr-2 h-4 w-4" /> Send Invitation
         </Button>
         <p className="text-sm text-muted-foreground text-center">
-          Send an invitation to another user by providing the Room ID and their User ID.
+          Send an invitation to another user by providing their email address.
         </p>
       </CardContent>
     </Card>

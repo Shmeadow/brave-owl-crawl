@@ -30,7 +30,7 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
   const { currentRoomId, setCurrentRoom } = useCurrentRoom();
 
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
-  const [memberUserIdInput, setMemberUserIdInput] = useState("");
+  const [memberEmailInput, setMemberEmailInput] = useState(""); // Changed to email
   const [selectedRoomForMember, setSelectedRoomForMember] = useState<string | null>(null);
 
   const handleEnterRoom = (room: RoomData) => {
@@ -59,12 +59,12 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
   };
 
   const handleAddMemberSubmit = async () => {
-    if (selectedRoomForMember && memberUserIdInput.trim()) {
-      await handleSendRoomInvitation(selectedRoomForMember, memberUserIdInput.trim());
-      setMemberUserIdInput("");
+    if (selectedRoomForMember && memberEmailInput.trim()) {
+      await handleSendRoomInvitation(selectedRoomForMember, memberEmailInput.trim());
+      setMemberEmailInput("");
       setIsAddMemberDialogOpen(false);
     } else {
-      toast.error("Please enter a valid User ID.");
+      toast.error("Please enter a valid Email Address.");
     }
   };
 
@@ -209,20 +209,21 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
       </Card>
 
       <Dialog open={isAddMemberDialogOpen} onOpenChange={setIsAddMemberDialogOpen}>
-        <DialogContent>
+        <DialogContent className="z-[1100]">
           <DialogHeader>
             <DialogTitle>Add Member to Room</DialogTitle>
             <DialogDescription>
-              Enter the User ID of the person you want to invite to this room.
+              Enter the Email Address of the person you want to invite to this room.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-2">
-            <Label htmlFor="member-user-id">User ID</Label>
+            <Label htmlFor="member-email-input">User Email</Label>
             <Input
-              id="member-user-id"
-              placeholder="e.g., 123e4567-e89b-12d3-a456-426614174000"
-              value={memberUserIdInput}
-              onChange={(e) => setMemberUserIdInput(e.target.value)}
+              id="member-email-input"
+              type="email"
+              placeholder="e.g., user@example.com"
+              value={memberEmailInput}
+              onChange={(e) => setMemberEmailInput(e.target.value)}
             />
           </div>
           <DialogFooter>

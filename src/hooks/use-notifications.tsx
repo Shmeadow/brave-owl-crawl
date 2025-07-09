@@ -20,7 +20,7 @@ export interface RoomInvitationData {
   status: 'pending' | 'accepted' | 'rejected';
   created_at: string;
   rooms: { name: string } | null; // Joined to get room name
-  profiles: { first_name: string | null; last_name: string | null } | null; // Joined to get sender name
+  profiles: { first_name: string | null; last_name: string | null; email: string | null } | null; // Joined to get sender name and email
 }
 
 const LOCAL_STORAGE_KEY = 'guest_notifications';
@@ -129,7 +129,7 @@ export function useNotifications() {
           status,
           created_at,
           rooms (name),
-          profiles:sender_id (first_name, last_name)
+          profiles:sender_id (first_name, last_name, email)
         `)
         .eq('receiver_id', session.user.id)
         .eq('status', 'pending')
@@ -148,7 +148,7 @@ export function useNotifications() {
           status: inv.status,
           created_at: inv.created_at,
           rooms: inv.rooms ? { name: inv.rooms.name } : null, // Ensure it's an object, not an array
-          profiles: inv.profiles ? { first_name: inv.profiles.first_name, last_name: inv.profiles.last_name } : null, // Ensure it's an object, not an array
+          profiles: inv.profiles ? { first_name: inv.profiles.first_name, last_name: inv.profiles.last_name, email: inv.profiles.email } : null, // Ensure it's an object, not an array
         })) as RoomInvitationData[]);
       }
 
@@ -183,7 +183,7 @@ export function useNotifications() {
   // Logic for one-time welcome notification
   useEffect(() => {
     if (!loading && session && profile && !profile.welcome_notification_sent) {
-      addNotification("Welcome to Productivity Hub! Explore your new workspace.");
+      addNotification("Welcome to CozyHub! Explore your new workspace.");
       // Mark notification as sent in profile
       supabase?.from('profiles')
         .update({ welcome_notification_sent: true })
@@ -215,14 +215,14 @@ export function useNotifications() {
           .single();
         const { data: senderProfileData, error: senderProfileError } = await supabase
           .from('profiles')
-          .select('first_name, last_name')
+          .select('first_name, last_name, email')
           .eq('id', newInvitation.sender_id)
           .single();
 
         if (roomError) console.error("Error fetching room for new invitation:", roomError);
         if (senderProfileError) console.error("Error fetching sender profile for new invitation:", senderProfileError);
 
-        const senderName = senderProfileData ? `${senderProfileData.first_name || ''} ${senderProfileData.last_name || ''}`.trim() || `User (${newInvitation.sender_id.substring(0, 8)}...)` : `User (${newInvitation.sender_id.substring(0, 8)}...)`;
+        const senderName = senderProfileData ? `${senderProfileData.first_name || ''} ${senderProfileData.last_name || ''}`.trim() || senderProfileData.email || `User (${newInvitation.sender_id.substring(0, 8)}...)` : `User (${newInvitation.sender_id.substring(0, 8)}...)`;
         const roomName = roomData?.name || `Room (${newInvitation.room_id.substring(0, 8)}...)`;
 
         setRoomInvitations(prev => [{
