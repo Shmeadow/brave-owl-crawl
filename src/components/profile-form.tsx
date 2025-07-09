@@ -31,6 +31,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch"; // Import Switch
+import Image from "next/image"; // Import Image component
 
 const profileFormSchema = z.object({
   first_name: z.string().min(1, { message: "First name is required." }).max(50, { message: "First name too long." }).optional().or(z.literal("")),
@@ -190,7 +191,17 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
         <div className="flex flex-col items-center gap-4">
           <div className="relative group">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={form.watch("profile_image_url") || undefined} alt="Profile Image" />
+              {form.watch("profile_image_url") ? (
+                <Image
+                  src={form.watch("profile_image_url")!}
+                  alt="Profile Image"
+                  fill
+                  className="object-cover"
+                  sizes="96px"
+                />
+              ) : (
+                <AvatarImage src={undefined} alt="Profile Image" />
+              )}
               <AvatarFallback className="text-4xl font-bold">
                 {isUploading ? <Loader2 className="h-8 w-8 animate-spin" /> : userInitials}
               </AvatarFallback>
