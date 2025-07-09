@@ -38,7 +38,7 @@ export function ClockDisplay({ className }: ClockDisplayProps) {
   const [currentTimeStr, setCurrentTimeStr] = useState("--:--:--");
   const [currentDateStr, setCurrentDateStr] = useState("--- -- --");
   const [dailyProgress, setDailyProgress] = useState(0);
-  const [gradient, setGradient] = useState('linear-gradient(to right, #87CEEB, #FFD700, #FFA500, #4682B4)');
+  const [gradient, setGradient] = useState('linear-gradient(to right, hsl(240 20% 15%), hsl(40 60% 70%))'); // Cozy default
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -73,17 +73,17 @@ export function ClockDisplay({ className }: ClockDisplayProps) {
 
       let newGradient;
       if (nowTime < sunrise) {
-        // Night to sunrise
-        newGradient = 'linear-gradient(to right, #000033, #3b5998)';
+        // Night to sunrise (dark blue-purple to muted orange-brown)
+        newGradient = 'linear-gradient(to right, hsl(240 20% 15%), hsl(30 40% 30%))';
       } else if (nowTime < times.solarNoon.getTime()) {
-        // Sunrise to noon
-        newGradient = 'linear-gradient(to right, #87CEEB, #FFD700)';
+        // Sunrise to noon (muted green to soft yellow)
+        newGradient = 'linear-gradient(to right, hsl(120 20% 50%), hsl(40 60% 70%))';
       } else if (nowTime < sunset) {
-        // Noon to sunset
-        newGradient = 'linear-gradient(to right, #FFD700, #FFA500, #FF4500)';
+        // Noon to sunset (soft yellow to warm orange)
+        newGradient = 'linear-gradient(to right, hsl(40 60% 70%), hsl(15 70% 50%))';
       } else {
-        // Sunset to night
-        newGradient = 'linear-gradient(to right, #FF4500, #4682B4, #000033)';
+        // Sunset to night (warm orange to dark blue-purple)
+        newGradient = 'linear-gradient(to right, hsl(15 70% 50%), hsl(240 20% 15%))';
       }
       setGradient(newGradient);
     };
@@ -105,11 +105,13 @@ export function ClockDisplay({ className }: ClockDisplayProps) {
         <div id="clock" className="text-2xl font-bold leading-none text-foreground">{currentTimeStr}</div>
         <div id="date" className="text-sm leading-none">{currentDateStr}</div>
       </div>
-      <div className="w-full mt-1 h-2 bg-muted/50 rounded-full overflow-hidden">
+      <div className="w-full mt-1 h-2 bg-muted/50 rounded-full overflow-hidden relative">
         <div
-          className="h-full rounded-full transition-all duration-1000 ease-linear"
+          className="h-full rounded-full transition-all duration-1000 ease-linear relative overflow-hidden"
           style={{ width: `${dailyProgress}%`, background: gradient }}
-        ></div>
+        >
+          <div className="shimmer-effect"></div>
+        </div>
       </div>
     </div>
   );

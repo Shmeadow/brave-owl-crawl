@@ -50,7 +50,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
   };
 
   return (
-    <header className="sticky top-0 z-[1002] w-full border-b bg-transparent backdrop-blur-xl flex items-center h-16">
+    <header className="sticky top-0 z-[1002] w-full border-b border-transparent bg-transparent backdrop-blur-xl flex items-center h-16">
       <div className="flex items-center pl-4">
         {isMobile && (
           <Button
@@ -103,7 +103,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         </div>
       </div>
 
-      <div className="flex items-center gap-2 ml-auto pr-4">
+      <div className="flex items-center gap-2 ml-auto pr-4 bg-card/50 rounded-full px-4 py-2 border border-white/20">
         <ClockDisplay className="hidden md:flex" />
         <BackgroundBlurSlider className="hidden md:flex" />
 
