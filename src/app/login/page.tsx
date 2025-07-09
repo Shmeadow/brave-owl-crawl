@@ -47,7 +47,7 @@ export default function LoginPage() {
           <Auth
             supabaseClient={supabase}
             appearance={{ theme: ThemeSupa }}
-            providers={['google']}
+            providers={["google", "github"]}
             theme="light"
             view="sign_up"
             redirectTo="/dashboard"
@@ -72,7 +72,7 @@ export default function LoginPage() {
           />
         </div>
       </div>
-      <LoginFeatureSection /> {/* Use the new component here */}
+      <LoginFeatureSection />
     </div>
   );
 }
