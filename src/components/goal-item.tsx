@@ -31,7 +31,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } => "@/components/ui/calendar";
+import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -241,6 +241,6 @@ export function GoalItem({ goal, onToggleComplete, onUpdateGoal, onDelete, isCur
           </Form>
         </DialogContent>
       </Dialog>
-    </>
+    </Collapsible>
   );
 }
