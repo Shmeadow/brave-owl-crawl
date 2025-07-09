@@ -4,8 +4,9 @@ import React from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { Loader2, Feather } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { redirect } from "next/navigation";
+import { LoginFeatureSection } from "@/components/login-feature-section"; // Import the new component
 
 export default function LoginPage() {
   const { supabase, session, loading } = useSupabase();
@@ -71,18 +72,7 @@ export default function LoginPage() {
           />
         </div>
       </div>
-      <div className="hidden bg-muted lg:flex items-center justify-center p-10">
-        <div className="text-center">
-          <Feather className="mx-auto h-16 w-16 text-primary mb-4" />
-          <h2 className="text-4xl font-bold">Welcome to CozyHub</h2>
-          <p className="text-xl text-muted-foreground mt-2">
-            Your all-in-one productivity and focus sanctuary.
-          </p>
-          <p className="mt-8 max-w-md mx-auto">
-            Sign up to unlock your personalized dashboard, track your goals, manage tasks, and create your perfect digital environment for deep work and relaxation.
-          </p>
-        </div>
-      </div>
+      <LoginFeatureSection /> {/* Use the new component here */}
     </div>
   );
 }
