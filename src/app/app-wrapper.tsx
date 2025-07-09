@@ -30,12 +30,11 @@ import { useGoals } from "@/hooks/use-goals";
 import { PinnedWidgetsDock } from "@/components/pinned-widgets-dock";
 import { useWidget } from "@/components/widget/widget-provider";
 import { checkAndClearClientData } from "@/lib/client-version";
-import { TimeAndProgressDisplay } from "@/components/time-and-progress-display"; // Import new component
+import { TimeAndProgressDisplay } from "@/components/time-and-progress-display";
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
-// const TIME_PROGRESS_BAR_HEIGHT = 64; // px (height of the new bar) - Removed as it's now fixed
-const TOTAL_HEADER_AREA_HEIGHT = HEADER_HEIGHT; // Adjusted to only include header height
+const TOTAL_HEADER_AREA_HEIGHT = HEADER_HEIGHT;
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
 
 export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
@@ -60,7 +59,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
 
   const chatPanelWidth = isChatOpen ? 320 : 56;
   const isDashboard = pathname === '/dashboard';
-  const isLoginPage = pathname === '/login'; // New: Check if it's the login page
+  const isLoginPage = pathname === '/login';
+  const isLandingPage = pathname === '/landing'; // New: Check if it's the landing page
 
   const handleNewUnreadMessage = () => {
     setUnreadChatCount((prev) => prev + 1);
@@ -102,9 +102,9 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
 
       setMainContentArea({
         left: isMobile ? 0 : sidebarCurrentWidth,
-        top: TOTAL_HEADER_AREA_HEIGHT, // Adjusted top to only include header height
+        top: TOTAL_HEADER_AREA_HEIGHT,
         width: isMobile ? windowWidth : windowWidth - sidebarCurrentWidth,
-        height: windowHeight - TOTAL_HEADER_AREA_HEIGHT, // Adjusted height
+        height: windowHeight - TOTAL_HEADER_AREA_HEIGHT,
       });
     };
 
@@ -117,12 +117,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     return <LoadingScreen />;
   }
   
-  if (pathname === '/pricing') {
-    return <>{children}</>;
-  }
-
-  // If it's the login page, render only children and Toaster
-  if (isLoginPage) {
+  // If it's the pricing, login, or landing page, render only children and Toaster
+  if (pathname === '/pricing' || isLoginPage || isLandingPage) {
     return (
       <>
         {children}
@@ -150,7 +146,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               isMobile={isMobile}
               onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
             />
-            <TimeAndProgressDisplay /> {/* Now a fixed element */}
+            <TimeAndProgressDisplay className="fixed top-16 right-4 z-[902] bg-card/50 backdrop-blur-xl border border-white/20 rounded-lg p-2" /> {/* Now a fixed element */}
             <WelcomeBackModal
               isOpen={showWelcomeBack}
               onClose={() => setShowWelcomeBack(false)}
@@ -162,7 +158,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             
             {/* Main content area, where widgets and page content live */}
             <div
-              role="main" // Added role="main"
+              role="main"
               className="absolute right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
               style={{ left: `${sidebarCurrentWidth}px`, top: `${TOTAL_HEADER_AREA_HEIGHT}px` }}
             >
