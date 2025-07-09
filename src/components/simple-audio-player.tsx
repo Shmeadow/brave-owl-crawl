@@ -353,7 +353,7 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
   return (
     <div className={cn(
       "fixed z-[900] transition-all duration-300 ease-in-out",
-      displayMode === 'normal' && `top-[${TOTAL_HEADER_AREA_HEIGHT + 16}px] right-4 w-80`, // Adjusted top
+      displayMode === 'normal' && `top-[90px] right-4 w-80`, // Adjusted top to 90px
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-12',
       displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-[500px] flex flex-col items-center justify-center'
     )}>
