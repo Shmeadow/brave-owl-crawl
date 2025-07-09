@@ -29,6 +29,7 @@ import { WelcomeBackModal } from "@/components/welcome-back-modal";
 import { useGoals } from "@/hooks/use-goals";
 import { PinnedWidgetsDock } from "@/components/pinned-widgets-dock";
 import { useWidget } from "@/components/widget/widget-provider";
+import { checkAndClearClientData } from "@/lib/client-version"; // Import the new function
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
@@ -64,6 +65,11 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const handleClearUnreadMessages = () => {
     setUnreadChatCount(0);
   };
+
+  // Run client version check on initial mount
+  useEffect(() => {
+    checkAndClearClientData();
+  }, []);
 
   useEffect(() => {
     // Show welcome back modal only once per session
