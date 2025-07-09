@@ -6,8 +6,8 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { Loader2 } from "lucide-react";
 import { redirect } from "next/navigation";
-import { LoginFeatureSection } from "@/components/login-feature-section"; // Import the new component
-import { cn } from "@/lib/utils"; // Import cn for styling
+import { LoginFeatureSection } from "@/components/login-feature-section";
+import { cn } from "@/lib/utils";
 
 export default function LoginPage() {
   const { supabase, session, loading } = useSupabase();
@@ -36,11 +36,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="w-full lg:grid lg:h-screen lg:grid-cols-2 xl:h-screen"> {/* Changed min-h-screen to h-screen */}
+    <div className="w-full lg:grid lg:h-screen lg:grid-cols-2 xl:h-screen">
       <div className="flex items-center justify-center py-12">
         <div className={cn(
-          "mx-auto grid w-[350px] gap-6 p-6 rounded-lg shadow-lg", // Added padding, rounded corners, shadow
-          "bg-card/50 backdrop-blur-xl border-white/20" // Transparent background styles
+          "mx-auto grid w-full max-w-sm gap-6 p-4 rounded-lg shadow-lg", // Changed w-[350px] to w-full max-w-sm, and p-6 to p-4
+          "bg-card/50 backdrop-blur-xl border-white/20"
         )}>
           <div className="grid gap-2 text-center">
             <h1 className="text-3xl font-bold">Create an Account</h1>

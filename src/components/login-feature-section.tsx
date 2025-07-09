@@ -28,19 +28,19 @@ export function LoginFeatureSection() {
       className={cn(
         "relative hidden lg:flex flex-col items-center justify-center",
         "bg-background/50 backdrop-blur-xl border-l border-white/20",
-        "py-12 px-8", // Reduced vertical and horizontal padding
+        "py-8 px-6", // Reduced vertical and horizontal padding further
         "text-center"
       )}
     >
-      <div className="text-center mb-8"> {/* Reduced mb-12 to mb-8 */}
-        <h2 className="text-4xl font-extrabold text-foreground mb-3 leading-tight"> {/* Reduced text-5xl to text-4xl, mb-4 to mb-3 */}
+      <div className="text-center mb-6"> {/* Reduced mb-8 to mb-6 */}
+        <h2 className="text-4xl font-extrabold text-foreground mb-2 leading-tight"> {/* Reduced mb-3 to mb-2 */}
           Welcome to <span className="text-primary">CozyHub</span>
         </h2>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto"> {/* Reduced text-2xl to text-xl */}
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Your all-in-one productivity and focus sanctuary.
         </p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl w-full"> {/* Reduced gap-8 to gap-6, max-w-4xl to max-w-3xl */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl w-full">
         {features.map((feature, index) => (
           <LoginFeatureCard
             key={index}
