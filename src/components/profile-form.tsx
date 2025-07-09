@@ -198,6 +198,7 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
                   fill
                   className="object-cover"
                   sizes="96px"
+                  priority={false}
                 />
               ) : (
                 <AvatarImage src={undefined} alt="Profile Image" />

@@ -2,19 +2,21 @@
 
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Gamepad2, BookOpen, Goal, WandSparkles, BarChart2 } from "lucide-react"; // Added BarChart2
+import dynamic from 'next/dynamic'; // Import dynamic
 
-// Import all widget content components
-import { SpacesWidget } from "@/components/widget-content/spaces-widget";
-import { SoundsWidget } from "@/components/widget-content/sounds-widget";
-import { CalendarWidget } from "@/components/widget-content/calendar-widget";
-import { TimerWidget } from "@/components/widget-content/timer-widget";
-import { TasksWidget } from "@/components/widget-content/tasks-widget";
-import { NotesWidget } from "@/components/widget-content/notes-widget";
-import { MediaWidget } from "@/components/widget-content/media-widget";
-import { StatsProgressWidget } from "@/components/widget-content/stats-progress-widget"; // Renamed import
-import { FlashCardsWidget } from "@/components/widget-content/flash-cards-widget";
-import { GoalFocusWidget } from "@/components/widget-content/goal-focus-widget";
-import { BackgroundEffectsWidget } from "@/components/widget-content/background-effects-widget";
+// Import all widget content components dynamically
+const DynamicSpacesWidget = dynamic(() => import("@/components/widget-content/spaces-widget").then(mod => mod.SpacesWidget));
+const DynamicSoundsWidget = dynamic(() => import("@/components/widget-content/sounds-widget").then(mod => mod.SoundsWidget));
+const DynamicCalendarWidget = dynamic(() => import("@/components/widget-content/calendar-widget").then(mod => mod.CalendarWidget));
+const DynamicTimerWidget = dynamic(() => import("@/components/widget-content/timer-widget").then(mod => mod.TimerWidget));
+const DynamicTasksWidget = dynamic(() => import("@/components/widget-content/tasks-widget").then(mod => mod.TasksWidget));
+const DynamicNotesWidget = dynamic(() => import("@/components/widget-content/notes-widget").then(mod => mod.NotesWidget));
+const DynamicMediaWidget = dynamic(() => import("@/components/widget-content/media-widget").then(mod => mod.MediaWidget));
+const DynamicStatsProgressWidget = dynamic(() => import("@/components/widget-content/stats-progress-widget").then(mod => mod.StatsProgressWidget));
+const DynamicFlashCardsWidget = dynamic(() => import("@/components/widget-content/flash-cards-widget").then(mod => mod.FlashCardsWidget));
+const DynamicGoalFocusWidget = dynamic(() => import("@/components/widget-content/goal-focus-widget").then(mod => mod.GoalFocusWidget));
+const DynamicBackgroundEffectsWidget = dynamic(() => import("@/components/widget-content/background-effects-widget").then(mod => mod.BackgroundEffectsWidget));
+
 import { useWidget } from "./widget-provider";
 import { Widget } from "./widget";
 import { WidgetState } from "@/hooks/widgets/types"; // Import WidgetState
@@ -23,17 +25,17 @@ import { cn } from "@/lib/utils"; // Import cn for styling
 
 // Define WIDGET_COMPONENTS at the top level
 const WIDGET_COMPONENTS = {
-  "spaces": { icon: LayoutGrid, content: SpacesWidget, title: "Spaces" },
-  "sounds": { icon: Volume2, content: SoundsWidget, title: "Sounds" },
-  "calendar": { icon: Calendar, content: CalendarWidget, title: "Calendar" },
-  "timer": { icon: Timer, content: TimerWidget, title: "Timer" },
-  "tasks": { icon: ListTodo, content: TasksWidget, title: "Tasks" },
-  "notes": { icon: NotebookPen, content: NotesWidget, title: "Notes" },
-  "media": { icon: Image, content: MediaWidget, title: "Media" },
-  "stats-progress": { icon: BarChart2, content: StatsProgressWidget, title: "Stats & Progress" }, // Renamed from games
-  "flash-cards": { icon: BookOpen, content: FlashCardsWidget, title: "Flash Cards" },
-  "goal-focus": { icon: Goal, content: GoalFocusWidget, title: "Goal Focus" },
-  "background-effects": { icon: WandSparkles, content: BackgroundEffectsWidget, title: "Backgrounds" },
+  "spaces": { icon: LayoutGrid, content: DynamicSpacesWidget, title: "Spaces" },
+  "sounds": { icon: Volume2, content: DynamicSoundsWidget, title: "Sounds" },
+  "calendar": { icon: Calendar, content: DynamicCalendarWidget, title: "Calendar" },
+  "timer": { icon: Timer, content: DynamicTimerWidget, title: "Timer" },
+  "tasks": { icon: ListTodo, content: DynamicTasksWidget, title: "Tasks" },
+  "notes": { icon: NotebookPen, content: DynamicNotesWidget, title: "Notes" },
+  "media": { icon: Image, content: DynamicMediaWidget, title: "Media" },
+  "stats-progress": { icon: BarChart2, content: DynamicStatsProgressWidget, title: "Stats & Progress" }, // Renamed from games
+  "flash-cards": { icon: BookOpen, content: DynamicFlashCardsWidget, title: "Flash Cards" },
+  "goal-focus": { icon: Goal, content: DynamicGoalFocusWidget, title: "Goal Focus" },
+  "background-effects": { icon: WandSparkles, content: DynamicBackgroundEffectsWidget, title: "Backgrounds" },
 };
 
 interface WidgetContainerProps {

@@ -97,7 +97,7 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
                         room.is_video_background ? (
                           <video src={room.background_url} className="w-full h-full object-cover" muted playsInline />
                         ) : (
-                          <Image src={room.background_url} alt={room.name} fill className="object-cover" sizes="64px" />
+                          <Image src={room.background_url} alt={room.name} fill className="object-cover" sizes="64px" priority={false} />
                         )
                       )}
                     </div>
@@ -177,7 +177,7 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
                         room.is_video_background ? (
                           <video src={room.background_url} className="w-full h-full object-cover" muted playsInline />
                         ) : (
-                          <Image src={room.background_url} alt={room.name} fill className="object-cover" sizes="64px" />
+                          <Image src={room.background_url} alt={room.name} fill className="object-cover" sizes="64px" priority={false} />
                         )
                       )}
                     </div>
