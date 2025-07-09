@@ -5,7 +5,7 @@ import { useSupabase } from "@/integrations/supabase/auth";
 import { Loader2 } from "lucide-react";
 import { redirect, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { AuthForm } from "@/components/auth/auth-form.tsx"; // Confirmed path and extension
+import { AuthForm } from "@/components/auth/auth-form"; // Removed .tsx extension
 
 export default function LoginPage() {
   const { supabase, session, loading } = useSupabase();

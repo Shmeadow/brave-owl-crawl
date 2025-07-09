@@ -285,16 +285,18 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
     }
 
     // Perform a soft delete by setting deleted_at timestamp
-    const { error } = await supabase
+    // Explicitly select 'id' to avoid RLS violation on implicit full row return
+    const { data, error } = await supabase
       .from('rooms')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', roomId)
-      .eq('creator_id', session.user.id); // Ensure only creator can delete
+      .eq('creator_id', session.user.id)
+      .select('id'); // Explicitly select 'id' to avoid RLS issue
 
     if (error) {
       toast.error("Error deleting room: " + error.message);
       console.error("Error deleting room:", error);
-    } else {
+    } else if (data) {
       setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId)); // Remove from local state immediately
       toast.success("Room deleted successfully.");
       addNotification(`You deleted the room: "${roomToDelete.name}".`);
