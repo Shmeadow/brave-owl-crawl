@@ -113,19 +113,18 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     return () => window.removeEventListener('resize', calculateArea);
   }, [sidebarCurrentWidth, isMobile]);
 
-  // If it's a public page and still loading, render children immediately without LoadingScreen
-  if (loading && (isLoginPage || isLandingPage || pathname === '/pricing')) {
+  if (loading) {
+    return <LoadingScreen />;
+  }
+  
+  // If it's the pricing, login, or landing page, render only children and Toaster
+  if (pathname === '/pricing' || isLoginPage || isLandingPage) {
     return (
       <>
         {children}
         <Toaster />
       </>
     );
-  }
-  
-  // If still loading for other pages (e.g., dashboard after login), show LoadingScreen
-  if (loading) {
-    return <LoadingScreen />;
   }
 
   // Render the main application layout for all other pages
