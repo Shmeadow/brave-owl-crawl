@@ -40,9 +40,9 @@ export function PlayerControls({
   const isVolumeControlDisabled = !playerIsReady || playerType === 'spotify';
 
   return (
-    <div className="flex items-center justify-between flex-1"> {/* Changed to justify-between and flex-1 */}
+    <div className="flex items-center space-x-2 flex-shrink-0">
       {playerType !== 'spotify' && (
-        <div className="flex items-center gap-1"> {/* Changed space-x-1 to gap-1 */}
+        <div className="flex items-center space-x-1">
           <button
             onClick={skipBackward}
             className="p-0 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-7 w-7 flex items-center justify-center"
@@ -74,7 +74,7 @@ export function PlayerControls({
       )}
 
       {/* Volume Control */}
-      <div className="flex items-center gap-1"> {/* Changed space-x-1 and removed ml-3 to gap-1 */}
+      <div className="flex items-center space-x-1 ml-3">
         <button
           onClick={toggleMute}
           className="p-0 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300 h-7 w-7 flex items-center justify-center"
@@ -91,13 +91,13 @@ export function PlayerControls({
           step="0.01"
           value={currentVolume}
           onChange={handleVolumeChange}
-          className="w-16 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
+          className="w-10 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
           disabled={isVolumeControlDisabled}
         />
       </div>
 
       {/* Player Mode Buttons (now integrated) */}
-      <div className="flex gap-1"> {/* Changed gap-1 and removed ml-2 */}
+      <div className="flex justify-end gap-1 ml-2">
         {displayMode === 'normal' && (
           <button
             onClick={() => setDisplayMode('maximized')}
