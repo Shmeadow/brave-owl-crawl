@@ -43,7 +43,7 @@ export function AmbientSoundItem({ name, url, icon: Icon, isCurrentRoomWritable 
       onClick={handleContainerClick}
       title={name}
     >
-      <Icon className={cn("h-6 w-6", isPlaying ? "text-primary" : "text-muted-foreground")} />
+      <Icon className={cn("h-6 w-6", isPlaying ? "text-primary" : "text-muted-foreground")} aria-hidden="true" />
       <span className="text-xs text-center font-medium truncate w-full">{name}</span>
       
       <div

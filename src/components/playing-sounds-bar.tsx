@@ -53,9 +53,9 @@ export function PlayingSoundsBar({ isMobile }: PlayingSoundsBarProps) {
                       className="relative flex items-center justify-center h-6 w-6 bg-primary/10 rounded-full focus:outline-none focus:ring-2 focus:ring-primary overflow-hidden"
                       aria-label={sound.isMuted ? `Unmute ${sound.name}` : `Mute ${sound.name}`}
                     >
-                      <Icon className={cn("h-4 w-4", sound.isMuted ? "text-muted-foreground" : "text-primary")} />
+                      <Icon className={cn("h-4 w-4", sound.isMuted ? "text-muted-foreground" : "text-primary")} aria-hidden="true" />
                       {sound.isMuted && (
-                        <VolumeX className="absolute h-3 w-3 text-muted-foreground" /> // Mute icon overlay
+                        <VolumeX className="absolute h-3 w-3 text-muted-foreground" aria-hidden="true" /> // Mute icon overlay
                       )}
                     </button>
                   </TooltipTrigger>

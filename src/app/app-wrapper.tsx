@@ -141,6 +141,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             
             {/* Main content area, where widgets and page content live */}
             <div
+              role="main" // Added role="main"
               className="absolute top-16 right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
               style={{ left: `${sidebarCurrentWidth}px` }}
             >
