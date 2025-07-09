@@ -106,7 +106,7 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
     }
 
     const player = new window.Spotify.Player({
-      name: 'Productivity Hub Player',
+      name: 'CozyHub Player',
       getOAuthToken: (cb: (token: string) => void) => { cb(accessToken); },
       volume: volume,
     });
