@@ -10,7 +10,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -24,17 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-interface CalendarEvent {
-  id: string;
-  user_id?: string;
-  title: string;
-  description: string | null;
-  event_date: string;
-  created_at: string;
-}
-
-const LOCAL_STORAGE_KEY_EVENTS = 'guest_calendar_events';
+import { useCalendarEvents } from "@/hooks/use-calendar-events"; // Import the new hook
 
 const eventFormSchema = z.object({
   title: z.string().min(1, { message: "Event title cannot be empty." }),
@@ -46,11 +35,8 @@ interface CalendarWidgetProps {
 }
 
 export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
-  const { supabase, session, loading: authLoading } = useSupabase();
+  const { events, loading, isLoggedInMode, handleAddEvent, handleDeleteEvent } = useCalendarEvents();
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [loadingEvents, setLoadingEvents] = useState(true);
-  const [isLoggedInMode, setIsLoggedInMode] = useState(false);
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -60,92 +46,7 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
     },
   });
 
-  const fetchEvents = useCallback(async () => {
-    if (authLoading) return;
-
-    setLoadingEvents(true);
-    if (session && supabase) {
-      setIsLoggedInMode(true);
-      const localEventsString = localStorage.getItem(LOCAL_STORAGE_KEY_EVENTS);
-      let localEvents: CalendarEvent[] = [];
-      try {
-        localEvents = localEventsString ? JSON.parse(localEventsString) : [];
-      } catch (e) {
-        console.error("Error parsing local storage events:", e);
-        localEvents = [];
-      }
-
-      const { data: supabaseEvents, error: fetchError } = await supabase
-        .from('calendar_events')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: true });
-
-      if (fetchError) {
-        toast.error("Error fetching calendar events: " + fetchError.message);
-        console.error("Error fetching events (Supabase):", fetchError);
-        setEvents([]);
-      } else {
-        let mergedEvents = [...(supabaseEvents as CalendarEvent[])];
-
-        if (localEvents.length > 0) {
-          for (const localEvent of localEvents) {
-            const existsInSupabase = mergedEvents.some(
-              se => se.title === localEvent.title && se.event_date === localEvent.event_date
-            );
-            if (!existsInSupabase) {
-              const { data: newSupabaseEvent, error: insertError } = await supabase
-                .from('calendar_events')
-                .insert({
-                  user_id: session.user.id,
-                  title: localEvent.title,
-                  description: localEvent.description,
-                  event_date: localEvent.event_date,
-                  created_at: localEvent.created_at || new Date().toISOString(),
-                })
-                .select()
-                .single();
-              if (insertError) {
-                console.error("Error migrating local event:", insertError);
-              } else if (newSupabaseEvent) {
-                mergedEvents.push(newSupabaseEvent as CalendarEvent);
-              }
-            }
-          }
-          localStorage.removeItem(LOCAL_STORAGE_KEY_EVENTS);
-          toast.success("Local calendar events migrated!");
-        }
-        setEvents(mergedEvents);
-      }
-    } else {
-      setIsLoggedInMode(false);
-      const storedEventsString = localStorage.getItem(LOCAL_STORAGE_KEY_EVENTS);
-      let loadedEvents: CalendarEvent[] = [];
-      try {
-        loadedEvents = storedEventsString ? JSON.parse(storedEventsString) : [];
-      } catch (e) {
-        console.error("Error parsing local storage events:", e);
-        loadedEvents = [];
-      }
-      setEvents(loadedEvents);
-      if (loadedEvents.length === 0) {
-        toast.info("You are browsing calendar events as a guest. Your events will be saved locally.");
-      }
-    }
-    setLoadingEvents(false);
-  }, [session, supabase, authLoading]);
-
-  useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]);
-
-  useEffect(() => {
-    if (!isLoggedInMode && !loadingEvents) {
-      localStorage.setItem(LOCAL_STORAGE_KEY_EVENTS, JSON.stringify(events));
-    }
-  }, [events, isLoggedInMode, loadingEvents]);
-
-  const handleAddEvent = useCallback(async (values: z.infer<typeof eventFormSchema>) => {
+  const onAddEventSubmit = useCallback(async (values: z.infer<typeof eventFormSchema>) => {
     if (!isCurrentRoomWritable) {
       toast.error("You do not have permission to add events in this room.");
       return;
@@ -155,65 +56,19 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
       return;
     }
     const eventDate = format(date, 'yyyy-MM-dd');
+    await handleAddEvent(values.title, values.description || null, eventDate);
+    form.reset();
+    toast.success("Event added successfully!");
+  }, [date, handleAddEvent, form, isCurrentRoomWritable]);
 
-    if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase
-        .from('calendar_events')
-        .insert({
-          user_id: session.user.id,
-          title: values.title,
-          description: values.description || null,
-          event_date: eventDate,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        toast.error("Error adding event: " + error.message);
-        console.error("Error adding event (Supabase):", error);
-      } else if (data) {
-        setEvents((prevEvents) => [...prevEvents, data as CalendarEvent]);
-        toast.success("Event added successfully!");
-        form.reset();
-      }
-    } else {
-      const newEvent: CalendarEvent = {
-        id: crypto.randomUUID(),
-        title: values.title,
-        description: values.description || null,
-        event_date: eventDate,
-        created_at: new Date().toISOString(),
-      };
-      setEvents((prevEvents) => [...prevEvents, newEvent]);
-      toast.success("Event added successfully (saved locally)!");
-      form.reset();
-    }
-  }, [date, isLoggedInMode, session, supabase, form, isCurrentRoomWritable]);
-
-  const handleDeleteEvent = useCallback(async (eventId: string) => {
+  const onDeleteEventClick = useCallback(async (eventId: string) => {
     if (!isCurrentRoomWritable) {
       toast.error("You do not have permission to delete events in this room.");
       return;
     }
-    if (isLoggedInMode && session && supabase) {
-      const { error } = await supabase
-        .from('calendar_events')
-        .delete()
-        .eq('id', eventId)
-        .eq('user_id', session.user.id);
-
-      if (error) {
-        toast.error("Error deleting event: " + error.message);
-        console.error("Error deleting event (Supabase):", error);
-      } else {
-        setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
-        toast.success("Event deleted.");
-      }
-    } else {
-      setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
-      toast.success("Event deleted (locally).");
-    }
-  }, [isLoggedInMode, session, supabase, isCurrentRoomWritable]);
+    await handleDeleteEvent(eventId);
+    toast.success("Event deleted.");
+  }, [handleDeleteEvent, isCurrentRoomWritable]);
 
   const selectedDayEvents = date
     ? events.filter(event => event.event_date === format(date, 'yyyy-MM-dd'))
@@ -229,6 +84,14 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
       borderRadius: '50%',
     },
   };
+
+  if (loading) {
+    return (
+      <div className="h-full w-full flex flex-col items-center justify-center">
+        <p className="text-foreground">Loading calendar...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full w-full">
@@ -259,7 +122,7 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
             </CardHeader>
             <CardContent className="flex-1 flex flex-col gap-4">
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleAddEvent)} className="space-y-3">
+                <form onSubmit={form.handleSubmit(onAddEventSubmit)} className="space-y-3">
                   <FormField
                     control={form.control}
                     name="title"
@@ -294,9 +157,7 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
 
               <div className="mt-4 flex-1 flex flex-col">
                 <h3 className="text-lg font-semibold mb-2">Upcoming Events:</h3>
-                {loadingEvents ? (
-                  <p className="text-muted-foreground text-sm text-center">Loading events...</p>
-                ) : selectedDayEvents.length === 0 ? (
+                {selectedDayEvents.length === 0 ? (
                   <p className="text-muted-foreground text-sm text-center">No events for this date.</p>
                 ) : (
                   <ScrollArea className="flex-1 max-h-[300px] lg:max-h-[unset]">
@@ -311,7 +172,7 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
                             variant="ghost"
                             size="icon"
                             className="text-red-500 hover:bg-red-100 hover:text-red-600 h-7 w-7"
-                            onClick={() => handleDeleteEvent(event.id)}
+                            onClick={() => onDeleteEventClick(event.id)}
                             disabled={!isCurrentRoomWritable}
                           >
                             <Trash2 className="h-4 w-4" />
