@@ -108,6 +108,12 @@ export function BackgroundEffectsMenu() {
             >
               Raindrops Effect
             </Button>
+            <Button
+              variant={activeEffect === 'plants' ? 'default' : 'outline'}
+              onClick={() => setEffect('plants')}
+            >
+              Looking Through Plants
+            </Button>
           </div>
         </TabsContent>
       </Tabs>

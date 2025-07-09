@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { useSupabase } from '@/integrations/supabase/auth';
 import { toast } from 'sonner';
 
-type EffectType = 'none' | 'rain' | 'snow' | 'raindrops';
+type EffectType = 'none' | 'rain' | 'snow' | 'raindrops' | 'plants'; // Added 'plants'
 
 interface EffectContextType {
   activeEffect: EffectType;
@@ -47,7 +47,7 @@ export function EffectProvider({ children }: { children: React.ReactNode }) {
         } else {
           // 2. If no Supabase data, check local storage for migration
           const savedEffect = localStorage.getItem(LOCAL_STORAGE_KEY);
-          if (savedEffect && ['none', 'rain', 'snow', 'raindrops'].includes(savedEffect)) {
+          if (savedEffect && ['none', 'rain', 'snow', 'raindrops', 'plants'].includes(savedEffect)) { // Updated valid types
             // Migrate to Supabase
             const { error: insertError } = await supabase
               .from('user_preferences')
@@ -78,7 +78,7 @@ export function EffectProvider({ children }: { children: React.ReactNode }) {
         // User is a guest (not logged in)
         setIsLoggedInMode(false);
         const savedEffect = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (savedEffect && ['none', 'rain', 'snow', 'raindrops'].includes(savedEffect)) {
+        if (savedEffect && ['none', 'rain', 'snow', 'raindrops', 'plants'].includes(savedEffect)) { // Updated valid types
           setActiveEffectState(savedEffect as EffectType);
         } else {
           // Set default for guests if no local storage

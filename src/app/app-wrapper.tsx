@@ -18,6 +18,7 @@ import { useEffects } from "@/context/effect-provider";
 import { RainEffect } from "@/components/effects/rain-effect";
 import { SnowEffect } from "@/components/effects/snow-effect";
 import { RaindropsEffect } from "@/components/effects/raindrops-effect";
+import { LookingThroughPlantsEffect } from "@/components/effects/looking-through-plants-effect"; // New import
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNotifications } from "@/hooks/use-notifications";
 import { cn } from "@/lib/utils";
@@ -121,6 +122,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             {activeEffect === 'rain' && <RainEffect />}
             {activeEffect === 'snow' && <SnowEffect />}
             {activeEffect === 'raindrops' && <RaindropsEffect />}
+            {activeEffect === 'plants' && <LookingThroughPlantsEffect />} {/* New effect rendering */}
             <Header
               isChatOpen={isChatOpen}
               onToggleChat={() => setIsChatOpen(!isChatOpen)}

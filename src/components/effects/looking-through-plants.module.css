@@ -1,0 +1,19 @@
+.plantsContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 900; /* In front of background, behind most UI elements */
+  overflow: hidden;
+  background: transparent;
+}
+
+.plantShape {
+  position: absolute;
+  background-color: hsl(var(--foreground) / 0.1); /* Use foreground color with transparency */
+  border-radius: 50%; /* Start with circular shapes */
+  filter: blur(30px); /* Heavy blur for soft edges */
+  transform-origin: center center; /* Ensure rotation is from center */
+}
