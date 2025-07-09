@@ -60,7 +60,7 @@ export function LookingThroughPlantsEffect() {
       shape.style.transform = `rotate(${Math.random() * 360}deg)`;
 
       // Random opacity
-      shape.style.opacity = `${0.1 + Math.random() * 0.2}`; // Very subtle
+      shape.style.opacity = `${0.2 + Math.random() * 0.3}`; // More noticeable opacity (0.2 to 0.5)
 
       container.appendChild(shape);
       shapes.push(shape);
