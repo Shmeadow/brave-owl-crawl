@@ -26,7 +26,8 @@ import { MinimizedPlayerControls } from './audio-player/minimized-player-control
 
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 const HEADER_HEIGHT = 64; // px
-const TIME_PROGRESS_BAR_HEIGHT = 64; // px
+// const TIME_PROGRESS_BAR_HEIGHT = 64; // px - Removed as it's now fixed
+const TOTAL_HEADER_AREA_HEIGHT = HEADER_HEIGHT; // Adjusted to only include header height
 
 interface SimpleAudioPlayerProps {
   isMobile: boolean;
@@ -352,7 +353,7 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
   return (
     <div className={cn(
       "fixed z-[900] transition-all duration-300 ease-in-out",
-      displayMode === 'normal' && `top-[${HEADER_HEIGHT + TIME_PROGRESS_BAR_HEIGHT + 16}px] right-4 w-80`, // Adjusted top
+      displayMode === 'normal' && `top-[${TOTAL_HEADER_AREA_HEIGHT + 16}px] right-4 w-80`, // Adjusted top
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-12',
       displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-[500px] flex flex-col items-center justify-center'
     )}>

@@ -34,8 +34,8 @@ import { TimeAndProgressDisplay } from "@/components/time-and-progress-display";
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
-const TIME_PROGRESS_BAR_HEIGHT = 64; // px (height of the new bar)
-const TOTAL_HEADER_AREA_HEIGHT = HEADER_HEIGHT + TIME_PROGRESS_BAR_HEIGHT;
+// const TIME_PROGRESS_BAR_HEIGHT = 64; // px (height of the new bar) - Removed as it's now fixed
+const TOTAL_HEADER_AREA_HEIGHT = HEADER_HEIGHT; // Adjusted to only include header height
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
 
 export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
@@ -101,7 +101,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
 
       setMainContentArea({
         left: isMobile ? 0 : sidebarCurrentWidth,
-        top: TOTAL_HEADER_AREA_HEIGHT, // Adjusted top to account for new bar
+        top: TOTAL_HEADER_AREA_HEIGHT, // Adjusted top to only include header height
         width: isMobile ? windowWidth : windowWidth - sidebarCurrentWidth,
         height: windowHeight - TOTAL_HEADER_AREA_HEIGHT, // Adjusted height
       });
@@ -139,7 +139,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               isMobile={isMobile}
               onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
             />
-            <TimeAndProgressDisplay /> {/* New Time and Progress Bar */}
+            <TimeAndProgressDisplay /> {/* Now a fixed element */}
             <WelcomeBackModal
               isOpen={showWelcomeBack}
               onClose={() => setShowWelcomeBack(false)}

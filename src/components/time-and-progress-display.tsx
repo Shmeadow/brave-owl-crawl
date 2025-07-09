@@ -29,7 +29,11 @@ const formatDateManual = (date: Date) => {
   return date.toLocaleDateString('en-US', options);
 };
 
-export function TimeAndProgressDisplay() {
+interface TimeAndProgressDisplayProps {
+  className?: string; // Added className prop
+}
+
+export function TimeAndProgressDisplay({ className }: TimeAndProgressDisplayProps) {
   const { profile, loading: authLoading } = useSupabase();
   const [currentTimeStr, setCurrentTimeStr] = useState("--:--:--");
   const [currentDateStr, setCurrentDateStr] = useState("--- -- --");
@@ -93,15 +97,16 @@ export function TimeAndProgressDisplay() {
   return (
     <div
       className={cn(
-        "w-full h-16 flex items-center justify-center bg-card/50 backdrop-blur-xl border-b border-white/20",
-        "px-4 sm:px-6 lg:px-8"
+        "fixed top-16 right-4 z-[902] bg-card/50 backdrop-blur-xl border border-white/20 rounded-lg p-2",
+        "flex flex-col items-center text-sm font-mono text-muted-foreground",
+        className
       )}
     >
-      <div className="flex items-center space-x-2">
-        <div id="clock" className="text-3xl font-bold leading-none text-foreground">{currentTimeStr}</div>
-        <div id="date" className="text-lg leading-none text-muted-foreground">{currentDateStr}</div>
+      <div className="flex items-center space-x-1">
+        <div id="clock" className="text-xl font-bold leading-none text-foreground">{currentTimeStr}</div>
+        <div id="date" className="text-xs leading-none">{currentDateStr}</div>
       </div>
-      <div className="w-48 ml-4 h-2 bg-muted/50 rounded-full overflow-hidden relative">
+      <div className="w-24 mt-1 h-1.5 bg-muted/50 rounded-full overflow-hidden relative">
         <div
           className="h-full rounded-full transition-all duration-1000 ease-linear relative overflow-hidden"
           style={{ width: `${dailyProgress}%`, background: gradient }}
