@@ -220,10 +220,10 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
                 <p>
                   Reach out to the owner at:{" "}
                   <a
-                    href="mailto:support@example.com"
+                    href="mailto:support@cozyhub.app"
                     className="text-primary hover:underline"
                   >
-                    support@example.com
+                    support@cozyhub.app
                   </a>
                 </p>
                 <p>We appreciate your feedback!</p>
@@ -327,10 +327,10 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
             <p>
               Reach out to the owner at:{" "}
               <a
-                href="mailto:support@example.com"
+                href="mailto:support@cozyhub.app"
                 className="text-primary hover:underline"
               >
-                support@example.com
+                support@cozyhub.app
               </a>
             </p>
             <p>We appreciate your feedback!</p>

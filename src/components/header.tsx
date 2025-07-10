@@ -88,19 +88,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
 
           <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
             <h1 className="text-xl font-semibold flex items-center gap-2 overflow-hidden whitespace-nowrap text-ellipsis flex-1 min-w-0">
-              {!isMobile && session?.user?.id && (
-                <span
-                  className="text-sm font-mono text-muted-foreground cursor-pointer flex items-center gap-1 hover:text-foreground transition-colors flex-shrink-0"
-                  onClick={() => {
-                    navigator.clipboard.writeText(session.user.id);
-                    toast.success("Your User ID copied to clipboard!");
-                  }}
-                  title="Copy Your User ID"
-                >
-                  ({session.user.id.substring(0, 6)})
-                  <Copy className="h-3 w-3" />
-                </span>
-              )}
+              {/* Removed the direct display of session.user.id here */}
               <span className="truncate">{currentRoomName}</span>
               {isOwnerOfCurrentRoom && currentRoomId && (
                 <Button

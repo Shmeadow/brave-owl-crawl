@@ -50,7 +50,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const pathname = usePathname();
   const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const { isAlwaysOpen, mounted } = useSidebarPreference();
-  const { isCurrentRoomWritable } = useCurrentRoom();
+  const { currentRoomName, isCurrentRoomWritable } = useCurrentRoom(); // Get currentRoomName
   const { activeEffect } = useEffects();
   const isMobile = useIsMobile();
   const { addNotification } = useNotifications();
@@ -88,7 +88,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     const welcomeBackShown = sessionStorage.getItem('welcomeBackShown');
     if (!welcomeBackShown && session) { // Only show if logged in
       setShowWelcomeBack(true);
-      sessionStorage.setItem('welcomeBackBackShown', 'true');
+      sessionStorage.setItem('welcomeBackShown', 'true'); // Corrected typo here
     }
   }, [session]);
 
@@ -164,6 +164,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               onClose={() => setShowWelcomeBack(false)}
               profile={profile}
               firstGoal={firstIncompleteGoal}
+              currentRoomName={currentRoomName} // Pass currentRoomName
             />
             <DynamicPlayingSoundsBar isMobile={isMobile} />
             <Sidebar isMobile={isMobile} />

@@ -12,9 +12,10 @@ interface WelcomeBackModalProps {
   onClose: () => void;
   profile: UserProfile | null;
   firstGoal: GoalData | null;
+  currentRoomName: string; // New prop
 }
 
-export function WelcomeBackModal({ isOpen, onClose, profile, firstGoal }: WelcomeBackModalProps) {
+export function WelcomeBackModal({ isOpen, onClose, profile, firstGoal, currentRoomName }: WelcomeBackModalProps) {
   const userName = profile?.first_name || 'there';
 
   return (
@@ -25,8 +26,12 @@ export function WelcomeBackModal({ isOpen, onClose, profile, firstGoal }: Welcom
           <DialogTitle className="text-2xl">Welcome Back, {userName}!</DialogTitle>
           <DialogDescription className="pt-2">
             {firstGoal
-              ? `Your current focus is on: "${firstGoal.title}". Let's get to it!`
-              : "You're all caught up on your goals. Ready to set a new one?"}
+              ? `Your current focus is on: "${firstGoal.title}".`
+              : "You're all caught up on your goals."}
+            <br />
+            You are currently in: <span className="font-semibold text-foreground">{currentRoomName}</span>.
+            <br />
+            Let's get to it!
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
