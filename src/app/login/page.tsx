@@ -1,18 +1,17 @@
 "use client";
 
-import React, { useRef } from "react";
+import React from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { Loader2 } from "lucide-react";
 import { redirect, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Auth } from '@supabase/auth-ui-react'; // Import Auth component
-import { ThemeSupa } from '@supabase/auth-ui-shared'; // Import ThemeSupa for styling
-import Link from "next/link"; // Import Link for navigation
+import { Auth } from '@supabase/auth-ui-react';
+import { ThemeSupa } from '@supabase/auth-ui-shared';
+import Link from "next/link";
 
 export default function LoginPage() {
   const { supabase, session, loading } = useSupabase();
   const router = useRouter();
-  // Removed loginFormRef as handleDismiss is no longer needed.
 
   if (loading) {
     return (
@@ -41,13 +40,13 @@ export default function LoginPage() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
       <div
         className={cn(
-          "w-full max-w-sm p-8 rounded-lg shadow-lg",
-          "bg-card/50 backdrop-blur-xl border-white/20",
-          "flex flex-col items-center gap-6"
+          "w-full max-w-sm p-10 rounded-xl shadow-2xl", // Increased padding, more rounded, stronger shadow
+          "bg-card/70 backdrop-blur-xl border-white/40", // Less transparent, more defined border
+          "flex flex-col items-center gap-8" // Increased gap between elements
         )}
       >
-        <h1 className="text-3xl font-bold text-foreground text-center">Welcome to CozyHub</h1>
-        <p className="text-muted-foreground text-center mb-4">Sign in or create an account to get started.</p>
+        <h1 className="text-4xl font-extrabold text-foreground text-center">Welcome to CozyHub</h1>
+        <p className="text-lg text-muted-foreground text-center mb-4">Sign in or create an account to get started.</p>
 
         <Auth
           supabaseClient={supabase}
