@@ -28,7 +28,7 @@ export function SidebarItem({ icon: Icon, label, isActive, onClick, isExpanded }
             )}
             onClick={onClick}
           >
-            <Icon className="h-5 w-5" /> {/* Reduced icon size to h-5 w-5 */}
+            <Icon className="h-6 w-6" /> {/* Increased icon size to h-6 w-6 */}
             <span className="sr-only">{label}</span>
           </Button>
         </TooltipTrigger>
