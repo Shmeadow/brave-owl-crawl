@@ -19,47 +19,48 @@ import { AnimatedBackgroundPreviewItem } from "../animated-background-preview-it
 import Image from "next/image"; // Import Image
 
 interface RoomOwnerControlsSectionProps {
-  currentRoom: RoomData;
-  isOwnerOfCurrentRoom: boolean;
+  room: RoomData; // Changed from currentRoom
 }
 
-export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: RoomOwnerControlsSectionProps) {
+export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps) {
   const { supabase, session, profile } = useSupabase();
   const {
     handleSendRoomInvitation,
     handleKickUser,
     handleUpdateRoomType,
     handleSetRoomPassword,
-    handleUpdateRoomDescription, // New
-    handleUpdateRoomBackground, // New
+    handleUpdateRoomDescription,
+    handleUpdateRoomBackground,
     fetchRooms,
   } = useRooms();
   const { setCurrentRoom } = useCurrentRoom();
 
+  const isOwnerOfCurrentRoom = room.creator_id === session?.user?.id;
+
   const [receiverEmailInput, setReceiverEmailInput] = useState("");
   const [selectedUserToKick, setSelectedUserToKick] = useState<string | null>(null);
   const [roomMembers, setRoomMembers] = useState<RoomMember[]>([]);
-  const [editedRoomName, setEditedRoomName] = useState(currentRoom.name);
-  const [editedRoomDescription, setEditedRoomDescription] = useState(currentRoom.description || ""); // New state for description
-  const [roomType, setRoomType] = useState<'public' | 'private'>(currentRoom.type);
+  const [editedRoomName, setEditedRoomName] = useState(room.name);
+  const [editedRoomDescription, setEditedRoomDescription] = useState(room.description || "");
+  const [roomType, setRoomType] = useState<'public' | 'private'>(room.type);
   const [roomPassword, setRoomPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedBackgroundUrl, setSelectedBackgroundUrl] = useState(currentRoom.background_url || "");
-  const [selectedIsVideoBackground, setSelectedIsVideoBackground] = useState(currentRoom.is_video_background || false);
+  const [selectedBackgroundUrl, setSelectedBackgroundUrl] = useState(room.background_url || "");
+  const [selectedIsVideoBackground, setSelectedIsVideoBackground] = useState(room.is_video_background || false);
 
-  // Effect to update local states when currentRoom prop changes
+  // Effect to update local states when room prop changes
   useEffect(() => {
-    setEditedRoomName(currentRoom.name);
-    setEditedRoomDescription(currentRoom.description || "");
-    setRoomType(currentRoom.type);
-    setSelectedBackgroundUrl(currentRoom.background_url || "");
-    setSelectedIsVideoBackground(currentRoom.is_video_background || false);
-  }, [currentRoom]);
+    setEditedRoomName(room.name);
+    setEditedRoomDescription(room.description || "");
+    setRoomType(room.type);
+    setSelectedBackgroundUrl(room.background_url || "");
+    setSelectedIsVideoBackground(room.is_video_background || false);
+  }, [room]);
 
-  // Fetch room members when currentRoom changes and user is owner
+  // Fetch room members when room changes and user is owner
   useEffect(() => {
     const fetchRoomMembers = async () => {
-      if (!supabase || !currentRoom.id || !isOwnerOfCurrentRoom) {
+      if (!supabase || !room.id || !isOwnerOfCurrentRoom) {
         setRoomMembers([]);
         return;
       }
@@ -77,7 +78,7 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
             profile_image_url
           )
         `)
-        .eq('room_id', currentRoom.id);
+        .eq('room_id', room.id);
 
       if (error) {
         console.error("Error fetching room members:", error);
@@ -88,33 +89,33 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
     };
 
     fetchRoomMembers();
-  }, [supabase, currentRoom.id, isOwnerOfCurrentRoom, fetchRooms]);
+  }, [supabase, room.id, isOwnerOfCurrentRoom, fetchRooms]);
 
   const handleSendInvitation = useCallback(async () => {
-    if (!currentRoom.id || !isOwnerOfCurrentRoom) {
-      toast.error("You must be the owner of the current room to send invitations.");
+    if (!room.id || !isOwnerOfCurrentRoom) {
+      toast.error("You must be the owner of this room to send invitations.");
       return;
     }
     if (!receiverEmailInput.trim()) {
       toast.error("Recipient Email Address cannot be empty.");
       return;
     }
-    await handleSendRoomInvitation(currentRoom.id, receiverEmailInput.trim());
+    await handleSendRoomInvitation(room.id, receiverEmailInput.trim());
     setReceiverEmailInput("");
-  }, [currentRoom.id, isOwnerOfCurrentRoom, receiverEmailInput, handleSendRoomInvitation]);
+  }, [room.id, isOwnerOfCurrentRoom, receiverEmailInput, handleSendRoomInvitation]);
 
   const handleKickSelectedUser = useCallback(async () => {
-    if (!currentRoom.id || !isOwnerOfCurrentRoom || !selectedUserToKick) {
+    if (!room.id || !isOwnerOfCurrentRoom || !selectedUserToKick) {
       toast.error("Please select a user to kick.");
       return;
     }
-    await handleKickUser(currentRoom.id, selectedUserToKick);
+    await handleKickUser(room.id, selectedUserToKick);
     setSelectedUserToKick(null);
-  }, [currentRoom.id, isOwnerOfCurrentRoom, selectedUserToKick, handleKickUser]);
+  }, [room.id, isOwnerOfCurrentRoom, selectedUserToKick, handleKickUser]);
 
   const handleUpdateRoomName = async () => {
-    if (!currentRoom.id || !isOwnerOfCurrentRoom || !supabase || !session) {
-      toast.error("You must be the owner of the current room and logged in to change its name.");
+    if (!room.id || !isOwnerOfCurrentRoom || !supabase || !session) {
+      toast.error("You must be the owner of this room and logged in to change its name.");
       return;
     }
     if (!editedRoomName.trim()) {
@@ -125,7 +126,7 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
     const { data, error } = await supabase
       .from('rooms')
       .update({ name: editedRoomName.trim() })
-      .eq('id', currentRoom.id)
+      .eq('id', room.id)
       .eq('creator_id', session.user.id)
       .select('name')
       .single();
@@ -135,23 +136,23 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
       console.error("Error updating room name:", error);
     } else if (data) {
       toast.success(`Room name updated to "${data.name}"!`);
-      setCurrentRoom(currentRoom.id, data.name);
+      setCurrentRoom(room.id, data.name);
       fetchRooms();
     }
   };
 
   const handleUpdateRoomDescriptionClick = async () => {
-    if (!currentRoom.id || !isOwnerOfCurrentRoom) {
-      toast.error("You must be the owner of the current room to change its description.");
+    if (!room.id || !isOwnerOfCurrentRoom) {
+      toast.error("You must be the owner of this room to change its description.");
       return;
     }
-    await handleUpdateRoomDescription(currentRoom.id, editedRoomDescription.trim() || null);
+    await handleUpdateRoomDescription(room.id, editedRoomDescription.trim() || null);
   };
 
   const handleUpdateRoomTypeClick = async (newType: 'public' | 'private') => {
-    if (currentRoom.type === newType) return; // No change needed
-    await handleUpdateRoomType(currentRoom.id, newType);
-    setRoomType(newType); // Update local state after successful update
+    if (room.type === newType) return;
+    await handleUpdateRoomType(room.id, newType);
+    setRoomType(newType);
   };
 
   const handleSetPasswordClick = async () => {
@@ -163,32 +164,32 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
       toast.error("Password cannot be empty.");
       return;
     }
-    await handleSetRoomPassword(currentRoom.id, roomPassword.trim());
-    setRoomPassword(""); // Clear password input after setting
+    await handleSetRoomPassword(room.id, roomPassword.trim());
+    setRoomPassword("");
   };
 
   const handleRemovePasswordClick = async () => {
-    await handleSetRoomPassword(currentRoom.id, null);
+    await handleSetRoomPassword(room.id, null);
   };
 
   const handleBackgroundChange = async (url: string, isVideo: boolean) => {
-    if (!currentRoom.id || !isOwnerOfCurrentRoom) {
-      toast.error("You must be the owner of the current room to change its background.");
+    if (!room.id || !isOwnerOfCurrentRoom) {
+      toast.error("You must be the owner of this room to change its background.");
       return;
     }
-    await handleUpdateRoomBackground(currentRoom.id, url, isVideo);
+    await handleUpdateRoomBackground(room.id, url, isVideo);
     setSelectedBackgroundUrl(url);
     setSelectedIsVideoBackground(isVideo);
   };
 
-  if (!isOwnerOfCurrentRoom || !currentRoom) {
+  if (!isOwnerOfCurrentRoom) {
     return null;
   }
 
   return (
     <Card className="w-full bg-card backdrop-blur-xl border-white/20 p-4">
       <CardHeader className="pb-4">
-        <CardTitle className="text-xl">Current Room Owner Controls</CardTitle>
+        <CardTitle className="text-xl">Room Settings: {room.name}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Room Name Editing */}
@@ -264,7 +265,7 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
             <Button onClick={handleSetPasswordClick} className="w-full" disabled={!roomPassword.trim()}>
               <Lock className="mr-2 h-4 w-4" /> Set Password
             </Button>
-            {currentRoom.password_hash && (
+            {room.password_hash && (
               <Button onClick={handleRemovePasswordClick} variant="outline" className="w-full mt-2">
                 Remove Password
               </Button>

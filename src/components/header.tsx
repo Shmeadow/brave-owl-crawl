@@ -23,7 +23,6 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
 import { useWidget } from "@/components/widget/widget-provider";
-import { RoomSettingsDialog } from "@/components/room-settings-dialog";
 import { UserNameCapsule } from "./user-name-capsule"; // Import new component
 import { cn } from "@/lib/utils"; // Import cn for styling
 
@@ -35,17 +34,14 @@ interface HeaderProps {
   isMobile: boolean;
   onToggleSidebar: () => void;
   isChatOpen: boolean;
-  onOpenRoomSettings: () => void; // New prop for opening room settings
 }
 
-export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onToggleSidebar, isChatOpen, onNewUnreadMessage, onClearUnreadMessages, onOpenRoomSettings }: HeaderProps) => {
+export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onToggleSidebar, isChatOpen, onNewUnreadMessage, onClearUnreadMessages }: HeaderProps) => {
   const { session } = useSupabase();
   const router = useRouter();
   const { currentRoomName, currentRoomId, isCurrentRoomWritable, setCurrentRoom } = useCurrentRoom();
   const { rooms, handleJoinRoomByRoomId } = useRooms();
   const { toggleWidget } = useWidget();
-
-  // Removed local isRoomSettingsOpen state, now managed by parent (AppWrapper)
 
   const currentRoom = rooms.find(room => room.id === currentRoomId) || null; // Ensure null instead of undefined
   const isOwnerOfCurrentRoom = !!(currentRoom && session?.user?.id === currentRoom.creator_id); // Ensure boolean
@@ -91,18 +87,6 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
             <h1 className="text-xl font-semibold flex items-center gap-2 overflow-hidden whitespace-nowrap text-ellipsis flex-1 min-w-0">
               {/* Removed the direct display of session.user.id here */}
               <span className="truncate">{currentRoomName}</span>
-              {isOwnerOfCurrentRoom && currentRoomId && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onOpenRoomSettings} // Call the new prop
-                  title="Room Settings"
-                  className="ml-1 h-7 w-7 text-muted-foreground hover:text-primary"
-                >
-                  <Settings className="h-4 w-4" />
-                  <span className="sr-only">Room Settings</span>
-                </Button>
-              )}
             </h1>
           </div>
         </div>

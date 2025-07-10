@@ -35,7 +35,6 @@ const DynamicRaindropsEffect = dynamic(() => import("@/components/effects/raindr
 const DynamicPlayingSoundsBar = dynamic(() => import("@/components/playing-sounds-bar").then(mod => mod.PlayingSoundsBar), { ssr: false });
 const DynamicMobileControls = dynamic(() => import("@/components/mobile-controls").then(mod => mod.MobileControls), { ssr: false });
 const DynamicWelcomeBackModal = dynamic(() => import("@/components/welcome-back-modal").then(mod => mod.WelcomeBackModal), { ssr: false });
-const DynamicRoomSettingsDialog = dynamic(() => import("@/components/room-settings-dialog").then(mod => mod.RoomSettingsDialog), { ssr: false });
 const DynamicNotificationsDropdown = dynamic(() => import("@/components/notifications/notifications-dropdown").then(mod => mod.NotificationsDropdown), { ssr: false });
 const DynamicTimeAndProgressDisplay = dynamic(() => import("@/components/time-and-progress-display").then(mod => mod.TimeAndProgressDisplay), { ssr: false });
 
@@ -66,7 +65,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [isPomodoroMinimized, setIsPomodoroMinimized] = useState(true);
   const [showWelcomeBack, setShowWelcomeBack] = useState(false);
-  const [isRoomSettingsOpen, setIsRoomSettingsOpen] = useState(false); // State for RoomSettingsDialog
 
   const chatPanelWidth = isChatOpen ? 320 : 56;
   const isDashboard = pathname === '/dashboard';
@@ -169,7 +167,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               unreadChatCount={unreadChatCount}
               isMobile={isMobile}
               onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-              onOpenRoomSettings={() => setIsRoomSettingsOpen(true)} // Pass the setter
             />
             <DynamicWelcomeBackModal
               isOpen={showWelcomeBack}
@@ -237,12 +234,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               currentRoomId={currentRoomId} // Pass currentRoomId here
               isCurrentRoomWritable={isCurrentRoomWritable}
               isMobile={isMobile}
-            />
-            <DynamicRoomSettingsDialog
-              isOpen={isRoomSettingsOpen} // Pass the state
-              onClose={() => setIsRoomSettingsOpen(false)} // Pass the setter
-              currentRoom={currentRoom} // Pass the current room object
-              isOwnerOfCurrentRoom={!!(currentRoom && session?.user?.id === currentRoom.creator_id)} // Pass ownership status
             />
 
             <Toaster />
