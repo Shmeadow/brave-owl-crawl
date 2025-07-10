@@ -50,7 +50,8 @@ export function UserNameCapsule() {
     )}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-auto p-0 flex items-center gap-2">
+          {/* Changed from Button to div, added cursor-pointer for visual cue */}
+          <div className="flex items-center gap-2 cursor-pointer h-auto p-0">
             <Avatar className="h-6 w-6">
               <AvatarImage src={user?.user_metadata?.avatar_url} alt={userName} />
               <AvatarFallback>
@@ -58,7 +59,7 @@ export function UserNameCapsule() {
               </AvatarFallback>
             </Avatar>
             <span>{userName}</span>
-          </Button>
+          </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
           <DropdownMenuLabel>User Info</DropdownMenuLabel>
