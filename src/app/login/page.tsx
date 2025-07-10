@@ -61,9 +61,9 @@ export default function LoginPage() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-transparent p-4">
       <div
         className={cn(
-          "w-full max-w-md p-8 rounded-xl shadow-lg",
+          "w-full max-w-md p-6 rounded-xl shadow-lg", // Reduced p-8 to p-6
           "bg-card border border-border",
-          "flex flex-col items-center gap-6"
+          "flex flex-col items-center gap-4" // Reduced gap-6 to gap-4
         )}
       >
         <h1 className="text-3xl font-extrabold text-foreground text-center">Welcome to CozyHub</h1>
@@ -96,9 +96,9 @@ export default function LoginPage() {
               }}
             />
             
-            <Separator className="my-4" />
-            <p className="text-sm text-muted-foreground text-center mb-2">Or connect with</p>
-            <div className="flex gap-4 w-full justify-center">
+            <Separator className="my-3" /> {/* Reduced my-4 to my-3 */}
+            <p className="text-sm text-muted-foreground text-center mb-1">Or connect with</p> {/* Reduced mb-2 to mb-1 */}
+            <div className="flex gap-3 w-full justify-center"> {/* Reduced gap-4 to gap-3 */}
               <Button
                 variant="outline"
                 size="lg"
@@ -117,7 +117,7 @@ export default function LoginPage() {
               </Button>
             </div>
 
-            <div className="flex flex-col items-center gap-2 w-full mt-4">
+            <div className="flex flex-col items-center gap-1 w-full mt-3"> {/* Reduced gap-2 to gap-1, mt-4 to mt-3 */}
               <Button variant="link" onClick={() => setAuthFormType('forgotten_password')} className="w-full">
                 Forgot your password?
               </Button>
@@ -129,36 +129,11 @@ export default function LoginPage() {
         )}
 
         {authFormType === 'sign_up' && (
-          <>
-            <CustomSignupForm
-              supabase={supabase}
-              onSuccess={handleSignupSuccess}
-              onSwitchToSignIn={() => setAuthFormType('sign_in')}
-            />
-            <Separator className="my-4" />
-            <p className="text-sm text-muted-foreground text-center mb-2">Or connect with</p>
-            <div className="flex gap-4 w-full justify-center">
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => handleOAuthSignIn('google')}
-                className="flex-1"
-              >
-                <Chrome className="mr-2 h-5 w-5" /> Google
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => handleOAuthSignIn('github')}
-                className="flex-1"
-              >
-                <Github className="mr-2 h-5 w-5" /> GitHub
-              </Button>
-            </div>
-            <Button variant="link" onClick={() => setAuthFormType('sign_in')} className="w-full mt-4">
-              Already have an account? Sign In
-            </Button>
-          </>
+          <CustomSignupForm
+            supabase={supabase}
+            onSuccess={handleSignupSuccess}
+            onSwitchToSignIn={() => setAuthFormType('sign_in')}
+          />
         )}
 
         {authFormType === 'forgotten_password' && (
@@ -187,7 +162,7 @@ export default function LoginPage() {
           </>
         )}
         
-        <Link href="/landing" className="text-sm text-muted-foreground hover:underline mt-4">
+        <Link href="/landing" className="text-sm text-muted-foreground hover:underline mt-3"> {/* Reduced mt-4 to mt-3 */}
           Back to Landing Page
         </Link>
       </div>

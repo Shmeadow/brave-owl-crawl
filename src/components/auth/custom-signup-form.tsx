@@ -18,6 +18,8 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
+import { Separator } from "@/components/ui/separator"; // Import Separator
+import { Chrome, Github } from "lucide-react"; // Import icons
 
 // Basic profanity list for demonstration. In a real application, this would be more comprehensive
 // and potentially managed server-side or via a dedicated library.
@@ -81,9 +83,22 @@ export function CustomSignupForm({ supabase, onSuccess, onSwitchToSignIn }: Cust
     setIsLoading(false);
   }
 
+  const handleOAuthSignIn = async (provider: 'google' | 'github') => {
+    if (!supabase) return;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`,
+      },
+    });
+    if (error) {
+      console.error(`Error signing in with ${provider}:`, error);
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-full">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full"> {/* Reduced space-y-6 to space-y-4 */}
         <FormField
           control={form.control}
           name="email"
@@ -127,7 +142,29 @@ export function CustomSignupForm({ supabase, onSuccess, onSwitchToSignIn }: Cust
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
           Sign Up
         </Button>
-        <Button type="button" variant="link" onClick={onSwitchToSignIn} className="w-full">
+
+        <Separator className="my-3" /> {/* Reduced my-4 to my-3 */}
+        <p className="text-sm text-muted-foreground text-center mb-1">Or connect with</p> {/* Reduced mb-2 to mb-1 */}
+        <div className="flex gap-3 w-full justify-center"> {/* Reduced gap-4 to gap-3 */}
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => handleOAuthSignIn('google')}
+            className="flex-1"
+          >
+            <Chrome className="mr-2 h-5 w-5" /> Google
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => handleOAuthSignIn('github')}
+            className="flex-1"
+          >
+            <Github className="mr-2 h-5 w-5" /> GitHub
+          </Button>
+        </div>
+
+        <Button type="button" variant="link" onClick={onSwitchToSignIn} className="w-full mt-3"> {/* Reduced mt-4 to mt-3 */}
           Already have an account? Sign In
         </Button>
       </form>
