@@ -15,8 +15,9 @@ interface RoomSettingsDialogProps {
 }
 
 export function RoomSettingsDialog({ isOpen, onClose, currentRoom, isOwnerOfCurrentRoom }: RoomSettingsDialogProps) {
-  if (!currentRoom || !isOwnerOfCurrentRoom) {
-    return null; // Don't render if not owner or no current room
+  // Render the dialog only if it's open and the current user is the owner of a valid room
+  if (!isOpen || !currentRoom || !isOwnerOfCurrentRoom) {
+    return null;
   }
 
   return (

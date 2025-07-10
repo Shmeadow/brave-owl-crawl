@@ -66,6 +66,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [isPomodoroMinimized, setIsPomodoroMinimized] = useState(true);
   const [showWelcomeBack, setShowWelcomeBack] = useState(false);
+  const [isRoomSettingsOpen, setIsRoomSettingsOpen] = useState(false); // State for RoomSettingsDialog
 
   const chatPanelWidth = isChatOpen ? 320 : 56;
   const isDashboard = pathname === '/dashboard';
@@ -81,7 +82,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   };
 
   // Determine the current room object
-  const currentRoom = rooms.find(room => room.id === currentRoomId);
+  const currentRoom = rooms.find(room => room.id === currentRoomId) ?? null;
 
   // Determine the background to use
   const backgroundToUse = currentRoom?.background_url
@@ -168,6 +169,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               unreadChatCount={unreadChatCount}
               isMobile={isMobile}
               onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+              onOpenRoomSettings={() => setIsRoomSettingsOpen(true)} // Pass the setter
             />
             <DynamicWelcomeBackModal
               isOpen={showWelcomeBack}
@@ -237,10 +239,10 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               isMobile={isMobile}
             />
             <DynamicRoomSettingsDialog
-              isOpen={false} // This needs to be managed by a state in Header or a parent
-              onClose={() => {}}
-              currentRoom={null} // This needs to be passed from useCurrentRoom
-              isOwnerOfCurrentRoom={false} // This needs to be passed
+              isOpen={isRoomSettingsOpen} // Pass the state
+              onClose={() => setIsRoomSettingsOpen(false)} // Pass the setter
+              currentRoom={currentRoom} // Pass the current room object
+              isOwnerOfCurrentRoom={!!(currentRoom && session?.user?.id === currentRoom.creator_id)} // Pass ownership status
             />
 
             <Toaster />

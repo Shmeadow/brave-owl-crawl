@@ -35,16 +35,17 @@ interface HeaderProps {
   isMobile: boolean;
   onToggleSidebar: () => void;
   isChatOpen: boolean;
+  onOpenRoomSettings: () => void; // New prop for opening room settings
 }
 
-export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onToggleSidebar, isChatOpen, onNewUnreadMessage, onClearUnreadMessages }: HeaderProps) => {
+export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onToggleSidebar, isChatOpen, onNewUnreadMessage, onClearUnreadMessages, onOpenRoomSettings }: HeaderProps) => {
   const { session } = useSupabase();
   const router = useRouter();
   const { currentRoomName, currentRoomId, isCurrentRoomWritable, setCurrentRoom } = useCurrentRoom();
   const { rooms, handleJoinRoomByRoomId } = useRooms();
   const { toggleWidget } = useWidget();
 
-  const [isRoomSettingsOpen, setIsRoomSettingsOpen] = useState(false);
+  // Removed local isRoomSettingsOpen state, now managed by parent (AppWrapper)
 
   const currentRoom = rooms.find(room => room.id === currentRoomId) || null; // Ensure null instead of undefined
   const isOwnerOfCurrentRoom = !!(currentRoom && session?.user?.id === currentRoom.creator_id); // Ensure boolean
@@ -94,7 +95,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setIsRoomSettingsOpen(true)}
+                  onClick={onOpenRoomSettings} // Call the new prop
                   title="Room Settings"
                   className="ml-1 h-7 w-7 text-muted-foreground hover:text-primary"
                 >
@@ -161,12 +162,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         )}
         <UserNav />
       </div>
-      <RoomSettingsDialog
-        isOpen={isRoomSettingsOpen}
-        onClose={() => setIsRoomSettingsOpen(false)}
-        currentRoom={currentRoom}
-        isOwnerOfCurrentRoom={isOwnerOfCurrentRoom}
-      />
+      {/* RoomSettingsDialog is now rendered in AppWrapper */}
     </header>
   );
 });
