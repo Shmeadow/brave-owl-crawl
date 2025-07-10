@@ -7,7 +7,7 @@ import { useSupabase } from "@/integrations/supabase/auth";
 import { CreateRoomSection } from "@/components/spaces-widget/create-room-section";
 import { MyRoomsSection } from "@/components/spaces-widget/my-rooms-section";
 import { JoinRoomSection } from "@/components/spaces-widget/join-room-section";
-// import { RoomOwnerControlsSection } from "@/components/spaces-widget/room-owner-controls-section"; // Removed import
+import { PublicRoomsSection } from "@/components/spaces-widget/public-rooms-section"; // New import
 
 interface SpacesWidgetProps {
   isCurrentRoomWritable: boolean;
@@ -31,12 +31,12 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
 
   const myCreatedRooms = rooms.filter(room => room.creator_id === session?.user?.id);
   const myJoinedRooms = rooms.filter(room => room.is_member && room.creator_id !== session?.user?.id);
-  // PublicRoomsSection is removed as there are no public rooms anymore.
+  const publicRooms = rooms.filter(room => room.type === 'public' && !room.is_member && room.creator_id !== session?.user?.id);
 
   return (
     <div className="h-full w-full overflow-y-auto p-4">
       <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto py-4">
-        <h1 className="text-3xl font-bold text-foreground text-center">Explore Rooms</h1> {/* Renamed title */}
+        <h1 className="text-3xl font-bold text-foreground text-center">Explore Rooms</h1>
 
         {session && <CreateRoomSection />}
 
@@ -49,9 +49,9 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
 
         {session && <JoinRoomSection />}
 
-        {/* PublicRoomsSection removed */}
-
-        {/* RoomOwnerControlsSection removed from here */}
+        {publicRooms.length > 0 && (
+          <PublicRoomsSection publicRooms={publicRooms} />
+        )}
 
         {!session && (
           <p className="text-sm text-muted-foreground mt-4 text-center">

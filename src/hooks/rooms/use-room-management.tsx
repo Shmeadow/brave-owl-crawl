@@ -23,6 +23,7 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
     }
 
     const randomBg = getRandomBackground();
+    const closesAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(); // Set closes_at to 2 hours from now
 
     const { data, error } = await supabase
       .from('rooms')
@@ -33,6 +34,7 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
         is_video_background: randomBg.isVideo,
         type: type, // Set the room type
         description: description, // Set the room description
+        closes_at: closesAt, // Set the closes_at timestamp
       })
       .select(`
         id,
