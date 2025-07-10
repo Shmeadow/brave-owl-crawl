@@ -7,11 +7,12 @@ import { redirect, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Auth } from '@supabase/auth-ui-react'; // Import Auth component
 import { ThemeSupa } from '@supabase/auth-ui-shared'; // Import ThemeSupa for styling
+import Link from "next/link"; // Import Link for navigation
 
 export default function LoginPage() {
   const { supabase, session, loading } = useSupabase();
   const router = useRouter();
-  const loginFormRef = useRef<HTMLDivElement>(null);
+  // Removed loginFormRef as handleDismiss is no longer needed.
 
   if (loading) {
     return (
@@ -36,32 +37,24 @@ export default function LoginPage() {
     );
   }
 
-  const handleDismiss = (event: React.MouseEvent<HTMLDivElement>) => {
-    // Check if the click occurred outside the login form itself
-    if (loginFormRef.current && !loginFormRef.current.contains(event.target as Node)) {
-      router.push('/landing');
-    }
-  };
-
   return (
-    <div
-      className="flex items-center justify-center min-h-screen"
-      onClick={handleDismiss}
-    >
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
       <div
-        ref={loginFormRef}
         className={cn(
-          "mx-auto grid w-full max-w-sm gap-6 p-4 rounded-lg shadow-lg",
-          "bg-card/50 backdrop-blur-xl border-white/20"
+          "w-full max-w-sm p-8 rounded-lg shadow-lg",
+          "bg-card/50 backdrop-blur-xl border-white/20",
+          "flex flex-col items-center gap-6"
         )}
-        onClick={(e) => e.stopPropagation()}
       >
+        <h1 className="text-3xl font-bold text-foreground text-center">Welcome to CozyHub</h1>
+        <p className="text-muted-foreground text-center mb-4">Sign in or create an account to get started.</p>
+
         <Auth
           supabaseClient={supabase}
           appearance={{ theme: ThemeSupa }}
-          providers={['google', 'github']} // Add Google and GitHub providers
-          redirectTo={window.location.origin + '/dashboard'} // Redirect to dashboard after successful login
-          theme="dark" // Use dark theme for consistency with CozyHub's default dark mode
+          providers={['google', 'github']}
+          redirectTo={window.location.origin + '/dashboard'}
+          theme="dark"
           localization={{
             variables: {
               sign_in: {
@@ -88,7 +81,6 @@ export default function LoginPage() {
                 link_text: 'Send a magic link',
               },
               forgotten_password: {
-                email_label: 'Email address',
                 email_input_placeholder: 'Your email address',
                 button_label: 'Send Reset Instructions',
                 link_text: 'Forgot your password?',
@@ -101,6 +93,9 @@ export default function LoginPage() {
             },
           }}
         />
+        <Link href="/landing" className="text-sm text-muted-foreground hover:underline mt-4">
+          Back to Landing Page
+        </Link>
       </div>
     </div>
   );
