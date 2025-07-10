@@ -48,7 +48,7 @@ export default function LoginPage() {
       <div
         className={cn(
           "w-full max-w-sm p-10 rounded-xl shadow-2xl",
-          "bg-card/10 backdrop-blur-xl border-white/40", // Adjusted for more transparency
+          "bg-transparent backdrop-blur-xl border-white/40", // Changed to bg-transparent for full transparency
           "flex flex-col items-center gap-8"
         )}
       >
@@ -66,6 +66,7 @@ export default function LoginPage() {
               redirectTo={window.location.origin + '/dashboard'}
               theme="dark"
               view="sign_in"
+              showLinks={false} // Hide default navigation links
               localization={{
                 variables: {
                   sign_in: {
@@ -74,16 +75,14 @@ export default function LoginPage() {
                     email_input_placeholder: 'Your email address',
                     password_input_placeholder: 'Your Password',
                     button_label: 'Sign In',
-                    social_provider_text: 'Or connect with', // Added "Or connect with"
-                    link_text: '', // Hide default link text as we're using a custom button below
+                    social_provider_text: 'Or connect with',
                   },
                   sign_up: {
-                    social_provider_text: 'Or connect with', // Added "Or connect with" for signup view too
+                    social_provider_text: 'Or connect with',
                   },
                 },
               }}
             />
-            {/* Custom button to switch to our custom signup form */}
             <Button variant="link" onClick={() => setView('sign_up')} className="w-full mt-2">
               Don't have an account? Sign Up
             </Button>
