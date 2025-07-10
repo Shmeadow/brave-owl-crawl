@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
-import { Loader2 } from "lucide-react";
+import { Loader2, Chrome, Github } from "lucide-react"; // Import Chrome for Google icon
 import { redirect, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Auth } from '@supabase/auth-ui-react';
@@ -10,6 +10,7 @@ import { ThemeSupa } from '@supabase/auth-ui-shared';
 import Link from "next/link";
 import { CustomSignupForm } from "@/components/auth/custom-signup-form";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator"; // Import Separator
 
 export default function LoginPage() {
   const { supabase, session, loading } = useSupabase();
@@ -43,17 +44,31 @@ export default function LoginPage() {
     router.push('/dashboard');
   };
 
+  const handleOAuthSignIn = async (provider: 'google' | 'github') => {
+    if (!supabase) return;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`,
+      },
+    });
+    if (error) {
+      console.error(`Error signing in with ${provider}:`, error);
+      // toast.error(`Failed to sign in with ${provider}: ${error.message}`); // Removed toast as Supabase UI handles it
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-transparent p-4">
       <div
         className={cn(
-          "w-full max-w-md p-8 rounded-xl shadow-lg", // Made more compact (max-w-md, p-8) and less intense shadow
-          "bg-card border border-border", // Solid background and border for better readability
-          "flex flex-col items-center gap-6" // Reduced gap between elements
+          "w-full max-w-md p-8 rounded-xl shadow-lg",
+          "bg-card border border-border",
+          "flex flex-col items-center gap-6"
         )}
       >
-        <h1 className="text-3xl font-extrabold text-foreground text-center">Welcome to CozyHub</h1> {/* Slightly smaller title */}
-        <p className="text-base text-muted-foreground text-center"> {/* Slightly smaller text */}
+        <h1 className="text-3xl font-extrabold text-foreground text-center">Welcome to CozyHub</h1>
+        <p className="text-base text-muted-foreground text-center">
           {authFormType === 'sign_in' && 'Sign in to your account.'}
           {authFormType === 'sign_up' && 'Create a new account.'}
           {authFormType === 'forgotten_password' && 'Reset your password.'}
@@ -64,7 +79,7 @@ export default function LoginPage() {
             <Auth
               supabaseClient={supabase}
               appearance={{ theme: ThemeSupa }}
-              providers={['google', 'github']}
+              providers={[]} // Hide default social providers
               redirectTo={window.location.origin + '/dashboard'}
               theme="dark"
               view="sign_in"
@@ -77,10 +92,6 @@ export default function LoginPage() {
                     email_input_placeholder: 'Your email address',
                     password_input_placeholder: 'Your Password',
                     button_label: 'Sign In',
-                    social_provider_text: 'Or connect with',
-                  },
-                  sign_up: {
-                    social_provider_text: 'Or connect with',
                   },
                   forgotten_password: {
                     email_label: 'Email address',
@@ -90,7 +101,29 @@ export default function LoginPage() {
                 },
               }}
             />
-            <div className="flex flex-col items-center gap-2 w-full"> {/* Grouped links */}
+            
+            <Separator className="my-4" /> {/* Separator */}
+            <p className="text-sm text-muted-foreground text-center mb-2">Or connect with</p>
+            <div className="flex gap-4 w-full justify-center">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => handleOAuthSignIn('google')}
+                className="flex-1"
+              >
+                <Chrome className="mr-2 h-5 w-5" /> Google
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => handleOAuthSignIn('github')}
+                className="flex-1"
+              >
+                <Github className="mr-2 h-5 w-5" /> GitHub
+              </Button>
+            </div>
+
+            <div className="flex flex-col items-center gap-2 w-full mt-4">
               <Button variant="link" onClick={() => setAuthFormType('forgotten_password')} className="w-full">
                 Forgot your password?
               </Button>
