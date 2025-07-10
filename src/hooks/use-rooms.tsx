@@ -8,7 +8,7 @@ import { RoomData, RoomMember } from "./rooms/types"; // Re-export types
 export type { RoomData, RoomMember }; // Re-export for external use
 
 export function useRooms() {
-  const { rooms, loading, fetchRooms } = useRoomFetching();
+  const { rooms, loading, fetchRooms, setRooms } = useRoomFetching(); // Get setRooms from useRoomFetching
   const {
     handleCreateRoom,
     handleSendRoomInvitation, // Renamed and updated
@@ -17,7 +17,7 @@ export function useRooms() {
     handleSetRoomPassword, // Exposed
     handleUpdateRoomDescription, // Exposed
     handleUpdateRoomBackground, // Exposed
-  } = useRoomManagement({ setRooms: (newRooms) => {}, fetchRooms }); // Pass a dummy setRooms, as fetchRooms will update the state in useRoomFetching
+  } = useRoomManagement({ setRooms, fetchRooms }); // Pass setRooms to useRoomManagement
   const {
     handleJoinRoomByRoomId,
     handleJoinRoomByPassword,

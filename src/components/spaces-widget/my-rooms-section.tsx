@@ -46,9 +46,8 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
 
   const getRoomCreatorDisplay = (room: RoomData) => {
     // Check if profiles data is available and use it
-    if ((room as any).profiles && (room as any).profiles.length > 0) {
-      const creatorProfile = (room as any).profiles[0];
-      return creatorProfile.first_name || creatorProfile.last_name || `User (${room.creator_id.substring(0, 4)}...)`;
+    if (room.profiles && room.profiles.length > 0) {
+      return room.profiles[0].first_name || room.profiles[0].last_name || `User (${room.creator_id.substring(0, 4)}...)`;
     }
     // Fallback to truncated ID if profile data is not available
     return `User (${room.creator_id.substring(0, 4)}...)`;

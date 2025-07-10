@@ -17,7 +17,7 @@ export function useRoomFetching() {
     }
 
     setLoading(true);
-    let userRooms: RoomData[] = [];
+    let allFetchedRooms: RoomData[] = [];
     const nowIso = new Date().toISOString(); // Get current time in ISO format
 
     if (session?.user?.id) {
@@ -31,7 +31,6 @@ export function useRoomFetching() {
           created_at,
           background_url,
           is_video_background,
-          room_members(user_id),
           password_hash,
           type,
           closes_at,
@@ -48,8 +47,7 @@ export function useRoomFetching() {
         toast.error("Error fetching your created rooms: " + createdError.message);
         console.error("Error fetching created rooms:", createdError);
       } else {
-        // Mark created rooms as 'is_member: true' as the creator is implicitly a member
-        userRooms = [...(createdRooms as RoomData[]).map(room => ({ ...room, is_member: true }))];
+        allFetchedRooms = [...(createdRooms as RoomData[]).map(room => ({ ...room, is_member: true }))];
       }
 
       // Fetch rooms where the user is a member (excluding rooms they created)
@@ -64,7 +62,6 @@ export function useRoomFetching() {
             created_at,
             background_url,
             is_video_background,
-            room_members(user_id),
             password_hash,
             type,
             closes_at,
@@ -82,7 +79,7 @@ export function useRoomFetching() {
         const joinedRooms = memberEntries
           .map((entry: any) => ({ ...entry.rooms, is_member: true }))
           .filter((room: RoomData) => room.creator_id !== session.user.id && room.deleted_at === null && room.closes_at && room.closes_at > nowIso); // Filter out expired/deleted
-        userRooms = [...userRooms, ...joinedRooms];
+        allFetchedRooms = [...allFetchedRooms, ...joinedRooms];
       }
 
       // Fetch public rooms that the user is NOT a member of and did NOT create
@@ -95,7 +92,6 @@ export function useRoomFetching() {
           created_at,
           background_url,
           is_video_background,
-          room_members(user_id),
           password_hash,
           type,
           closes_at,
@@ -105,20 +101,39 @@ export function useRoomFetching() {
         `)
         .eq('type', 'public')
         .is('deleted_at', null)
-        .gt('closes_at', nowIso) // Ensure not expired
-        .not('creator_id', 'eq', session.user.id)
-        .not('room_members.user_id', 'eq', session.user.id); // Filter out rooms where user is already a member
+        .gt('closes_at', nowIso); // Ensure not expired
 
       if (publicRoomsError) {
         console.error("Error fetching public rooms:", publicRoomsError);
       } else {
         const newPublicRooms = (publicRooms as RoomData[]).map(room => ({ ...room, is_member: false }));
-        userRooms = [...userRooms, ...newPublicRooms];
+        allFetchedRooms = [...allFetchedRooms, ...newPublicRooms];
       }
 
-      // Deduplicate rooms in case of any overlap
-      const uniqueRooms = Array.from(new Map(userRooms.map(room => [room.id, room])).values());
-      setRooms(uniqueRooms);
+      // Deduplicate rooms and filter out those the user is already a member of (from public list)
+      const uniqueRoomsMap = new Map<string, RoomData>();
+      for (const room of allFetchedRooms) {
+        // If a room is already marked as a member, keep that status
+        // Otherwise, add it or update if it's a public room not yet seen
+        const existing = uniqueRoomsMap.get(room.id);
+        if (!existing || room.is_member) { // Prioritize member status
+          uniqueRoomsMap.set(room.id, room);
+        }
+      }
+      
+      // Filter out public rooms if the user is already a member or creator
+      const finalRooms = Array.from(uniqueRoomsMap.values()).filter(room => {
+        if (room.type === 'public' && !room.is_member && room.creator_id !== session.user.id) {
+          // Check if user is a member via room_members table (more reliable)
+          const isAlreadyMember = allFetchedRooms.some(
+            r => r.id === room.id && r.is_member && r.creator_id !== session.user.id
+          );
+          return !isAlreadyMember;
+        }
+        return true;
+      });
+
+      setRooms(finalRooms);
 
     } else {
       // If not logged in, fetch only public rooms
@@ -131,7 +146,6 @@ export function useRoomFetching() {
           created_at,
           background_url,
           is_video_background,
-          room_members(user_id),
           password_hash,
           type,
           closes_at,
@@ -163,7 +177,6 @@ export function useRoomFetching() {
     const roomsChannel = supabase
       .channel('public:rooms')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms' }, (payload) => {
-        // console.log('Room change received!', payload); // Removed for cleaner logs
         fetchRooms(); // Re-fetch all rooms on any change
       })
       .subscribe();
@@ -172,7 +185,6 @@ export function useRoomFetching() {
     const roomMembersChannel = supabase
       .channel('public:room_members')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'room_members' }, (payload) => {
-        // console.log('Room member change received!', payload); // Removed for cleaner logs
         fetchRooms(); // Re-fetch all rooms on any change
       })
       .subscribe();
@@ -183,5 +195,5 @@ export function useRoomFetching() {
     };
   }, [fetchRooms, supabase, session]);
 
-  return { rooms, loading, fetchRooms };
+  return { rooms, loading, fetchRooms, setRooms };
 }

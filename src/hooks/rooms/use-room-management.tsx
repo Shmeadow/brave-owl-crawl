@@ -41,12 +41,12 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
         created_at,
         background_url,
         is_video_background,
-        room_members(user_id),
         password_hash,
         type,
         closes_at,
         deleted_at,
-        description
+        description,
+        profiles!creator_id(first_name, last_name)
       `) // Select only necessary fields, remove direct creator join
       .single();
 
@@ -56,12 +56,14 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
       return { data: null, error }; // Return error object
     } else if (data) {
       toast.success(`Room "${data.name}" created successfully!`);
-      setRooms((prevRooms) => [...prevRooms, { ...data, is_member: true } as RoomData]);
+      // The fetchRooms() call will update the state in useRoomFetching,
+      // so we don't need to manually update `setRooms` here.
+      fetchRooms();
       addNotification(`You created a new room: "${data.name}".`);
       return { data: data as RoomData, error: null }; // Return data object
     }
     return { data: null, error: { message: "Unknown error creating room" } }; // Fallback
-  }, [session, supabase, setRooms, addNotification]);
+  }, [session, supabase, fetchRooms, addNotification]);
 
   const handleUpdateRoomType = useCallback(async (roomId: string, newType: 'public' | 'private') => {
     if (!session?.user?.id || !supabase) {
@@ -299,11 +301,11 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
       toast.error("Error deleting room: " + error.message);
       console.error("Error deleting room:", error);
     } else if (data) {
-      setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId)); // Remove from local state immediately
+      fetchRooms(); // Re-fetch to update local state immediately
       toast.success("Room deleted successfully.");
       addNotification(`You deleted the room: "${roomToDelete.name}".`);
     }
-  }, [session, supabase, setRooms, addNotification]);
+  }, [session, supabase, fetchRooms, addNotification]);
 
   const handleUpdateRoomDescription = useCallback(async (roomId: string, newDescription: string | null) => {
     if (!session?.user?.id || !supabase) {
@@ -383,11 +385,11 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
 
   return {
     handleCreateRoom,
-    handleUpdateRoomType, // New
-    handleSetRoomPassword, // New
+    handleUpdateRoomType,
+    handleSetRoomPassword,
     handleSendRoomInvitation,
     handleDeleteRoom,
-    handleUpdateRoomDescription, // New
-    handleUpdateRoomBackground, // New
+    handleUpdateRoomDescription,
+    handleUpdateRoomBackground,
   };
 }
