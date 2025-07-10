@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { Loader2 } from "lucide-react";
 import { redirect, useRouter } from "next/navigation";
@@ -8,10 +8,13 @@ import { cn } from "@/lib/utils";
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import Link from "next/link";
+import { CustomSignupForm } from "@/components/auth/custom-signup-form";
+import { Button } from "@/components/ui/button"; // Import Button component
 
 export default function LoginPage() {
   const { supabase, session, loading } = useSupabase();
   const router = useRouter();
+  const [view, setView] = useState<'sign_in' | 'sign_up'>('sign_in');
 
   if (loading) {
     return (
@@ -36,62 +39,62 @@ export default function LoginPage() {
     );
   }
 
+  const handleSignupSuccess = () => {
+    router.push('/dashboard');
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
       <div
         className={cn(
-          "w-full max-w-sm p-10 rounded-xl shadow-2xl", // Increased padding, more rounded, stronger shadow
-          "bg-card/70 backdrop-blur-xl border-white/40", // Less transparent, more defined border
-          "flex flex-col items-center gap-8" // Increased gap between elements
+          "w-full max-w-sm p-10 rounded-xl shadow-2xl",
+          "bg-card/30 backdrop-blur-xl border-white/40",
+          "flex flex-col items-center gap-8"
         )}
       >
         <h1 className="text-4xl font-extrabold text-foreground text-center">Welcome to CozyHub</h1>
-        <p className="text-lg text-muted-foreground text-center mb-4">Sign in or create an account to get started.</p>
+        <p className="text-lg text-muted-foreground text-center mb-4">
+          {view === 'sign_in' ? 'Sign in to your account.' : 'Create a new account.'}
+        </p>
 
-        <Auth
-          supabaseClient={supabase}
-          appearance={{ theme: ThemeSupa }}
-          providers={['google', 'github']}
-          redirectTo={window.location.origin + '/dashboard'}
-          theme="dark"
-          localization={{
-            variables: {
-              sign_in: {
-                email_label: 'Email address',
-                password_label: 'Your Password',
-                email_input_placeholder: 'Your email address',
-                password_input_placeholder: 'Your Password',
-                button_label: 'Sign In',
-                social_provider_text: 'Or continue with',
-                link_text: 'Already have an account? Sign in',
-              },
-              sign_up: {
-                email_label: 'Email address',
-                password_label: 'Create a Password',
-                email_input_placeholder: 'Your email address',
-                password_input_placeholder: 'Create a Password',
-                button_label: 'Sign Up',
-                social_provider_text: 'Or sign up with',
-                link_text: 'Don\'t have an account? Sign up',
-              },
-              magic_link: {
-                email_input_placeholder: 'Your email address',
-                button_label: 'Send Magic Link',
-                link_text: 'Send a magic link',
-              },
-              forgotten_password: {
-                email_input_placeholder: 'Your email address',
-                button_label: 'Send Reset Instructions',
-                link_text: 'Forgot your password?',
-              },
-              update_password: {
-                password_label: 'New Password',
-                password_input_placeholder: 'Your New Password',
-                button_label: 'Update Password',
-              },
-            },
-          }}
-        />
+        {view === 'sign_in' ? (
+          <>
+            <Auth
+              supabaseClient={supabase}
+              appearance={{ theme: ThemeSupa }}
+              providers={['google', 'github']}
+              redirectTo={window.location.origin + '/dashboard'}
+              theme="dark"
+              view="sign_in"
+              localization={{
+                variables: {
+                  sign_in: {
+                    email_label: 'Email address',
+                    password_label: 'Your Password',
+                    email_input_placeholder: 'Your email address',
+                    password_input_placeholder: 'Your Password',
+                    button_label: 'Sign In',
+                    social_provider_text: '',
+                    link_text: 'Already have an account? Sign in',
+                  },
+                  sign_up: {
+                    social_provider_text: '',
+                  },
+                },
+              }}
+            />
+            <Button variant="link" onClick={() => setView('sign_up')} className="w-full mt-2">
+              Don't have an account? Sign Up
+            </Button>
+          </>
+        ) : (
+          <CustomSignupForm
+            supabase={supabase}
+            onSuccess={handleSignupSuccess}
+            onSwitchToSignIn={() => setView('sign_in')}
+          />
+        )}
+        
         <Link href="/landing" className="text-sm text-muted-foreground hover:underline mt-4">
           Back to Landing Page
         </Link>
