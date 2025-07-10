@@ -109,10 +109,10 @@ export function Sidebar({ isMobile }: SidebarProps) {
     }
   };
 
-  // Determine actual sidebar open state for visual rendering
-  // On mobile, it's controlled by isSidebarOpen directly (from context)
-  // On desktop, it's controlled by isAlwaysOpen or hover (isSidebarOpen)
-  const actualSidebarOpen = mounted ? (isMobile ? isSidebarOpen : (isAlwaysOpen || isSidebarOpen)) : false;
+  // Determine actual sidebar width based on state
+  const sidebarWidth = isMobile
+    ? SIDEBAR_WIDTH_MOBILE
+    : (isAlwaysOpen ? SIDEBAR_WIDTH_DESKTOP : (isSidebarOpen ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_DESKTOP));
 
   return (
     <div
@@ -123,9 +123,10 @@ export function Sidebar({ isMobile }: SidebarProps) {
         "transition-transform duration-300 ease-in-out",
         `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]`,
         isMobile
-          ? `w-[${SIDEBAR_WIDTH_MOBILE}px] ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}` // Mobile: controlled by isSidebarOpen
-          : `w-[${actualSidebarOpen ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_DESKTOP}px] ${actualSidebarOpen ? "translate-x-0" : "-translate-x-full"}` // Desktop: controlled by actualSidebarOpen
+          ? `${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}` // Mobile: controlled by isSidebarOpen
+          : `${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}` // Desktop: controlled by isSidebarOpen
       )}
+      style={{ width: `${sidebarWidth}px` }} // Apply dynamic width here
       onMouseEnter={!isMobile && !isAlwaysOpen ? handleMouseEnter : undefined}
       onMouseLeave={!isMobile && !isAlwaysOpen ? handleMouseLeave : undefined}
     >
@@ -137,7 +138,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
             label={item.label}
             isActive={activePanel === item.id}
             onClick={() => handleSidebarItemClick(item.id, item.label)}
-            isExpanded={actualSidebarOpen} // Pass the expanded state
+            isExpanded={isSidebarOpen} // Pass the expanded state
           />
         ))}
       </div>
@@ -148,7 +149,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
             label={mounted && isAlwaysOpen ? "Undock Sidebar" : "Dock Sidebar"}
             isActive={false}
             onClick={toggleAlwaysOpen}
-            isExpanded={actualSidebarOpen} // Pass the expanded state
+            isExpanded={isSidebarOpen} // Pass the expanded state
           />
         )}
       </div>

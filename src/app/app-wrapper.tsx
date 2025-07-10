@@ -169,6 +169,9 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             <DynamicPlayingSoundsBar isMobile={isMobile} />
             <Sidebar isMobile={isMobile} />
             
+            {/* Time and Progress Display - now always visible on main app pages */}
+            <DynamicTimeAndProgressDisplay isMobile={isMobile} />
+
             {/* Main content area, where widgets and page content live */}
             <div
               role="main"
