@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile'; // Import useIsMobile
 
 type ActivePanel = 'spaces' | 'sounds' | 'calendar' | 'timer' | 'tasks' | 'notes' | 'media' | 'games' | 'flash-cards' | 'goal-focus';
 
@@ -15,7 +16,8 @@ const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [activePanel, setActivePanel] = useState<ActivePanel>('spaces');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Controls the hover state of the sidebar
+  const isMobile = useIsMobile(); // Get mobile status
+  const [isSidebarOpen, setIsSidebarOpen] = useState(isMobile ? true : false); // Default to true on mobile
 
   // Load active panel from local storage on mount
   useEffect(() => {

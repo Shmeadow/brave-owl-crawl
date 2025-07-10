@@ -43,6 +43,7 @@ const DynamicTimeAndProgressDisplay = dynamic(() => import("@/components/time-an
 const HEADER_HEIGHT = 64; // px
 const TOTAL_HEADER_AREA_HEIGHT = HEADER_HEIGHT;
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
+const SIDEBAR_WIDTH_MOBILE = 250; // px (from sidebar.tsx)
 
 export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
   const { loading, session, profile } = useSupabase();
@@ -94,11 +95,14 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const firstIncompleteGoal = goals.find(g => !g.completed) || null;
 
   useEffect(() => {
-    const newSidebarWidth = isMobile ? 0 : (mounted && isAlwaysOpen || isSidebarOpen ? SIDEBAR_WIDTH_DESKTOP : 0);
+    // Calculate sidebar width based on mobile/desktop and open state
+    const newSidebarWidth = isMobile && isSidebarOpen ? SIDEBAR_WIDTH_MOBILE : (mounted && isAlwaysOpen ? SIDEBAR_WIDTH_DESKTOP : 0);
     setSidebarCurrentWidth(newSidebarWidth);
 
-    if (isMobile && isSidebarOpen && !isAlwaysOpen) {
-      setIsSidebarOpen(false);
+    // For desktop, if isAlwaysOpen is true, ensure sidebar is open.
+    // On mobile, isSidebarOpen is managed by SidebarProvider's initial state and Header's toggle.
+    if (!isMobile && mounted && isAlwaysOpen) {
+      setIsSidebarOpen(true);
     }
   }, [isSidebarOpen, isAlwaysOpen, mounted, isMobile, setIsSidebarOpen]);
 
@@ -108,9 +112,9 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
       const windowHeight = window.innerHeight;
 
       setMainContentArea({
-        left: isMobile ? 0 : sidebarCurrentWidth,
+        left: sidebarCurrentWidth, // This will be 0 on mobile if sidebar is closed, or SIDEBAR_WIDTH_MOBILE if open
         top: TOTAL_HEADER_AREA_HEIGHT,
-        width: isMobile ? windowWidth : windowWidth - sidebarCurrentWidth,
+        width: windowWidth - sidebarCurrentWidth,
         height: windowHeight - TOTAL_HEADER_AREA_HEIGHT,
       });
     };
@@ -155,8 +159,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               isMobile={isMobile}
               onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
             />
-            {/* Time and Progress Display is now inside Header */}
-            {/* NotificationsDropdown is now inside Header */}
             <DynamicWelcomeBackModal
               isOpen={showWelcomeBack}
               onClose={() => setShowWelcomeBack(false)}

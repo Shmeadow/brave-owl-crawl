@@ -26,32 +26,33 @@ export function Sidebar({ isMobile }: SidebarProps) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Ref to track the current state of isSidebarOpen for mousemove listener
   const isSidebarOpenRef = useRef(isSidebarOpen);
   useEffect(() => {
     isSidebarOpenRef.current = isSidebarOpen;
   }, [isSidebarOpen]);
 
   const handleMouseEnter = useCallback(() => {
-    if (isAlwaysOpen || isMobile) return; // Disable hot zone for mobile
+    if (isMobile) return; // Disable hot zone for mobile
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
     setIsSidebarOpen(true);
-  }, [isAlwaysOpen, isMobile, setIsSidebarOpen]);
+  }, [isMobile, setIsSidebarOpen]);
 
   const handleMouseLeave = useCallback(() => {
-    if (isAlwaysOpen || isMobile) return; // Disable hot zone for mobile
+    if (isMobile) return; // Disable hot zone for mobile
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
     timeoutRef.current = setTimeout(() => {
       setIsSidebarOpen(false);
     }, UNDOCK_DELAY);
-  }, [isAlwaysOpen, isMobile, setIsSidebarOpen]);
+  }, [isMobile, setIsSidebarOpen]);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (isAlwaysOpen || isMobile) return; // Disable hot zone for mobile
+    if (isMobile || isAlwaysOpen) return; // Disable hot zone for mobile or if always open
 
     if (e.clientX < HOT_ZONE_WIDTH && !isSidebarOpenRef.current) {
       handleMouseEnter();
@@ -59,25 +60,24 @@ export function Sidebar({ isMobile }: SidebarProps) {
     else if (e.clientX >= SIDEBAR_WIDTH_DESKTOP && isSidebarOpenRef.current && !sidebarRef.current?.contains(e.target as Node)) {
       handleMouseLeave();
     }
-  }, [isAlwaysOpen, isMobile, handleMouseEnter, handleMouseLeave]);
+  }, [isMobile, isAlwaysOpen, handleMouseEnter, handleMouseLeave]);
 
   useEffect(() => {
-    if (isMobile) {
-      // On mobile, remove desktop hot zone listener
+    if (!isMobile) { // Only apply desktop hot zone logic on desktop
+      if (isAlwaysOpen) {
+        setIsSidebarOpen(true); // If docked, ensure it's open
+        document.removeEventListener('mousemove', handleMouseMove); // No hot zone if docked
+      } else {
+        setIsSidebarOpen(false); // If undocked, ensure it's closed initially
+        document.addEventListener('mousemove', handleMouseMove); // Enable hot zone
+      }
+    } else {
+      // On mobile, remove desktop listeners
       document.removeEventListener('mousemove', handleMouseMove);
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      // Sidebar state on mobile is controlled by hamburger menu
-    } else {
-      // On desktop, apply hot zone logic
-      if (isAlwaysOpen) {
-        setIsSidebarOpen(true);
-        document.removeEventListener('mousemove', handleMouseMove);
-      } else {
-        setIsSidebarOpen(false);
-        document.addEventListener('mousemove', handleMouseMove);
-      }
+      // isSidebarOpen state for mobile is managed by SidebarProvider's initial state and Header's toggle
     }
 
     return () => {
@@ -96,7 +96,6 @@ export function Sidebar({ isMobile }: SidebarProps) {
     { id: "tasks", label: "Tasks", icon: ListTodo },
     { id: "notes", label: "Notes", icon: NotebookPen },
     { id: "media", label: "Media", icon: Image },
-    // Removed "Stats & Progress" from here
     { id: "flash-cards", label: "Flash Cards", icon: BookOpen },
     { id: "goal-focus", label: "Goal Focus", icon: Goal },
   ];
@@ -104,12 +103,15 @@ export function Sidebar({ isMobile }: SidebarProps) {
   const handleSidebarItemClick = (id: string, label: string) => {
     setActivePanel(id as any);
     toggleWidget(id, label);
+    // On mobile, clicking an item should close the sidebar
     if (isMobile) {
-      setIsSidebarOpen(false); // Close sidebar after selecting item on mobile
+      setIsSidebarOpen(false); 
     }
   };
 
   // Determine actual sidebar open state for visual rendering
+  // On mobile, it's controlled by isSidebarOpen directly (from context)
+  // On desktop, it's controlled by isAlwaysOpen or hover (isSidebarOpen)
   const actualSidebarOpen = mounted ? (isMobile ? isSidebarOpen : (isAlwaysOpen || isSidebarOpen)) : false;
 
   return (
@@ -121,11 +123,11 @@ export function Sidebar({ isMobile }: SidebarProps) {
         "transition-transform duration-300 ease-in-out",
         `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]`,
         isMobile
-          ? `w-[${SIDEBAR_WIDTH_MOBILE}px] ${actualSidebarOpen ? "translate-x-0" : "-translate-x-full"}` // Mobile off-canvas
-          : `w-[${actualSidebarOpen ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_DESKTOP}px] ${actualSidebarOpen ? "translate-x-0" : "-translate-x-full"}` // Desktop fixed
+          ? `w-[${SIDEBAR_WIDTH_MOBILE}px] ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}` // Mobile: controlled by isSidebarOpen
+          : `w-[${actualSidebarOpen ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_DESKTOP}px] ${actualSidebarOpen ? "translate-x-0" : "-translate-x-full"}` // Desktop: controlled by actualSidebarOpen
       )}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onMouseEnter={!isMobile && !isAlwaysOpen ? handleMouseEnter : undefined}
+      onMouseLeave={!isMobile && !isAlwaysOpen ? handleMouseLeave : undefined}
     >
       <div className="flex flex-col gap-1 overflow-y-auto"> {/* Reduced gap-2 to gap-1 */}
         {navItems.map((item) => (
