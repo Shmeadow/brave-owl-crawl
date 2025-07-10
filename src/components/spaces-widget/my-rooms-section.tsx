@@ -45,12 +45,13 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
   };
 
   const getRoomCreatorDisplay = (room: RoomData) => {
-    if (session?.user?.id === room.creator_id) {
-      return "You";
+    // Check if profiles data is available and use it
+    if ((room as any).profiles && (room as any).profiles.length > 0) {
+      const creatorProfile = (room as any).profiles[0];
+      return creatorProfile.first_name || creatorProfile.last_name || `User (${room.creator_id.substring(0, 4)}...)`;
     }
-    // Since we removed the direct 'creator' join, we can't get their name easily here.
-    // Display a generic "Another User" or a truncated ID.
-    return `Another User (${room.creator_id.substring(0, 4)}...)`;
+    // Fallback to truncated ID if profile data is not available
+    return `User (${room.creator_id.substring(0, 4)}...)`;
   };
 
   const openAddMemberDialog = (roomId: string) => {

@@ -36,7 +36,8 @@ export function useRoomFetching() {
           type,
           closes_at,
           deleted_at,
-          description
+          description,
+          profiles!creator_id(first_name, last_name)
         `)
         .eq('creator_id', session.user.id)
         .is('deleted_at', null) // Ensure not soft-deleted
@@ -68,7 +69,8 @@ export function useRoomFetching() {
             type,
             closes_at,
             deleted_at,
-            description
+            description,
+            profiles!creator_id(first_name, last_name)
           )
         `)
         .eq('user_id', session.user.id);
@@ -98,7 +100,8 @@ export function useRoomFetching() {
           type,
           closes_at,
           deleted_at,
-          description
+          description,
+          profiles!creator_id(first_name, last_name)
         `)
         .eq('type', 'public')
         .is('deleted_at', null)
@@ -133,7 +136,8 @@ export function useRoomFetching() {
           type,
           closes_at,
           deleted_at,
-          description
+          description,
+          profiles!creator_id(first_name, last_name)
         `)
         .eq('type', 'public')
         .is('deleted_at', null)

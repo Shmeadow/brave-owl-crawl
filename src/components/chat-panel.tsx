@@ -54,7 +54,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
     try {
       const { data, error } = await supabase
         .from('chat_messages')
-        .select('id, user_id, room_id, content, created_at')
+        .select('id, user_id, room_id, content, created_at, profiles(first_name, last_name)') // Select profiles
         .eq('room_id', roomId)
         .order('created_at', { ascending: true })
         .limit(50);
@@ -64,9 +64,10 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
         toast.error("Failed to load chat messages: " + error.message);
       } else if (data) {
         const formattedMessages = data.map(msg => {
+          const senderProfile = (msg as any).profiles; // Access joined profile data
           const authorName = (profile && profile.id === msg.user_id)
             ? (profile.first_name || profile.last_name || 'You')
-            : msg.user_id?.substring(0, 8) || 'Guest';
+            : (senderProfile?.first_name || senderProfile?.last_name || `User (${msg.user_id?.substring(0, 8)}...)`);
           return {
             id: msg.id,
             user_id: msg.user_id,
@@ -95,9 +96,18 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `room_id=eq.${currentRoomId}` }, async (payload) => {
         const newMsg = payload.new as Message;
         
+        // Fetch profile for the new message sender
+        const { data: senderProfileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('first_name, last_name')
+          .eq('id', newMsg.user_id)
+          .single();
+
+        if (profileError) console.error("Error fetching profile for new chat message:", profileError);
+
         const authorName = (profile && profile.id === newMsg.user_id)
           ? (profile.first_name || profile.last_name || 'You')
-          : newMsg.user_id?.substring(0, 8) || 'Guest';
+          : (senderProfileData?.first_name || senderProfileData?.last_name || `User (${newMsg.user_id?.substring(0, 8)}...)`);
 
         const formattedNewMsg = {
           id: newMsg.id,

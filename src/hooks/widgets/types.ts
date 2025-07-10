@@ -80,7 +80,7 @@ export const clampPosition = (x: number, y: number, width: number, height: numbe
   return { x: clampedX, y: clampedY };
 };
 
-export const toDbWidgetState = (widget: WidgetState, userId: string): DbWidgetState => ({
+export const toDbWidgetState = (widget: WidgetState, userId: string): Omit<DbWidgetState, 'id'> => ({
   user_id: userId,
   widget_id: widget.id,
   title: widget.title,

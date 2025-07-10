@@ -101,7 +101,7 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
               // Migrate to Supabase
               const { error: insertError } = await supabase
                 .from('user_widget_states')
-                .insert(validWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id)));
+                .upsert(validWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id)), { onConflict: 'user_id,widget_id' });
 
               if (insertError) {
                 console.error("Error migrating local widget states to Supabase:", insertError);
@@ -192,29 +192,16 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
 
     const saveWidgetStates = async () => {
       if (isLoggedInMode && session && supabase) {
-        // Delete existing states for this user and insert new ones
-        const { error: deleteError } = await supabase
+        // Use upsert with onConflict to update existing rows or insert new ones
+        const { error: upsertError } = await supabase
           .from('user_widget_states')
-          .delete()
-          .eq('user_id', session.user.id);
+          .upsert(activeWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id)), { onConflict: 'user_id,widget_id' });
 
-        if (deleteError) {
-          console.error("Error clearing old widget states:", deleteError);
+        if (upsertError) {
+          console.error("Error saving widget states to Supabase:", upsertError);
           toast.error("Failed to save widget layout.");
-          return;
-        }
-
-        if (activeWidgets.length > 0) {
-          const { error: insertError } = await supabase
-            .from('user_widget_states')
-            .insert(activeWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id)));
-
-          if (insertError) {
-            console.error("Error saving widget states to Supabase:", insertError);
-            toast.error("Failed to save widget layout.");
-          } else {
-            // toast.success("Widget layout saved to your account!"); // Too frequent, removed
-          }
+        } else {
+          // toast.success("Widget layout saved to your account!"); // Too frequent, removed
         }
       } else {
         // For guests, do not save the layout to local storage to ensure a clean start.
