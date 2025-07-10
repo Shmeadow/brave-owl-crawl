@@ -98,7 +98,7 @@ export function CustomSignupForm({ supabase, onSuccess, onSwitchToSignIn }: Cust
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full"> {/* Reduced space-y-6 to space-y-4 */}
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
         <FormField
           control={form.control}
           name="email"
@@ -106,7 +106,7 @@ export function CustomSignupForm({ supabase, onSuccess, onSwitchToSignIn }: Cust
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="your@email.com" {...field} type="email" disabled={isLoading} />
+                <Input placeholder="your@email.com" {...field} type="email" disabled={isLoading} className="bg-input" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -119,7 +119,7 @@ export function CustomSignupForm({ supabase, onSuccess, onSwitchToSignIn }: Cust
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input placeholder="••••••••" {...field} type="password" disabled={isLoading} />
+                <Input placeholder="••••••••" {...field} type="password" disabled={isLoading} className="bg-input" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -132,7 +132,7 @@ export function CustomSignupForm({ supabase, onSuccess, onSwitchToSignIn }: Cust
             <FormItem>
               <FormLabel>Username</FormLabel>
               <FormControl>
-                <Input placeholder="Your display name" {...field} disabled={isLoading} />
+                <Input placeholder="Your display name" {...field} disabled={isLoading} className="bg-input" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -143,9 +143,9 @@ export function CustomSignupForm({ supabase, onSuccess, onSwitchToSignIn }: Cust
           Sign Up
         </Button>
 
-        <Separator className="my-3" /> {/* Reduced my-4 to my-3 */}
-        <p className="text-sm text-muted-foreground text-center mb-1">Or connect with</p> {/* Reduced mb-2 to mb-1 */}
-        <div className="flex gap-3 w-full justify-center"> {/* Reduced gap-4 to gap-3 */}
+        <Separator className="my-3" />
+        <p className="text-sm text-muted-foreground text-center mb-1">Or connect with</p>
+        <div className="flex gap-3 w-full justify-center">
           <Button
             variant="outline"
             size="lg"
@@ -164,7 +164,7 @@ export function CustomSignupForm({ supabase, onSuccess, onSwitchToSignIn }: Cust
           </Button>
         </div>
 
-        <Button type="button" variant="link" onClick={onSwitchToSignIn} className="w-full mt-3"> {/* Reduced mt-4 to mt-3 */}
+        <Button type="button" variant="link" onClick={onSwitchToSignIn} className="w-full mt-3">
           Already have an account? Sign In
         </Button>
       </form>
