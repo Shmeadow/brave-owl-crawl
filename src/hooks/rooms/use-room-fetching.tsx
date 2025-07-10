@@ -35,7 +35,8 @@ export function useRoomFetching() {
           password_hash,
           type,
           closes_at,
-          deleted_at
+          deleted_at,
+          description
         `)
         .eq('creator_id', session.user.id)
         .is('deleted_at', null) // Ensure not soft-deleted
@@ -66,7 +67,8 @@ export function useRoomFetching() {
             password_hash,
             type,
             closes_at,
-            deleted_at
+            deleted_at,
+            description
           )
         `)
         .eq('user_id', session.user.id);
@@ -95,7 +97,8 @@ export function useRoomFetching() {
           password_hash,
           type,
           closes_at,
-          deleted_at
+          deleted_at,
+          description
         `)
         .eq('type', 'public')
         .is('deleted_at', null)
@@ -129,7 +132,8 @@ export function useRoomFetching() {
           password_hash,
           type,
           closes_at,
-          deleted_at
+          deleted_at,
+          description
         `)
         .eq('type', 'public')
         .is('deleted_at', null)

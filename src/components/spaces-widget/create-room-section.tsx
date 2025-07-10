@@ -11,6 +11,7 @@ import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
+import { Textarea } from "@/components/ui/textarea"; // Import Textarea
 
 export function CreateRoomSection() {
   const { session } = useSupabase();
@@ -19,6 +20,7 @@ export function CreateRoomSection() {
 
   const [newRoomName, setNewRoomName] = useState("");
   const [newRoomType, setNewRoomType] = useState<'public' | 'private'>('private'); // Default to private
+  const [newRoomDescription, setNewRoomDescription] = useState(""); // New state for description
 
   const handleCreateNewRoom = async () => {
     if (!session) {
@@ -29,9 +31,10 @@ export function CreateRoomSection() {
       toast.error("Room name cannot be empty.");
       return;
     }
-    const { data, error } = await handleCreateRoom(newRoomName.trim(), newRoomType); // Pass newRoomType
+    const { data, error } = await handleCreateRoom(newRoomName.trim(), newRoomType, newRoomDescription.trim() || null); // Pass newRoomType and newRoomDescription
     if (!error && data) {
       setNewRoomName("");
+      setNewRoomDescription(""); // Clear description after creation
       setCurrentRoom(data.id, data.name);
     }
   };
@@ -49,6 +52,17 @@ export function CreateRoomSection() {
             placeholder="e.g., Cozy Study Nook"
             value={newRoomName}
             onChange={(e) => setNewRoomName(e.target.value)}
+            disabled={!session}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="new-room-description">Description (Optional)</Label>
+          <Textarea
+            id="new-room-description"
+            placeholder="A brief description of your room..."
+            value={newRoomDescription}
+            onChange={(e) => setNewRoomDescription(e.target.value)}
+            rows={3}
             disabled={!session}
           />
         </div>

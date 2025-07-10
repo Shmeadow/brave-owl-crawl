@@ -29,19 +29,13 @@ export function useCurrentRoom() {
   const [isCurrentRoomWritable, setIsCurrentRoomWritable] = useState(true);
 
   const setCurrentRoom = useCallback((id: string | null, name: string) => {
-    setCurrentRoomIdState(prevId => {
-      if (prevId !== id) {
-        return id;
-      }
-      return prevId;
-    });
-    setCurrentRoomNameState(prevName => {
-      if (prevName !== name) {
-        return name;
-      }
-      return prevName;
-    });
-    toast.info(`Switched to room: ${name}`);
+    setCurrentRoomIdState(id);
+    setCurrentRoomNameState(name);
+    if (id) {
+      toast.info(`Switched to room: ${name}`);
+    } else {
+      toast.info("Switched to your personal space.");
+    }
   }, []);
 
   // Effect to synchronize current room with session and available rooms
@@ -50,13 +44,16 @@ export function useCurrentRoom() {
       return;
     }
 
+    // If no session, and currentRoomId is not null (meaning a public room was joined),
+    // ensure it's a valid public room. Otherwise, default to "My Room".
     if (!session) {
-      // User is a guest
-      if (currentRoomId !== null || currentRoomName !== "My Room") {
+      const currentRoomIsPublic = rooms.find(room => room.id === currentRoomId && room.type === 'public');
+      if (!currentRoomIsPublic && (currentRoomId !== null || currentRoomName !== "My Room")) {
         setCurrentRoomIdState(null);
         setCurrentRoomNameState("My Room");
       }
-      setIsCurrentRoomWritable(true); // Guest's "My Room" is always writable
+      // For guests, "My Room" is writable, public rooms are not.
+      setIsCurrentRoomWritable(currentRoomId === null);
       return;
     }
 
@@ -64,35 +61,37 @@ export function useCurrentRoom() {
     let targetRoomId: string | null = null;
     let targetRoomName: string = "My Room";
 
-    // 1. Try to use personal_room_id from profile
-    if (profile?.personal_room_id) {
-      const personalRoom = rooms.find(room => room.id === profile.personal_room_id);
-      if (personalRoom) {
-        targetRoomId = personalRoom.id;
-        targetRoomName = personalRoom.name;
-      } else {
-        console.warn(`Personal room (ID: ${profile.personal_room_id}) not found in fetched rooms.`);
+    // 1. Prioritize the currently set room if it's still valid and the user is a member/creator
+    const currentlyActiveRoom = rooms.find(room => room.id === currentRoomId);
+    if (currentlyActiveRoom && (currentlyActiveRoom.is_member || currentlyActiveRoom.creator_id === session.user.id)) {
+      targetRoomId = currentlyActiveRoom.id;
+      targetRoomName = currentlyActiveRoom.name;
+    } else {
+      // 2. If current room is invalid or not accessible, try personal_room_id from profile
+      if (profile?.personal_room_id) {
+        const personalRoom = rooms.find(room => room.id === profile.personal_room_id);
+        if (personalRoom) {
+          targetRoomId = personalRoom.id;
+          targetRoomName = personalRoom.name;
+        } else {
+          console.warn(`Personal room (ID: ${profile.personal_room_id}) not found in fetched rooms.`);
+        }
+      }
+
+      // 3. Fallback: If no personal_room_id or room not found, try to find the first room created by the user
+      if (!targetRoomId) {
+        const firstCreatedRoom = rooms.find(room => room.creator_id === session.user.id);
+        if (firstCreatedRoom) {
+          targetRoomId = firstCreatedRoom.id;
+          targetRoomName = firstCreatedRoom.name;
+        }
       }
     }
 
-    // 2. Fallback: If no personal_room_id or room not found, try to find the first room created by the user
-    if (!targetRoomId) {
-      const firstCreatedRoom = rooms.find(room => room.creator_id === session.user.id);
-      if (firstCreatedRoom) {
-        targetRoomId = firstCreatedRoom.id;
-        targetRoomName = firstCreatedRoom.name;
-      }
-    }
-
-    // 3. If a target room was found, update state if different
+    // Update state if different
     if (targetRoomId !== currentRoomId || targetRoomName !== currentRoomName) {
       setCurrentRoomIdState(targetRoomId);
       setCurrentRoomNameState(targetRoomName);
-      if (targetRoomId) {
-        toast.info(`Switched to room: ${targetRoomName}`);
-      } else {
-        toast.info("No personal room found. Defaulting to 'My Room'.");
-      }
     }
   }, [authLoading, roomsLoading, session, profile, rooms, currentRoomId, currentRoomName]);
 

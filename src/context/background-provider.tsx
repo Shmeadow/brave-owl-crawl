@@ -4,6 +4,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { useSupabase } from '@/integrations/supabase/auth';
 import { toast } from 'sonner';
 import { getRandomBackground } from '@/lib/backgrounds';
+import { useCurrentRoom } from '@/hooks/use-current-room'; // Import useCurrentRoom
+import { useRooms } from '@/hooks/use-rooms'; // Import useRooms
 
 interface BackgroundState {
   url: string;
@@ -83,15 +85,17 @@ function BackgroundManager({ url, isVideo, isMirrored }: { url: string; isVideo:
 
 export function BackgroundProvider({ children, initialBackground }: { children: React.ReactNode; initialBackground: BackgroundState }) {
   const { supabase, session, loading: authLoading } = useSupabase();
-  const [background, setBackgroundState] = useState<BackgroundState>(initialBackground); // Use the prop for initial state
+  const { currentRoomId } = useCurrentRoom(); // Get current room ID
+  const { rooms, loading: roomsLoading } = useRooms(); // Get rooms data
+  const [userBackground, setUserBackground] = useState<BackgroundState>(initialBackground); // User's personal background preference
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
 
-  // Effect to load background settings
+  // Effect to load user's personal background settings
   useEffect(() => {
     if (authLoading) return;
 
-    const loadBackground = async () => {
+    const loadUserBackground = async () => {
       setLoading(true);
       if (session && supabase) {
         setIsLoggedInMode(true);
@@ -108,7 +112,7 @@ export function BackgroundProvider({ children, initialBackground }: { children: 
         }
 
         if (supabasePrefs && supabasePrefs.background_url) {
-          setBackgroundState({
+          setUserBackground({
             url: supabasePrefs.background_url,
             isVideo: supabasePrefs.is_video_background ?? false,
             isMirrored: supabasePrefs.is_mirrored_background ?? false,
@@ -137,7 +141,7 @@ export function BackgroundProvider({ children, initialBackground }: { children: 
               console.error("Error migrating local background to Supabase:", insertError);
               toast.error("Error migrating local background settings.");
             } else {
-              setBackgroundState({ url: savedUrl, isVideo, isMirrored });
+              setUserBackground({ url: savedUrl, isVideo, isMirrored });
               localStorage.removeItem(LOCAL_STORAGE_BG_KEY);
               localStorage.removeItem(LOCAL_STORAGE_BG_TYPE_KEY);
               localStorage.removeItem(LOCAL_STORAGE_BG_MIRRORED_KEY);
@@ -148,15 +152,15 @@ export function BackgroundProvider({ children, initialBackground }: { children: 
               .from('user_preferences')
               .upsert({
                 user_id: session.user.id,
-                background_url: initialBackground.url, // Use initialBackground here
-                is_video_background: initialBackground.isVideo, // Use initialBackground here
-                is_mirrored_background: initialBackground.isMirrored, // Use initialBackground here
+                background_url: initialBackground.url,
+                is_video_background: initialBackground.isVideo,
+                is_mirrored_background: initialBackground.isMirrored,
               }, { onConflict: 'user_id' });
 
             if (insertError) {
               console.error("Error inserting default background into Supabase:", insertError);
             } else {
-              setBackgroundState(initialBackground); // Set state to initialBackground
+              setUserBackground(initialBackground);
             }
           }
         }
@@ -164,7 +168,7 @@ export function BackgroundProvider({ children, initialBackground }: { children: 
         // User is a guest (not logged in)
         setIsLoggedInMode(false);
         // Always use the random initial background for guests and don't load from local storage.
-        setBackgroundState(initialBackground);
+        setUserBackground(initialBackground);
         // Clear any previously saved background to ensure a random one on next visit.
         localStorage.removeItem(LOCAL_STORAGE_BG_KEY);
         localStorage.removeItem(LOCAL_STORAGE_BG_TYPE_KEY);
@@ -173,12 +177,12 @@ export function BackgroundProvider({ children, initialBackground }: { children: 
       setLoading(false);
     };
 
-    loadBackground();
-  }, [session, supabase, authLoading, initialBackground]); // Add initialBackground to dependencies
+    loadUserBackground();
+  }, [session, supabase, authLoading, initialBackground]);
 
-  // Callback to change the background and save the choice
+  // Callback to change the user's personal background and save the choice
   const setBackground = useCallback(async (url: string, isVideo: boolean = false, isMirrored: boolean = false) => {
-    setBackgroundState({ url, isVideo, isMirrored });
+    setUserBackground({ url, isVideo, isMirrored });
 
     if (isLoggedInMode && session && supabase) {
       const { error } = await supabase
@@ -204,9 +208,15 @@ export function BackgroundProvider({ children, initialBackground }: { children: 
     }
   }, [isLoggedInMode, session, supabase, loading]);
 
+  // Determine the active background to display: room background takes precedence
+  const activeRoom = rooms.find(room => room.id === currentRoomId);
+  const backgroundToDisplay = (activeRoom && activeRoom.background_url)
+    ? { url: activeRoom.background_url, isVideo: activeRoom.is_video_background || false, isMirrored: false } // Room background
+    : userBackground; // Fallback to user's personal background
+
   return (
-    <BackgroundContext.Provider value={{ background, setBackground }}>
-      <BackgroundManager url={background.url} isVideo={background.isVideo} isMirrored={background.isMirrored} />
+    <BackgroundContext.Provider value={{ background: userBackground, setBackground }}>
+      <BackgroundManager url={backgroundToDisplay.url} isVideo={backgroundToDisplay.isVideo} isMirrored={backgroundToDisplay.isMirrored} />
       {children}
     </BackgroundContext.Provider>
   );

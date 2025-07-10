@@ -16,7 +16,7 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
   const { supabase, session } = useSupabase();
   const { addNotification } = useNotifications(); // Use the notifications hook
 
-  const handleCreateRoom = useCallback(async (name: string, type: 'public' | 'private') => { // Added type parameter
+  const handleCreateRoom = useCallback(async (name: string, type: 'public' | 'private', description: string | null) => { // Added type and description parameters
     if (!session?.user?.id || !supabase) {
       toast.error("You must be logged in to create a room.");
       return { data: null, error: { message: "Not logged in" } }; // Return error object
@@ -32,6 +32,7 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
         background_url: randomBg.url,
         is_video_background: randomBg.isVideo,
         type: type, // Set the room type
+        description: description, // Set the room description
       })
       .select(`
         id,
@@ -44,7 +45,8 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
         password_hash,
         type,
         closes_at,
-        deleted_at
+        deleted_at,
+        description
       `) // Select only necessary fields, remove direct creator join
       .single();
 
@@ -303,11 +305,89 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
     }
   }, [session, supabase, setRooms, addNotification]);
 
+  const handleUpdateRoomDescription = useCallback(async (roomId: string, newDescription: string | null) => {
+    if (!session?.user?.id || !supabase) {
+      toast.error("You must be logged in to update room settings.");
+      return;
+    }
+
+    const { data: room, error: fetchRoomError } = await supabase
+      .from('rooms')
+      .select('creator_id, name')
+      .eq('id', roomId)
+      .single();
+
+    if (fetchRoomError || !room) {
+      toast.error("Room not found or access denied.");
+      console.error("Error fetching room for description update:", fetchRoomError);
+      return;
+    }
+
+    if (room.creator_id !== session.user.id) {
+      toast.error("You can only change the description of rooms you created.");
+      return;
+    }
+
+    const { error } = await supabase
+      .from('rooms')
+      .update({ description: newDescription })
+      .eq('id', roomId)
+      .eq('creator_id', session.user.id);
+
+    if (error) {
+      toast.error("Error updating room description: " + error.message);
+      console.error("Error updating room description:", error);
+    } else {
+      toast.success(`Room "${room.name}" description updated!`);
+      fetchRooms(); // Re-fetch to update local state
+    }
+  }, [session, supabase, fetchRooms]);
+
+  const handleUpdateRoomBackground = useCallback(async (roomId: string, backgroundUrl: string, isVideoBackground: boolean) => {
+    if (!session?.user?.id || !supabase) {
+      toast.error("You must be logged in to update room settings.");
+      return;
+    }
+
+    const { data: room, error: fetchRoomError } = await supabase
+      .from('rooms')
+      .select('creator_id, name')
+      .eq('id', roomId)
+      .single();
+
+    if (fetchRoomError || !room) {
+      toast.error("Room not found or access denied.");
+      console.error("Error fetching room for background update:", fetchRoomError);
+      return;
+    }
+
+    if (room.creator_id !== session.user.id) {
+      toast.error("You can only change the background of rooms you created.");
+      return;
+    }
+
+    const { error } = await supabase
+      .from('rooms')
+      .update({ background_url: backgroundUrl, is_video_background: isVideoBackground })
+      .eq('id', roomId)
+      .eq('creator_id', session.user.id);
+
+    if (error) {
+      toast.error("Error updating room background: " + error.message);
+      console.error("Error updating room background:", error);
+    } else {
+      toast.success(`Room "${room.name}" background updated!`);
+      fetchRooms(); // Re-fetch to update local state
+    }
+  }, [session, supabase, fetchRooms]);
+
   return {
     handleCreateRoom,
     handleUpdateRoomType, // New
     handleSetRoomPassword, // New
     handleSendRoomInvitation,
     handleDeleteRoom,
+    handleUpdateRoomDescription, // New
+    handleUpdateRoomBackground, // New
   };
 }

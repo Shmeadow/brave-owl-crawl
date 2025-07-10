@@ -101,6 +101,7 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
                     </div>
                     <div className="flex-1 pr-2 mb-2 sm:mb-0">
                       <p className="font-medium text-sm">{room.name} (Created by You)</p>
+                      {room.description && <p className="text-xs text-muted-foreground line-clamp-1">{room.description}</p>}
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
                         {room.type === 'public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
                         {room.type === 'public' ? 'Public Room' : 'Private Room'}
@@ -181,6 +182,7 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
                     </div>
                     <div className="flex-1 pr-2">
                       <p className="font-medium text-sm">{room.name} (Joined)</p>
+                      {room.description && <p className="text-xs text-muted-foreground line-clamp-1">{room.description}</p>}
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
                         {room.type === 'public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
                         {room.type === 'public' ? 'Public Room' : 'Private Room'}

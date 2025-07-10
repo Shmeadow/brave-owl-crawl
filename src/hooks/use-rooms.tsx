@@ -15,6 +15,8 @@ export function useRooms() {
     handleDeleteRoom,
     handleUpdateRoomType, // Exposed
     handleSetRoomPassword, // Exposed
+    handleUpdateRoomDescription, // Exposed
+    handleUpdateRoomBackground, // Exposed
   } = useRoomManagement({ setRooms: (newRooms) => {}, fetchRooms }); // Pass a dummy setRooms, as fetchRooms will update the state in useRoomFetching
   const {
     handleJoinRoomByRoomId,
@@ -33,6 +35,8 @@ export function useRooms() {
     handleDeleteRoom,
     handleUpdateRoomType, // Exposed
     handleSetRoomPassword, // Exposed
+    handleUpdateRoomDescription, // Exposed
+    handleUpdateRoomBackground, // Exposed
     handleJoinRoomByRoomId,
     handleJoinRoomByPassword,
     handleLeaveRoom,

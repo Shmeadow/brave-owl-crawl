@@ -12,6 +12,7 @@ export interface RoomData {
   type: 'public' | 'private'; // New: Room type
   closes_at: string | null; // New: Timestamp when the room closes
   deleted_at: string | null; // New: Soft delete timestamp
+  description: string | null; // New: Room description
 }
 
 export interface RoomMember {

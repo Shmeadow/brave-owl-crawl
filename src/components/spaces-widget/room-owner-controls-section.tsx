@@ -11,6 +11,12 @@ import { useRooms, RoomData, RoomMember } from "@/hooks/use-rooms";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
 import { useCurrentRoom } from "@/hooks/use-current-room";
+import { Textarea } from "@/components/ui/textarea"; // Import Textarea
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Import Tabs
+import { ScrollArea } from "@/components/ui/scroll-area"; // Import ScrollArea
+import { staticImages, animatedBackgrounds } from "@/lib/backgrounds"; // Import backgrounds
+import { AnimatedBackgroundPreviewItem } from "../animated-background-preview-item"; // Import AnimatedBackgroundPreviewItem
+import Image from "next/image"; // Import Image
 
 interface RoomOwnerControlsSectionProps {
   currentRoom: RoomData;
@@ -22,8 +28,10 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
   const {
     handleSendRoomInvitation,
     handleKickUser,
-    handleUpdateRoomType, // New
-    handleSetRoomPassword, // New
+    handleUpdateRoomType,
+    handleSetRoomPassword,
+    handleUpdateRoomDescription, // New
+    handleUpdateRoomBackground, // New
     fetchRooms,
   } = useRooms();
   const { setCurrentRoom } = useCurrentRoom();
@@ -32,16 +40,20 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
   const [selectedUserToKick, setSelectedUserToKick] = useState<string | null>(null);
   const [roomMembers, setRoomMembers] = useState<RoomMember[]>([]);
   const [editedRoomName, setEditedRoomName] = useState(currentRoom.name);
-  const [roomType, setRoomType] = useState<'public' | 'private'>(currentRoom.type); // State for room type
-  const [roomPassword, setRoomPassword] = useState(""); // State for new password input
+  const [editedRoomDescription, setEditedRoomDescription] = useState(currentRoom.description || ""); // New state for description
+  const [roomType, setRoomType] = useState<'public' | 'private'>(currentRoom.type);
+  const [roomPassword, setRoomPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [selectedBackgroundUrl, setSelectedBackgroundUrl] = useState(currentRoom.background_url || "");
+  const [selectedIsVideoBackground, setSelectedIsVideoBackground] = useState(currentRoom.is_video_background || false);
 
   // Effect to update local states when currentRoom prop changes
   useEffect(() => {
     setEditedRoomName(currentRoom.name);
+    setEditedRoomDescription(currentRoom.description || "");
     setRoomType(currentRoom.type);
-    // Do not set roomPassword from currentRoom.password_hash for security reasons.
-    // The input should only be for *setting* a new password.
+    setSelectedBackgroundUrl(currentRoom.background_url || "");
+    setSelectedIsVideoBackground(currentRoom.is_video_background || false);
   }, [currentRoom]);
 
   // Fetch room members when currentRoom changes and user is owner
@@ -128,6 +140,14 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
     }
   };
 
+  const handleUpdateRoomDescriptionClick = async () => {
+    if (!currentRoom.id || !isOwnerOfCurrentRoom) {
+      toast.error("You must be the owner of the current room to change its description.");
+      return;
+    }
+    await handleUpdateRoomDescription(currentRoom.id, editedRoomDescription.trim() || null);
+  };
+
   const handleUpdateRoomTypeClick = async (newType: 'public' | 'private') => {
     if (currentRoom.type === newType) return; // No change needed
     await handleUpdateRoomType(currentRoom.id, newType);
@@ -151,6 +171,16 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
     await handleSetRoomPassword(currentRoom.id, null);
   };
 
+  const handleBackgroundChange = async (url: string, isVideo: boolean) => {
+    if (!currentRoom.id || !isOwnerOfCurrentRoom) {
+      toast.error("You must be the owner of the current room to change its background.");
+      return;
+    }
+    await handleUpdateRoomBackground(currentRoom.id, url, isVideo);
+    setSelectedBackgroundUrl(url);
+    setSelectedIsVideoBackground(isVideo);
+  };
+
   if (!isOwnerOfCurrentRoom || !currentRoom) {
     return null;
   }
@@ -171,6 +201,21 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
           />
           <Button onClick={handleUpdateRoomName} className="w-full">
             Update Room Name
+          </Button>
+        </div>
+
+        {/* Room Description Editing */}
+        <div className="space-y-2">
+          <Label htmlFor="room-description-edit">Room Description (Optional)</Label>
+          <Textarea
+            id="room-description-edit"
+            placeholder="A brief description of your room..."
+            value={editedRoomDescription}
+            onChange={(e) => setEditedRoomDescription(e.target.value)}
+            rows={3}
+          />
+          <Button onClick={handleUpdateRoomDescriptionClick} className="w-full">
+            Update Room Description
           </Button>
         </div>
 
@@ -229,6 +274,68 @@ export function RoomOwnerControlsSection({ currentRoom, isOwnerOfCurrentRoom }: 
             </p>
           </div>
         )}
+
+        {/* Room Background Selection */}
+        <div className="space-y-2">
+          <Label>Room Background</Label>
+          <Tabs defaultValue="static-images" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 h-auto">
+              <TabsTrigger value="static-images">Static</TabsTrigger>
+              <TabsTrigger value="animated-backgrounds">Animated</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="static-images" className="mt-4">
+              <ScrollArea className="h-[200px] p-2">
+                <div className="grid grid-cols-2 gap-4">
+                  {staticImages.map((imageUrl) => {
+                    const isActive = !selectedIsVideoBackground && selectedBackgroundUrl === imageUrl;
+                    return (
+                      <div
+                        key={imageUrl}
+                        className={`relative w-full h-24 cursor-pointer rounded-md overflow-hidden group ${
+                          isActive
+                            ? "ring-2 ring-blue-500 ring-offset-2"
+                            : "hover:ring-2 hover:ring-gray-300"
+                        }`}
+                        onClick={() => handleBackgroundChange(imageUrl, false)}
+                      >
+                        <Image
+                          src={imageUrl}
+                          alt={`Background ${imageUrl.split("/").pop()}`}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          priority={false}
+                        />
+                        {isActive && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 text-white text-sm font-bold">
+                            Active
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </TabsContent>
+
+            <TabsContent value="animated-backgrounds" className="mt-4">
+              <ScrollArea className="h-[200px] p-2">
+                <div className="grid grid-cols-2 gap-4">
+                  {animatedBackgrounds.map((bg) => (
+                    <AnimatedBackgroundPreviewItem
+                      key={bg.videoUrl}
+                      videoUrl={bg.videoUrl}
+                      isActive={selectedIsVideoBackground && selectedBackgroundUrl === bg.videoUrl}
+                      onClick={handleBackgroundChange}
+                      previewOffset={bg.previewOffset}
+                    />
+                  ))}
+                </div>
+              </ScrollArea>
+            </TabsContent>
+          </Tabs>
+        </div>
 
         {/* Send Invitation */}
         <div className="space-y-2">

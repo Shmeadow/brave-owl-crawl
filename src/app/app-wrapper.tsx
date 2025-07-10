@@ -23,6 +23,7 @@ import { PinnedWidgetsDock } from "@/components/pinned-widgets-dock";
 import { useWidget } from "@/components/widget/widget-provider";
 import { checkAndClearClientData } from "@/lib/client-version";
 import dynamic from 'next/dynamic'; // Import dynamic
+import { useRooms } from "@/hooks/use-rooms"; // Import useRooms
 
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
@@ -50,7 +51,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const pathname = usePathname();
   const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const { isAlwaysOpen, mounted } = useSidebarPreference();
-  const { currentRoomName, isCurrentRoomWritable } = useCurrentRoom(); // Get currentRoomName
+  const { currentRoomId, currentRoomName, isCurrentRoomWritable } = useCurrentRoom(); // Get currentRoomName
+  const { rooms } = useRooms(); // Get all rooms
   const { activeEffect } = useEffects();
   const isMobile = useIsMobile();
   const { addNotification } = useNotifications();
@@ -77,6 +79,14 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const handleClearUnreadMessages = () => {
     setUnreadChatCount(0);
   };
+
+  // Determine the current room object
+  const currentRoom = rooms.find(room => room.id === currentRoomId);
+
+  // Determine the background to use
+  const backgroundToUse = currentRoom?.background_url
+    ? { url: currentRoom.background_url, isVideo: currentRoom.is_video_background || false, isMirrored: false } // Room background
+    : undefined; // Fallback to user preference from BackgroundProvider
 
   // Run client version check on initial mount
   useEffect(() => {
@@ -222,7 +232,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               onNewUnreadMessage={handleNewUnreadMessage}
               onClearUnreadMessages={handleClearUnreadMessages}
               unreadCount={unreadChatCount}
-              currentRoomId={null} // This needs to be passed from useCurrentRoom if chat is room-specific
+              currentRoomId={currentRoomId} // Pass currentRoomId here
               isCurrentRoomWritable={isCurrentRoomWritable}
               isMobile={isMobile}
             />
