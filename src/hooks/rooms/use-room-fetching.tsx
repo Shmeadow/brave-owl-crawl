@@ -156,7 +156,32 @@ export function useRoomFetching() {
 
   useEffect(() => {
     fetchRooms();
-  }, [fetchRooms]);
+
+    if (!supabase || !session?.user?.id) return;
+
+    // Subscribe to changes in the 'rooms' table
+    const roomsChannel = supabase
+      .channel('public:rooms')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms' }, (payload) => {
+        // console.log('Room change received!', payload); // Removed for cleaner logs
+        fetchRooms(); // Re-fetch all rooms on any change
+      })
+      .subscribe();
+
+    // Subscribe to changes in the 'room_members' table
+    const roomMembersChannel = supabase
+      .channel('public:room_members')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'room_members' }, (payload) => {
+        // console.log('Room member change received!', payload); // Removed for cleaner logs
+        fetchRooms(); // Re-fetch all rooms on any change
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(roomsChannel);
+      supabase.removeChannel(roomMembersChannel);
+    };
+  }, [fetchRooms, supabase, session]);
 
   return { rooms, loading, fetchRooms };
 }
