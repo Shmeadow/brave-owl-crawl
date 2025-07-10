@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
-import { Loader2, Chrome, Github } from "lucide-react"; // Import Chrome for Google icon
+import { Loader2, Chrome, Github } from "lucide-react";
 import { redirect, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Auth } from '@supabase/auth-ui-react';
@@ -10,7 +10,7 @@ import { ThemeSupa } from '@supabase/auth-ui-shared';
 import Link from "next/link";
 import { CustomSignupForm } from "@/components/auth/custom-signup-form";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator"; // Import Separator
+import { Separator } from "@/components/ui/separator";
 
 export default function LoginPage() {
   const { supabase, session, loading } = useSupabase();
@@ -54,7 +54,6 @@ export default function LoginPage() {
     });
     if (error) {
       console.error(`Error signing in with ${provider}:`, error);
-      // toast.error(`Failed to sign in with ${provider}: ${error.message}`); // Removed toast as Supabase UI handles it
     }
   };
 
@@ -79,7 +78,7 @@ export default function LoginPage() {
             <Auth
               supabaseClient={supabase}
               appearance={{ theme: ThemeSupa }}
-              providers={[]} // Hide default social providers
+              providers={[]}
               redirectTo={window.location.origin + '/dashboard'}
               theme="dark"
               view="sign_in"
@@ -93,16 +92,11 @@ export default function LoginPage() {
                     password_input_placeholder: 'Your Password',
                     button_label: 'Sign In',
                   },
-                  forgotten_password: {
-                    email_label: 'Email address',
-                    email_input_placeholder: 'Your email address',
-                    button_label: 'Send reset instructions',
-                  },
                 },
               }}
             />
             
-            <Separator className="my-4" /> {/* Separator */}
+            <Separator className="my-4" />
             <p className="text-sm text-muted-foreground text-center mb-2">Or connect with</p>
             <div className="flex gap-4 w-full justify-center">
               <Button
@@ -135,11 +129,36 @@ export default function LoginPage() {
         )}
 
         {authFormType === 'sign_up' && (
-          <CustomSignupForm
-            supabase={supabase}
-            onSuccess={handleSignupSuccess}
-            onSwitchToSignIn={() => setAuthFormType('sign_in')}
-          />
+          <>
+            <CustomSignupForm
+              supabase={supabase}
+              onSuccess={handleSignupSuccess}
+              onSwitchToSignIn={() => setAuthFormType('sign_in')}
+            />
+            <Separator className="my-4" />
+            <p className="text-sm text-muted-foreground text-center mb-2">Or connect with</p>
+            <div className="flex gap-4 w-full justify-center">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => handleOAuthSignIn('google')}
+                className="flex-1"
+              >
+                <Chrome className="mr-2 h-5 w-5" /> Google
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => handleOAuthSignIn('github')}
+                className="flex-1"
+              >
+                <Github className="mr-2 h-5 w-5" /> GitHub
+              </Button>
+            </div>
+            <Button variant="link" onClick={() => setAuthFormType('sign_in')} className="w-full mt-4">
+              Already have an account? Sign In
+            </Button>
+          </>
         )}
 
         {authFormType === 'forgotten_password' && (
