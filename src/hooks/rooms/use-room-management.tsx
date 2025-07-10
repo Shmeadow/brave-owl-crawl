@@ -22,6 +22,24 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
       return { data: null, error: { message: "Not logged in" } }; // Return error object
     }
 
+    // Check if the user already owns a room
+    const { data: existingRooms, error: existingRoomsError } = await supabase
+      .from('rooms')
+      .select('id')
+      .eq('creator_id', session.user.id)
+      .is('deleted_at', null); // Only count active rooms
+
+    if (existingRoomsError) {
+      console.error("Error checking for existing rooms:", existingRoomsError);
+      toast.error("Failed to check for existing rooms.");
+      return { data: null, error: existingRoomsError };
+    }
+
+    if (existingRooms && existingRooms.length > 0) {
+      toast.error("You can only create one room. Please manage your existing room.");
+      return { data: null, error: { message: "User already owns a room" } };
+    }
+
     const randomBg = getRandomBackground();
     const closesAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(); // Set closes_at to 2 hours from now
 

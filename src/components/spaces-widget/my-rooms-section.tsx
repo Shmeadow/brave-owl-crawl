@@ -48,7 +48,7 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
   };
 
   const getRoomCreatorDisplay = (room: RoomData) => {
-    if (room.profiles && room.profiles.length > 0) {
+    if (room.profiles && room.profiles.length > 0) { // Check if profiles array exists and has elements
       return room.profiles[0].first_name || room.profiles[0].last_name || `User (${room.creator_id.substring(0, 4)}...)`;
     }
     return `User (${room.creator_id.substring(0, 4)}...)`;
@@ -165,11 +165,11 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
                         size="icon"
                         className="text-red-500 hover:bg-red-100 hover:text-red-600"
                         onClick={() => handleDeleteRoom(room.id)}
-                        title="Delete Room"
+                        title="Close Room" {/* Changed to Close Room */}
                         disabled={!session}
                       >
                         <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Delete Room</span>
+                        <span className="sr-only">Close Room</span> {/* Changed to Close Room */}
                       </Button>
                     </div>
                   </div>

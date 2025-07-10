@@ -11,12 +11,14 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { formatDistanceToNowStrict } from 'date-fns';
+import { useSupabase } from "@/integrations/supabase/auth"; // Import useSupabase
 
 interface PublicRoomsSectionProps {
   publicRooms: RoomData[];
 }
 
 export function PublicRoomsSection({ publicRooms }: PublicRoomsSectionProps) {
+  const { session } = useSupabase(); // Get session to check for user's own public room
   const { handleJoinRoomByRoomId } = useRooms();
   const { currentRoomId, setCurrentRoom } = useCurrentRoom();
 
@@ -31,13 +33,20 @@ export function PublicRoomsSection({ publicRooms }: PublicRoomsSectionProps) {
   };
 
   const getRoomCreatorDisplay = (room: RoomData) => {
-    if (room.profiles && room.profiles.length > 0) {
+    if (room.profiles && room.profiles.length > 0) { // Check if profiles array exists and has elements
       return room.profiles[0].first_name || room.profiles[0].last_name || `User (${room.creator_id.substring(0, 4)}...)`;
     }
     return `User (${room.creator_id.substring(0, 4)}...)`;
   };
 
-  if (publicRooms.length === 0) {
+  // Filter out the user's own public room from the general publicRooms list
+  // as it will be displayed separately or handled by MyRoomsSection
+  const otherPublicRooms = publicRooms.filter(room => room.creator_id !== session?.user?.id);
+
+  // Find the user's own public room if it exists
+  const usersOwnPublicRoom = publicRooms.find(room => room.creator_id === session?.user?.id && room.type === 'public');
+
+  if (otherPublicRooms.length === 0 && !usersOwnPublicRoom) {
     return null;
   }
 
@@ -49,7 +58,66 @@ export function PublicRoomsSection({ publicRooms }: PublicRoomsSectionProps) {
       <CardContent className="p-0">
         <ScrollArea className="max-h-[300px] pr-4">
           <div className="space-y-3">
-            {publicRooms.map((room) => (
+            {usersOwnPublicRoom && (
+              <div
+                key={usersOwnPublicRoom.id}
+                className={cn(
+                  "flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 border rounded-md bg-muted backdrop-blur-xl",
+                  currentRoomId === usersOwnPublicRoom.id && "ring-2 ring-primary"
+                )}
+              >
+                <div className="flex items-center flex-1 min-w-0">
+                  <div className="relative w-16 h-10 rounded-md overflow-hidden mr-3 flex-shrink-0 bg-muted">
+                    {usersOwnPublicRoom.background_url && (
+                      usersOwnPublicRoom.is_video_background ? (
+                        <video src={usersOwnPublicRoom.background_url} className="w-full h-full object-cover" muted playsInline />
+                      ) : (
+                        <Image src={usersOwnPublicRoom.background_url} alt={usersOwnPublicRoom.name} fill className="object-cover" sizes="64px" priority={false} />
+                      )
+                    )}
+                  </div>
+                  <div className="flex-1 pr-2">
+                    <p className="font-medium text-sm">{usersOwnPublicRoom.name} (Your Public Room)</p>
+                    {usersOwnPublicRoom.description && <p className="text-xs text-muted-foreground line-clamp-1">{usersOwnPublicRoom.description}</p>}
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Globe className="h-3 w-3" /> Public Room
+                    </p>
+                    {usersOwnPublicRoom.closes_at && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Clock className="h-3 w-3" /> Closes in: {formatDistanceToNowStrict(new Date(usersOwnPublicRoom.closes_at))}
+                      </p>
+                    )}
+                    <div className="flex items-center mt-1">
+                      <p className="text-xs text-primary">Room ID: <span className="font-bold">{usersOwnPublicRoom.id.substring(0, 8)}...</span></p>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5 ml-1 text-primary hover:bg-primary/10"
+                        onClick={(e) => { e.stopPropagation(); handleCopyRoomId(usersOwnPublicRoom.id); }}
+                        title="Copy Room ID"
+                      >
+                        <Copy className="h-3 w-3" />
+                        <span className="sr-only">Copy Room ID</span>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-1 sm:ml-auto">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleEnterRoom(usersOwnPublicRoom)}
+                    title="Enter Room"
+                    disabled={currentRoomId === usersOwnPublicRoom.id}
+                  >
+                    <LogIn className="h-4 w-4" />
+                    <span className="sr-only">Enter Room</span>
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {otherPublicRooms.map((room) => (
               <div
                 key={room.id}
                 className={cn(

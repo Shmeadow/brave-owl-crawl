@@ -11,7 +11,7 @@ export interface RoomData {
   closes_at: string | null; // New: Timestamp when the room closes
   deleted_at: string | null; // New: Soft delete timestamp
   description: string | null; // New: Room description
-  profiles?: { first_name: string | null; last_name: string | null }[] | null; // Changed to array of profile objects for creator
+  profiles?: { first_name: string | null; last_name: string | null }[] | null; // Changed back to array
 }
 
 export interface RoomMember {
