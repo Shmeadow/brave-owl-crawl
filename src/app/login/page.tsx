@@ -57,13 +57,35 @@ export default function LoginPage() {
     }
   };
 
+  // Define common appearance settings for Auth component
+  const commonAuthAppearance = {
+    theme: ThemeSupa,
+    variables: {
+      default: {
+        colors: {
+          inputBackground: 'hsl(var(--input))',
+          inputBorder: 'hsl(var(--border))',
+          inputFocusBorder: 'hsl(var(--primary))',
+          inputLabelText: 'hsl(var(--foreground))',
+          inputText: 'hsl(var(--foreground))',
+          // Adjust button colors to match our theme if needed, or rely on default ThemeSupa
+          // buttonBackground: 'hsl(var(--primary))',
+          // buttonText: 'hsl(var(--primary-foreground))',
+          // buttonBorder: 'hsl(var(--primary))',
+          // buttonHoverBackground: 'hsl(var(--primary-foreground))',
+          // buttonHoverText: 'hsl(var(--primary))',
+        },
+      },
+    },
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-transparent p-4">
       <div
         className={cn(
-          "w-full max-w-md p-6 rounded-xl shadow-lg", // Reduced p-8 to p-6
+          "w-full max-w-md p-6 rounded-xl shadow-lg",
           "bg-card border border-border",
-          "flex flex-col items-center gap-4" // Reduced gap-6 to gap-4
+          "flex flex-col items-center gap-4"
         )}
       >
         <h1 className="text-3xl font-extrabold text-foreground text-center">Welcome to CozyHub</h1>
@@ -77,7 +99,7 @@ export default function LoginPage() {
           <>
             <Auth
               supabaseClient={supabase}
-              appearance={{ theme: ThemeSupa }}
+              appearance={commonAuthAppearance} // Apply common appearance
               providers={[]}
               redirectTo={window.location.origin + '/dashboard'}
               theme="dark"
@@ -96,9 +118,9 @@ export default function LoginPage() {
               }}
             />
             
-            <Separator className="my-3" /> {/* Reduced my-4 to my-3 */}
-            <p className="text-sm text-muted-foreground text-center mb-1">Or connect with</p> {/* Reduced mb-2 to mb-1 */}
-            <div className="flex gap-3 w-full justify-center"> {/* Reduced gap-4 to gap-3 */}
+            <Separator className="my-3" />
+            <p className="text-sm text-muted-foreground text-center mb-1">Or connect with</p>
+            <div className="flex gap-3 w-full justify-center">
               <Button
                 variant="outline"
                 size="lg"
@@ -117,7 +139,7 @@ export default function LoginPage() {
               </Button>
             </div>
 
-            <div className="flex flex-col items-center gap-1 w-full mt-3"> {/* Reduced gap-2 to gap-1, mt-4 to mt-3 */}
+            <div className="flex flex-col items-center gap-1 w-full mt-3">
               <Button variant="link" onClick={() => setAuthFormType('forgotten_password')} className="w-full">
                 Forgot your password?
               </Button>
@@ -140,7 +162,7 @@ export default function LoginPage() {
           <>
             <Auth
               supabaseClient={supabase}
-              appearance={{ theme: ThemeSupa }}
+              appearance={commonAuthAppearance} // Apply common appearance
               providers={[]}
               redirectTo={window.location.origin + '/dashboard'}
               theme="dark"
@@ -162,7 +184,7 @@ export default function LoginPage() {
           </>
         )}
         
-        <Link href="/landing" className="text-sm text-muted-foreground hover:underline mt-3"> {/* Reduced mt-4 to mt-3 */}
+        <Link href="/landing" className="text-sm text-muted-foreground hover:underline mt-3">
           Back to Landing Page
         </Link>
       </div>
