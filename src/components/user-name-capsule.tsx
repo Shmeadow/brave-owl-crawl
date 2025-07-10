@@ -24,7 +24,7 @@ export function UserNameCapsule() {
   const userName = user?.user_metadata?.first_name || user?.user_metadata?.full_name || userEmail?.split('@')[0];
 
   const handleSignOut = async () => {
-    if (!supabase) { // Added null check for supabase
+    if (!supabase) {
       toast.error("Supabase client not initialized.");
       return;
     }
@@ -61,7 +61,7 @@ export function UserNameCapsule() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuLabel>User Info</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {userEmail && <DropdownMenuItem className="text-xs text-muted-foreground">{userEmail}</DropdownMenuItem>}
           {userId && (
@@ -79,6 +79,7 @@ export function UserNameCapsule() {
               </Button>
             </DropdownMenuItem>
           )}
+          <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleSignOut}>Sign Out</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
