@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 export default function LoginPage() {
   const { supabase, session, loading } = useSupabase();
   const router = useRouter();
-  // State to control which authentication form is displayed
   const [authFormType, setAuthFormType] = useState<'sign_in' | 'sign_up' | 'forgotten_password'>('sign_in');
 
   if (loading) {
@@ -45,16 +44,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-transparent p-4"> {/* Changed to bg-transparent for full background visibility */}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-transparent p-4">
       <div
         className={cn(
-          "w-full max-w-sm p-10 rounded-xl shadow-2xl",
-          "bg-transparent backdrop-blur-xl border-white/40", // Main login card with transparency and blur
-          "flex flex-col items-center gap-8"
+          "w-full max-w-md p-8 rounded-xl shadow-lg", // Made more compact (max-w-md, p-8) and less intense shadow
+          "bg-card border border-border", // Solid background and border for better readability
+          "flex flex-col items-center gap-6" // Reduced gap between elements
         )}
       >
-        <h1 className="text-4xl font-extrabold text-foreground text-center">Welcome to CozyHub</h1>
-        <p className="text-lg text-muted-foreground text-center mb-4">
+        <h1 className="text-3xl font-extrabold text-foreground text-center">Welcome to CozyHub</h1> {/* Slightly smaller title */}
+        <p className="text-base text-muted-foreground text-center"> {/* Slightly smaller text */}
           {authFormType === 'sign_in' && 'Sign in to your account.'}
           {authFormType === 'sign_up' && 'Create a new account.'}
           {authFormType === 'forgotten_password' && 'Reset your password.'}
@@ -68,8 +67,8 @@ export default function LoginPage() {
               providers={['google', 'github']}
               redirectTo={window.location.origin + '/dashboard'}
               theme="dark"
-              view="sign_in" // Explicitly set view to sign_in
-              showLinks={false} // Hide default navigation links to control them manually
+              view="sign_in"
+              showLinks={false}
               localization={{
                 variables: {
                   sign_in: {
@@ -78,10 +77,10 @@ export default function LoginPage() {
                     email_input_placeholder: 'Your email address',
                     password_input_placeholder: 'Your Password',
                     button_label: 'Sign In',
-                    social_provider_text: 'Or connect with', // Text for social providers
+                    social_provider_text: 'Or connect with',
                   },
                   sign_up: {
-                    social_provider_text: 'Or connect with', // Text for social providers in signup view
+                    social_provider_text: 'Or connect with',
                   },
                   forgotten_password: {
                     email_label: 'Email address',
@@ -91,12 +90,14 @@ export default function LoginPage() {
                 },
               }}
             />
-            <Button variant="link" onClick={() => setAuthFormType('forgotten_password')} className="w-full mt-2">
-              Forgot your password?
-            </Button>
-            <Button variant="link" onClick={() => setAuthFormType('sign_up')} className="w-full">
-              Don't have an account? Sign Up
-            </Button>
+            <div className="flex flex-col items-center gap-2 w-full"> {/* Grouped links */}
+              <Button variant="link" onClick={() => setAuthFormType('forgotten_password')} className="w-full">
+                Forgot your password?
+              </Button>
+              <Button variant="link" onClick={() => setAuthFormType('sign_up')} className="w-full">
+                Don't have an account? Sign Up
+              </Button>
+            </div>
           </>
         )}
 
@@ -113,11 +114,11 @@ export default function LoginPage() {
             <Auth
               supabaseClient={supabase}
               appearance={{ theme: ThemeSupa }}
-              providers={[]} // No social providers for password reset
+              providers={[]}
               redirectTo={window.location.origin + '/dashboard'}
               theme="dark"
-              view="forgotten_password" // Explicitly set view to forgotten_password
-              showLinks={false} // Hide default navigation links
+              view="forgotten_password"
+              showLinks={false}
               localization={{
                 variables: {
                   forgotten_password: {
