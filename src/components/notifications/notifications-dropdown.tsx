@@ -22,11 +22,9 @@ interface NotificationsDropdownProps {
 export function NotificationsDropdown({}: NotificationsDropdownProps) {
   const { notifications, roomInvitations, loading, unreadCount, markAsRead, markAllAsRead, addNotification, deleteReadNotifications, handleDeleteNotification } = useNotifications();
 
-  useEffect(() => {
-    if (!loading && notifications.length === 0 && roomInvitations.length === 0) {
-      addNotification("Welcome to Productivity Hub! Explore your new workspace.");
-    }
-  }, [loading, notifications.length, roomInvitations.length, addNotification]);
+  // Removed the useEffect that added a default welcome notification here.
+  // The primary welcome notification is now handled by the useNotifications hook itself,
+  // ensuring it's a one-time event tied to the user's profile.
 
   const hasReadNotifications = notifications.some(n => n.is_read);
 
