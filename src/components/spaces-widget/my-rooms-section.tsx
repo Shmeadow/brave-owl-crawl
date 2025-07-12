@@ -17,7 +17,7 @@ import Image from "next/image";
 import { SelectItem } from "@/components/ui/select";
 import { formatDistanceToNowStrict } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { RoomOwnerControlsSection } from "./room-owner-controls-section"; // Import RoomOwnerControlsSection
+import { RoomOwnerControlsSection } from "./room-owner-controls-section";
 
 interface MyRoomsSectionProps {
   myCreatedRooms: RoomData[];
@@ -36,7 +36,7 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
   const [memberEmailInput, setMemberEmailInput] = useState("");
   const [selectedRoomForMember, setSelectedRoomForMember] = useState<string | null>(null);
-  const [expandedRoomId, setExpandedRoomId] = useState<string | null>(null); // State for expanded settings
+  const [expandedRoomId, setExpandedRoomId] = useState<string | null>(null);
 
   const handleEnterRoom = (room: RoomData) => {
     setCurrentRoom(room.id, room.name);
@@ -48,8 +48,9 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
   };
 
   const getRoomCreatorDisplay = (room: RoomData) => {
-    if (room.profiles && room.profiles.length > 0) { // Check if profiles array exists and has elements
-      return room.profiles[0].first_name || room.profiles[0].last_name || `User (${room.creator_id.substring(0, 4)}...)`;
+    const profile = room.profiles?.[0];
+    if (profile) {
+      return profile.first_name || profile.last_name || `User (${room.creator_id.substring(0, 4)}...)`;
     }
     return `User (${room.creator_id.substring(0, 4)}...)`;
   };
@@ -165,11 +166,11 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
                         size="icon"
                         className="text-red-500 hover:bg-red-100 hover:text-red-600"
                         onClick={() => handleDeleteRoom(room.id)}
-                        title="Close Room" {/* Changed to Close Room */}
+                        title="Close Room"
                         disabled={!session}
                       >
                         <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Close Room</span> {/* Changed to Close Room */}
+                        <span className="sr-only">Close Room</span>
                       </Button>
                     </div>
                   </div>
