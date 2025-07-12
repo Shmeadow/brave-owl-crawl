@@ -17,7 +17,8 @@ import Image from "next/image";
 import { SelectItem } from "@/components/ui/select";
 import { formatDistanceToNowStrict } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { RoomOwnerControlsSection } from "./room-owner-controls-section";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { RoomSettingsContent } from "./RoomSettingsContent"; // Import the new component
 
 interface MyRoomsSectionProps {
   myCreatedRooms: RoomData[]; // Now explicitly "other" created rooms
@@ -37,6 +38,7 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
   const [memberEmailInput, setMemberEmailInput] = useState("");
   const [selectedRoomForMember, setSelectedRoomForMember] = useState<string | null>(null);
   const [expandedRoomId, setExpandedRoomId] = useState<string | null>(null);
+  const [isSettingsPopoverOpen, setIsSettingsPopoverOpen] = useState<Record<string, boolean>>({}); // State for multiple popovers
 
   const handleEnterRoom = (room: RoomData) => {
     setCurrentRoom(room.id, room.name);
@@ -84,103 +86,106 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
           <ScrollArea className="max-h-[300px] pr-4">
             <div className="space-y-3">
               {myCreatedRooms.map((room) => (
-                <Collapsible key={room.id} open={expandedRoomId === room.id} onOpenChange={() => setExpandedRoomId(expandedRoomId === room.id ? null : room.id)}>
-                  <CollapsibleTrigger asChild>
-                    <div
-                      className={cn(
-                        "flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 border rounded-md bg-muted backdrop-blur-xl",
-                        currentRoomId === room.id && "ring-2 ring-primary",
-                        "cursor-pointer" // Indicate it's clickable
-                      )}
-                    >
-                      <div className="flex items-center flex-1 min-w-0">
-                        <div className="relative w-16 h-10 rounded-md overflow-hidden mr-3 flex-shrink-0 bg-muted">
-                          {room.background_url && (
-                            room.is_video_background ? (
-                              <video src={room.background_url} className="w-full h-full object-cover" muted playsInline />
-                            ) : (
-                              <Image src={room.background_url} alt={room.name} fill className="object-cover" sizes="64px" priority={false} />
-                            )
-                          )}
-                        </div>
-                        <div className="flex-1 pr-2 mb-2 sm:mb-0">
-                          <p className="font-medium text-sm">{room.name} (Created by You)</p>
-                          {room.description && <p className="text-xs text-muted-foreground line-clamp-1">{room.description}</p>}
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            {room.type === 'public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
-                            {room.type === 'public' ? 'Public Room' : 'Private Room'}
-                            {room.type === 'private' && room.password_hash && ' (Password Protected)'}
-                          </p>
-                          {room.closes_at && (
-                            <p className="text-xs text-muted-foreground flex items-center gap-1">
-                              <Clock className="h-3 w-3" /> Closes in: {formatDistanceToNowStrict(new Date(room.closes_at))}
-                            </p>
-                          )}
-                          <div className="flex items-center mt-1">
-                            <p className="text-xs text-primary">Room ID: <span className="font-bold">{room.id.substring(0, 8)}...</span></p>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-5 w-5 ml-1 text-primary hover:bg-primary/10"
-                              onClick={(e) => { e.stopPropagation(); handleCopyRoomId(room.id); }}
-                              title="Copy Room ID"
-                            >
-                              <Copy className="h-3 w-3" />
-                              <span className="sr-only">Copy Room ID</span>
-                            </Button>
-                          </div>
-                        </div>
+                <div key={room.id}> {/* Wrap in a div for consistent styling */}
+                  <div
+                    className={cn(
+                      "flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 border rounded-md bg-muted backdrop-blur-xl",
+                      currentRoomId === room.id && "ring-2 ring-primary",
+                    )}
+                  >
+                    <div className="flex items-center flex-1 min-w-0">
+                      <div className="relative w-16 h-10 rounded-md overflow-hidden mr-3 flex-shrink-0 bg-muted">
+                        {room.background_url && (
+                          room.is_video_background ? (
+                            <video src={room.background_url} className="w-full h-full object-cover" muted playsInline />
+                          ) : (
+                            <Image src={room.background_url} alt={room.name} fill className="object-cover" sizes="64px" priority={false} />
+                          )
+                        )}
                       </div>
-                      <div className="flex flex-wrap gap-1 sm:ml-auto">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={(e) => { e.stopPropagation(); openAddMemberDialog(room.id); }}
-                          title="Add Member"
-                          disabled={!session}
-                        >
-                          <UserPlus className="h-4 w-4" />
-                          <span className="sr-only">Add Member</span>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={(e) => { e.stopPropagation(); handleEnterRoom(room); }}
-                          title="Enter Room"
-                          disabled={currentRoomId === room.id}
-                        >
-                          <LogIn className="h-4 w-4" />
-                          <span className="sr-only">Enter Room</span>
-                        </Button>
-                        {/* Settings button is now part of the trigger */}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          title="Room Settings"
-                          onClick={(e) => e.stopPropagation()} // Prevent default collapsible toggle if clicked directly
-                        >
-                          <Settings className="h-4 w-4" />
-                          <span className="sr-only">Room Settings</span>
-                          {expandedRoomId === room.id ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500 hover:bg-red-100 hover:text-red-600"
-                          onClick={(e) => { e.stopPropagation(); handleDeleteRoom(room.id); }}
-                          title="Close Room"
-                          disabled={!session}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Close Room</span>
-                        </Button>
+                      <div className="flex-1 pr-2 mb-2 sm:mb-0">
+                        <p className="font-medium text-sm">{room.name} (Created by You)</p>
+                        {room.description && <p className="text-xs text-muted-foreground line-clamp-1">{room.description}</p>}
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          {room.type === 'public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                          {room.type === 'public' ? 'Public Room' : 'Private Room'}
+                          {room.type === 'private' && room.password_hash && ' (Password Protected)'}
+                        </p>
+                        {room.closes_at && (
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Clock className="h-3 w-3" /> Closes in: {formatDistanceToNowStrict(new Date(room.closes_at))}
+                          </p>
+                        )}
+                        <div className="flex items-center mt-1">
+                          <p className="text-xs text-primary">Room ID: <span className="font-bold">{room.id.substring(0, 8)}...</span></p>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 ml-1 text-primary hover:bg-primary/10"
+                            onClick={(e) => { e.stopPropagation(); handleCopyRoomId(room.id); }}
+                            title="Copy Room ID"
+                          >
+                            <Copy className="h-3 w-3" />
+                            <span className="sr-only">Copy Room ID</span>
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="w-full pt-4">
-                    <RoomOwnerControlsSection room={room} />
-                  </CollapsibleContent>
-                </Collapsible>
+                    <div className="flex flex-wrap gap-1 sm:ml-auto">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => { e.stopPropagation(); openAddMemberDialog(room.id); }}
+                        title="Add Member"
+                        disabled={!session}
+                      >
+                        <UserPlus className="h-4 w-4" />
+                        <span className="sr-only">Add Member</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => { e.stopPropagation(); handleEnterRoom(room); }}
+                        title="Enter Room"
+                        disabled={currentRoomId === room.id}
+                      >
+                        <LogIn className="h-4 w-4" />
+                        <span className="sr-only">Enter Room</span>
+                      </Button>
+                      <Popover open={isSettingsPopoverOpen[room.id]} onOpenChange={(open) => setIsSettingsPopoverOpen(prev => ({ ...prev, [room.id]: open }))}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Room Settings"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Settings className="h-4 w-4" />
+                            <span className="sr-only">Room Settings</span>
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20"
+                          align="end"
+                          onOpenAutoFocus={(e) => e.preventDefault()}
+                        >
+                          <RoomSettingsContent room={room} />
+                        </PopoverContent>
+                      </Popover>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-500 hover:bg-red-100 hover:text-red-600"
+                        onClick={(e) => { e.stopPropagation(); handleDeleteRoom(room.id); }}
+                        title="Close Room"
+                        disabled={!session}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Close Room</span>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               ))}
               {myJoinedRooms.map((room) => (
                 <div

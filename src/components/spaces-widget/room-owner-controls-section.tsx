@@ -3,183 +3,36 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserMinus, Send, Lock, Eye, EyeOff } from "lucide-react";
-import { useRooms, RoomData, RoomMember } from "@/hooks/use-rooms";
+import { Trash2, LogIn, Copy, Settings } from "lucide-react";
+import { useRooms, RoomData } from "@/hooks/use-rooms";
+import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
-import { useCurrentRoom } from "@/hooks/use-current-room";
-import { Textarea } from "@/components/ui/textarea"; // Import Textarea
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Import Tabs
-import { ScrollArea } from "@/components/ui/scroll-area"; // Import ScrollArea
-import { staticImages, animatedBackgrounds } from "@/lib/backgrounds"; // Import backgrounds
-import { AnimatedBackgroundPreviewItem } from "../animated-background-preview-item"; // Import AnimatedBackgroundPreviewItem
-import Image from "next/image"; // Import Image
+import { cn } from "@/lib/utils";
+import Image from "next/image";
+import { formatDistanceToNowStrict } from 'date-fns';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { RoomSettingsContent } from "./RoomSettingsContent"; // Import the new component
 
 interface RoomOwnerControlsSectionProps {
-  room: RoomData; // Changed from currentRoom
+  room: RoomData;
 }
 
 export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps) {
-  const { supabase, session, profile } = useSupabase();
-  const {
-    handleSendRoomInvitation,
-    handleKickUser,
-    handleUpdateRoomType,
-    handleSetRoomPassword,
-    handleUpdateRoomDescription,
-    handleUpdateRoomBackground,
-    fetchRooms,
-  } = useRooms();
-  const { setCurrentRoom } = useCurrentRoom();
+  const { session } = useSupabase();
+  const { handleDeleteRoom } = useRooms();
+  const { currentRoomId, setCurrentRoom } = useCurrentRoom();
 
   const isOwnerOfCurrentRoom = room.creator_id === session?.user?.id;
+  const [isSettingsPopoverOpen, setIsSettingsPopoverOpen] = useState(false);
 
-  const [receiverEmailInput, setReceiverEmailInput] = useState("");
-  const [selectedUserToKick, setSelectedUserToKick] = useState<string | null>(null);
-  const [roomMembers, setRoomMembers] = useState<RoomMember[]>([]);
-  const [editedRoomName, setEditedRoomName] = useState(room.name);
-  const [editedRoomDescription, setEditedRoomDescription] = useState(room.description || "");
-  const [roomType, setRoomType] = useState<'public' | 'private'>(room.type);
-  const [roomPassword, setRoomPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [selectedBackgroundUrl, setSelectedBackgroundUrl] = useState(room.background_url || "");
-  const [selectedIsVideoBackground, setSelectedIsVideoBackground] = useState(room.is_video_background || false);
-
-  // Effect to update local states when room prop changes
-  useEffect(() => {
-    setEditedRoomName(room.name);
-    setEditedRoomDescription(room.description || "");
-    setRoomType(room.type);
-    setSelectedBackgroundUrl(room.background_url || "");
-    setSelectedIsVideoBackground(room.is_video_background || false);
-  }, [room]);
-
-  // Fetch room members when room changes and user is owner
-  useEffect(() => {
-    const fetchRoomMembers = async () => {
-      if (!supabase || !room.id || !isOwnerOfCurrentRoom) {
-        setRoomMembers([]);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('room_members')
-        .select(`
-          id,
-          room_id,
-          user_id,
-          joined_at,
-          profiles (
-            first_name,
-            last_name,
-            profile_image_url
-          )
-        `)
-        .eq('room_id', room.id);
-
-      if (error) {
-        console.error("Error fetching room members:", error);
-        setRoomMembers([]);
-      } else {
-        setRoomMembers(data as RoomMember[]);
-      }
-    };
-
-    fetchRoomMembers();
-  }, [supabase, room.id, isOwnerOfCurrentRoom, fetchRooms]);
-
-  const handleSendInvitation = useCallback(async () => {
-    if (!room.id || !isOwnerOfCurrentRoom) {
-      toast.error("You must be the owner of this room to send invitations.");
-      return;
-    }
-    if (!receiverEmailInput.trim()) {
-      toast.error("Recipient Email Address cannot be empty.");
-      return;
-    }
-    await handleSendRoomInvitation(room.id, receiverEmailInput.trim());
-    setReceiverEmailInput("");
-  }, [room.id, isOwnerOfCurrentRoom, receiverEmailInput, handleSendRoomInvitation]);
-
-  const handleKickSelectedUser = useCallback(async () => {
-    if (!room.id || !isOwnerOfCurrentRoom || !selectedUserToKick) {
-      toast.error("Please select a user to kick.");
-      return;
-    }
-    await handleKickUser(room.id, selectedUserToKick);
-    setSelectedUserToKick(null);
-  }, [room.id, isOwnerOfCurrentRoom, selectedUserToKick, handleKickUser]);
-
-  const handleUpdateRoomName = async () => {
-    if (!room.id || !isOwnerOfCurrentRoom || !supabase || !session) {
-      toast.error("You must be the owner of this room and logged in to change its name.");
-      return;
-    }
-    if (!editedRoomName.trim()) {
-      toast.error("Room name cannot be empty.");
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from('rooms')
-      .update({ name: editedRoomName.trim() })
-      .eq('id', room.id)
-      .eq('creator_id', session.user.id)
-      .select('name')
-      .single();
-
-    if (error) {
-      toast.error("Error updating room name: " + error.message);
-      console.error("Error updating room name:", error);
-    } else if (data) {
-      toast.success(`Room name updated to "${data.name}"!`);
-      setCurrentRoom(room.id, data.name);
-      fetchRooms();
-    }
+  const handleEnterRoom = (room: RoomData) => {
+    setCurrentRoom(room.id, room.name);
   };
 
-  const handleUpdateRoomDescriptionClick = async () => {
-    if (!room.id || !isOwnerOfCurrentRoom) {
-      toast.error("You must be the owner of this room to change its description.");
-      return;
-    }
-    await handleUpdateRoomDescription(room.id, editedRoomDescription.trim() || null);
-  };
-
-  const handleUpdateRoomTypeClick = async (newType: 'public' | 'private') => {
-    if (room.type === newType) return;
-    await handleUpdateRoomType(room.id, newType);
-    setRoomType(newType);
-  };
-
-  const handleSetPasswordClick = async () => {
-    if (roomType === 'public') {
-      toast.error("Cannot set a password for a public room. Change room type to private first.");
-      return;
-    }
-    if (!roomPassword.trim()) {
-      toast.error("Password cannot be empty.");
-      return;
-    }
-    await handleSetRoomPassword(room.id, roomPassword.trim());
-    setRoomPassword("");
-  };
-
-  const handleRemovePasswordClick = async () => {
-    await handleSetRoomPassword(room.id, null);
-  };
-
-  const handleBackgroundChange = async (url: string, isVideo: boolean) => {
-    if (!room.id || !isOwnerOfCurrentRoom) {
-      toast.error("You must be the owner of this room to change its background.");
-      return;
-    }
-    await handleUpdateRoomBackground(room.id, url, isVideo);
-    setSelectedBackgroundUrl(url);
-    setSelectedIsVideoBackground(isVideo);
+  const handleCopyRoomId = (id: string) => {
+    navigator.clipboard.writeText(id);
+    toast.success("Room ID copied to clipboard!");
   };
 
   if (!isOwnerOfCurrentRoom) {
@@ -187,199 +40,94 @@ export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps
   }
 
   return (
-    <Card className="w-full bg-card backdrop-blur-xl border-white/20 p-4">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-xl">Room Settings: {room.name}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Room Name Editing */}
-        <div className="space-y-2">
-          <Label htmlFor="room-name-edit">Room Name</Label>
-          <Input
-            id="room-name-edit"
-            value={editedRoomName}
-            onChange={(e) => setEditedRoomName(e.target.value)}
-          />
-          <Button onClick={handleUpdateRoomName} className="w-full">
-            Update Room Name
-          </Button>
-        </div>
-
-        {/* Room Description Editing */}
-        <div className="space-y-2">
-          <Label htmlFor="room-description-edit">Room Description (Optional)</Label>
-          <Textarea
-            id="room-description-edit"
-            placeholder="A brief description of your room..."
-            value={editedRoomDescription}
-            onChange={(e) => setEditedRoomDescription(e.target.value)}
-            rows={3}
-          />
-          <Button onClick={handleUpdateRoomDescriptionClick} className="w-full">
-            Update Room Description
-          </Button>
-        </div>
-
-        {/* Room Type (Public/Private) */}
-        <div className="space-y-2">
-          <Label>Room Type</Label>
-          <Select value={roomType} onValueChange={handleUpdateRoomTypeClick}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select room type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="private">Private (Invite/Password Only)</SelectItem>
-              <SelectItem value="public">Public (Anyone Can Join by ID)</SelectItem>
-            </SelectContent>
-          </Select>
-          <p className="text-sm text-muted-foreground">
-            {roomType === 'private'
-              ? 'Only invited members or those with a password can join.'
-              : 'Anyone with the Room ID can join directly.'}
-          </p>
-        </div>
-
-        {/* Password Management (only for private rooms) */}
-        {roomType === 'private' && (
-          <div className="space-y-2">
-            <Label htmlFor="room-password">Room Password (Optional)</Label>
-            <div className="relative">
-              <Input
-                id="room-password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Set a password for this room"
-                value={roomPassword}
-                onChange={(e) => setRoomPassword(e.target.value)}
-              />
+    <div className="space-y-4">
+      <div
+        className={cn(
+          "flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 border rounded-md bg-muted backdrop-blur-xl",
+          currentRoomId === room.id && "ring-2 ring-primary"
+        )}
+      >
+        <div className="flex items-center flex-1 min-w-0">
+          <div className="relative w-16 h-10 rounded-md overflow-hidden mr-3 flex-shrink-0 bg-muted">
+            {room.background_url && (
+              room.is_video_background ? (
+                <video src={room.background_url} className="w-full h-full object-cover" muted playsInline />
+              ) : (
+                <Image src={room.background_url} alt={room.name} fill className="object-cover" sizes="64px" priority={false} />
+              )
+            )}
+          </div>
+          <div className="flex-1 pr-2">
+            <p className="font-medium text-sm">{room.name}</p>
+            {room.description && <p className="text-xs text-muted-foreground line-clamp-1">{room.description}</p>}
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              {room.type === 'public' ? 'Public Room' : 'Private Room'}
+              {room.type === 'private' && room.password_hash && ' (Password Protected)'}
+            </p>
+            {room.closes_at && (
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                Closes in: {formatDistanceToNowStrict(new Date(room.closes_at))}
+              </p>
+            )}
+            <div className="flex items-center mt-1">
+              <p className="text-xs text-primary">Room ID: <span className="font-bold">{room.id.substring(0, 8)}...</span></p>
               <Button
-                type="button"
                 variant="ghost"
                 size="icon"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-                onClick={() => setShowPassword(!showPassword)}
-                title={showPassword ? "Hide password" : "Show password"}
+                className="h-5 w-5 ml-1 text-primary hover:bg-primary/10"
+                onClick={(e) => { e.stopPropagation(); handleCopyRoomId(room.id); }}
+                title="Copy Room ID"
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                <Copy className="h-3 w-3" />
+                <span className="sr-only">Copy Room ID</span>
               </Button>
             </div>
-            <Button onClick={handleSetPasswordClick} className="w-full" disabled={!roomPassword.trim()}>
-              <Lock className="mr-2 h-4 w-4" /> Set Password
-            </Button>
-            {room.password_hash && (
-              <Button onClick={handleRemovePasswordClick} variant="outline" className="w-full mt-2">
-                Remove Password
-              </Button>
-            )}
-            <p className="text-sm text-muted-foreground">
-              Set a password for this private room. Users can join using this password.
-            </p>
           </div>
-        )}
-
-        {/* Room Background Selection */}
-        <div className="space-y-2">
-          <Label>Room Background</Label>
-          <Tabs defaultValue="static-images" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 h-auto">
-              <TabsTrigger value="static-images">Static</TabsTrigger>
-              <TabsTrigger value="animated-backgrounds">Animated</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="static-images" className="mt-4">
-              <ScrollArea className="h-[200px] p-2">
-                <div className="grid grid-cols-2 gap-4">
-                  {staticImages.map((imageUrl) => {
-                    const isActive = !selectedIsVideoBackground && selectedBackgroundUrl === imageUrl;
-                    return (
-                      <div
-                        key={imageUrl}
-                        className={`relative w-full h-24 cursor-pointer rounded-md overflow-hidden group ${
-                          isActive
-                            ? "ring-2 ring-blue-500 ring-offset-2"
-                            : "hover:ring-2 hover:ring-gray-300"
-                        }`}
-                        onClick={() => handleBackgroundChange(imageUrl, false)}
-                      >
-                        <Image
-                          src={imageUrl}
-                          alt={`Background ${imageUrl.split("/").pop()}`}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          priority={false}
-                        />
-                        {isActive && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 text-white text-sm font-bold">
-                            Active
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </ScrollArea>
-            </TabsContent>
-
-            <TabsContent value="animated-backgrounds" className="mt-4">
-              <ScrollArea className="h-[200px] p-2">
-                <div className="grid grid-cols-2 gap-4">
-                  {animatedBackgrounds.map((bg) => (
-                    <AnimatedBackgroundPreviewItem
-                      key={bg.videoUrl}
-                      videoUrl={bg.videoUrl}
-                      isActive={selectedIsVideoBackground && selectedBackgroundUrl === bg.videoUrl}
-                      onClick={handleBackgroundChange}
-                      previewOffset={bg.previewOffset}
-                    />
-                  ))}
-                </div>
-              </ScrollArea>
-            </TabsContent>
-          </Tabs>
         </div>
-
-        {/* Send Invitation */}
-        <div className="space-y-2">
-          <Label htmlFor="send-invitation-user-email">Send Invitation (by Email)</Label>
-          <Input
-            id="send-invitation-user-email"
-            type="email"
-            placeholder="Enter Recipient Email Address"
-            value={receiverEmailInput}
-            onChange={(e) => setReceiverEmailInput(e.target.value)}
-          />
-          <Button onClick={handleSendInvitation} className="w-full">
-            <Send className="mr-2 h-4 w-4" /> Send Invitation
+        <div className="flex flex-wrap gap-1 sm:ml-auto">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleEnterRoom(room)}
+            title="Enter Room"
+            disabled={currentRoomId === room.id}
+          >
+            <LogIn className="h-4 w-4" />
+            <span className="sr-only">Enter Room</span>
+          </Button>
+          <Popover open={isSettingsPopoverOpen} onOpenChange={setIsSettingsPopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Room Settings"
+                onClick={(e) => e.stopPropagation()} // Prevent default behavior if any
+              >
+                <Settings className="h-4 w-4" />
+                <span className="sr-only">Room Settings</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20"
+              align="end"
+              onOpenAutoFocus={(e) => e.preventDefault()} // Prevent focus trap issues
+            >
+              <RoomSettingsContent room={room} />
+            </PopoverContent>
+          </Popover>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-red-500 hover:bg-red-100 hover:text-red-600"
+            onClick={() => handleDeleteRoom(room.id)}
+            title="Close Room"
+            disabled={!session}
+          >
+            <Trash2 className="h-4 w-4" />
+            <span className="sr-only">Close Room</span>
           </Button>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Send an invitation to another user by their email address. They will receive a notification to join.
-        </p>
-
-        {/* Kick Users */}
-        {roomMembers.filter(member => member.user_id !== session?.user?.id).length > 0 ? (
-          <div className="space-y-2">
-            <Label htmlFor="kick-user-select">Kick a User</Label>
-            <Select onValueChange={setSelectedUserToKick} value={selectedUserToKick || ""}>
-              <SelectTrigger id="kick-user-select">
-                <SelectValue placeholder="Select a user to kick" />
-              </SelectTrigger>
-              <SelectContent>
-                {roomMembers.filter(member => member.user_id !== session?.user?.id).map(member => (
-                  <SelectItem key={member.user_id} value={member.user_id}>
-                    {member.profiles?.[0]?.first_name || member.profiles?.[0]?.last_name || `User (${member.user_id.substring(0, 8)}...)`}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button onClick={handleKickSelectedUser} className="w-full" disabled={!selectedUserToKick}>
-              <UserMinus className="mr-2 h-4 w-4" /> Kick User
-            </Button>
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground text-center">No other members in this room to kick.</p>
-        )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
