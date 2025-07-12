@@ -95,26 +95,7 @@ export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps
             <LogIn className="h-4 w-4" />
             <span className="sr-only">Enter Room</span>
           </Button>
-          <Popover open={isSettingsPopoverOpen} onOpenChange={setIsSettingsPopoverOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Room Settings"
-                onClick={(e) => e.stopPropagation()} // Prevent default behavior if any
-              >
-                <Settings className="h-4 w-4" />
-                <span className="sr-only">Room Settings</span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent
-              className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20"
-              align="end"
-              onOpenAutoFocus={(e) => e.preventDefault()} // Prevent focus trap issues
-            >
-              <RoomSettingsContent room={room} />
-            </PopoverContent>
-          </Popover>
+          {/* Removed Popover and Settings button from here */}
           <Button
             variant="ghost"
             size="icon"

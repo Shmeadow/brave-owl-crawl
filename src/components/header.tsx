@@ -25,6 +25,8 @@ import { NotificationsDropdown } from "@/components/notifications/notifications-
 import { useWidget } from "@/components/widget/widget-provider";
 import { UserNameCapsule } from "./user-name-capsule"; // Import new component
 import { cn } from "@/lib/utils"; // Import cn for styling
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // Import Popover
+import { RoomSettingsContent } from "@/components/spaces-widget/RoomSettingsContent"; // Import RoomSettingsContent
 
 interface HeaderProps {
   onToggleChat: () => void;
@@ -88,6 +90,28 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
               {/* Removed the direct display of session.user.id here */}
               <span className="truncate">{currentRoomName}</span>
             </h1>
+            {isOwnerOfCurrentRoom && currentRoom && ( // Only show if owner and room exists
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Room Settings"
+                    className="flex-shrink-0" // Prevent shrinking
+                  >
+                    <Settings className="h-5 w-5" />
+                    <span className="sr-only">Room Settings</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20"
+                  align="start" // Align to start (left)
+                  onOpenAutoFocus={(e) => e.preventDefault()}
+                >
+                  <RoomSettingsContent room={currentRoom} />
+                </PopoverContent>
+              </Popover>
+            )}
           </div>
         </div>
       </div>
