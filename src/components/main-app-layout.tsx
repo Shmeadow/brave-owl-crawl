@@ -19,7 +19,6 @@ import dynamic from 'next/dynamic';
 import { useRooms } from "@/hooks/use-rooms";
 import { cn } from "@/lib/utils";
 
-// Dynamic imports
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
 const DynamicPomodoroWidget = dynamic(() => import("@/components/pomodoro-widget").then(mod => mod.PomodoroWidget), { ssr: false });
 const DynamicSimpleAudioPlayer = dynamic(() => import("@/components/simple-audio-player").then(mod => mod.SimpleAudioPlayer), { ssr: false });
@@ -31,13 +30,11 @@ const DynamicMobileControls = dynamic(() => import("@/components/mobile-controls
 const DynamicWelcomeBackModal = dynamic(() => import("@/components/welcome-back-modal").then(mod => mod.WelcomeBackModal), { ssr: false });
 const DynamicTimeAndProgressDisplay = dynamic(() => import("@/components/time-and-progress-display").then(mod => mod.TimeAndProgressDisplay), { ssr: false });
 
-// Constants
 const HEADER_HEIGHT = 64;
 const TOTAL_HEADER_AREA_HEIGHT = HEADER_HEIGHT;
 const SIDEBAR_WIDTH_DESKTOP = 60;
 const SIDEBAR_WIDTH_MOBILE = 250;
 
-// This component can now safely use the widget context
 function LayoutRenderer({ children }: { children: React.ReactNode }) {
   const { session, profile } = useSupabase();
   const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
@@ -70,13 +67,6 @@ function LayoutRenderer({ children }: { children: React.ReactNode }) {
 
   const firstIncompleteGoal = goals.find(g => !g.completed) || null;
 
-  const handleOpenSpacesWidgetToTab = useCallback((tab: string) => {
-    setSpacesWidgetDefaultTab(tab);
-    toggleWidget('spaces', 'Spaces');
-  }, [toggleWidget]);
-
-  // This is a bit of a hack, but we need to get the mainContentArea from the parent
-  // to pass to the PinnedWidgetsDock. We can't use a context because of the circular dependency.
   const { mainContentArea } = useWidget();
 
   return (
@@ -92,7 +82,6 @@ function LayoutRenderer({ children }: { children: React.ReactNode }) {
         unreadChatCount={unreadChatCount}
         isMobile={isMobile}
         onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-        onOpenSpacesWidgetToTab={handleOpenSpacesWidgetToTab}
       />
       <DynamicWelcomeBackModal
         isOpen={showWelcomeBack}
@@ -167,7 +156,6 @@ function IndependentPinnedWidgetsDock({ isCurrentRoomWritable, mainContentArea }
   );
 }
 
-// This is the new component that will be rendered inside AppWrapper
 export function MainAppLayout({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
   const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const { isAlwaysOpen, mounted } = useSidebarPreference();
