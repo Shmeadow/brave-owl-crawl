@@ -22,12 +22,14 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
       return { data: null, error: { message: "Not logged in" } }; // Return error object
     }
 
-    // Check if the user already owns a room
+    // Check if the user already owns an *active* room
+    const nowIso = new Date().toISOString();
     const { data: existingRooms, error: existingRoomsError } = await supabase
       .from('rooms')
       .select('id')
       .eq('creator_id', session.user.id)
-      .is('deleted_at', null); // Only count active rooms
+      .is('deleted_at', null) // Only count non-soft-deleted rooms
+      .gt('closes_at', nowIso); // Only count non-expired rooms
 
     if (existingRoomsError) {
       console.error("Error checking for existing rooms:", existingRoomsError);
@@ -37,7 +39,7 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
 
     if (existingRooms && existingRooms.length > 0) {
       toast.error("You can only create one room. Please manage your existing room.");
-      return { data: null, error: { message: "User already owns a room" } };
+      return { data: null, error: { message: "User already owns an active room" } };
     }
 
     const randomBg = getRandomBackground();

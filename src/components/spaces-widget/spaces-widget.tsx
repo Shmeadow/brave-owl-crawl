@@ -8,9 +8,10 @@ import { CreateRoomSection } from "@/components/spaces-widget/create-room-sectio
 import { MyRoomsSection } from "@/components/spaces-widget/my-rooms-section";
 import { JoinRoomSection } from "@/components/spaces-widget/join-room-section";
 import { PublicRoomsSection } from "@/components/spaces-widget/public-rooms-section";
-import { RoomOwnerControlsSection } from "@/components/spaces-widget/room-owner-controls-section"; // Import RoomOwnerControlsSection
+import { RoomOwnerControlsSection } from "@/components/spaces-widget/room-owner-controls-section";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 interface SpacesWidgetProps {
   isCurrentRoomWritable: boolean;
@@ -58,12 +59,16 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
             )}
 
             {(myJoinedRooms.length > 0) && (
-              <MyRoomsSection
-                myCreatedRooms={myCreatedRooms} // Still pass created rooms for consistency in MyRoomsSection
-                myJoinedRooms={myJoinedRooms}
-              />
+              <>
+                <Separator className="w-full" />
+                <MyRoomsSection
+                  myCreatedRooms={myCreatedRooms}
+                  myJoinedRooms={myJoinedRooms}
+                />
+              </>
             )}
 
+            <Separator className="w-full" />
             <JoinRoomSection />
           </>
         ) : (
@@ -73,7 +78,10 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
         )}
 
         {publicRooms.length > 0 && (
-          <PublicRoomsSection publicRooms={publicRooms} />
+          <>
+            <Separator className="w-full" />
+            <PublicRoomsSection publicRooms={publicRooms} />
+          </>
         )}
       </div>
     </div>
