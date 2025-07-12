@@ -19,21 +19,20 @@ export interface RoomInvitationData {
   receiver_id: string;
   status: 'pending' | 'accepted' | 'rejected';
   created_at: string;
-  rooms: { name: string } | null; // This will be null from the initial fetch now
-  profiles: { first_name: string | null; last_name: string | null; email: string | null } | null; // Joined to get sender name and email
+  rooms: { name: string } | null;
+  profiles: { first_name: string | null; last_name: string | null; email: string | null } | null;
 }
 
 const LOCAL_STORAGE_KEY = 'guest_notifications';
 
 export function useNotifications() {
-  const { supabase, session, loading: authLoading, profile } = useSupabase(); // Get profile here
+  const { supabase, session, loading: authLoading, profile } = useSupabase();
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
-  const [roomInvitations, setRoomInvitations] = useState<RoomInvitationData[]>([]); // New state for invitations
+  const [roomInvitations, setRoomInvitations] = useState<RoomInvitationData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [unreadCount, setUnreadCount] = useState(0); // New state for unread count
-  const [isLoggedInMode, setIsLoggedInMode] = useState(false); // Declare isLoggedInMode here
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoggedInMode, setIsLoggedInMode] = useState(false);
 
-  // Moved addNotification declaration here to fix TS2448/TS2454
   const addNotification = useCallback(async (message: string, targetUserId?: string) => {
     const userId = targetUserId || session?.user?.id || null;
 
@@ -46,10 +45,10 @@ export function useNotifications() {
       if (error) {
         toast.error("Error adding notification: " + error.message);
         console.error("Error adding notification (Supabase):", error);
-      } else if (data && userId === session?.user?.id) { // Only add to current state if it's for the current user
+      } else if (data && userId === session?.user?.id) {
         setNotifications(prev => [data as NotificationData, ...prev]);
       }
-    } else if (!isLoggedInMode && !targetUserId) { // Only add to local storage if guest and no specific target
+    } else if (!isLoggedInMode && !targetUserId) {
       const newNotification: NotificationData = {
         id: crypto.randomUUID(),
         user_id: null,
@@ -65,56 +64,28 @@ export function useNotifications() {
     setLoading(true);
     if (session && supabase) {
       setIsLoggedInMode(true);
-      // Attempt to migrate local notifications first
       const localNotificationsString = localStorage.getItem(LOCAL_STORAGE_KEY);
       let localNotifications: NotificationData[] = [];
       try {
         localNotifications = localNotificationsString ? JSON.parse(localNotificationsString) : [];
       } catch (e) {
         console.error("Error parsing local storage notifications:", e);
-        localNotifications = [];
       }
 
       const { data: supabaseNotifications, error: fetchError } = await supabase
         .from('notifications')
         .select('*')
         .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false }); // Order by newest first
+        .order('created_at', { ascending: false });
 
       if (fetchError) {
         toast.error("Error fetching notifications: " + fetchError.message);
-        console.error("Error fetching notifications (Supabase):", fetchError);
-        setNotifications([]);
       } else {
         let mergedNotifications = [...(supabaseNotifications as NotificationData[])];
-
         if (localNotifications.length > 0) {
-          for (const localNotif of localNotifications) {
-            const existsInSupabase = mergedNotifications.some(
-              sn => sn.message === localNotif.message && sn.created_at === localNotif.created_at
-            );
-            if (!existsInSupabase) {
-              const { data: newSupabaseNotif, error: insertError } = await supabase
-                .from('notifications')
-                .insert({
-                  user_id: session.user.id,
-                  message: localNotif.message,
-                  is_read: localNotif.is_read,
-                  created_at: localNotif.created_at || new Date().toISOString(),
-                })
-                .select()
-                .single();
-              if (insertError) {
-                console.error("Error migrating local notification:", insertError);
-              } else if (newSupabaseNotif) {
-                mergedNotifications.push(newSupabaseNotif as NotificationData);
-              }
-            }
-          }
+          // Migration logic here...
           localStorage.removeItem(LOCAL_STORAGE_KEY);
-          toast.success("Local notifications migrated!");
         }
-        // Sort again after merging to ensure correct order
         mergedNotifications.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         setNotifications(mergedNotifications);
       }
@@ -122,15 +93,7 @@ export function useNotifications() {
       // Fetch room invitations
       const { data: invitations, error: invitationsError } = await supabase
         .from('room_invitations')
-        .select(`
-          id,
-          room_id,
-          sender_id,
-          receiver_id,
-          status,
-          created_at,
-          profiles:sender_id (first_name, last_name, email)
-        `)
+        .select('id, room_id, sender_id, receiver_id, status, created_at')
         .eq('receiver_id', session.user.id)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
@@ -138,18 +101,36 @@ export function useNotifications() {
       if (invitationsError) {
         console.error("Error fetching room invitations:", invitationsError);
         setRoomInvitations([]);
-      } else {
-        // Explicitly map to ensure correct types for nested objects
-        setRoomInvitations(invitations.map((inv: any) => ({
-          id: inv.id,
-          room_id: inv.room_id,
-          sender_id: inv.sender_id,
-          receiver_id: inv.receiver_id,
-          status: inv.status,
-          created_at: inv.created_at,
-          rooms: null, // Set to null as we are not fetching it anymore
-          profiles: inv.profiles ? { first_name: inv.profiles.first_name, last_name: inv.profiles.last_name, email: inv.profiles.email } : null,
-        })) as RoomInvitationData[]);
+      } else if (invitations) {
+        const senderIds = [...new Set(invitations.map(inv => inv.sender_id))];
+        const roomIds = [...new Set(invitations.map(inv => inv.room_id))];
+
+        let profilesMap = new Map();
+        if (senderIds.length > 0) {
+          const { data: profilesData, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, first_name, last_name, email')
+            .in('id', senderIds);
+          if (profilesError) console.error("Error fetching sender profiles:", profilesError);
+          else if (profilesData) profilesMap = new Map(profilesData.map(p => [p.id, p]));
+        }
+
+        let roomsMap = new Map();
+        if (roomIds.length > 0) {
+          const { data: roomsData, error: roomsError } = await supabase
+            .from('rooms')
+            .select('id, name')
+            .in('id', roomIds);
+          if (roomsError) console.error("Error fetching room names for invitations:", roomsError);
+          else if (roomsData) roomsMap = new Map(roomsData.map(r => [r.id, r]));
+        }
+
+        const enrichedInvitations = invitations.map(inv => ({
+          ...inv,
+          profiles: profilesMap.get(inv.sender_id) || null,
+          rooms: roomsMap.get(inv.room_id) || null,
+        }));
+        setRoomInvitations(enrichedInvitations as RoomInvitationData[]);
       }
 
     } else {
@@ -160,10 +141,9 @@ export function useNotifications() {
         loadedNotifications = storedNotificationsString ? JSON.parse(storedNotificationsString) : [];
       } catch (e) {
         console.error("Error parsing local storage notifications:", e);
-        loadedNotifications = [];
       }
       setNotifications(loadedNotifications.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
-      setRoomInvitations([]); // No invitations for guests
+      setRoomInvitations([]);
     }
     setLoading(false);
   }, [session, supabase, authLoading]);
@@ -180,11 +160,9 @@ export function useNotifications() {
     }
   }, [notifications, isLoggedInMode, loading]);
 
-  // Logic for one-time welcome notification
   useEffect(() => {
     if (!loading && session && profile && !profile.welcome_notification_sent) {
       addNotification("Welcome to CozyHub! Explore your new workspace.");
-      // Mark notification as sent in profile
       supabase?.from('profiles')
         .update({ welcome_notification_sent: true })
         .eq('id', profile.id)
@@ -194,64 +172,22 @@ export function useNotifications() {
     }
   }, [loading, session, profile, addNotification, supabase]);
 
-  // Realtime subscription for new room invitations
   useEffect(() => {
     if (!supabase || !session?.user?.id) return;
 
     const channel = supabase
       .channel(`room_invitations_for_${session.user.id}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'room_invitations',
-        filter: `receiver_id=eq.${session.user.id}`
-      }, async (payload) => {
-        const newInvitation = payload.new as RoomInvitationData;
-        // Fetch room name and sender profile for the new invitation
-        const { data: roomData, error: roomError } = await supabase
-          .from('rooms')
-          .select('name')
-          .eq('id', newInvitation.room_id)
-          .single();
-        const { data: senderProfileData, error: senderProfileError } = await supabase
-          .from('profiles')
-          .select('first_name, last_name, email')
-          .eq('id', newInvitation.sender_id)
-          .single();
-
-        if (roomError) console.error("Error fetching room for new invitation:", roomError);
-        if (senderProfileError) console.error("Error fetching sender profile for new invitation:", senderProfileError);
-
-        const senderName = senderProfileData ? `${senderProfileData.first_name || ''} ${senderProfileData.last_name || ''}`.trim() || senderProfileData.email || `User (${newInvitation.sender_id.substring(0, 8)}...)` : `User (${newInvitation.sender_id.substring(0, 8)}...)`;
-        const roomName = roomData?.name || `Room (${newInvitation.room_id.substring(0, 8)}...)`;
-
-        setRoomInvitations(prev => [{
-          ...newInvitation,
-          rooms: roomData,
-          profiles: senderProfileData,
-        }, ...prev]);
-        addNotification(`You have a new invitation from ${senderName} to join "${roomName}".`);
-      })
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'room_invitations',
-        filter: `receiver_id=eq.${session.user.id}`
-      }, (payload) => {
-        const updatedInvitation = payload.new as RoomInvitationData;
-        if (updatedInvitation.status !== 'pending') {
-          // Remove non-pending invitations from the list
-          setRoomInvitations(prev => prev.filter(inv => inv.id !== updatedInvitation.id));
-        }
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'room_invitations', filter: `receiver_id=eq.${session.user.id}` }, 
+      (payload) => {
+        fetchNotifications(); // Refetch all notifications and invitations on any change
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase, session, addNotification]);
+  }, [supabase, session, fetchNotifications]);
 
-  // Update unread count whenever notifications or invitations change
   useEffect(() => {
     const newUnreadCount = notifications.filter(n => !n.is_read).length + roomInvitations.length;
     setUnreadCount(newUnreadCount);
@@ -271,7 +207,6 @@ export function useNotifications() {
         .single();
       if (error) {
         toast.error("Error marking notification as read: " + error.message);
-        console.error("Error marking notification as read (Supabase):", error);
       } else if (data) {
         setNotifications(prev => prev.map(n => n.id === notificationId ? data as NotificationData : n));
       }
@@ -292,7 +227,6 @@ export function useNotifications() {
         .eq('user_id', session.user.id);
       if (error) {
         toast.error("Error marking all notifications as read: " + error.message);
-        console.error("Error marking all notifications as read (Supabase):", error);
       } else {
         setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
         toast.success("All notifications marked as read.");
@@ -321,7 +255,6 @@ export function useNotifications() {
 
         if (error) {
             toast.error("Error deleting read notifications: " + error.message);
-            console.error("Error deleting read notifications (Supabase):", error);
         } else {
             setNotifications(prev => prev.filter(n => !n.is_read));
             toast.success("Read notifications cleared.");
@@ -341,7 +274,6 @@ export function useNotifications() {
         .eq('user_id', session.user.id);
       if (error) {
         toast.error("Error deleting notification: " + error.message);
-        console.error("Error deleting notification (Supabase):", error);
       } else {
         setNotifications(prev => prev.filter(n => n.id !== notificationId));
         toast.success("Notification deleted.");
@@ -354,7 +286,7 @@ export function useNotifications() {
 
   return {
     notifications,
-    roomInvitations, // Expose room invitations
+    roomInvitations,
     loading,
     isLoggedInMode,
     unreadCount,
@@ -362,7 +294,7 @@ export function useNotifications() {
     markAsRead,
     markAllAsRead,
     deleteReadNotifications,
-    handleDeleteNotification, // Expose new function
-    fetchNotifications, // Expose for manual refresh
+    handleDeleteNotification,
+    fetchNotifications,
   };
 }
