@@ -42,6 +42,16 @@ export function useRoomJoinRequests({ rooms }: UseRoomJoinRequestsProps) {
     }
 
     setLoading(true);
+    
+    const ownedRoomIds = rooms.filter(r => r.creator_id === session.user.id).map(r => r.id);
+
+    // If the user doesn't own any rooms, there are no requests to fetch for them.
+    if (ownedRoomIds.length === 0) {
+      setPendingRequests([]);
+      setLoading(false);
+      return;
+    }
+
     // Fetch requests where the current user is the creator of the room
     const { data, error } = await supabase
       .from('room_join_requests')
@@ -56,7 +66,7 @@ export function useRoomJoinRequests({ rooms }: UseRoomJoinRequestsProps) {
         rooms (name, creator_id)
       `)
       .eq('status', 'pending')
-      .in('room_id', rooms.filter(r => r.creator_id === session.user.id).map(r => r.id))
+      .in('room_id', ownedRoomIds)
       .order('created_at', { ascending: true });
 
     if (error) {
