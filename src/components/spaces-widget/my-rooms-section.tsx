@@ -20,7 +20,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { RoomOwnerControlsSection } from "./room-owner-controls-section";
 
 interface MyRoomsSectionProps {
-  myCreatedRooms: RoomData[];
+  myCreatedRooms: RoomData[]; // Now explicitly "other" created rooms
   myJoinedRooms: RoomData[];
 }
 
@@ -78,7 +78,7 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
     <>
       <Card className="w-full bg-card backdrop-blur-xl border-white/20 p-4">
         <CardHeader className="pb-4">
-          <CardTitle className="text-xl">My Rooms & Joined Rooms</CardTitle>
+          <CardTitle className="text-xl">Other Rooms You Manage & Joined Rooms</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <ScrollArea className="max-h-[300px] pr-4">

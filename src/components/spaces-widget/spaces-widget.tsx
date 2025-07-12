@@ -18,16 +18,22 @@ interface SpacesWidgetProps {
 }
 
 export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
-  const { session, loading: authLoading } = useSupabase();
+  const { session, loading: authLoading, profile } = useSupabase();
   const { rooms, loading: roomsLoading } = useRooms();
   const { currentRoomId } = useCurrentRoom();
 
-  const myCreatedRooms = rooms.filter(room => room.creator_id === session?.user?.id && !room.deleted_at);
+  // Find the user's primary owned room (personal room)
+  const usersPersonalRoom = rooms.find(room => room.id === profile?.personal_room_id && room.creator_id === session?.user?.id && !room.deleted_at);
+  
+  // Filter other created rooms (not the personal room)
+  const otherCreatedRooms = rooms.filter(room => 
+    room.creator_id === session?.user?.id && 
+    !room.deleted_at && 
+    room.id !== usersPersonalRoom?.id
+  );
+
   const myJoinedRooms = rooms.filter(room => room.is_member && room.creator_id !== session?.user?.id && !room.deleted_at);
   const publicRooms = rooms.filter(room => room.type === 'public' && !room.is_member && room.creator_id !== session?.user?.id && !room.deleted_at);
-
-  const userOwnsRoom = myCreatedRooms.length > 0;
-  const usersOwnedRoom = myCreatedRooms.length > 0 ? myCreatedRooms[0] : null;
 
   if (authLoading || roomsLoading) {
     return (
@@ -45,24 +51,24 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
 
         {session ? (
           <>
-            {userOwnsRoom && usersOwnedRoom ? (
+            {usersPersonalRoom ? (
               <Card className="w-full bg-card backdrop-blur-xl border-white/20 p-4">
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-xl">Your Room: {usersOwnedRoom.name}</CardTitle>
+                  <CardTitle className="text-xl">Your Personal Room: {usersPersonalRoom.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <RoomOwnerControlsSection room={usersOwnedRoom} />
+                  <RoomOwnerControlsSection room={usersPersonalRoom} />
                 </CardContent>
               </Card>
             ) : (
-              <CreateRoomSection userOwnsRoom={userOwnsRoom} />
+              <CreateRoomSection userOwnsRoom={false} />
             )}
 
-            {(myJoinedRooms.length > 0) && (
+            {(otherCreatedRooms.length > 0 || myJoinedRooms.length > 0) && (
               <>
                 <Separator className="w-full" />
                 <MyRoomsSection
-                  myCreatedRooms={myCreatedRooms}
+                  myCreatedRooms={otherCreatedRooms}
                   myJoinedRooms={myJoinedRooms}
                 />
               </>
