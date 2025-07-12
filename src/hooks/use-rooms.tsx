@@ -3,6 +3,7 @@
 import { useRoomFetching } from "./rooms/use-room-fetching";
 import { useRoomManagement } from "./rooms/use-room-management";
 import { useRoomMembership } from "./rooms/use-room-membership";
+import { useRoomJoinRequests } from "./rooms/use-room-join-requests"; // New import
 import { RoomData, RoomMember } from "./rooms/types"; // Re-export types
 
 export type { RoomData, RoomMember }; // Re-export for external use
@@ -24,6 +25,12 @@ export function useRooms() {
     handleLeaveRoom,
     handleKickUser,
   } = useRoomMembership({ rooms, fetchRooms });
+  const {
+    pendingRequests, // New: Expose pending requests
+    acceptRequest,   // New: Expose accept function
+    declineRequest,  // New: Expose decline function
+    dismissRequest,  // New: Expose dismiss function
+  } = useRoomJoinRequests({ rooms }); // Pass rooms to the new hook
 
   return {
     rooms,
@@ -40,5 +47,9 @@ export function useRooms() {
     handleLeaveRoom,
     handleKickUser,
     fetchRooms, // Expose fetchRooms for manual refresh if needed
+    pendingRequests, // New: Expose pending requests
+    acceptRequest,   // New: Expose accept function
+    declineRequest,  // New: Expose decline function
+    dismissRequest,  // New: Expose dismiss function
   };
 }

@@ -24,6 +24,7 @@ import { useWidget } from "@/components/widget/widget-provider";
 import { checkAndClearClientData } from "@/lib/client-version";
 import dynamic from 'next/dynamic'; // Import dynamic
 import { useRooms } from "@/hooks/use-rooms"; // Import useRooms
+import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification"; // New import
 
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
@@ -51,7 +52,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const { isAlwaysOpen, mounted } = useSidebarPreference();
   const { currentRoomId, currentRoomName, isCurrentRoomWritable } = useCurrentRoom(); // Get currentRoomName
-  const { rooms } = useRooms(); // Get all rooms
+  const { rooms, pendingRequests, dismissRequest } = useRooms(); // Get rooms data and pending requests
   const { activeEffect } = useEffects();
   const isMobile = useIsMobile();
   const { addNotification } = useNotifications();
@@ -180,6 +181,14 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             
             {/* Time and Progress Display - now always visible on main app pages */}
             <DynamicTimeAndProgressDisplay isMobile={isMobile} />
+
+            {/* Room Join Request Notification */}
+            {pendingRequests.length > 0 && (
+              <RoomJoinRequestNotification
+                request={pendingRequests[0]} // Show only the first pending request
+                onDismiss={dismissRequest}
+              />
+            )}
 
             {/* Main content area, where widgets and page content live */}
             <div

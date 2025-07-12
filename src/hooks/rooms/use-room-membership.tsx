@@ -39,9 +39,45 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
     }
 
     // If room is private, it cannot be joined by ID directly (needs invite or password)
+    // Or, if no password, it will create a join request
     if (room.type === 'private') {
-      toast.error("This is a private room. You need an invitation or a password to join.");
-      return;
+      if (room.password_hash) {
+        toast.error("This is a private room with a password. Please use 'Join by Password' tab.");
+        return;
+      } else {
+        // Private room with no password, create a join request
+        const { data: existingRequest, error: checkError } = await supabase
+          .from('room_join_requests')
+          .select('id')
+          .eq('room_id', roomId)
+          .eq('requester_id', session.user.id)
+          .in('status', ['pending', 'accepted']); // Check for pending or already accepted requests
+
+        if (checkError) {
+          console.error("Error checking existing join request:", checkError);
+          toast.error("Failed to check for existing join request.");
+          return;
+        }
+
+        if (existingRequest && existingRequest.length > 0) {
+          toast.info("You already have a pending join request for this room.");
+          return;
+        }
+
+        const { error: requestError } = await supabase
+          .from('room_join_requests')
+          .insert({ room_id: roomId, requester_id: session.user.id, status: 'pending' });
+
+        if (requestError) {
+          console.error("Error creating join request:", requestError);
+          toast.error("Failed to send join request: " + requestError.message);
+          return;
+        }
+
+        toast.success(`Request to join "${room.name}" sent to room owner.`);
+        addNotification(`New join request for "${room.name}" from ${session.user.email}.`, room.creator_id);
+        return;
+      }
     }
 
     // For public rooms without password, allow direct join
@@ -91,8 +127,40 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
     }
 
     if (!room.password_hash) {
-      toast.error("This private room does not have a password set. You need an invitation to join.");
-      return;
+      // If it's a private room but has no password, it requires a join request
+      toast.error("This private room does not have a password set. A join request will be sent to the owner.");
+      // Instead of returning, create a join request
+      const { data: existingRequest, error: checkError } = await supabase
+          .from('room_join_requests')
+          .select('id')
+          .eq('room_id', roomId)
+          .eq('requester_id', session.user.id)
+          .in('status', ['pending', 'accepted']);
+
+        if (checkError) {
+          console.error("Error checking existing join request:", checkError);
+          toast.error("Failed to check for existing join request.");
+          return;
+        }
+
+        if (existingRequest && existingRequest.length > 0) {
+          toast.info("You already have a pending join request for this room.");
+          return;
+        }
+
+        const { error: requestError } = await supabase
+          .from('room_join_requests')
+          .insert({ room_id: roomId, requester_id: session.user.id, status: 'pending' });
+
+        if (requestError) {
+          console.error("Error creating join request:", requestError);
+          toast.error("Failed to send join request: " + requestError.message);
+          return;
+        }
+
+        toast.success(`Request to join "${room.name}" sent to room owner.`);
+        addNotification(`New join request for "${room.name}" from ${session.user.email}.`, room.creator_id);
+        return;
     }
 
     // Use the check_password RPC function
