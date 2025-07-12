@@ -61,6 +61,9 @@ export default {
   				ring: 'hsl(var(--sidebar-ring))'
   			},
             gold: 'hsl(var(--gold))',
+            'raindrop-blue': 'rgba(200, 220, 255, 0.5)',
+            'rain-blue': 'rgba(173, 216, 230, 0.6)',
+            'snowflake-white': 'rgba(255, 255, 255, 0.8)',
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
@@ -83,12 +86,33 @@ export default {
   				to: {
   					height: '0'
   				}
-  			}
+  			},
+            'raindrop-cycle': {
+              '0%': { transform: 'scale(0)', opacity: '0' },
+              '10%': { transform: 'scale(1)', opacity: '1' },
+              '90%': { opacity: '1' },
+              '100%': { opacity: '0', transform: 'scale(0)' },
+            },
+            'fall': {
+              '0%': { transform: 'translateY(-100vh)' },
+              '100%': { transform: 'translateY(100vh)' },
+            },
+            'sway': {
+              '0%, 100%': { transform: 'translateX(0)' },
+              '50%': { transform: 'translateX(var(--tw-sway-amount-px))' },
+            },
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
-  		}
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+            'raindrop-cycle': 'raindrop-cycle var(--cycle-duration) linear infinite',
+            'fall': 'fall linear infinite',
+            'sway': 'sway ease-in-out infinite alternate',
+  		},
+        boxShadow: {
+          'raindrop-inset': 'inset 0 0 5px rgba(255,255,255,0.5), 0 0 8px rgba(0,0,0,0.2)',
+          'snowflake-glow': '0 0 5px 1px rgba(255, 255, 255, 0.5)',
+        },
   	}
   },
   plugins: [require("tailwindcss-animate")],

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef } from 'react';
-import styles from './snow.module.css';
 
 export function SnowEffect() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -15,16 +14,15 @@ export function SnowEffect() {
 
     for (let i = 0; i < numSnowflakes; i++) {
       const snowflake = document.createElement('div');
-      snowflake.className = styles.snowflake;
+      snowflake.className = 'absolute rounded-full shadow-snowflake-glow animate-fall animate-sway bg-snowflake-white';
 
       snowflake.style.left = `${Math.random() * 100}%`;
 
-      // Adjusted sway amount for a more gentle feel (10px to 40px)
       const swayAmount = Math.random() * 30 + 10;
-      snowflake.style.setProperty('--sway-amount-px', `${swayAmount}px`);
+      snowflake.style.setProperty('--tw-sway-amount-px', `${swayAmount}px`); // Use Tailwind's custom property syntax
 
-      const fallDuration = 20 + Math.random() * 20; // 20s to 40s
-      const swayDuration = 10 + Math.random() * 10; // 10s to 20s
+      const fallDuration = 20 + Math.random() * 20;
+      const swayDuration = 10 + Math.random() * 10;
 
       snowflake.style.animationDuration = `${fallDuration}s, ${swayDuration}s`;
       snowflake.style.animationDelay = `${Math.random() * 20}s, ${Math.random() * 20}s`;
@@ -40,12 +38,11 @@ export function SnowEffect() {
     }
 
     return () => {
-      // Fixed: Changed 'drops' to 'snowflakes' and added type annotation for 'drop'
       snowflakes.forEach((drop: HTMLDivElement) => drop.remove());
     };
   }, []);
 
   return (
-    <div ref={containerRef} className={styles.snowContainer}></div>
+    <div ref={containerRef} className="fixed inset-0 pointer-events-none z-[899] overflow-hidden bg-transparent"></div>
   );
 }
