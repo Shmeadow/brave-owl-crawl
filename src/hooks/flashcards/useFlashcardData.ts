@@ -10,7 +10,6 @@ const LOCAL_STORAGE_KEY = 'guest_flashcards';
 
 export function useFlashcardData(currentRoomId: string | null) {
   const { supabase, session, loading: authLoading } = useSupabase();
-  const { isCurrentRoomWritable } = useCurrentRoom();
   const [cards, setCards] = useState<CardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
@@ -23,12 +22,12 @@ export function useFlashcardData(currentRoomId: string | null) {
         setIsLoggedInMode(true);
         let query = supabase.from('flashcards').select('*');
 
-        if (isCurrentRoomWritable) {
-          // In personal space or own room, fetch all of the user's flashcards
-          query = query.eq('user_id', session.user.id);
-        } else {
-          // In someone else's room, fetch only flashcards for that room
+        if (currentRoomId) {
+          // Fetch flashcards for the specific room.
           query = query.eq('room_id', currentRoomId);
+        } else {
+          // Fetch flashcards for the user's personal space.
+          query = query.eq('user_id', session.user.id).is('room_id', null);
         }
 
         const { data: supabaseCards, error: fetchError } = await query.order('created_at', { ascending: true });
@@ -75,7 +74,7 @@ export function useFlashcardData(currentRoomId: string | null) {
     } finally {
       setLoading(false);
     }
-  }, [session, supabase, currentRoomId, isCurrentRoomWritable]);
+  }, [session, supabase, currentRoomId]);
 
   useEffect(() => {
     if (!authLoading) {

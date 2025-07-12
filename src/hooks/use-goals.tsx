@@ -24,7 +24,7 @@ const LOCAL_STORAGE_NOTIFICATION_KEY_PREFIX = 'goal_notification_';
 
 export function useGoals() {
   const { supabase, session, loading: authLoading } = useSupabase();
-  const { currentRoomId, isCurrentRoomWritable } = useCurrentRoom();
+  const { currentRoomId } = useCurrentRoom();
   const { addNotification } = useNotifications();
   const [goals, setGoals] = useState<GoalData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,12 +38,10 @@ export function useGoals() {
         setIsLoggedInMode(true);
         let query = supabase.from('goals').select('*');
 
-        if (isCurrentRoomWritable) {
-          // In personal space or own room, fetch all of the user's goals
-          query = query.eq('user_id', session.user.id);
-        } else {
-          // In someone else's room, fetch only goals for that room
+        if (currentRoomId) {
           query = query.eq('room_id', currentRoomId);
+        } else {
+          query = query.eq('user_id', session.user.id).is('room_id', null);
         }
 
         const { data, error } = await query.order('created_at', { ascending: true });
@@ -60,7 +58,7 @@ export function useGoals() {
     } finally {
       setLoading(false);
     }
-  }, [session, supabase, currentRoomId, isCurrentRoomWritable]);
+  }, [session, supabase, currentRoomId]);
 
   useEffect(() => {
     if (!authLoading) {
