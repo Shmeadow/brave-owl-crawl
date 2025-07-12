@@ -124,7 +124,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
       }
       subscription?.unsubscribe();
     };
-  }, [supabaseClient, internalFetchProfile, loading]); // Added loading to dependency array
+  }, [supabaseClient, internalFetchProfile]);
 
   const value = useMemo(() => ({
     supabase: supabaseClient,
