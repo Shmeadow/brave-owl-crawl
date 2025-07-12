@@ -62,90 +62,96 @@ export function useNotifications() {
 
   const fetchNotifications = useCallback(async () => {
     setLoading(true);
-    if (session && supabase) {
-      setIsLoggedInMode(true);
-      const localNotificationsString = localStorage.getItem(LOCAL_STORAGE_KEY);
-      let localNotifications: NotificationData[] = [];
-      try {
-        localNotifications = localNotificationsString ? JSON.parse(localNotificationsString) : [];
-      } catch (e) {
-        console.error("Error parsing local storage notifications:", e);
-      }
+    try {
+      if (session && supabase) {
+        setIsLoggedInMode(true);
+        const localNotificationsString = localStorage.getItem(LOCAL_STORAGE_KEY);
+        let localNotifications: NotificationData[] = [];
+        try {
+          localNotifications = localNotificationsString ? JSON.parse(localNotificationsString) : [];
+        } catch (e) {
+          console.error("Error parsing local storage notifications:", e);
+        }
 
-      const { data: supabaseNotifications, error: fetchError } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false });
+        const { data: supabaseNotifications, error: fetchError } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false });
 
-      if (fetchError) {
-        toast.error("Error fetching notifications: " + fetchError.message);
+        if (fetchError) {
+          toast.error("Error fetching notifications: " + fetchError.message);
+        } else {
+          let mergedNotifications = [...(supabaseNotifications as NotificationData[])];
+          if (localNotifications.length > 0) {
+            // Migration logic here...
+            localStorage.removeItem(LOCAL_STORAGE_KEY);
+          }
+          mergedNotifications.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          setNotifications(mergedNotifications);
+        }
+
+        // Fetch room invitations
+        const { data: invitations, error: invitationsError } = await supabase
+          .from('room_invitations')
+          .select('id, room_id, sender_id, receiver_id, status, created_at')
+          .eq('receiver_id', session.user.id)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false });
+
+        if (invitationsError) {
+          console.error("Error fetching room invitations:", invitationsError);
+          setRoomInvitations([]);
+        } else if (invitations) {
+          const senderIds = [...new Set(invitations.map(inv => inv.sender_id))];
+          const roomIds = [...new Set(invitations.map(inv => inv.room_id))];
+
+          let profilesMap = new Map();
+          if (senderIds.length > 0) {
+            const { data: profilesData, error: profilesError } = await supabase
+              .from('profiles')
+              .select('id, first_name, last_name, email')
+              .in('id', senderIds);
+            if (profilesError) console.error("Error fetching sender profiles:", profilesError);
+            else if (profilesData) profilesMap = new Map(profilesData.map(p => [p.id, p]));
+          }
+
+          let roomsMap = new Map();
+          if (roomIds.length > 0) {
+            const { data: roomsData, error: roomsError } = await supabase
+              .from('rooms')
+              .select('id, name')
+              .in('id', roomIds);
+            if (roomsError) console.error("Error fetching room names for invitations:", roomsError);
+            else if (roomsData) roomsMap = new Map(roomsData.map(r => [r.id, r]));
+          }
+
+          const enrichedInvitations = invitations.map(inv => ({
+            ...inv,
+            profiles: profilesMap.get(inv.sender_id) || null,
+            rooms: roomsMap.get(inv.room_id) || null,
+          }));
+          setRoomInvitations(enrichedInvitations as RoomInvitationData[]);
+        }
+
       } else {
-        let mergedNotifications = [...(supabaseNotifications as NotificationData[])];
-        if (localNotifications.length > 0) {
-          // Migration logic here...
-          localStorage.removeItem(LOCAL_STORAGE_KEY);
+        setIsLoggedInMode(false);
+        const storedNotificationsString = localStorage.getItem(LOCAL_STORAGE_KEY);
+        let loadedNotifications: NotificationData[] = [];
+        try {
+          loadedNotifications = storedNotificationsString ? JSON.parse(storedNotificationsString) : [];
+        } catch (e) {
+          console.error("Error parsing local storage notifications:", e);
         }
-        mergedNotifications.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-        setNotifications(mergedNotifications);
-      }
-
-      // Fetch room invitations
-      const { data: invitations, error: invitationsError } = await supabase
-        .from('room_invitations')
-        .select('id, room_id, sender_id, receiver_id, status, created_at')
-        .eq('receiver_id', session.user.id)
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
-
-      if (invitationsError) {
-        console.error("Error fetching room invitations:", invitationsError);
+        setNotifications(loadedNotifications.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
         setRoomInvitations([]);
-      } else if (invitations) {
-        const senderIds = [...new Set(invitations.map(inv => inv.sender_id))];
-        const roomIds = [...new Set(invitations.map(inv => inv.room_id))];
-
-        let profilesMap = new Map();
-        if (senderIds.length > 0) {
-          const { data: profilesData, error: profilesError } = await supabase
-            .from('profiles')
-            .select('id, first_name, last_name, email')
-            .in('id', senderIds);
-          if (profilesError) console.error("Error fetching sender profiles:", profilesError);
-          else if (profilesData) profilesMap = new Map(profilesData.map(p => [p.id, p]));
-        }
-
-        let roomsMap = new Map();
-        if (roomIds.length > 0) {
-          const { data: roomsData, error: roomsError } = await supabase
-            .from('rooms')
-            .select('id, name')
-            .in('id', roomIds);
-          if (roomsError) console.error("Error fetching room names for invitations:", roomsError);
-          else if (roomsData) roomsMap = new Map(roomsData.map(r => [r.id, r]));
-        }
-
-        const enrichedInvitations = invitations.map(inv => ({
-          ...inv,
-          profiles: profilesMap.get(inv.sender_id) || null,
-          rooms: roomsMap.get(inv.room_id) || null,
-        }));
-        setRoomInvitations(enrichedInvitations as RoomInvitationData[]);
       }
-
-    } else {
-      setIsLoggedInMode(false);
-      const storedNotificationsString = localStorage.getItem(LOCAL_STORAGE_KEY);
-      let loadedNotifications: NotificationData[] = [];
-      try {
-        loadedNotifications = storedNotificationsString ? JSON.parse(storedNotificationsString) : [];
-      } catch (e) {
-        console.error("Error parsing local storage notifications:", e);
-      }
-      setNotifications(loadedNotifications.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
-      setRoomInvitations([]);
+    } catch (error: any) {
+      console.error("A top-level error occurred while fetching notifications:", error);
+      toast.error("An unexpected error occurred while fetching notification data.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [session, supabase, authLoading]);
 
   useEffect(() => {
