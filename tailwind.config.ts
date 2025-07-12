@@ -115,5 +115,14 @@ export default {
         },
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("daisyui")],
+  daisyui: {
+    themes: ["light", "dark", "cupcake", "dracula"], // Include some default DaisyUI themes
+    darkTheme: "dracula", // Set default dark theme
+    base: true, // Apply DaisyUI base styles
+    styled: true, // Apply DaisyUI component styles
+    utils: true, // Add DaisyUI utility classes
+    prefix: "", // No prefix for DaisyUI classes
+    logs: false, // Disable DaisyUI logs
+  },
 } satisfies Config;
