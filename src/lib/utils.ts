@@ -1,4 +1,9 @@
-import { getYouTubeContentIdAndType } from "./utils"; // Self-referencing import, will be removed
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
 
 export function getYouTubeContentIdAndType(url: string): { id: string | null, type: 'video' | 'playlist' | null } {
   // Regex for YouTube video IDs
