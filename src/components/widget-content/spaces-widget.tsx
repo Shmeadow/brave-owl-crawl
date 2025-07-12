@@ -14,9 +14,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface SpacesWidgetProps {
   isCurrentRoomWritable: boolean;
+  defaultTab?: string; // New prop
 }
 
-export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
+export function SpacesWidget({ isCurrentRoomWritable, defaultTab = "my-room" }: SpacesWidgetProps) {
   const { session, loading: authLoading } = useSupabase();
   const { rooms, loading: roomsLoading, handleLeaveRoom } = useRooms();
   const { setCurrentRoom } = useCurrentRoom();
@@ -44,7 +45,7 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
   return (
     <div className="h-full w-full overflow-hidden flex flex-col p-4">
       <h1 className="text-3xl font-bold text-foreground text-center mb-4">Your Spaces</h1>
-      <Tabs defaultValue="my-room" className="w-full flex flex-col flex-1">
+      <Tabs defaultValue={defaultTab} className="w-full flex flex-col flex-1">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="my-room">My Room</TabsTrigger>
           <TabsTrigger value="joined">Joined</TabsTrigger>
@@ -79,7 +80,8 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
                 )
               ) : (
                 <p className="text-sm text-muted-foreground text-center p-4">Log in to see rooms you've joined.</p>
-              )}
+              )
+              }
             </TabsContent>
 
             <TabsContent value="discover">

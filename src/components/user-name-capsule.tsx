@@ -17,7 +17,7 @@ export function UserNameCapsule() {
     );
   }
 
-  const displayCode = profile?.display_code;
+  const displayCode = profile?.id?.substring(0, 8).toUpperCase();
 
   const handleCopyDisplayCode = () => {
     if (displayCode) {
