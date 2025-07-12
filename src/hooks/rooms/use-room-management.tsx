@@ -10,9 +10,10 @@ import { useNotifications } from "@/hooks/use-notifications"; // Import useNotif
 interface UseRoomManagementProps {
   setRooms: React.Dispatch<React.SetStateAction<RoomData[]>>;
   fetchRooms: () => Promise<void>;
+  refreshProfile: () => Promise<void>; // Add refreshProfile prop
 }
 
-export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementProps) {
+export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseRoomManagementProps) {
   const { supabase, session } = useSupabase();
   const { addNotification } = useNotifications(); // Use the notifications hook
 
@@ -77,6 +78,20 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
       console.error("Error creating room:", error);
       return { data: null, error }; // Return error object
     } else if (data) {
+      // Update user's profile with the new personal_room_id
+      const { error: profileUpdateError } = await supabase
+        .from('profiles')
+        .update({ personal_room_id: data.id })
+        .eq('id', session.user.id);
+
+      if (profileUpdateError) {
+        console.error("Error updating user's personal_room_id:", profileUpdateError);
+        toast.error("Failed to link room to your profile.");
+      } else {
+        // Refresh the profile state in useSupabase context
+        await refreshProfile();
+      }
+
       toast.success(`Room "${data.name}" created successfully!`);
       // The fetchRooms() call will update the state in useRoomFetching,
       // so we don't need to manually update `setRooms` here.
@@ -85,7 +100,7 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
       return { data: data as RoomData, error: null }; // Return data object
     }
     return { data: null, error: { message: "Unknown error creating room" } }; // Fallback
-  }, [session, supabase, fetchRooms, addNotification]);
+  }, [session, supabase, fetchRooms, addNotification, refreshProfile]);
 
   const handleUpdateRoomType = useCallback(async (roomId: string, newType: 'public' | 'private') => {
     if (!session?.user?.id || !supabase) {
