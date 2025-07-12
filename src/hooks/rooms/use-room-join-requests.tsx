@@ -70,7 +70,7 @@ export function useRoomJoinRequests({ rooms }: UseRoomJoinRequestsProps) {
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error("Error fetching room join requests:", error);
+      console.error("Error fetching room join requests:", error.message);
       toast.error("Failed to load join requests.");
       setPendingRequests([]);
     } else {
@@ -112,7 +112,7 @@ export function useRoomJoinRequests({ rooms }: UseRoomJoinRequestsProps) {
   const updateRequestStatus = useCallback(async (requestId: string, newStatus: 'accepted' | 'declined' | 'dismissed') => {
     if (!supabase || !session?.user?.id) {
       toast.error("You must be logged in to manage join requests.");
-      return;
+      return false;
     }
 
     const { error } = await supabase
