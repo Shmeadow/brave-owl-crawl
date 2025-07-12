@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from 'react';
+import styles from './raindrops.module.css';
 
 export function RaindropsEffect() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -9,23 +10,27 @@ export function RaindropsEffect() {
     const container = containerRef.current;
     if (!container) return;
 
-    const numDrops = 150;
+    const numDrops = 150; // Number of raindrops
     const drops: HTMLDivElement[] = [];
 
     for (let i = 0; i < numDrops; i++) {
       const drop = document.createElement('div');
-      drop.className = 'absolute rounded-full shadow-raindrop-inset animate-raindrop-cycle bg-raindrop-blue'; // Removed blur-[0.5px]
+      drop.className = styles.raindrop;
       
+      // Random initial horizontal and vertical position for static drops
       drop.style.left = `${Math.random() * 100}%`;
       drop.style.top = `${Math.random() * 100}%`;
       
-      const size = `${8 + Math.random() * 17}px`; // Slightly larger
+      // Random size for drops
+      const size = `${5 + Math.random() * 15}px`; // 5px to 20px
       drop.style.width = size;
       drop.style.height = size;
 
-      const cycleDuration = 7 + Math.random() * 3; // Slower cycle
+      // Total cycle duration for each drop (appear, stay, fade out)
+      const cycleDuration = 5 + Math.random() * 5; // 5s to 10s
       drop.style.setProperty('--cycle-duration', `${cycleDuration}s`);
 
+      // Random animation delay for staggered appearance
       drop.style.animationDelay = `${Math.random() * cycleDuration}s`;
       
       container.appendChild(drop);
@@ -38,6 +43,6 @@ export function RaindropsEffect() {
   }, []);
 
   return (
-    <div ref={containerRef} className="fixed inset-0 pointer-events-none z-[899] overflow-hidden bg-transparent"></div>
+    <div ref={containerRef} className={styles.raindropsContainer}></div>
   );
 }

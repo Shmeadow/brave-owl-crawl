@@ -1,0 +1,28 @@
+.rainContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 899; /* Changed from 1003 to 899 */
+  overflow: hidden;
+  background: transparent;
+}
+
+.drop {
+  position: absolute;
+  background-color: rgba(173, 216, 230, 0.6); /* Light blue with more transparency */
+  border-radius: 50%;
+  animation: fall linear infinite;
+  transform: translateY(-100%);
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(-100vh);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}

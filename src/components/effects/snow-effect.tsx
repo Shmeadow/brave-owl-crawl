@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from 'react';
+import styles from './snow.module.css';
 
 export function SnowEffect() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -14,20 +15,21 @@ export function SnowEffect() {
 
     for (let i = 0; i < numSnowflakes; i++) {
       const snowflake = document.createElement('div');
-      snowflake.className = 'absolute rounded-full shadow-snowflake-glow animate-fall animate-sway bg-snowflake-white';
+      snowflake.className = styles.snowflake;
 
       snowflake.style.left = `${Math.random() * 100}%`;
 
-      const swayAmount = Math.random() * 40 + 10; // Wider sway
-      snowflake.style.setProperty('--tw-sway-amount-px', `${swayAmount}px`);
+      // Adjusted sway amount for a more gentle feel (10px to 40px)
+      const swayAmount = Math.random() * 30 + 10;
+      snowflake.style.setProperty('--sway-amount-px', `${swayAmount}px`);
 
-      const fallDuration = 25 + Math.random() * 20; // Slower fall
-      const swayDuration = 15 + Math.random() * 10; // Slower sway
+      const fallDuration = 20 + Math.random() * 20; // 20s to 40s
+      const swayDuration = 10 + Math.random() * 10; // 10s to 20s
 
       snowflake.style.animationDuration = `${fallDuration}s, ${swayDuration}s`;
       snowflake.style.animationDelay = `${Math.random() * 20}s, ${Math.random() * 20}s`;
 
-      const size = `${1 + Math.random() * 4}px`; // Wider size range
+      const size = `${1.5 + Math.random() * 2.5}px`;
       snowflake.style.width = size;
       snowflake.style.height = size;
 
@@ -38,11 +40,12 @@ export function SnowEffect() {
     }
 
     return () => {
+      // Fixed: Changed 'drops' to 'snowflakes' and added type annotation for 'drop'
       snowflakes.forEach((drop: HTMLDivElement) => drop.remove());
     };
   }, []);
 
   return (
-    <div ref={containerRef} className="fixed inset-0 pointer-events-none z-[899] overflow-hidden bg-transparent"></div>
+    <div ref={containerRef} className={styles.snowContainer}></div>
   );
 }
