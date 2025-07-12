@@ -18,16 +18,16 @@ export function SnowEffect() {
 
       snowflake.style.left = `${Math.random() * 100}%`;
 
-      const swayAmount = Math.random() * 30 + 10;
-      snowflake.style.setProperty('--tw-sway-amount-px', `${swayAmount}px`); // Use Tailwind's custom property syntax
+      const swayAmount = Math.random() * 40 + 10; // Wider sway
+      snowflake.style.setProperty('--tw-sway-amount-px', `${swayAmount}px`);
 
-      const fallDuration = 20 + Math.random() * 20;
-      const swayDuration = 10 + Math.random() * 10;
+      const fallDuration = 25 + Math.random() * 20; // Slower fall
+      const swayDuration = 15 + Math.random() * 10; // Slower sway
 
       snowflake.style.animationDuration = `${fallDuration}s, ${swayDuration}s`;
       snowflake.style.animationDelay = `${Math.random() * 20}s, ${Math.random() * 20}s`;
 
-      const size = `${1.5 + Math.random() * 2.5}px`;
+      const size = `${1 + Math.random() * 4}px`; // Wider size range
       snowflake.style.width = size;
       snowflake.style.height = size;
 

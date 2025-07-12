@@ -61,8 +61,8 @@ export default {
   				ring: 'hsl(var(--sidebar-ring))'
   			},
             gold: 'hsl(var(--gold))',
-            'raindrop-blue': 'rgba(200, 220, 255, 0.5)',
-            'rain-blue': 'rgba(173, 216, 230, 0.6)',
+            'raindrop-blue': 'rgba(255, 255, 255, 0.3)',
+            'rain-blue': 'rgba(100, 150, 200, 0.4)',
             'snowflake-white': 'rgba(255, 255, 255, 0.8)',
   		},
   		borderRadius: {

@@ -17,10 +17,10 @@ export function RainEffect() {
       drop.className = 'absolute rounded-full animate-fall bg-rain-blue';
       drop.style.left = `${Math.random() * 100}%`;
       drop.style.animationDelay = `${Math.random() * 3}s`;
-      drop.style.animationDuration = `${0.8 + Math.random() * 1.2}s`;
-      drop.style.width = `${1 + Math.random() * 1.5}px`;
-      drop.style.height = `${25 + Math.random() * 25}px`;
-      drop.style.opacity = `${0.4 + Math.random() * 0.4}`;
+      drop.style.animationDuration = `${0.6 + Math.random() * 1.0}s`; // Slightly faster
+      drop.style.width = `${0.5 + Math.random() * 1.0}px`; // Thinner
+      drop.style.height = `${30 + Math.random() * 30}px`; // Longer
+      drop.style.opacity = `${0.2 + Math.random() * 0.4}`; // Less opaque
       container.appendChild(drop);
       drops.push(drop);
     }
