@@ -5,7 +5,7 @@ import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Gam
 import dynamic from 'next/dynamic'; // Import dynamic
 
 // Import all widget content components dynamically
-const DynamicSpacesWidget = dynamic(() => import("@/components/widget-content/spaces-widget").then(mod => mod.SpacesWidget));
+const DynamicSpacesWidget = dynamic(() => import("@/components/spaces-widget/spaces-widget").then(mod => mod.SpacesWidget));
 const DynamicSoundsWidget = dynamic(() => import("@/components/widget-content/sounds-widget").then(mod => mod.SoundsWidget));
 const DynamicCalendarWidget = dynamic(() => import("@/components/widget-content/calendar-widget").then(mod => mod.CalendarWidget));
 const DynamicTimerWidget = dynamic(() => import("@/components/widget-content/timer-widget").then(mod => mod.TimerWidget));

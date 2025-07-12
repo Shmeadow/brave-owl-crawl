@@ -17,7 +17,7 @@ export function UserNameCapsule() {
     );
   }
 
-  const displayName = profile?.first_name || profile?.last_name || "Guest";
+  const displayName = profile?.first_name || profile?.last_name || session?.user?.email || "Guest";
   const displayId = session?.user?.id;
 
   const handleCopyUserId = () => {

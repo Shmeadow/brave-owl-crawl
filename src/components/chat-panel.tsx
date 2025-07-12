@@ -47,14 +47,13 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
 
   const fetchMessages = useCallback(async (roomId: string) => {
     if (!supabase) {
-      // console.warn("Supabase client not available for fetching messages."); // Removed for cleaner logs
       toast.error("Chat unavailable: Supabase client not initialized.");
       return;
     }
     try {
-      const { data, error } = await supabase
+      const { data: messagesData, error } = await supabase
         .from('chat_messages')
-        .select('id, user_id, room_id, content, created_at, profiles(first_name, last_name)') // Select profiles
+        .select('*')
         .eq('room_id', roomId)
         .order('created_at', { ascending: true })
         .limit(50);
@@ -62,9 +61,28 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
       if (error && error.code !== 'PGRST116') {
         console.error("Error fetching messages from Supabase:", error.message, "Details:", error.details, "Hint:", error.hint);
         toast.error("Failed to load chat messages: " + error.message);
-      } else if (data) {
-        const formattedMessages = data.map(msg => {
-          const senderProfile = (msg as any).profiles; // Access joined profile data
+        return;
+      }
+      
+      if (messagesData) {
+        const userIds = [...new Set(messagesData.map(msg => msg.user_id).filter(Boolean))];
+        let profilesMap = new Map();
+
+        if (userIds.length > 0) {
+          const { data: profilesData, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, first_name, last_name')
+            .in('id', userIds);
+          
+          if (profilesError) {
+            console.error("Error fetching profiles for chat:", profilesError);
+          } else {
+            profilesMap = new Map(profilesData?.map(p => [p.id, p]));
+          }
+        }
+
+        const formattedMessages = messagesData.map(msg => {
+          const senderProfile = profilesMap.get(msg.user_id);
           const authorName = (profile && profile.id === msg.user_id)
             ? (profile.first_name || profile.last_name || 'You')
             : (senderProfile?.first_name || senderProfile?.last_name || `User (${msg.user_id?.substring(0, 8)}...)`);
@@ -79,6 +97,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
         });
         setMessages(formattedMessages);
       }
+
     } catch (networkError: any) {
       console.error("Network error fetching chat messages:", networkError);
       toast.error("Failed to connect to chat server. Please check your internet connection or Supabase URL.");
