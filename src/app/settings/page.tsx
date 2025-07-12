@@ -9,12 +9,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 
 export default function SettingsPage() {
-  const { session, loading: authLoading } = useSupabase();
+  const { session, profile, loading: authLoading } = useSupabase();
   const { rooms, loading: roomsLoading } = useRooms();
   const { currentRoomId, currentRoomName } = useCurrentRoom();
 
   const currentRoom = rooms.find(room => room.id === currentRoomId);
   const isOwnerOfCurrentRoom = currentRoom && session?.user?.id === currentRoom.creator_id;
+  const userOwnsPersonalRoom = !!(profile?.personal_room_id && rooms.find(room => room.id === profile.personal_room_id && room.creator_id === session?.user?.id));
+
 
   if (authLoading || roomsLoading) {
     return (
@@ -38,33 +40,39 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {currentRoomId && currentRoom ? (
-        isOwnerOfCurrentRoom ? (
-          <Card className="w-full bg-card backdrop-blur-xl border-white/20">
-            <CardHeader>
-              <CardTitle className="text-foreground">Room Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="text-muted-foreground">
-              Room-specific settings for &quot;{currentRoomName}&quot; can be managed directly within the &quot;Spaces&quot; widget under "My Rooms".
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="w-full bg-card backdrop-blur-xl border-white/20">
-            <CardHeader>
-              <CardTitle className="text-foreground">Room Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="text-muted-foreground">
-              You are currently in &quot;{currentRoomName}&quot;. Room-specific settings can only be managed by the room&apos;s creator.
-            </CardContent>
-          </Card>
-        )
+      <Card className="w-full bg-card backdrop-blur-xl border-white/20">
+        <CardHeader>
+          <CardTitle className="text-foreground">Your Personal Room Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="text-muted-foreground">
+          {session ? (
+            userOwnsPersonalRoom ? (
+              <>Manage your personal room&apos;s name, description, type, password, and background directly from the <span className="font-semibold text-foreground">Settings cog icon</span> in the main header.</>
+            ) : (
+              <>Create your personal room using the <span className="font-semibold text-foreground">Settings cog icon</span> in the main header.</>
+            )
+          ) : (
+            <>Log in to create and manage your personal room.</>
+          )}
+        </CardContent>
+      </Card>
+
+      {currentRoomId && currentRoom && !userOwnsPersonalRoom && isOwnerOfCurrentRoom ? (
+        <Card className="w-full bg-card backdrop-blur-xl border-white/20">
+          <CardHeader>
+            <CardTitle className="text-foreground">Current Room Settings</CardTitle>
+          </CardHeader>
+          <CardContent className="text-muted-foreground">
+            You are currently in &quot;{currentRoomName}&quot;. Room-specific settings for rooms you own (other than your personal room) can be managed within the &quot;Spaces&quot; widget under "Other Rooms You Manage".
+          </CardContent>
+        </Card>
       ) : (
         <Card className="w-full bg-card backdrop-blur-xl border-white/20">
           <CardHeader>
-            <CardTitle className="text-foreground">Room Settings</CardTitle>
+            <CardTitle className="text-foreground">Other Room Settings</CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground">
-            Select a room in the &quot;Spaces&quot; widget to view and manage its settings (if you are the owner).
+            Settings for other rooms you manage (not your personal room) can be found within the &quot;Spaces&quot; widget.
           </CardContent>
         </Card>
       )}

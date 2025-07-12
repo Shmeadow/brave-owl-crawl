@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SpacesWidget } from "@/components/widget-content/spaces-widget";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useRooms } from "@/hooks/use-rooms";
+import { useRooms, RoomData } from "@/hooks/use-rooms";
 import { toast } from "sonner";
 import Link from "next/link";
 import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
@@ -27,6 +27,7 @@ import { UserNameCapsule } from "./user-name-capsule"; // Import new component
 import { cn } from "@/lib/utils"; // Import cn for styling
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // Import Popover
 import { RoomSettingsContent } from "@/components/spaces-widget/RoomSettingsContent"; // Import RoomSettingsContent
+import { CreatePersonalRoomForm } from "./create-personal-room-form"; // Import new component
 
 interface HeaderProps {
   onToggleChat: () => void;
@@ -39,27 +40,26 @@ interface HeaderProps {
 }
 
 export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onToggleSidebar, isChatOpen, onNewUnreadMessage, onClearUnreadMessages }: HeaderProps) => {
-  const { session } = useSupabase();
+  const { session, profile } = useSupabase();
   const router = useRouter();
   const { currentRoomName, currentRoomId, isCurrentRoomWritable, setCurrentRoom } = useCurrentRoom();
-  const { rooms, handleJoinRoomByRoomId } = useRooms();
+  const { rooms } = useRooms();
   const { toggleWidget } = useWidget();
+  const [isRoomSettingsOpen, setIsRoomSettingsOpen] = useState(false);
 
-  const currentRoom = rooms.find(room => room.id === currentRoomId) || null; // Ensure null instead of undefined
-  const isOwnerOfCurrentRoom = !!(currentRoom && session?.user?.id === currentRoom.creator_id); // Ensure boolean
+  // Find the user's personal room based on profile.personal_room_id
+  const usersPersonalRoom = rooms.find(room => room.id === profile?.personal_room_id && room.creator_id === session?.user?.id) || null;
+  const userOwnsPersonalRoom = !!usersPersonalRoom;
 
-  const handleCopyRoomId = () => {
-    if (currentRoomId) {
-      navigator.clipboard.writeText(currentRoomId);
-      toast.success("Room ID copied to clipboard!");
-    } else {
-      toast.error("No room ID to copy.");
-    }
+  const handleRoomCreated = (newRoom: RoomData) => {
+    // This callback is handled by CreatePersonalRoomForm, which already sets current room and closes itself.
+    // No additional logic needed here, just ensures the popover closes.
+    setIsRoomSettingsOpen(false);
   };
 
   return (
     <header className="sticky top-0 z-[1002] w-full border-b border-transparent bg-transparent flex items-center h-16">
-      <div className="flex items-center pl-0"> {/* Changed pl-2 to pl-0 */}
+      <div className="flex items-center pl-0">
         {isMobile && (
           <Button
             variant="ghost"
@@ -87,28 +87,31 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
 
           <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
             <h1 className="text-xl font-semibold flex items-center gap-2 overflow-hidden whitespace-nowrap text-ellipsis flex-1 min-w-0">
-              {/* Removed the direct display of session.user.id here */}
               <span className="truncate">{currentRoomName}</span>
             </h1>
-            {isOwnerOfCurrentRoom && currentRoom && ( // Only show if owner and room exists
-              <Popover>
+            {session && ( // Only show settings cog if logged in
+              <Popover open={isRoomSettingsOpen} onOpenChange={setIsRoomSettingsOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
-                    title="Room Settings"
-                    className="flex-shrink-0" // Prevent shrinking
+                    title={userOwnsPersonalRoom ? "Manage Your Room" : "Create Your Room"}
+                    className="flex-shrink-0"
                   >
                     <Settings className="h-5 w-5" />
-                    <span className="sr-only">Room Settings</span>
+                    <span className="sr-only">{userOwnsPersonalRoom ? "Manage Your Room" : "Create Your Room"}</span>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
                   className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20"
-                  align="start" // Align to start (left)
+                  align="start"
                   onOpenAutoFocus={(e) => e.preventDefault()}
                 >
-                  <RoomSettingsContent room={currentRoom} />
+                  {userOwnsPersonalRoom && usersPersonalRoom ? (
+                    <RoomSettingsContent room={usersPersonalRoom} />
+                  ) : (
+                    <CreatePersonalRoomForm onRoomCreated={handleRoomCreated} onClose={() => setIsRoomSettingsOpen(false)} />
+                  )}
                 </PopoverContent>
               </Popover>
             )}
@@ -117,7 +120,6 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
       </div>
 
       <div className="flex items-center gap-2 ml-auto pr-4 bg-card/50 rounded-full px-4 py-2 border border-white/20">
-        {/* New Stats & Progress Button */}
         <Button
           variant="ghost"
           size="icon"
@@ -132,7 +134,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
           <NotificationsDropdown />
         )}
 
-        <UserNameCapsule /> {/* New User Name Capsule */}
+        <UserNameCapsule />
         <BackgroundBlurSlider className="hidden md:flex" />
 
         <DropdownMenu>
@@ -170,7 +172,6 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         )}
         <UserNav />
       </div>
-      {/* RoomSettingsDialog is now rendered in AppWrapper */}
     </header>
   );
 });

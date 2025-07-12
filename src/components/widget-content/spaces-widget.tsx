@@ -4,29 +4,30 @@ import React from "react";
 import { useRooms } from "@/hooks/use-rooms";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
-import { CreateRoomSection } from "@/components/spaces-widget/create-room-section";
-import { MyRoomsSection } from "@/components/spaces-widget/my-rooms-section";
 import { JoinRoomSection } from "@/components/spaces-widget/join-room-section";
 import { PublicRoomsSection } from "@/components/spaces-widget/public-rooms-section";
-import { RoomOwnerControlsSection } from "@/components/spaces-widget/room-owner-controls-section";
+import { MyRoomsSection } from "@/components/spaces-widget/my-rooms-section"; // Keep MyRoomsSection
 import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 interface SpacesWidgetProps {
   isCurrentRoomWritable: boolean;
 }
 
 export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
-  const { session, loading: authLoading } = useSupabase();
+  const { session, loading: authLoading, profile } = useSupabase();
   const { rooms, loading: roomsLoading } = useRooms();
   const { currentRoomId } = useCurrentRoom();
 
-  const myCreatedRooms = rooms.filter(room => room.creator_id === session?.user?.id && !room.deleted_at);
+  // Filter rooms for MyRoomsSection
+  const myCreatedRooms = rooms.filter(room => 
+    room.creator_id === session?.user?.id && 
+    !room.deleted_at && 
+    room.id !== profile?.personal_room_id // Exclude the personal room
+  );
   const myJoinedRooms = rooms.filter(room => room.is_member && room.creator_id !== session?.user?.id && !room.deleted_at);
   const publicRooms = rooms.filter(room => room.type === 'public' && !room.is_member && room.creator_id !== session?.user?.id && !room.deleted_at);
-
-  const userOwnsRoom = myCreatedRooms.length > 0;
-  const usersOwnedRoom = myCreatedRooms.length > 0 ? myCreatedRooms[0] : null;
 
   if (authLoading || roomsLoading) {
     return (
@@ -44,26 +45,15 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
 
         {session ? (
           <>
-            {userOwnsRoom && usersOwnedRoom ? (
-              <Card className="w-full bg-card backdrop-blur-xl border-white/20 p-4">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-xl">Your Room: {usersOwnedRoom.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <RoomOwnerControlsSection room={usersOwnedRoom} />
-                </CardContent>
-              </Card>
-            ) : (
-              <CreateRoomSection userOwnsRoom={userOwnsRoom} />
+            {(myCreatedRooms.length > 0 || myJoinedRooms.length > 0) && (
+              <>
+                <MyRoomsSection
+                  myCreatedRooms={myCreatedRooms}
+                  myJoinedRooms={myJoinedRooms}
+                />
+                <Separator className="w-full" />
+              </>
             )}
-
-            {(myJoinedRooms.length > 0) && (
-              <MyRoomsSection
-                myCreatedRooms={myCreatedRooms}
-                myJoinedRooms={myJoinedRooms}
-              />
-            )}
-
             <JoinRoomSection />
           </>
         ) : (
@@ -73,7 +63,10 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
         )}
 
         {publicRooms.length > 0 && (
-          <PublicRoomsSection publicRooms={publicRooms} />
+          <>
+            <Separator className="w-full" />
+            <PublicRoomsSection publicRooms={publicRooms} />
+          </>
         )}
       </div>
     </div>

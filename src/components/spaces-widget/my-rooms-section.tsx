@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Trash2, LogIn, LogOut, Copy, UserPlus, Lock, Globe, Clock, Settings, ChevronDown, ChevronUp } from "lucide-react";
+import { Trash2, LogIn, LogOut, Copy, UserPlus, Lock, Globe, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { useRooms, RoomData } from "@/hooks/use-rooms";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
@@ -152,7 +152,6 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
                         <LogIn className="h-4 w-4" />
                         <span className="sr-only">Enter Room</span>
                       </Button>
-                      {/* Removed Popover and Settings button from here */}
                       <Button
                         variant="ghost"
                         size="icon"
