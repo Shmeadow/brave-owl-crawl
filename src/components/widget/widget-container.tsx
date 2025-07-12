@@ -1,10 +1,11 @@
 "use client";
 
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
-import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Gamepad2, BookOpen, Goal, WandSparkles, BarChart2, Settings } from "lucide-react";
-import dynamic from 'next/dynamic';
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Gamepad2, BookOpen, Goal, WandSparkles, BarChart2 } from "lucide-react"; // Added BarChart2
+import dynamic from 'next/dynamic'; // Import dynamic
 
-const DynamicSpacesWidget = dynamic(() => import("@/components/spaces-widget/spaces-widget").then(mod => mod.SpacesWidget));
+// Import all widget content components dynamically
+const DynamicSpacesWidget = dynamic(() => import("@/components/widget-content/spaces-widget").then(mod => mod.SpacesWidget));
 const DynamicSoundsWidget = dynamic(() => import("@/components/widget-content/sounds-widget").then(mod => mod.SoundsWidget));
 const DynamicCalendarWidget = dynamic(() => import("@/components/widget-content/calendar-widget").then(mod => mod.CalendarWidget));
 const DynamicTimerWidget = dynamic(() => import("@/components/widget-content/timer-widget").then(mod => mod.TimerWidget));
@@ -15,13 +16,14 @@ const DynamicStatsProgressWidget = dynamic(() => import("@/components/widget-con
 const DynamicFlashCardsWidget = dynamic(() => import("@/components/widget-content/flash-cards-widget").then(mod => mod.FlashCardsWidget));
 const DynamicGoalFocusWidget = dynamic(() => import("@/components/widget-content/goal-focus-widget").then(mod => mod.GoalFocusWidget));
 const DynamicBackgroundEffectsWidget = dynamic(() => import("@/components/widget-content/background-effects-widget").then(mod => mod.BackgroundEffectsWidget));
-const DynamicMyRoomSettingsWidget = dynamic(() => import("@/components/widget-content/my-room-settings-widget").then(mod => mod.MyRoomSettingsWidget));
 
 import { useWidget } from "./widget-provider";
 import { Widget } from "./widget";
-import { WidgetState } from "@/hooks/widgets/types";
-import { cn } from "@/lib/utils";
+import { WidgetState } from "@/hooks/widgets/types"; // Import WidgetState
+import { cn } from "@/lib/utils"; // Import cn for styling
+// PinnedWidgetsDock is now rendered outside this container in AppWrapper
 
+// Define WIDGET_COMPONENTS at the top level
 const WIDGET_COMPONENTS = {
   "spaces": { icon: LayoutGrid, content: DynamicSpacesWidget, title: "Spaces" },
   "sounds": { icon: Volume2, content: DynamicSoundsWidget, title: "Sounds" },
@@ -30,11 +32,10 @@ const WIDGET_COMPONENTS = {
   "tasks": { icon: ListTodo, content: DynamicTasksWidget, title: "Tasks" },
   "notes": { icon: NotebookPen, content: DynamicNotesWidget, title: "Notes" },
   "media": { icon: Image, content: DynamicMediaWidget, title: "Media" },
-  "stats-progress": { icon: BarChart2, content: DynamicStatsProgressWidget, title: "Stats & Progress" },
+  "stats-progress": { icon: BarChart2, content: DynamicStatsProgressWidget, title: "Stats & Progress" }, // Renamed from games
   "flash-cards": { icon: BookOpen, content: DynamicFlashCardsWidget, title: "Flash Cards" },
   "goal-focus": { icon: Goal, content: DynamicGoalFocusWidget, title: "Goal Focus" },
   "background-effects": { icon: WandSparkles, content: DynamicBackgroundEffectsWidget, title: "Backgrounds" },
-  "my-room-settings": { icon: Settings, content: DynamicMyRoomSettingsWidget, title: "My Room Settings" },
 };
 
 interface WidgetContainerProps {
@@ -45,13 +46,12 @@ interface WidgetContainerProps {
     width: number;
     height: number;
   };
-  isMobile: boolean;
-  spacesWidgetDefaultTab: string;
+  isMobile: boolean; // New prop
 }
 
-export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobile, spacesWidgetDefaultTab }: WidgetContainerProps) {
+export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobile }: WidgetContainerProps) {
   const {
-    activeWidgets,
+    activeWidgets, // Now contains ALL widgets
     updateWidgetPosition,
     updateWidgetSize,
     bringWidgetToFront,
@@ -75,13 +75,14 @@ export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobi
     }
   };
 
+  // Filter out pinned widgets as they are rendered in PinnedWidgetsDock
   const floatingWidgets = activeWidgets.filter((widget: WidgetState) => !widget.isPinned);
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
       <div className={cn(
-        "w-full h-full",
-        isMobile ? "flex flex-col items-center gap-4 pointer-events-auto" : "fixed inset-0 pointer-events-none"
+        "w-full h-full", // Base styling for the container
+        isMobile ? "flex flex-col items-center gap-4 pointer-events-auto" : "fixed inset-0 z-[903] pointer-events-none"
       )}>
         {floatingWidgets.map((widget: WidgetState) => {
           const WidgetIcon = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.icon;
@@ -101,19 +102,14 @@ export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobi
               id={widget.id}
               title={widgetTitle}
               icon={WidgetIcon}
-              content={(props: any) => (
-                <WidgetContent
-                  {...props}
-                  {...(widget.id === 'spaces' && { defaultTab: spacesWidgetDefaultTab })}
-                />
-              )}
+              content={WidgetContent}
               position={widget.position}
               size={widget.size}
               zIndex={widget.zIndex}
               isMinimized={widget.isMinimized}
               isMaximized={widget.isMaximized}
               isPinned={widget.isPinned}
-              isClosed={widget.isClosed}
+              isClosed={widget.isClosed} // Pass isClosed prop
               isTopmost={isTopmost}
               onSizeChange={(newSize) => updateWidgetSize(widget.id, newSize)}
               onBringToFront={() => bringWidgetToFront(widget.id)}
@@ -123,7 +119,7 @@ export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobi
               isCurrentRoomWritable={isCurrentRoomWritable}
               mainContentArea={mainContentArea}
               isMobile={isMobile}
-              isInsideDock={false}
+              isInsideDock={false} // Explicitly not inside dock
             />
           );
         })}

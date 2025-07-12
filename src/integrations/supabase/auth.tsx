@@ -13,7 +13,7 @@ export interface UserProfile {
   role: string | null;
   time_format_24h: boolean | null;
   welcome_notification_sent: boolean | null;
-  personal_room_id: string | null;
+  personal_room_id: string | null; // Added personal_room_id
 }
 
 interface SupabaseContextType {
@@ -91,17 +91,17 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
     }, 7000);
 
     // This function now only handles setting state and fetching profile in the background
-    const processSession = async (session: Session | null) => {
+    const processSession = (session: Session | null) => {
       setSession(session);
       if (session?.user?.id) {
-        await internalFetchProfile(session.user.id, supabaseClient);
+        internalFetchProfile(session.user.id, supabaseClient);
       } else {
         setProfile(null);
       }
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      setLoading(false); // Unblock the app as soon as session AND profile are processed
+      setLoading(false); // Unblock the app as soon as session is processed
     };
 
     // Initial session check

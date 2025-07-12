@@ -20,7 +20,6 @@ interface WidgetContextType {
   closeWidget: (id: string) => void; // Now sets isClosed to true
   toggleWidget: (id: string, title: string) => void;
   topmostZIndex: number;
-  mainContentArea: MainContentArea; // Expose mainContentArea
 }
 
 const WidgetContext = createContext<WidgetContextType | undefined>(undefined);
@@ -70,7 +69,6 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       closeWidget,
       toggleWidget,
       topmostZIndex,
-      mainContentArea, // Add to context value
     }),
     [
       activeWidgets,
@@ -84,7 +82,6 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
       closeWidget,
       toggleWidget,
       topmostZIndex,
-      mainContentArea, // Add to dependency array
     ]
   );
 

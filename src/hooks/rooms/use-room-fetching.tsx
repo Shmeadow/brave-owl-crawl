@@ -17,96 +17,155 @@ export function useRoomFetching() {
     }
 
     setLoading(true);
-    try {
-      const nowIso = new Date().toISOString();
-      let allFetchedRooms: RoomData[] = [];
-      const creatorIds = new Set<string>();
+    let allFetchedRooms: RoomData[] = [];
+    const nowIso = new Date().toISOString(); // Get current time in ISO format
 
-      if (session?.user?.id) {
-        // Fetch rooms created by the user
-        const { data: createdRooms, error: createdError } = await supabase
-          .from('rooms')
-          .select('id, creator_id, name, created_at, background_url, is_video_background, password_hash, type, closes_at, deleted_at, description')
-          .eq('creator_id', session.user.id)
-          .is('deleted_at', null)
-          .order('created_at', { ascending: true });
+    if (session?.user?.id) {
+      // Fetch rooms created by the user
+      const { data: createdRooms, error: createdError } = await supabase
+        .from('rooms')
+        .select(`
+          id,
+          creator_id,
+          name,
+          created_at,
+          background_url,
+          is_video_background,
+          password_hash,
+          type,
+          closes_at,
+          deleted_at,
+          description,
+          profiles!creator_id(first_name, last_name)
+        `)
+        .eq('creator_id', session.user.id)
+        .is('deleted_at', null) // Ensure not soft-deleted
+        .gt('closes_at', nowIso) // Ensure not expired
+        .order('created_at', { ascending: true });
 
-        if (createdError) {
-          toast.error("Error fetching your created rooms: " + createdError.message);
-        } else if (createdRooms) {
-          createdRooms.forEach(room => creatorIds.add(room.creator_id));
-          allFetchedRooms.push(...createdRooms.map(room => ({ ...room, is_member: true })));
-        }
-
-        // Fetch rooms where the user is a member
-        const { data: memberEntries, error: memberError } = await supabase
-          .from('room_members')
-          .select('rooms(*)')
-          .eq('user_id', session.user.id);
-
-        if (memberError) {
-          toast.error("Error fetching rooms you joined: " + memberError.message);
-        } else if (memberEntries) {
-          const joinedRooms = memberEntries
-            .map((entry: any) => ({ ...entry.rooms, is_member: true }))
-            .filter((room: RoomData) => room.creator_id !== session.user.id && room.deleted_at === null && room.closes_at && room.closes_at > nowIso);
-          joinedRooms.forEach(room => creatorIds.add(room.creator_id));
-          allFetchedRooms.push(...joinedRooms);
-        }
+      if (createdError) {
+        toast.error("Error fetching your created rooms: " + createdError.message);
+        console.error("Error fetching created rooms:", createdError);
+      } else {
+        allFetchedRooms = [...(createdRooms as RoomData[]).map(room => ({ ...room, is_member: true }))];
       }
 
-      // Fetch all public rooms
+      // Fetch rooms where the user is a member (excluding rooms they created)
+      const { data: memberEntries, error: memberError } = await supabase
+        .from('room_members')
+        .select(`
+          room_id,
+          rooms (
+            id,
+            creator_id,
+            name,
+            created_at,
+            background_url,
+            is_video_background,
+            password_hash,
+            type,
+            closes_at,
+            deleted_at,
+            description,
+            profiles!creator_id(first_name, last_name)
+          )
+        `)
+        .eq('user_id', session.user.id);
+
+      if (memberError) {
+        toast.error("Error fetching rooms you joined: " + memberError.message);
+        console.error("Error fetching joined rooms:", memberError);
+      } else {
+        const joinedRooms = memberEntries
+          .map((entry: any) => ({ ...entry.rooms, is_member: true }))
+          .filter((room: RoomData) => room.creator_id !== session.user.id && room.deleted_at === null && room.closes_at && room.closes_at > nowIso); // Filter out expired/deleted
+        allFetchedRooms = [...allFetchedRooms, ...joinedRooms];
+      }
+
+      // Fetch public rooms that the user is NOT a member of and did NOT create
       const { data: publicRooms, error: publicRoomsError } = await supabase
         .from('rooms')
-        .select('id, creator_id, name, created_at, background_url, is_video_background, password_hash, type, closes_at, deleted_at, description')
+        .select(`
+          id,
+          creator_id,
+          name,
+          created_at,
+          background_url,
+          is_video_background,
+          password_hash,
+          type,
+          closes_at,
+          deleted_at,
+          description,
+          profiles!creator_id(first_name, last_name)
+        `)
         .eq('type', 'public')
         .is('deleted_at', null)
-        .gt('closes_at', nowIso);
+        .gt('closes_at', nowIso); // Ensure not expired
 
       if (publicRoomsError) {
         console.error("Error fetching public rooms:", publicRoomsError);
-      } else if (publicRooms) {
-        publicRooms.forEach(room => creatorIds.add(room.creator_id));
-        allFetchedRooms.push(...publicRooms.map(room => ({ ...room, is_member: false })));
+      } else {
+        const newPublicRooms = (publicRooms as RoomData[]).map(room => ({ ...room, is_member: false }));
+        allFetchedRooms = [...allFetchedRooms, ...newPublicRooms];
       }
 
-      // Fetch all required profiles in one go
-      let profilesMap = new Map();
-      if (creatorIds.size > 0) {
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, first_name, last_name')
-          .in('id', Array.from(creatorIds));
-        
-        if (profilesError) {
-          toast.error("Error fetching user profiles for rooms.");
-        } else if (profilesData) {
-          profilesMap = new Map(profilesData.map(p => [p.id, p]));
-        }
-      }
-
-      // Combine and deduplicate rooms, adding profile data
+      // Deduplicate rooms and filter out those the user is already a member of (from public list)
       const uniqueRoomsMap = new Map<string, RoomData>();
       for (const room of allFetchedRooms) {
-        const creatorProfile = profilesMap.get(room.creator_id);
-        const roomWithProfile = {
-          ...room,
-          profiles: creatorProfile ? [creatorProfile] : [],
-        };
-
+        // If a room is already marked as a member, keep that status
+        // Otherwise, add it or update if it's a public room not yet seen
         const existing = uniqueRoomsMap.get(room.id);
-        if (!existing || (room.is_member && !existing.is_member)) {
-          uniqueRoomsMap.set(room.id, roomWithProfile);
+        if (!existing || room.is_member) { // Prioritize member status
+          uniqueRoomsMap.set(room.id, room);
         }
       }
+      
+      // Filter out public rooms if the user is already a member or creator
+      const finalRooms = Array.from(uniqueRoomsMap.values()).filter(room => {
+        if (room.type === 'public' && !room.is_member && room.creator_id !== session.user.id) {
+          // Check if user is a member via room_members table (more reliable)
+          const isAlreadyMember = allFetchedRooms.some(
+            r => r.id === room.id && r.is_member && r.creator_id !== session.user.id
+          );
+          return !isAlreadyMember;
+        }
+        return true;
+      });
 
-      setRooms(Array.from(uniqueRoomsMap.values()));
-    } catch (error: any) {
-      console.error("A top-level error occurred while fetching rooms:", error);
-      toast.error("An unexpected error occurred while fetching room data.");
-    } finally {
-      setLoading(false);
+      setRooms(finalRooms);
+
+    } else {
+      // If not logged in, fetch only public rooms
+      const { data: publicRooms, error: publicRoomsError } = await supabase
+        .from('rooms')
+        .select(`
+          id,
+          creator_id,
+          name,
+          created_at,
+          background_url,
+          is_video_background,
+          password_hash,
+          type,
+          closes_at,
+          deleted_at,
+          description,
+          profiles!creator_id(first_name, last_name)
+        `)
+        .eq('type', 'public')
+        .is('deleted_at', null)
+        .gt('closes_at', nowIso); // Ensure not expired
+
+      if (publicRoomsError) {
+        console.error("Error fetching public rooms for guest:", publicRoomsError);
+        setRooms([]);
+      } else {
+        setRooms(publicRooms as RoomData[]);
+      }
     }
+    
+    setLoading(false);
   }, [supabase, session, authLoading]);
 
   useEffect(() => {
@@ -114,17 +173,19 @@ export function useRoomFetching() {
 
     if (!supabase || !session?.user?.id) return;
 
+    // Subscribe to changes in the 'rooms' table
     const roomsChannel = supabase
       .channel('public:rooms')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms' }, (payload) => {
-        fetchRooms();
+        fetchRooms(); // Re-fetch all rooms on any change
       })
       .subscribe();
 
+    // Subscribe to changes in the 'room_members' table
     const roomMembersChannel = supabase
       .channel('public:room_members')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'room_members' }, (payload) => {
-        fetchRooms();
+        fetchRooms(); // Re-fetch all rooms on any change
       })
       .subscribe();
 

@@ -11,15 +11,15 @@ import { useRooms, RoomData, RoomMember } from "@/hooks/use-rooms";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
 import { useCurrentRoom } from "@/hooks/use-current-room";
-import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { staticImages, animatedBackgrounds } from "@/lib/backgrounds";
-import { AnimatedBackgroundPreviewItem } from "../animated-background-preview-item";
-import Image from "next/image";
+import { Textarea } from "@/components/ui/textarea"; // Import Textarea
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Import Tabs
+import { ScrollArea } from "@/components/ui/scroll-area"; // Import ScrollArea
+import { staticImages, animatedBackgrounds } from "@/lib/backgrounds"; // Import backgrounds
+import { AnimatedBackgroundPreviewItem } from "../animated-background-preview-item"; // Import AnimatedBackgroundPreviewItem
+import Image from "next/image"; // Import Image
 
 interface RoomOwnerControlsSectionProps {
-  room: RoomData;
+  room: RoomData; // Changed from currentRoom
 }
 
 export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps) {
@@ -48,6 +48,7 @@ export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps
   const [selectedBackgroundUrl, setSelectedBackgroundUrl] = useState(room.background_url || "");
   const [selectedIsVideoBackground, setSelectedIsVideoBackground] = useState(room.is_video_background || false);
 
+  // Effect to update local states when room prop changes
   useEffect(() => {
     setEditedRoomName(room.name);
     setEditedRoomDescription(room.description || "");
@@ -56,6 +57,7 @@ export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps
     setSelectedIsVideoBackground(room.is_video_background || false);
   }, [room]);
 
+  // Fetch room members when room changes and user is owner
   useEffect(() => {
     const fetchRoomMembers = async () => {
       if (!supabase || !room.id || !isOwnerOfCurrentRoom) {
@@ -79,7 +81,7 @@ export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps
         .eq('room_id', room.id);
 
       if (error) {
-        console.error("Error fetching room members:", { message: error.message, details: error.details, hint: error.hint });
+        console.error("Error fetching room members:", error);
         setRoomMembers([]);
       } else {
         setRoomMembers(data as RoomMember[]);
@@ -141,7 +143,7 @@ export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps
 
   const handleUpdateRoomDescriptionClick = async () => {
     if (!room.id || !isOwnerOfCurrentRoom) {
-      toast.error("You do not have permission to change its description.");
+      toast.error("You must be the owner of this room to change its description.");
       return;
     }
     await handleUpdateRoomDescription(room.id, editedRoomDescription.trim() || null);
@@ -172,7 +174,7 @@ export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps
 
   const handleBackgroundChange = async (url: string, isVideo: boolean) => {
     if (!room.id || !isOwnerOfCurrentRoom) {
-      toast.error("You do not have permission to change its background.");
+      toast.error("You must be the owner of this room to change its background.");
       return;
     }
     await handleUpdateRoomBackground(room.id, url, isVideo);
@@ -190,6 +192,7 @@ export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps
         <CardTitle className="text-xl">Room Settings: {room.name}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Room Name Editing */}
         <div className="space-y-2">
           <Label htmlFor="room-name-edit">Room Name</Label>
           <Input
@@ -202,6 +205,7 @@ export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps
           </Button>
         </div>
 
+        {/* Room Description Editing */}
         <div className="space-y-2">
           <Label htmlFor="room-description-edit">Room Description (Optional)</Label>
           <Textarea
@@ -216,6 +220,7 @@ export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps
           </Button>
         </div>
 
+        {/* Room Type (Public/Private) */}
         <div className="space-y-2">
           <Label>Room Type</Label>
           <Select value={roomType} onValueChange={handleUpdateRoomTypeClick}>
@@ -234,6 +239,7 @@ export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps
           </p>
         </div>
 
+        {/* Password Management (only for private rooms) */}
         {roomType === 'private' && (
           <div className="space-y-2">
             <Label htmlFor="room-password">Room Password (Optional)</Label>
@@ -270,6 +276,7 @@ export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps
           </div>
         )}
 
+        {/* Room Background Selection */}
         <div className="space-y-2">
           <Label>Room Background</Label>
           <Tabs defaultValue="static-images" className="w-full">
@@ -331,6 +338,7 @@ export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps
           </Tabs>
         </div>
 
+        {/* Send Invitation */}
         <div className="space-y-2">
           <Label htmlFor="send-invitation-user-email">Send Invitation (by Email)</Label>
           <Input
@@ -348,6 +356,7 @@ export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps
           Send an invitation to another user by their email address. They will receive a notification to join.
         </p>
 
+        {/* Kick Users */}
         {roomMembers.filter(member => member.user_id !== session?.user?.id).length > 0 ? (
           <div className="space-y-2">
             <Label htmlFor="kick-user-select">Kick a User</Label>

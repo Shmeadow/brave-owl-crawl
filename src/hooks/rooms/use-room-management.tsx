@@ -22,13 +22,12 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
       return { data: null, error: { message: "Not logged in" } }; // Return error object
     }
 
-    // Check if the user already owns a room that is not deleted and not expired
+    // Check if the user already owns a room
     const { data: existingRooms, error: existingRoomsError } = await supabase
       .from('rooms')
       .select('id')
       .eq('creator_id', session.user.id)
-      .is('deleted_at', null)
-      .gt('closes_at', new Date().toISOString()); // Also check if it's not expired
+      .is('deleted_at', null); // Only count active rooms
 
     if (existingRoomsError) {
       console.error("Error checking for existing rooms:", existingRoomsError);

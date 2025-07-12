@@ -16,7 +16,7 @@ import {
   DOCKED_WIDGET_HEIGHT,
   DOCKED_WIDGET_HORIZONTAL_GAP,
   BOTTOM_DOCK_OFFSET,
-} from './types';
+} from './types'; // Corrected import path
 
 interface UseWidgetPersistenceProps {
   initialWidgetConfigs: { [key: string]: WidgetConfig };
@@ -65,10 +65,10 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
 
   // Load state from Supabase or local storage on mount/auth change
   useEffect(() => {
-    if (authLoading || !mounted.current) return;
+    if (authLoading || !mounted.current) return; // Removed `mainContentArea.width === 0`
 
     const currentSessionId = session?.user?.id || 'guest';
-    if (currentSessionId === hasLoadedForSession.current) return;
+    if (currentSessionId === hasLoadedForSession.current) return; // Don't reload for the same session
 
     const loadWidgetStates = async () => {
       setLoading(true);
@@ -77,6 +77,7 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
 
       if (session && supabase) {
         setIsLoggedInMode(true);
+        // 1. Try to fetch from Supabase
         const { data: supabaseWidgets, error: fetchError } = await supabase
           .from('user_widget_states')
           .select('*')
@@ -90,12 +91,14 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
         if (supabaseWidgets && supabaseWidgets.length > 0) {
           loadedWidgetStates = supabaseWidgets.map((w: DbWidgetState) => fromDbWidgetState(w)).filter((w: WidgetState) => initialWidgetConfigs[w.id]);
         } else {
+          // 2. If no Supabase data, check local storage for migration
           const savedState = localStorage.getItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
           if (savedState) {
             try {
               const parsedState: WidgetState[] = JSON.parse(savedState);
               const validWidgets = parsedState.filter((w: WidgetState) => initialWidgetConfigs[w.id]);
               
+              // Migrate to Supabase
               const { error: insertError } = await supabase
                 .from('user_widget_states')
                 .upsert(validWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id)), { onConflict: 'user_id,widget_id' });
@@ -112,20 +115,25 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
               loadedWidgetStates = [];
             }
           } else {
+            // 3. If neither, start with empty state (new user)
             loadedWidgetStates = [];
           }
         }
       } else {
+        // User is a guest (not logged in)
         setIsLoggedInMode(false);
+        // For guests, always start with an empty screen, ignoring local storage.
         loadedWidgetStates = [];
-        localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
+        localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY); // Clear any previous guest state
       }
 
+      // Initialize all widgets based on initialWidgetConfigs, marking them as closed by default
       const allWidgets: WidgetState[] = Object.keys(initialWidgetConfigs).map(id => {
         const config = initialWidgetConfigs[id];
         const existingState = loadedWidgetStates.find(w => w.id === id);
 
         if (existingState) {
+          // Clamp positions for existing widgets
           const clampedCurrentPos = clampPosition(
             existingState.position.x,
             existingState.position.y,
@@ -145,19 +153,20 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
             ...existingState,
             position: clampedCurrentPos,
             normalPosition: clampedNormalPos,
-            isClosed: existingState.isClosed || false,
+            isClosed: existingState.isClosed || false, // Ensure isClosed is set, default to false if undefined
           };
         } else {
+          // Default state for widgets not found in persistence (closed by default)
           return {
             id,
-            title: id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+            title: id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '), // Basic title from ID
             position: clampPosition(config.initialPosition.x, config.initialPosition.y, config.initialWidth, config.initialHeight, mainContentArea),
             size: { width: config.initialWidth, height: config.initialHeight },
-            zIndex: 903,
+            zIndex: 903, // Base zIndex
             isMinimized: false,
             isMaximized: false,
             isPinned: false,
-            isClosed: true,
+            isClosed: true, // New widgets are closed by default
             normalPosition: clampPosition(config.initialPosition.x, config.initialPosition.y, config.initialWidth, config.initialHeight, mainContentArea),
             normalSize: { width: config.initialWidth, height: config.initialHeight },
           };
@@ -171,32 +180,37 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
     loadWidgetStates();
   }, [session, supabase, authLoading, initialWidgetConfigs, mainContentArea, recalculatePinnedWidgets]);
 
-  const isInitialSaveLoad = useRef(true);
+  // Save state to Supabase or local storage whenever activeWidgets changes
+  const isInitialSaveLoad = useRef(true); // Use a different ref for saving
   useEffect(() => {
     if (isInitialSaveLoad.current) {
       isInitialSaveLoad.current = false;
       return;
     }
 
-    if (!mounted.current || loading) return;
+    if (!mounted.current || loading) return; // Don't save if not mounted or still loading
 
     const saveWidgetStates = async () => {
-      if (isLoggedInMode && session && supabase && activeWidgets.length > 0) {
-        const dbStates = activeWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id));
-        const { error } = await supabase
+      if (isLoggedInMode && session && supabase) {
+        // Use upsert with onConflict to update existing rows or insert new ones
+        const { error: upsertError } = await supabase
           .from('user_widget_states')
-          .upsert(dbStates, { onConflict: 'user_id,widget_id' });
+          .upsert(activeWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id)), { onConflict: 'user_id,widget_id' });
 
-        if (error) {
-          console.error("Error saving widget states:", error.message, error.details);
+        if (upsertError) {
+          console.error("Error saving widget states to Supabase:", upsertError);
           toast.error("Failed to save widget layout.");
+        } else {
+          // toast.success("Widget layout saved to your account!"); // Too frequent, removed
         }
+      } else {
+        // For guests, do not save the layout to local storage to ensure a clean start.
       }
     };
 
     const debounceSave = setTimeout(() => {
       saveWidgetStates();
-    }, 1000); // Increased debounce to 1s to reduce save frequency
+    }, 500); // Debounce saves to avoid too many writes
 
     return () => clearTimeout(debounceSave);
   }, [activeWidgets, isLoggedInMode, session, supabase, loading, mounted]);

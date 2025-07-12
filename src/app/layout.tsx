@@ -10,8 +10,8 @@ import { BackgroundProvider } from "@/context/background-provider";
 import { BackgroundBlurProvider } from "@/context/background-blur-provider";
 import { EffectProvider } from "@/context/effect-provider";
 import { ClientOnlyWrapper } from '@/components/client-only-wrapper';
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { getRandomBackground } from '@/lib/backgrounds';
+import { SpeedInsights } from "@vercel/speed-insights/next"; // Corrected import for Next.js App Router
+import { getRandomBackground } from '@/lib/backgrounds'; // Import getRandomBackground
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,6 +28,7 @@ export const metadata: Metadata = {
   description: "Your all-in-one productivity tool.",
 };
 
+// Define initial configurations for all widgets here to pass to WidgetProvider
 const WIDGET_CONFIGS = {
   "spaces": { initialPosition: { x: 150, y: 100 }, initialWidth: 600, initialHeight: 600 },
   "sounds": { initialPosition: { x: 800, y: 150 }, initialWidth: 400, initialHeight: 500 },
@@ -36,27 +37,29 @@ const WIDGET_CONFIGS = {
   "tasks": { initialPosition: { x: 250, y: 300 }, initialWidth: 450, initialHeight: 550 },
   "notes": { initialPosition: { x: 700, y: 350 }, initialWidth: 450, initialHeight: 550 },
   "media": { initialPosition: { x: 300, y: 400 }, initialWidth: 550, initialHeight: 450 },
-  "stats-progress": { initialPosition: { x: 850, y: 100 }, initialWidth: 600, initialHeight: 650 },
+  "stats-progress": { initialPosition: { x: 850, y: 100 }, initialWidth: 600, initialHeight: 650 }, // Renamed from games
   "flash-cards": { initialPosition: { x: 500, y: 100 }, initialWidth: 800, initialHeight: 650 },
   "goal-focus": { initialPosition: { x: 400, y: 550 }, initialWidth: 500, initialHeight: 550 },
   "background-effects": { initialPosition: { x: 900, y: 100 }, initialWidth: 400, initialHeight: 500 },
-  "my-room-settings": { initialPosition: { x: 300, y: 50 }, initialWidth: 450, initialHeight: 600 },
 };
 
-const HEADER_HEIGHT = 64;
-const SIDEBAR_WIDTH = 60;
-const CHAT_PANEL_WIDTH_OPEN = 320;
-const CHAT_PANEL_WIDTH_CLOSED = 56;
+// Constants for layout dimensions (needed for mainContentArea calculation)
+const HEADER_HEIGHT = 64; // px
+const SIDEBAR_WIDTH = 60; // px
+const CHAT_PANEL_WIDTH_OPEN = 320; // px
+const CHAT_PANEL_WIDTH_CLOSED = 56; // px
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Server-side Supabase client for fetching app settings
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  let isCozyThemeGloballyEnabled = true;
+  let isCozyThemeGloballyEnabled = true; // Default to true
 
+  // Generate a random background on the server
   const initialBackground = getRandomBackground();
 
   if (supabaseUrl && supabaseAnonKey) {
@@ -68,7 +71,7 @@ export default async function RootLayout({
         .single();
 
       if (error) {
-        console.error("Error fetching server-side app settings:", error.message || error);
+        console.error("Error fetching server-side app settings:", error.message || error); // Log error message
       } else if (data) {
         isCozyThemeGloballyEnabled = data.is_cozy_theme_enabled;
       }

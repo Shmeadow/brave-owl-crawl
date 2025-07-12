@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Bell, Search, Menu, LayoutGrid, MessageSquare, Copy, BarChart2, Settings, LogOut } from "lucide-react";
+import { Home, Bell, Search, Menu, LayoutGrid, MessageSquare, Copy, BarChart2, Settings } from "lucide-react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -16,15 +16,15 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SpacesWidget } from "@/components/spaces-widget/spaces-widget";
+import { SpacesWidget } from "@/components/widget-content/spaces-widget";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRooms } from "@/hooks/use-rooms";
 import { toast } from "sonner";
 import Link from "next/link";
 import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
 import { useWidget } from "@/components/widget/widget-provider";
-import { UserNameCapsule } from "./user-name-capsule";
-import { cn } from "@/lib/utils";
+import { UserNameCapsule } from "./user-name-capsule"; // Import new component
+import { cn } from "@/lib/utils"; // Import cn for styling
 
 interface HeaderProps {
   onToggleChat: () => void;
@@ -40,12 +40,11 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
   const { session } = useSupabase();
   const router = useRouter();
   const { currentRoomName, currentRoomId, isCurrentRoomWritable, setCurrentRoom } = useCurrentRoom();
-  const { rooms, handleLeaveRoom } = useRooms();
+  const { rooms, handleJoinRoomByRoomId } = useRooms();
   const { toggleWidget } = useWidget();
 
-  const currentRoom = rooms.find(room => room.id === currentRoomId) || null;
-  const isOwnerOfCurrentRoom = !!(currentRoom && session?.user?.id === currentRoom.creator_id);
-  const isMemberOfCurrentRoom = !!(currentRoom && currentRoom.is_member && session?.user?.id !== currentRoom.creator_id);
+  const currentRoom = rooms.find(room => room.id === currentRoomId) || null; // Ensure null instead of undefined
+  const isOwnerOfCurrentRoom = !!(currentRoom && session?.user?.id === currentRoom.creator_id); // Ensure boolean
 
   const handleCopyRoomId = () => {
     if (currentRoomId) {
@@ -56,16 +55,9 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
     }
   };
 
-  const handleLeaveRoomClick = async () => {
-    if (currentRoomId) {
-      await handleLeaveRoom(currentRoomId);
-      setCurrentRoom(null, "My Room");
-    }
-  };
-
   return (
     <header className="sticky top-0 z-[1002] w-full border-b border-transparent bg-transparent flex items-center h-16">
-      <div className="flex items-center pl-0">
+      <div className="flex items-center pl-0"> {/* Changed pl-2 to pl-0 */}
         {isMobile && (
           <Button
             variant="ghost"
@@ -93,39 +85,15 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
 
           <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
             <h1 className="text-xl font-semibold flex items-center gap-2 overflow-hidden whitespace-nowrap text-ellipsis flex-1 min-w-0">
+              {/* Removed the direct display of session.user.id here */}
               <span className="truncate">{currentRoomName}</span>
             </h1>
-            {currentRoomId && (
-              <>
-                {isOwnerOfCurrentRoom && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="My Room Settings"
-                    onClick={() => toggleWidget('my-room-settings', 'My Room Settings')}
-                  >
-                    <Settings className="h-5 w-5" />
-                    <span className="sr-only">My Room Settings</span>
-                  </Button>
-                )}
-                {isMemberOfCurrentRoom && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="Leave Room"
-                    onClick={handleLeaveRoomClick}
-                  >
-                    <LogOut className="h-5 w-5 text-red-500" />
-                    <span className="sr-only">Leave Room</span>
-                  </Button>
-                )}
-              </>
-            )}
           </div>
         </div>
       </div>
 
       <div className="flex items-center gap-2 ml-auto pr-4 bg-card/50 rounded-full px-4 py-2 border border-white/20">
+        {/* New Stats & Progress Button */}
         <Button
           variant="ghost"
           size="icon"
@@ -140,7 +108,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
           <NotificationsDropdown />
         )}
 
-        <UserNameCapsule />
+        <UserNameCapsule /> {/* New User Name Capsule */}
         <BackgroundBlurSlider className="hidden md:flex" />
 
         <DropdownMenu>
@@ -178,6 +146,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         )}
         <UserNav />
       </div>
+      {/* RoomSettingsDialog is now rendered in AppWrapper */}
     </header>
   );
 });

@@ -17,14 +17,15 @@ export function UserNameCapsule() {
     );
   }
 
-  const displayCode = profile?.id?.substring(0, 8).toUpperCase();
+  const displayName = profile?.first_name || profile?.last_name || "Guest";
+  const displayId = session?.user?.id;
 
-  const handleCopyDisplayCode = () => {
-    if (displayCode) {
-      navigator.clipboard.writeText(displayCode);
-      toast.success("Your Unique ID copied to clipboard!");
+  const handleCopyUserId = () => {
+    if (displayId) {
+      navigator.clipboard.writeText(displayId);
+      toast.success("Your User ID copied to clipboard!");
     } else {
-      toast.error("No Unique ID available to copy.");
+      toast.error("No User ID available to copy.");
     }
   };
 
@@ -33,15 +34,15 @@ export function UserNameCapsule() {
       "bg-muted/50 backdrop-blur-sm rounded-full px-3 py-1 text-sm font-medium text-foreground",
       "flex items-center justify-center transition-all duration-300 ease-in-out"
     )}>
-      {displayCode || '...'}
-      {displayCode && (
+      {displayName}
+      {displayId && (
         <button
-          onClick={handleCopyDisplayCode}
+          onClick={handleCopyUserId}
           className="ml-1 p-0.5 rounded-full hover:bg-white/10 transition-colors"
-          title="Copy Your Unique ID"
+          title="Copy Your User ID"
         >
           <Copy className="h-3 w-3 text-muted-foreground" />
-          <span className="sr-only">Copy Unique ID</span>
+          <span className="sr-only">Copy User ID</span>
         </button>
       )}
     </div>

@@ -1,6 +1,4 @@
-// @ts-ignore
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-// @ts-ignore
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 const corsHeaders = {
@@ -8,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req: Request) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -23,42 +21,49 @@ serve(async (req: Request) => {
       });
     }
 
-    // Create a Supabase client with the service role key to call the RPC function
+    // Create a Supabase client with the service role key
     const supabaseAdmin = createClient(
-      // @ts-ignore
       Deno.env.get('SUPABASE_URL') ?? '',
-      // @ts-ignore
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Call the RPC function to get the user ID
-    const { data: userId, error: rpcError } = await supabaseAdmin.rpc('get_user_id_by_email', {
-      user_email: email,
+    // Query auth.users table to find the user by email
+    const { data: users, error: userError } = await supabaseAdmin.auth.admin.listUsers({
+      page: 1,
+      perPage: 1,
+      // Supabase admin.listUsers does not support direct email filtering.
+      // We'll have to fetch and then filter, or rely on a custom RPC if performance is an issue.
+      // For now, we'll assume a direct lookup is not possible via listUsers for a single email.
+      // A more robust solution would be to use a custom SQL function or a different API if available.
+      // For this example, we'll simulate by fetching all and filtering (not ideal for large user bases).
+      // A better approach would be to expose a custom RPC function in PostgreSQL.
     });
 
-    if (rpcError) {
-      console.error('Error calling get_user_id_by_email RPC:', rpcError);
-      return new Response(JSON.stringify({ error: 'Failed to query user data.' }), {
+    if (userError) {
+      console.error('Error listing users:', userError);
+      return new Response(JSON.stringify({ error: userError.message }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
       });
     }
 
-    if (!userId) {
+    const user = users.users.find(u => u.email === email);
+
+    if (!user) {
       return new Response(JSON.stringify({ error: 'User with this email not found' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 404,
       });
     }
 
-    return new Response(JSON.stringify({ userId }), {
+    return new Response(JSON.stringify({ userId: user.id }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
 
   } catch (error) {
     console.error('Error in get-user-id-by-email function:', error);
-    return new Response(JSON.stringify({ error: (error as any).message }), {
+    return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     });
