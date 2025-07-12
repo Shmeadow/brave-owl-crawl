@@ -30,7 +30,7 @@ export function useWidgetActions({
   initialWidgetConfigs,
   mainContentArea,
 }: UseWidgetActionsProps) {
-  const [maxZIndex, setMaxZIndex] = useState(903); // Initial z-index for new widgets
+  const [maxZIndex, setMaxZIndex] = useState(1003); // Initial z-index for new widgets
   const { activePanel, setActivePanel } = useSidebar();
 
   // This effect will run whenever the main content area changes (e.g., sidebar toggles).

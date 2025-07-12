@@ -8,12 +8,12 @@ import { Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function MyRoomSettingsWidget() {
-  const { session } = useSupabase();
+  const { session, loading: authLoading } = useSupabase();
   const { rooms, loading: roomsLoading } = useRooms();
 
   const myRoom = rooms.find(room => room.creator_id === session?.user?.id && !room.deleted_at);
 
-  if (roomsLoading) {
+  if (authLoading || roomsLoading) {
     return (
       <div className="flex items-center justify-center h-full">
         <Loader2 className="h-6 w-6 animate-spin" />
