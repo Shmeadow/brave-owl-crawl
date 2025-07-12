@@ -7,7 +7,7 @@ import { CardData } from "./types";
 
 const LOCAL_STORAGE_KEY = 'guest_flashcards';
 
-export function useFlashcardData() {
+export function useFlashcardData(currentRoomId: string | null) {
   const { supabase, session, loading: authLoading } = useSupabase();
   const [cards, setCards] = useState<CardData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,11 +19,18 @@ export function useFlashcardData() {
     try {
       if (session) {
         setIsLoggedInMode(true);
-        const { data: supabaseCards, error: fetchError } = await supabase
+        let query = supabase
           .from('flashcards')
           .select('*')
-          .eq('user_id', session.user.id)
-          .order('created_at', { ascending: true });
+          .eq('user_id', session.user.id);
+
+        if (currentRoomId) {
+          query = query.eq('room_id', currentRoomId);
+        } else {
+          query = query.is('room_id', null);
+        }
+
+        const { data: supabaseCards, error: fetchError } = await query.order('created_at', { ascending: true });
 
         if (fetchError) throw fetchError;
 
@@ -43,7 +50,7 @@ export function useFlashcardData() {
           if (cardsToMigrate.length > 0) {
             const { data: newSupabaseCards, error: insertError } = await supabase
               .from('flashcards')
-              .insert(cardsToMigrate.map(c => ({ ...c, user_id: session.user.id, id: undefined, created_at: undefined })))
+              .insert(cardsToMigrate.map(c => ({ ...c, user_id: session.user.id, room_id: null, id: undefined, created_at: undefined })))
               .select();
             if (insertError) {
               toast.error("Error migrating some local cards.");
@@ -67,7 +74,7 @@ export function useFlashcardData() {
     } finally {
       setLoading(false);
     }
-  }, [session, supabase]);
+  }, [session, supabase, currentRoomId]);
 
   useEffect(() => {
     if (!authLoading) {

@@ -13,7 +13,6 @@ export interface CalendarEventData {
   description: string | null;
   event_date: string;
   created_at: string;
-  updated_at: string;
 }
 
 const LOCAL_STORAGE_KEY = 'guest_calendar_events';
@@ -31,10 +30,18 @@ export function useCalendarEvents() {
     try {
       if (session) {
         setIsLoggedInMode(true);
-        const { data, error } = await supabase
+        let query = supabase
           .from('calendar_events')
           .select('*')
           .eq('user_id', session.user.id);
+
+        if (currentRoomId) {
+          query = query.eq('room_id', currentRoomId);
+        } else {
+          query = query.is('room_id', null);
+        }
+        
+        const { data, error } = await query;
         if (error) throw error;
         setEvents(data as CalendarEventData[]);
       } else {
@@ -48,7 +55,7 @@ export function useCalendarEvents() {
     } finally {
       setLoading(false);
     }
-  }, [session, supabase]);
+  }, [session, supabase, currentRoomId]);
 
   useEffect(() => {
     if (!authLoading) {
@@ -72,7 +79,7 @@ export function useCalendarEvents() {
       if (error) toast.error("Error adding event: " + error.message);
       else if (data) setEvents(prev => [...prev, data as CalendarEventData]);
     } else {
-      const newEvent: CalendarEventData = { id: crypto.randomUUID(), room_id: null, title, description, event_date: eventDate, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+      const newEvent: CalendarEventData = { id: crypto.randomUUID(), room_id: null, title, description, event_date: eventDate, created_at: new Date().toISOString() };
       setEvents(prev => [...prev, newEvent]);
     }
   }, [isLoggedInMode, session, supabase, currentRoomId]);
@@ -83,7 +90,7 @@ export function useCalendarEvents() {
       if (error) toast.error("Error updating event: " + error.message);
       else if (data) setEvents(prev => prev.map(e => e.id === eventId ? data as CalendarEventData : e));
     } else {
-      setEvents(prev => prev.map(e => e.id === eventId ? { ...e, ...updatedData, updated_at: new Date().toISOString() } : e));
+      setEvents(prev => prev.map(e => e.id === eventId ? { ...e, ...updatedData } : e));
     }
   }, [isLoggedInMode, session, supabase]);
 

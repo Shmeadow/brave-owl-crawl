@@ -14,17 +14,6 @@ interface TasksWidgetProps {
 
 export function TasksWidget({ isCurrentRoomWritable }: TasksWidgetProps) {
   const { tasks, loading, isLoggedInMode, handleAddTask, handleToggleComplete, handleUpdateTask, handleDeleteTask } = useTasks();
-  const { currentRoomId } = useCurrentRoom();
-
-  const filteredTasks = tasks.filter(task => {
-    // If no room is selected, show only personal tasks (room_id is null)
-    if (!currentRoomId) {
-      return task.room_id === null;
-    }
-    // If a room is selected, show tasks for that room OR personal tasks (room_id is null)
-    // This allows users to see their personal tasks even when in a room.
-    return task.room_id === currentRoomId || task.room_id === null;
-  });
 
   if (loading) {
     return (
@@ -48,7 +37,7 @@ export function TasksWidget({ isCurrentRoomWritable }: TasksWidgetProps) {
         </Card>
 
         <TaskList
-          tasks={filteredTasks}
+          tasks={tasks}
           onToggleComplete={handleToggleComplete}
           onUpdateTask={handleUpdateTask}
           onDelete={handleDeleteTask}

@@ -13,9 +13,10 @@ interface UseFlashcardMutationsProps {
   isLoggedInMode: boolean;
   session: ReturnType<typeof useSupabase>['session'];
   supabase: ReturnType<typeof useSupabase>['supabase'];
+  currentRoomId: string | null;
 }
 
-export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session, supabase }: UseFlashcardMutationsProps) {
+export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session, supabase, currentRoomId }: UseFlashcardMutationsProps) {
 
   const handleAnswerFeedback = useCallback(async (cardId: string, isCorrect: boolean) => {
     const cardToUpdate = cards.find(card => card.id === cardId);
@@ -151,6 +152,7 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase.from('flashcards').insert({
         user_id: session.user.id,
+        room_id: currentRoomId,
         front: newCardData.front,
         back: newCardData.back,
         category_id: newCardData.category_id,
@@ -189,7 +191,7 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedCards));
       toast.success("Flashcard added (saved locally)!");
     }
-  }, [isLoggedInMode, session, supabase, setCards, cards]);
+  }, [isLoggedInMode, session, supabase, setCards, cards, currentRoomId]);
 
   const handleUpdateCard = useCallback(async (cardId: string, updatedData: { front: string; back: string; category_id?: string | null }) => {
     if (isLoggedInMode && session && supabase) {
@@ -231,7 +233,7 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
     }
     if (isLoggedInMode && session && supabase) {
       const toInsert = uniqueNewCards.map(c => ({
-        user_id: session.user.id, front: c.front, back: c.back, category_id: categoryId, starred: false, status: 'Learning' as const,
+        user_id: session.user.id, room_id: currentRoomId, front: c.front, back: c.back, category_id: categoryId, starred: false, status: 'Learning' as const,
         seen_count: 0, last_reviewed_at: null, interval_days: 0, correct_guesses: 0, incorrect_guesses: 0, ease_factor: 2.5,
       }));
       const { data, error } = await supabase.from('flashcards').insert(toInsert).select();
@@ -254,7 +256,7 @@ export function useFlashcardMutations({ cards, setCards, isLoggedInMode, session
       return guestCards.length;
     }
     return 0;
-  }, [cards, isLoggedInMode, session, supabase, setCards]);
+  }, [cards, isLoggedInMode, session, supabase, setCards, currentRoomId]);
 
   const handleResetProgress = useCallback(async () => {
     const resetData = { seen_count: 0, status: 'Learning' as CardData['status'], last_reviewed_at: null, interval_days: 0, correct_guesses: 0, incorrect_guesses: 0, ease_factor: 2.5 };

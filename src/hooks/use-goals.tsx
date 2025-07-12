@@ -5,10 +5,12 @@ import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
 import { useNotifications } from "./use-notifications";
 import { differenceInDays, isPast, isToday } from 'date-fns';
+import { useCurrentRoom } from "./use-current-room";
 
 export interface GoalData {
   id: string;
   user_id?: string;
+  room_id: string | null;
   title: string;
   description: string | null;
   target_completion_date: string | null;
@@ -22,6 +24,7 @@ const LOCAL_STORAGE_NOTIFICATION_KEY_PREFIX = 'goal_notification_';
 
 export function useGoals() {
   const { supabase, session, loading: authLoading } = useSupabase();
+  const { currentRoomId } = useCurrentRoom();
   const { addNotification } = useNotifications();
   const [goals, setGoals] = useState<GoalData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,11 +36,18 @@ export function useGoals() {
     try {
       if (session) {
         setIsLoggedInMode(true);
-        const { data, error } = await supabase
+        let query = supabase
           .from('goals')
           .select('*')
-          .eq('user_id', session.user.id)
-          .order('created_at', { ascending: true });
+          .eq('user_id', session.user.id);
+
+        if (currentRoomId) {
+          query = query.eq('room_id', currentRoomId);
+        } else {
+          query = query.is('room_id', null);
+        }
+
+        const { data, error } = await query.order('created_at', { ascending: true });
         if (error) throw error;
         setGoals(data as GoalData[]);
       } else {
@@ -51,7 +61,7 @@ export function useGoals() {
     } finally {
       setLoading(false);
     }
-  }, [session, supabase]);
+  }, [session, supabase, currentRoomId]);
 
   useEffect(() => {
     if (!authLoading) {
@@ -89,16 +99,16 @@ export function useGoals() {
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase
         .from('goals')
-        .insert({ user_id: session.user.id, title, description, target_completion_date: targetCompletionDate, completed: false })
+        .insert({ user_id: session.user.id, room_id: currentRoomId, title, description, target_completion_date: targetCompletionDate, completed: false })
         .select()
         .single();
       if (error) toast.error("Error adding goal: " + error.message);
       else if (data) setGoals(prev => [...prev, data as GoalData]);
     } else {
-      const newGoal: GoalData = { id: crypto.randomUUID(), title, description, target_completion_date: targetCompletionDate, completed: false, created_at: new Date().toISOString(), completed_at: null };
+      const newGoal: GoalData = { id: crypto.randomUUID(), room_id: null, title, description, target_completion_date: targetCompletionDate, completed: false, created_at: new Date().toISOString(), completed_at: null };
       setGoals(prev => [...prev, newGoal]);
     }
-  }, [isLoggedInMode, session, supabase]);
+  }, [isLoggedInMode, session, supabase, currentRoomId]);
 
   const handleToggleComplete = useCallback(async (goalId: string, currentCompleted: boolean) => {
     const newCompletedStatus = !currentCompleted;

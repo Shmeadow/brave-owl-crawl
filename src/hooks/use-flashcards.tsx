@@ -3,11 +3,13 @@
 import { useFlashcardData } from './flashcards/useFlashcardData';
 import { useFlashcardMutations } from './flashcards/useFlashcardMutations';
 import { useFlashcardDeck } from './flashcards/useFlashcardDeck';
+import { useCurrentRoom } from './use-current-room';
 
 export type { CardData } from './flashcards/types';
 
 export function useFlashcards() {
-  const { cards, setCards, loading, isLoggedInMode, session, supabase, fetchCards } = useFlashcardData();
+  const { currentRoomId } = useCurrentRoom();
+  const { cards, setCards, loading, isLoggedInMode, session, supabase, fetchCards } = useFlashcardData(currentRoomId);
   
   const mutations = useFlashcardMutations({
     cards,
@@ -15,6 +17,7 @@ export function useFlashcards() {
     isLoggedInMode,
     session,
     supabase,
+    currentRoomId,
   });
 
   const deckActions = useFlashcardDeck({

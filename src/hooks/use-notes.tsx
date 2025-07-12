@@ -3,10 +3,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
+import { useCurrentRoom } from "./use-current-room";
 
 export interface NoteData {
   id: string;
   user_id?: string;
+  room_id: string | null;
   content: string;
   starred: boolean;
   created_at: string;
@@ -16,6 +18,7 @@ const LOCAL_STORAGE_KEY = 'guest_notes';
 
 export function useNotes() {
   const { supabase, session, loading: authLoading } = useSupabase();
+  const { currentRoomId } = useCurrentRoom();
   const [notes, setNotes] = useState<NoteData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
@@ -26,11 +29,18 @@ export function useNotes() {
     try {
       if (session) {
         setIsLoggedInMode(true);
-        const { data, error } = await supabase
+        let query = supabase
           .from('notes')
           .select('*')
-          .eq('user_id', session.user.id)
-          .order('created_at', { ascending: true });
+          .eq('user_id', session.user.id);
+
+        if (currentRoomId) {
+          query = query.eq('room_id', currentRoomId);
+        } else {
+          query = query.is('room_id', null);
+        }
+        
+        const { data, error } = await query.order('created_at', { ascending: true });
         if (error) throw error;
         setNotes(data as NoteData[]);
       } else {
@@ -44,7 +54,7 @@ export function useNotes() {
     } finally {
       setLoading(false);
     }
-  }, [session, supabase]);
+  }, [session, supabase, currentRoomId]);
 
   useEffect(() => {
     if (!authLoading) {
@@ -62,16 +72,16 @@ export function useNotes() {
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase
         .from('notes')
-        .insert({ user_id: session.user.id, content, starred: false })
+        .insert({ user_id: session.user.id, room_id: currentRoomId, content, starred: false })
         .select()
         .single();
       if (error) toast.error("Error adding note: " + error.message);
       else if (data) setNotes(prev => [...prev, data as NoteData]);
     } else {
-      const newNote: NoteData = { id: crypto.randomUUID(), content, starred: false, created_at: new Date().toISOString() };
+      const newNote: NoteData = { id: crypto.randomUUID(), room_id: null, content, starred: false, created_at: new Date().toISOString() };
       setNotes(prev => [...prev, newNote]);
     }
-  }, [isLoggedInMode, session, supabase]);
+  }, [isLoggedInMode, session, supabase, currentRoomId]);
 
   const handleDeleteNote = useCallback(async (noteId: string) => {
     if (isLoggedInMode && session && supabase) {

@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
-import { useSupabase } from "@/integrations/supabase/auth"; // Import useSupabase
+import { useSupabase } from "@/integrations/supabase/auth";
+import { useCurrentRoom } from "./use-current-room";
 
 export type PomodoroMode = 'focus' | 'short-break' | 'long-break';
 
@@ -17,16 +18,6 @@ interface PomodoroState {
   };
   isEditingTime: boolean;
   editableTimeString: string;
-}
-
-interface SupabasePomodoroSettings {
-  id: string;
-  user_id: string;
-  focus_time: number;
-  short_break_time: number;
-  long_break_time: number;
-  created_at: string;
-  updated_at: string;
 }
 
 const DEFAULT_TIMES = {
@@ -54,6 +45,7 @@ export const parseTimeToSeconds = (timeString: string): number => {
 
 export function usePomodoroState() {
   const { supabase, session, loading: authLoading } = useSupabase();
+  const { currentRoomId } = useCurrentRoom();
   const [state, setState] = useState<PomodoroState>({
     mode: 'focus',
     timeLeft: DEFAULT_TIMES.focus,
@@ -73,11 +65,18 @@ export function usePomodoroState() {
     try {
       if (session) {
         setIsLoggedInMode(true);
-        const { data: supabaseSettings, error: fetchError } = await supabase
+        let query = supabase
           .from('pomodoro_settings')
           .select('*')
-          .eq('user_id', session.user.id)
-          .single();
+          .eq('user_id', session.user.id);
+
+        if (currentRoomId) {
+          query = query.eq('room_id', currentRoomId);
+        } else {
+          query = query.is('room_id', null);
+        }
+
+        const { data: supabaseSettings, error: fetchError } = await query.single();
 
         if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
 
@@ -93,7 +92,7 @@ export function usePomodoroState() {
           const localTimes = JSON.parse(localStorage.getItem(LOCAL_STORAGE_CUSTOM_TIMES_KEY) || JSON.stringify(DEFAULT_TIMES));
           const { data: newSettings, error: insertError } = await supabase
             .from('pomodoro_settings')
-            .insert({ user_id: session.user.id, ...localTimes })
+            .insert({ user_id: session.user.id, room_id: currentRoomId, focus_time: localTimes.focus, short_break_time: localTimes['short-break'], long_break_time: localTimes['long-break'] })
             .select()
             .single();
           if (insertError) throw insertError;
@@ -114,7 +113,7 @@ export function usePomodoroState() {
     } finally {
       setLoading(false);
     }
-  }, [session, supabase]);
+  }, [session, supabase, currentRoomId]);
 
   useEffect(() => {
     if (!authLoading) {
@@ -123,20 +122,31 @@ export function usePomodoroState() {
   }, [authLoading, loadPomodoroSettings]);
 
   const updateCustomTimes = useCallback(async (newCustomTimes: typeof DEFAULT_TIMES) => {
-    if (isLoggedInMode && session && supabase && settingsIdRef.current) {
-      const { error } = await supabase
-        .from('pomodoro_settings')
-        .update({
-          focus_time: newCustomTimes.focus,
-          short_break_time: newCustomTimes['short-break'],
-          long_break_time: newCustomTimes['long-break'],
-        })
-        .eq('id', settingsIdRef.current);
-      if (error) toast.error("Failed to save settings: " + error.message);
+    if (isLoggedInMode && session && supabase) {
+      if (settingsIdRef.current) {
+        const { error } = await supabase
+          .from('pomodoro_settings')
+          .update({
+            focus_time: newCustomTimes.focus,
+            short_break_time: newCustomTimes['short-break'],
+            long_break_time: newCustomTimes['long-break'],
+          })
+          .eq('id', settingsIdRef.current);
+        if (error) toast.error("Failed to save settings: " + error.message);
+      } else {
+        // If no settings ID exists, it means we need to create one for this context
+        const { data: newSettings, error: insertError } = await supabase
+          .from('pomodoro_settings')
+          .insert({ user_id: session.user.id, room_id: currentRoomId, focus_time: newCustomTimes.focus, short_break_time: newCustomTimes['short-break'], long_break_time: newCustomTimes['long-break'] })
+          .select()
+          .single();
+        if (insertError) toast.error("Failed to save new settings: " + insertError.message);
+        else if (newSettings) settingsIdRef.current = newSettings.id;
+      }
     } else if (!isLoggedInMode) {
       localStorage.setItem(LOCAL_STORAGE_CUSTOM_TIMES_KEY, JSON.stringify(newCustomTimes));
     }
-  }, [isLoggedInMode, session, supabase]);
+  }, [isLoggedInMode, session, supabase, currentRoomId]);
 
   const setCustomTime = useCallback((mode: PomodoroMode, newTimeInSeconds: number) => {
     setState(prevState => {

@@ -32,10 +32,18 @@ export function useTasks() {
     try {
       if (session) {
         setIsLoggedInMode(true);
-        const { data, error } = await supabase
+        let query = supabase
           .from('tasks')
           .select('*')
           .eq('user_id', session.user.id);
+
+        if (currentRoomId) {
+          query = query.eq('room_id', currentRoomId);
+        } else {
+          query = query.is('room_id', null);
+        }
+        
+        const { data, error } = await query;
         if (error) throw error;
         setTasks(data as TaskData[]);
       } else {
@@ -49,7 +57,7 @@ export function useTasks() {
     } finally {
       setLoading(false);
     }
-  }, [session, supabase]);
+  }, [session, supabase, currentRoomId]);
 
   useEffect(() => {
     if (!authLoading) {
