@@ -91,17 +91,17 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
     }, 7000);
 
     // This function now only handles setting state and fetching profile in the background
-    const processSession = (session: Session | null) => {
+    const processSession = async (session: Session | null) => {
       setSession(session);
       if (session?.user?.id) {
-        internalFetchProfile(session.user.id, supabaseClient);
+        await internalFetchProfile(session.user.id, supabaseClient);
       } else {
         setProfile(null);
       }
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      setLoading(false); // Unblock the app as soon as session is processed
+      setLoading(false); // Unblock the app as soon as session AND profile are processed
     };
 
     // Initial session check
@@ -124,7 +124,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
       }
       subscription?.unsubscribe();
     };
-  }, [supabaseClient, internalFetchProfile]);
+  }, [supabaseClient, internalFetchProfile, loading]); // Added loading to dependency array
 
   const value = useMemo(() => ({
     supabase: supabaseClient,

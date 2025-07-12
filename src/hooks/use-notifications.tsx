@@ -19,7 +19,7 @@ export interface RoomInvitationData {
   receiver_id: string;
   status: 'pending' | 'accepted' | 'rejected';
   created_at: string;
-  rooms: { name: string } | null; // Joined to get room name
+  rooms: { name: string } | null; // This will be null from the initial fetch now
   profiles: { first_name: string | null; last_name: string | null; email: string | null } | null; // Joined to get sender name and email
 }
 
@@ -129,7 +129,6 @@ export function useNotifications() {
           receiver_id,
           status,
           created_at,
-          rooms (name),
           profiles:sender_id (first_name, last_name, email)
         `)
         .eq('receiver_id', session.user.id)
@@ -148,8 +147,8 @@ export function useNotifications() {
           receiver_id: inv.receiver_id,
           status: inv.status,
           created_at: inv.created_at,
-          rooms: inv.rooms ? { name: inv.rooms.name } : null, // Ensure it's an object, not an array
-          profiles: inv.profiles ? { first_name: inv.profiles.first_name, last_name: inv.profiles.last_name, email: inv.profiles.email } : null, // Ensure it's an object, not an array
+          rooms: null, // Set to null as we are not fetching it anymore
+          profiles: inv.profiles ? { first_name: inv.profiles.first_name, last_name: inv.profiles.last_name, email: inv.profiles.email } : null,
         })) as RoomInvitationData[]);
       }
 

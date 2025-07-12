@@ -40,7 +40,6 @@ export function useRoomFetching() {
         `)
         .eq('creator_id', session.user.id)
         .is('deleted_at', null) // Ensure not soft-deleted
-        .gt('closes_at', nowIso) // Ensure not expired
         .order('created_at', { ascending: true });
 
       if (createdError) {

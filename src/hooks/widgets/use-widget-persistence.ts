@@ -192,16 +192,28 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
 
     const saveWidgetStates = async () => {
       if (isLoggedInMode && session && supabase) {
-        // Use upsert with onConflict to update existing rows or insert new ones
-        const { error: upsertError } = await supabase
+        // First, delete all existing states for the user
+        const { error: deleteError } = await supabase
           .from('user_widget_states')
-          .upsert(activeWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id)), { onConflict: 'user_id,widget_id' });
+          .delete()
+          .eq('user_id', session.user.id);
 
-        if (upsertError) {
-          console.error("Error saving widget states to Supabase:", upsertError);
+        if (deleteError) {
+          console.error("Error clearing old widget states:", deleteError);
           toast.error("Failed to save widget layout.");
-        } else {
-          // toast.success("Widget layout saved to your account!"); // Too frequent, removed
+          return;
+        }
+
+        // Then, insert all current states
+        if (activeWidgets.length > 0) {
+          const { error: insertError } = await supabase
+            .from('user_widget_states')
+            .insert(activeWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id)));
+
+          if (insertError) {
+            console.error("Error saving new widget states:", insertError);
+            toast.error("Failed to save widget layout.");
+          }
         }
       } else {
         // For guests, do not save the layout to local storage to ensure a clean start.
