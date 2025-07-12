@@ -223,7 +223,7 @@ export function RoomSettingsContent({ room }: RoomSettingsContentProps) {
           <SelectTrigger>
             <SelectValue placeholder="Select room type" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="z-[1001]"> {/* Added z-[1001] here */}
             <SelectItem value="private">Private (Invite/Password Only)</SelectItem>
             <SelectItem value="public">Public (Anyone Can Join by ID)</SelectItem>
           </SelectContent>
@@ -360,7 +360,7 @@ export function RoomSettingsContent({ room }: RoomSettingsContentProps) {
             <SelectTrigger id="kick-user-select">
               <SelectValue placeholder="Select a user to kick" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[1001]"> {/* Added z-[1001] here */}
               {roomMembers.filter(member => member.user_id !== session?.user?.id).map(member => (
                 <SelectItem key={member.user_id} value={member.user_id}>
                   {member.profiles?.[0]?.first_name || member.profiles?.[0]?.last_name || `User (${member.user_id.substring(0, 8)}...)`}
