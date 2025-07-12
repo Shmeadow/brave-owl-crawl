@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
 import { createClient } from '@supabase/supabase-js';
 import { AppWrapper } from "@/app/app-wrapper";
 import { SessionContextProvider } from "@/integrations/supabase/auth";
@@ -10,8 +9,9 @@ import { BackgroundProvider } from "@/context/background-provider";
 import { BackgroundBlurProvider } from "@/context/background-blur-provider";
 import { EffectProvider } from "@/context/effect-provider";
 import { ClientOnlyWrapper } from '@/components/client-only-wrapper';
-import { SpeedInsights } from "@vercel/speed-insights/next"; // Corrected import for Next.js App Router
-import { getRandomBackground } from '@/lib/backgrounds'; // Import getRandomBackground
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { getRandomBackground } from '@/lib/backgrounds';
+import { MantineProvider, ColorSchemeScript } from '@mantine/core'; // Import MantineProvider and ColorSchemeScript
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,7 +37,7 @@ const WIDGET_CONFIGS = {
   "tasks": { initialPosition: { x: 250, y: 300 }, initialWidth: 450, initialHeight: 550 },
   "notes": { initialPosition: { x: 700, y: 350 }, initialWidth: 450, initialHeight: 550 },
   "media": { initialPosition: { x: 300, y: 400 }, initialWidth: 550, initialHeight: 450 },
-  "stats-progress": { initialPosition: { x: 850, y: 100 }, initialWidth: 600, initialHeight: 650 }, // Renamed from games
+  "stats-progress": { initialPosition: { x: 850, y: 100 }, initialWidth: 600, initialHeight: 650 },
   "flash-cards": { initialPosition: { x: 500, y: 100 }, initialWidth: 800, initialHeight: 650 },
   "goal-focus": { initialPosition: { x: 400, y: 550 }, initialWidth: 500, initialHeight: 550 },
   "background-effects": { initialPosition: { x: 900, y: 100 }, initialWidth: 400, initialHeight: 500 },
@@ -71,7 +71,7 @@ export default async function RootLayout({
         .single();
 
       if (error) {
-        console.error("Error fetching server-side app settings:", error.message || error); // Log error message
+        console.error("Error fetching server-side app settings:", error.message || error);
       } else if (data) {
         isCozyThemeGloballyEnabled = data.is_cozy_theme_enabled;
       }
@@ -84,6 +84,9 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <ColorSchemeScript />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
@@ -91,13 +94,7 @@ export default async function RootLayout({
           <BackgroundBlurProvider>
             <EffectProvider>
               <BackgroundProvider initialBackground={initialBackground}>
-                <ThemeProvider
-                  attribute="class"
-                  defaultTheme="system"
-                  enableSystem
-                  disableTransitionOnChange
-                  isCozyThemeGloballyEnabled={isCozyThemeGloballyEnabled}
-                >
+                <MantineProvider> {/* Replaced ThemeProvider with MantineProvider */}
                   <SidebarProvider>
                     <ClientOnlyWrapper>
                       <AppWrapper initialWidgetConfigs={WIDGET_CONFIGS}>
@@ -105,7 +102,7 @@ export default async function RootLayout({
                       </AppWrapper>
                     </ClientOnlyWrapper>
                   </SidebarProvider>
-                </ThemeProvider>
+                </MantineProvider>
               </BackgroundProvider>
             </EffectProvider>
           </BackgroundBlurProvider>
