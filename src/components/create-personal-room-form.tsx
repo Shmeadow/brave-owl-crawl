@@ -108,7 +108,7 @@ export function CreatePersonalRoomForm({ onRoomCreated, onClose }: CreatePersona
                       <SelectValue placeholder="Select room type" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="z-[1001]"> {/* Added z-[1001] here */}
+                  <SelectContent className="z-[1200]"> {/* Updated z-index to 1200 */}
                     <SelectItem value="private">Private (Invite/Password Only)</SelectItem>
                     <SelectItem value="public">Public (Anyone Can Join by ID)</SelectItem>
                   </SelectContent>
