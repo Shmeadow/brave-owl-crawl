@@ -4,11 +4,13 @@ import { useState, useEffect, useCallback } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
 import { CardData } from "./types";
+import { useCurrentRoom } from "../use-current-room";
 
 const LOCAL_STORAGE_KEY = 'guest_flashcards';
 
 export function useFlashcardData(currentRoomId: string | null) {
   const { supabase, session, loading: authLoading } = useSupabase();
+  const { isCurrentRoomWritable } = useCurrentRoom();
   const [cards, setCards] = useState<CardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
@@ -19,15 +21,14 @@ export function useFlashcardData(currentRoomId: string | null) {
     try {
       if (session) {
         setIsLoggedInMode(true);
-        let query = supabase
-          .from('flashcards')
-          .select('*')
-          .eq('user_id', session.user.id);
+        let query = supabase.from('flashcards').select('*');
 
-        if (currentRoomId) {
-          query = query.eq('room_id', currentRoomId);
+        if (isCurrentRoomWritable) {
+          // In personal space or own room, fetch all of the user's flashcards
+          query = query.eq('user_id', session.user.id);
         } else {
-          query = query.is('room_id', null);
+          // In someone else's room, fetch only flashcards for that room
+          query = query.eq('room_id', currentRoomId);
         }
 
         const { data: supabaseCards, error: fetchError } = await query.order('created_at', { ascending: true });
@@ -74,7 +75,7 @@ export function useFlashcardData(currentRoomId: string | null) {
     } finally {
       setLoading(false);
     }
-  }, [session, supabase, currentRoomId]);
+  }, [session, supabase, currentRoomId, isCurrentRoomWritable]);
 
   useEffect(() => {
     if (!authLoading) {

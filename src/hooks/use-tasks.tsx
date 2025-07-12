@@ -21,7 +21,7 @@ const LOCAL_STORAGE_KEY = 'guest_tasks';
 
 export function useTasks() {
   const { supabase, session, loading: authLoading } = useSupabase();
-  const { currentRoomId } = useCurrentRoom();
+  const { currentRoomId, isCurrentRoomWritable } = useCurrentRoom();
   const [tasks, setTasks] = useState<TaskData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
@@ -32,18 +32,17 @@ export function useTasks() {
     try {
       if (session) {
         setIsLoggedInMode(true);
-        let query = supabase
-          .from('tasks')
-          .select('*')
-          .eq('user_id', session.user.id);
+        let query = supabase.from('tasks').select('*');
 
-        if (currentRoomId) {
-          query = query.eq('room_id', currentRoomId);
+        if (isCurrentRoomWritable) {
+          // In personal space or own room, fetch all of the user's tasks
+          query = query.eq('user_id', session.user.id);
         } else {
-          query = query.is('room_id', null);
+          // In someone else's room, fetch only tasks for that room
+          query = query.eq('room_id', currentRoomId);
         }
         
-        const { data, error } = await query;
+        const { data, error } = await query.order('created_at', { ascending: true });
         if (error) throw error;
         setTasks(data as TaskData[]);
       } else {
@@ -57,7 +56,7 @@ export function useTasks() {
     } finally {
       setLoading(false);
     }
-  }, [session, supabase, currentRoomId]);
+  }, [session, supabase, currentRoomId, isCurrentRoomWritable]);
 
   useEffect(() => {
     if (!authLoading) {

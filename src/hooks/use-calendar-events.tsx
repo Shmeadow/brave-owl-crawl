@@ -19,7 +19,7 @@ const LOCAL_STORAGE_KEY = 'guest_calendar_events';
 
 export function useCalendarEvents() {
   const { supabase, session, loading: authLoading } = useSupabase();
-  const { currentRoomId } = useCurrentRoom();
+  const { currentRoomId, isCurrentRoomWritable } = useCurrentRoom();
   const [events, setEvents] = useState<CalendarEventData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
@@ -30,15 +30,14 @@ export function useCalendarEvents() {
     try {
       if (session) {
         setIsLoggedInMode(true);
-        let query = supabase
-          .from('calendar_events')
-          .select('*')
-          .eq('user_id', session.user.id);
+        let query = supabase.from('calendar_events').select('*');
 
-        if (currentRoomId) {
-          query = query.eq('room_id', currentRoomId);
+        if (isCurrentRoomWritable) {
+          // In personal space or own room, fetch all of the user's events
+          query = query.eq('user_id', session.user.id);
         } else {
-          query = query.is('room_id', null);
+          // In someone else's room, fetch only events for that room
+          query = query.eq('room_id', currentRoomId);
         }
         
         const { data, error } = await query;
@@ -55,7 +54,7 @@ export function useCalendarEvents() {
     } finally {
       setLoading(false);
     }
-  }, [session, supabase, currentRoomId]);
+  }, [session, supabase, currentRoomId, isCurrentRoomWritable]);
 
   useEffect(() => {
     if (!authLoading) {

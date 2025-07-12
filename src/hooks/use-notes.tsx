@@ -18,7 +18,7 @@ const LOCAL_STORAGE_KEY = 'guest_notes';
 
 export function useNotes() {
   const { supabase, session, loading: authLoading } = useSupabase();
-  const { currentRoomId } = useCurrentRoom();
+  const { currentRoomId, isCurrentRoomWritable } = useCurrentRoom();
   const [notes, setNotes] = useState<NoteData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
@@ -29,15 +29,14 @@ export function useNotes() {
     try {
       if (session) {
         setIsLoggedInMode(true);
-        let query = supabase
-          .from('notes')
-          .select('*')
-          .eq('user_id', session.user.id);
+        let query = supabase.from('notes').select('*');
 
-        if (currentRoomId) {
-          query = query.eq('room_id', currentRoomId);
+        if (isCurrentRoomWritable) {
+          // In personal space or own room, fetch all of the user's notes
+          query = query.eq('user_id', session.user.id);
         } else {
-          query = query.is('room_id', null);
+          // In someone else's room, fetch only notes for that room
+          query = query.eq('room_id', currentRoomId);
         }
         
         const { data, error } = await query.order('created_at', { ascending: true });
@@ -54,7 +53,7 @@ export function useNotes() {
     } finally {
       setLoading(false);
     }
-  }, [session, supabase, currentRoomId]);
+  }, [session, supabase, currentRoomId, isCurrentRoomWritable]);
 
   useEffect(() => {
     if (!authLoading) {
