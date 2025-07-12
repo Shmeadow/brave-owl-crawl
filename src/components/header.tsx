@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Bell, Search, Menu, LayoutGrid, MessageSquare, Copy, BarChart2, Settings } from "lucide-react";
+import { Home, Bell, Search, Menu, LayoutGrid, MessageSquare, Copy, BarChart2, Settings, LogOut } from "lucide-react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SpacesWidget } from "@/components/widget-content/spaces-widget";
+import { SpacesWidget } from "@/components/spaces-widget/spaces-widget";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRooms } from "@/hooks/use-rooms";
 import { toast } from "sonner";
@@ -34,17 +34,19 @@ interface HeaderProps {
   isMobile: boolean;
   onToggleSidebar: () => void;
   isChatOpen: boolean;
+  onOpenSpacesWidgetToTab: (tab: string) => void; // New prop
 }
 
-export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onToggleSidebar, isChatOpen, onNewUnreadMessage, onClearUnreadMessages }: HeaderProps) => {
+export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onToggleSidebar, isChatOpen, onNewUnreadMessage, onClearUnreadMessages, onOpenSpacesWidgetToTab }: HeaderProps) => {
   const { session } = useSupabase();
   const router = useRouter();
   const { currentRoomName, currentRoomId, isCurrentRoomWritable, setCurrentRoom } = useCurrentRoom();
-  const { rooms, handleJoinRoomByRoomId } = useRooms();
+  const { rooms, handleLeaveRoom } = useRooms();
   const { toggleWidget } = useWidget();
 
   const currentRoom = rooms.find(room => room.id === currentRoomId) || null; // Ensure null instead of undefined
   const isOwnerOfCurrentRoom = !!(currentRoom && session?.user?.id === currentRoom.creator_id); // Ensure boolean
+  const isMemberOfCurrentRoom = !!(currentRoom && currentRoom.is_member && session?.user?.id !== currentRoom.creator_id); // Is a member, but not the creator
 
   const handleCopyRoomId = () => {
     if (currentRoomId) {
@@ -52,6 +54,13 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
       toast.success("Room ID copied to clipboard!");
     } else {
       toast.error("No room ID to copy.");
+    }
+  };
+
+  const handleLeaveRoomClick = async () => {
+    if (currentRoomId) {
+      await handleLeaveRoom(currentRoomId);
+      setCurrentRoom(null, "My Room"); // Go back to personal space
     }
   };
 
@@ -88,6 +97,32 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
               {/* Removed the direct display of session.user.id here */}
               <span className="truncate">{currentRoomName}</span>
             </h1>
+            {currentRoomId && (
+              <>
+                {isOwnerOfCurrentRoom && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Room Settings"
+                    onClick={() => onOpenSpacesWidgetToTab('my-room')}
+                  >
+                    <Settings className="h-5 w-5" />
+                    <span className="sr-only">Room Settings</span>
+                  </Button>
+                )}
+                {isMemberOfCurrentRoom && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Leave Room"
+                    onClick={handleLeaveRoomClick}
+                  >
+                    <LogOut className="h-5 w-5 text-red-500" />
+                    <span className="sr-only">Leave Room</span>
+                  </Button>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>

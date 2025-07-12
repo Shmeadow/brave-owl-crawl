@@ -143,7 +143,7 @@ export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps
 
   const handleUpdateRoomDescriptionClick = async () => {
     if (!room.id || !isOwnerOfCurrentRoom) {
-      toast.error("You must be the owner of this room to change its description.");
+      toast.error("You do not have permission to change its description.");
       return;
     }
     await handleUpdateRoomDescription(room.id, editedRoomDescription.trim() || null);
@@ -174,7 +174,7 @@ export function RoomOwnerControlsSection({ room }: RoomOwnerControlsSectionProps
 
   const handleBackgroundChange = async (url: string, isVideo: boolean) => {
     if (!room.id || !isOwnerOfCurrentRoom) {
-      toast.error("You must be the owner of this room to change its background.");
+      toast.error("You do not have permission to change its background.");
       return;
     }
     await handleUpdateRoomBackground(room.id, url, isVideo);

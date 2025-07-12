@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useSidebar } from "@/components/sidebar/sidebar-context";
@@ -56,6 +56,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const isMobile = useIsMobile();
   const { addNotification } = useNotifications();
   const { goals } = useGoals();
+  const { toggleWidget } = useWidget(); // Get toggleWidget from useWidget
 
   const [sidebarCurrentWidth, setSidebarCurrentWidth] = useState(0);
   const [mainContentArea, setMainContentArea] = useState({ left: 0, top: 0, width: 0, height: 0 });
@@ -65,6 +66,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [isPomodoroMinimized, setIsPomodoroMinimized] = useState(true);
   const [showWelcomeBack, setShowWelcomeBack] = useState(false);
+  const [spacesWidgetDefaultTab, setSpacesWidgetDefaultTab] = useState("my-room"); // New state for default tab
 
   const chatPanelWidth = isChatOpen ? 320 : 56;
   const isDashboard = pathname === '/dashboard';
@@ -133,6 +135,11 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     return () => window.removeEventListener('resize', calculateArea);
   }, [sidebarCurrentWidth, isMobile]);
 
+  const handleOpenSpacesWidgetToTab = useCallback((tab: string) => {
+    setSpacesWidgetDefaultTab(tab);
+    toggleWidget('spaces', 'Spaces'); // Open the spaces widget
+  }, [toggleWidget]);
+
   if (loading) {
     return (
       <LoadingScreen />
@@ -167,6 +174,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               unreadChatCount={unreadChatCount}
               isMobile={isMobile}
               onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+              onOpenSpacesWidgetToTab={handleOpenSpacesWidgetToTab} // Pass new prop
             />
             <DynamicWelcomeBackModal
               isOpen={showWelcomeBack}
@@ -192,7 +200,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
                   {children}
                   {isDashboard && (
                     // WidgetContainer now renders ALL widgets, managing their visibility internally
-                    <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} isMobile={isMobile} />
+                    <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} isMobile={isMobile} spacesWidgetDefaultTab={spacesWidgetDefaultTab} />
                   )}
                 </div>
               </main>

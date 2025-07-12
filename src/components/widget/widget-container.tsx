@@ -47,9 +47,10 @@ interface WidgetContainerProps {
     height: number;
   };
   isMobile: boolean; // New prop
+  spacesWidgetDefaultTab: string; // New prop
 }
 
-export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobile }: WidgetContainerProps) {
+export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobile, spacesWidgetDefaultTab }: WidgetContainerProps) {
   const {
     activeWidgets, // Now contains ALL widgets
     updateWidgetPosition,
@@ -102,7 +103,13 @@ export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobi
               id={widget.id}
               title={widgetTitle}
               icon={WidgetIcon}
-              content={WidgetContent}
+              content={(props: any) => (
+                <WidgetContent
+                  {...props}
+                  // Pass spacesWidgetDefaultTab only to the SpacesWidget
+                  {...(widget.id === 'spaces' && { defaultTab: spacesWidgetDefaultTab })}
+                />
+              )}
               position={widget.position}
               size={widget.size}
               zIndex={widget.zIndex}
