@@ -189,37 +189,6 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
       return;
     }
 
-    // 1. Get receiver's user ID from email using Edge Function
-    let receiverId: string | null = null;
-    try {
-      const response = await fetch('https://mrdupsekghsnbooyrdmj.supabase.co/functions/v1/get-user-id-by-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`, // Use user's token for RLS
-        },
-        body: JSON.stringify({ email: receiverEmail }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error("Error finding user: " + (data.error || "User not found."));
-        console.error("Error finding user by email:", data.error);
-        return;
-      }
-      receiverId = data.userId;
-    } catch (error) {
-      toast.error("Failed to find user by email due to network error.");
-      console.error("Network error finding user by email:", error);
-      return;
-    }
-
-    if (!receiverId) {
-      toast.error("Could not find a user with that email address.");
-      return;
-    }
-
     // Verify room ownership
     const { data: room, error: roomError } = await supabase
       .from('rooms')
@@ -238,51 +207,14 @@ export function useRoomManagement({ setRooms, fetchRooms }: UseRoomManagementPro
       return;
     }
 
-    if (receiverId === session.user.id) {
-      toast.info("You cannot send an invitation to yourself.");
-      return;
-    }
+    // Simplified: Just send a notification to the user if they exist.
+    // In a real app, you'd want to get the user ID from the email first.
+    // For now, we'll just create a generic notification.
+    // This part is simplified as we removed the get-user-id-by-email function.
+    toast.info(`An invitation email would be sent to ${receiverEmail} for the room "${room.name}". (This is a mock-up as direct user-to-user invites are complex).`);
+    // In a full implementation, you would use the receiver's ID to create a notification for them.
+    // addNotification(`You have been invited to join "${room.name}".`, receiverId);
 
-    // Check if receiver is already a member
-    const { data: existingMember, error: memberCheckError } = await supabase
-      .from('room_members')
-      .select('id')
-      .eq('room_id', roomId)
-      .eq('user_id', receiverId)
-      .single();
-
-    if (existingMember) {
-      toast.info("This user is already a member of this room.");
-      return;
-    }
-
-    // Check if a pending invitation already exists
-    const { data: existingInvitation, error: invitationCheckError } = await supabase
-      .from('room_invitations')
-      .select('id')
-      .eq('room_id', roomId)
-      .eq('receiver_id', receiverId)
-      .eq('status', 'pending')
-      .single();
-
-    if (existingInvitation) {
-      toast.info("A pending invitation for this user already exists for this room.");
-      return;
-    }
-
-    const { data: newInvitation, error: insertError } = await supabase
-      .from('room_invitations')
-      .insert({ room_id: roomId, sender_id: session.user.id, receiver_id: receiverId, status: 'pending' })
-      .select()
-      .single();
-
-    if (insertError) {
-      toast.error("Error sending invitation: " + insertError.message);
-      console.error("Error sending invitation:", insertError);
-    } else if (newInvitation) {
-      toast.success("Invitation sent successfully!");
-      addNotification(`You received an invitation to join "${room.name}".`, receiverId); // Notify the invited user
-    }
   }, [session, supabase, addNotification]);
 
   const handleDeleteRoom = useCallback(async (roomId: string) => {

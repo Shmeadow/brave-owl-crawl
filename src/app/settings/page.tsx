@@ -6,7 +6,7 @@ import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { useRooms } from "@/hooks/use-rooms";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// import { RoomOwnerControlsSection } from "@/components/spaces-widget/room-owner-controls-section"; // Removed import
+import { Loader2 } from "lucide-react";
 
 export default function SettingsPage() {
   const { session, loading: authLoading } = useSupabase();
@@ -19,6 +19,7 @@ export default function SettingsPage() {
   if (authLoading || roomsLoading) {
     return (
       <div className="flex items-center justify-center h-full py-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="text-foreground">Loading settings...</p>
       </div>
     );
@@ -44,7 +45,7 @@ export default function SettingsPage() {
               <CardTitle className="text-foreground">Room Settings</CardTitle>
             </CardHeader>
             <CardContent className="text-muted-foreground">
-              Room-specific settings for &quot;{currentRoomName}&quot; can be managed directly within the &quot;Manage Spaces&quot; widget under "My Rooms".
+              Room-specific settings for &quot;{currentRoomName}&quot; can be managed directly within the &quot;Spaces&quot; widget under "My Rooms".
             </CardContent>
           </Card>
         ) : (

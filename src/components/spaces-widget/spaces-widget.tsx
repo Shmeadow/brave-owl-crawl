@@ -26,7 +26,7 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
   const publicRooms = rooms.filter(room => room.type === 'public' && !room.is_member && room.creator_id !== session?.user?.id && !room.deleted_at);
 
   const userOwnsRoom = myCreatedRooms.length > 0;
-  const usersOwnedRoom = myCreatedRooms.length > 0 ? myCreatedRooms[0] : null; // Assuming only one room per user
+  const usersOwnedRoom = myCreatedRooms.length > 0 ? myCreatedRooms[0] : null;
 
   if (authLoading || roomsLoading) {
     return (

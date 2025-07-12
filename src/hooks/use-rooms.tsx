@@ -23,8 +23,6 @@ export function useRooms() {
     handleJoinRoomByPassword,
     handleLeaveRoom,
     handleKickUser,
-    handleAcceptInvitation, // New
-    handleRejectInvitation, // New
   } = useRoomMembership({ rooms, fetchRooms });
 
   return {
@@ -41,8 +39,6 @@ export function useRooms() {
     handleJoinRoomByPassword,
     handleLeaveRoom,
     handleKickUser,
-    handleAcceptInvitation, // New
-    handleRejectInvitation, // New
     fetchRooms, // Expose fetchRooms for manual refresh if needed
   };
 }

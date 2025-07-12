@@ -14,17 +14,12 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNotifications } from "@/hooks/use-notifications";
 import { cn } from "@/lib/utils";
-import { RoomInvitationsList } from "./room-invitations-list"; // Import new component
 
 interface NotificationsDropdownProps {
 }
 
 export function NotificationsDropdown({}: NotificationsDropdownProps) {
-  const { notifications, roomInvitations, loading, unreadCount, markAsRead, markAllAsRead, addNotification, deleteReadNotifications, handleDeleteNotification } = useNotifications();
-
-  // Removed the useEffect that added a default welcome notification here.
-  // The primary welcome notification is now handled by the useNotifications hook itself,
-  // ensuring it's a one-time event tied to the user's profile.
+  const { notifications, loading, unreadCount, markAsRead, markAllAsRead, addNotification, deleteReadNotifications, handleDeleteNotification } = useNotifications();
 
   const hasReadNotifications = notifications.some(n => n.is_read);
 
@@ -45,15 +40,6 @@ export function NotificationsDropdown({}: NotificationsDropdownProps) {
         <DropdownMenuLabel>Notifications ({unreadCount} unread)</DropdownMenuLabel>
         <DropdownMenuSeparator />
         
-        {roomInvitations.length > 0 && (
-          <>
-            <DropdownMenuLabel className="text-sm font-semibold px-2 pt-2">Room Invitations</DropdownMenuLabel>
-            <RoomInvitationsList invitations={roomInvitations} />
-            <DropdownMenuSeparator />
-          </>
-        )}
-
-        <DropdownMenuLabel className="text-sm font-semibold px-2 pt-2">General Notifications</DropdownMenuLabel>
         <ScrollArea className="h-48">
           {loading ? (
             <p className="p-2 text-sm text-muted-foreground text-center">Loading notifications...</p>

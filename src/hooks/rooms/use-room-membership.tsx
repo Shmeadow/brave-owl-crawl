@@ -189,67 +189,10 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
     }
   }, [session, supabase, fetchRooms, addNotification, rooms]);
 
-  const handleAcceptInvitation = useCallback(async (invitationId: string, roomId: string, roomName: string, senderId: string) => {
-    if (!session?.user?.id || !supabase) {
-      toast.error("You must be logged in to accept invitations.");
-      return;
-    }
-
-    // 1. Add user to room_members
-    const { error: memberInsertError } = await supabase
-      .from('room_members')
-      .insert({ room_id: roomId, user_id: session.user.id });
-
-    if (memberInsertError) {
-      toast.error("Error joining room: " + memberInsertError.message);
-      console.error("Error inserting room member:", memberInsertError);
-      return;
-    }
-
-    // 2. Update invitation status
-    const { error: invitationUpdateError } = await supabase
-      .from('room_invitations')
-      .update({ status: 'accepted' })
-      .eq('id', invitationId)
-      .eq('receiver_id', session.user.id);
-
-    if (invitationUpdateError) {
-      toast.error("Error updating invitation status: " + invitationUpdateError.message);
-      console.error("Error updating invitation status:", invitationUpdateError);
-    }
-
-    toast.success(`You successfully joined "${roomName}"!`);
-    fetchRooms();
-    addNotification(`Your invitation to "${roomName}" was accepted.`, senderId);
-  }, [session, supabase, fetchRooms, addNotification]);
-
-  const handleRejectInvitation = useCallback(async (invitationId: string, roomName: string, senderId: string) => {
-    if (!session?.user?.id || !supabase) {
-      toast.error("You must be logged in to reject invitations.");
-      return;
-    }
-
-    const { error } = await supabase
-      .from('room_invitations')
-      .update({ status: 'rejected' })
-      .eq('id', invitationId)
-      .eq('receiver_id', session.user.id);
-
-    if (error) {
-      toast.error("Error rejecting invitation: " + error.message);
-      console.error("Error rejecting invitation:", error);
-    } else {
-      toast.info(`You rejected the invitation to "${roomName}".`);
-      addNotification(`Your invitation to "${roomName}" was rejected.`, senderId);
-    }
-  }, [session, supabase, addNotification]);
-
   return {
     handleJoinRoomByRoomId,
     handleJoinRoomByPassword,
     handleLeaveRoom,
     handleKickUser,
-    handleAcceptInvitation,
-    handleRejectInvitation,
   };
 }
