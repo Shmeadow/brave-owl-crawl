@@ -11,9 +11,22 @@ interface NoteListProps {
   onToggleStar: (noteId: string) => void;
   onDelete: (noteId: string) => void;
   isCurrentRoomWritable: boolean;
+  onUpdateNoteContent: (noteId: string, newContent: string) => void; // New prop
+  onUpdateNoteTitle: (noteId: string, newTitle: string) => void; // New prop
+  onSelectNoteForAnnotations: (noteId: string | null) => void; // New prop
+  activeNoteForAnnotations: string | null; // New prop
 }
 
-export function NoteList({ notes, onToggleStar, onDelete, isCurrentRoomWritable }: NoteListProps) {
+export function NoteList({
+  notes,
+  onToggleStar,
+  onDelete,
+  isCurrentRoomWritable,
+  onUpdateNoteContent,
+  onUpdateNoteTitle,
+  onSelectNoteForAnnotations,
+  activeNoteForAnnotations,
+}: NoteListProps) {
   return (
     <Card className="w-full flex flex-col flex-1 bg-card backdrop-blur-xl border-white/20">
       <CardHeader>
@@ -32,6 +45,10 @@ export function NoteList({ notes, onToggleStar, onDelete, isCurrentRoomWritable 
                   onToggleStar={onToggleStar}
                   onDelete={onDelete}
                   isCurrentRoomWritable={isCurrentRoomWritable}
+                  onUpdateNoteContent={onUpdateNoteContent}
+                  onUpdateNoteTitle={onUpdateNoteTitle}
+                  onSelectNoteForAnnotations={onSelectNoteForAnnotations}
+                  activeNoteForAnnotations={activeNoteForAnnotations}
                 />
               ))}
             </div>

@@ -204,6 +204,62 @@ export function useNotes() {
     }
   }, [notes, isLoggedInMode, session, supabase]);
 
+  const handleUpdateNoteContent = useCallback(async (noteId: string, newContent: string) => {
+    const noteToUpdate = notes.find(note => note.id === noteId);
+    if (!noteToUpdate) return;
+
+    if (isLoggedInMode && session && supabase) {
+      const { data, error } = await supabase
+        .from('notes')
+        .update({ content: newContent })
+        .eq('id', noteId)
+        .eq('user_id', session.user.id)
+        .select()
+        .single();
+
+      if (error) {
+        toast.error("Error updating note content (Supabase): " + error.message);
+        console.error("Error updating note content (Supabase):", error);
+      } else if (data) {
+        setNotes(prevNotes => prevNotes.map(note => note.id === noteId ? data as NoteData : note));
+        // toast.success("Note content updated!"); // Too frequent, removed
+      }
+    } else {
+      setNotes(prevNotes => prevNotes.map(note =>
+        note.id === noteId ? { ...note, content: newContent } : note
+      ));
+      // toast.success("Note content updated (locally)!"); // Too frequent, removed
+    }
+  }, [notes, isLoggedInMode, session, supabase]);
+
+  const handleUpdateNoteTitle = useCallback(async (noteId: string, newTitle: string) => {
+    const noteToUpdate = notes.find(note => note.id === noteId);
+    if (!noteToUpdate) return;
+
+    if (isLoggedInMode && session && supabase) {
+      const { data, error } = await supabase
+        .from('notes')
+        .update({ title: newTitle })
+        .eq('id', noteId)
+        .eq('user_id', session.user.id)
+        .select()
+        .single();
+
+      if (error) {
+        toast.error("Error updating note title (Supabase): " + error.message);
+        console.error("Error updating note title (Supabase):", error);
+      } else if (data) {
+        setNotes(prevNotes => prevNotes.map(note => note.id === noteId ? data as NoteData : note));
+        toast.success("Note title updated!");
+      }
+    } else {
+      setNotes(prevNotes => prevNotes.map(note =>
+        note.id === noteId ? { ...note, title: newTitle } : note
+      ));
+      toast.success("Note title updated (locally)!");
+    }
+  }, [notes, isLoggedInMode, session, supabase]);
+
   return {
     notes,
     loading,
@@ -211,5 +267,7 @@ export function useNotes() {
     handleAddNote,
     handleDeleteNote,
     handleToggleStar,
+    handleUpdateNoteContent,
+    handleUpdateNoteTitle,
   };
 }
