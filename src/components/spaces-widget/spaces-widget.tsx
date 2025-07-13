@@ -34,17 +34,14 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
       <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto py-4">
         <h1 className="text-3xl font-bold text-foreground text-center">Spaces</h1>
 
-        <RoomActions />
+        <MyRoomsList myRooms={myRooms} />
 
         <Separator className="w-full" />
 
-        <MyRoomsList myRooms={myRooms} />
+        <RoomActions />
 
         {publicRoomsToExplore.length > 0 && (
-          <>
-            <Separator className="w-full" />
-            <ExploreRoomsList publicRooms={publicRoomsToExplore} />
-          </>
+          <ExploreRoomsList publicRooms={publicRoomsToExplore} />
         )}
 
         {!session && (
