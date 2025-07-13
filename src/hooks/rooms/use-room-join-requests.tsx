@@ -28,12 +28,6 @@ interface UseRoomJoinRequestsProps {
   rooms: RoomData[]; // Pass rooms to get room details
 }
 
-// Helper function to validate UUID
-const isValidUUID = (uuid: string) => {
-  const regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-  return regex.test(uuid);
-};
-
 export function useRoomJoinRequests({ rooms }: UseRoomJoinRequestsProps) {
   const { supabase, session, loading: authLoading } = useSupabase();
   const { addNotification } = useNotifications();
@@ -49,11 +43,9 @@ export function useRoomJoinRequests({ rooms }: UseRoomJoinRequestsProps) {
 
     setLoading(true);
     
-    const ownedRoomIds = rooms
-      .filter(r => r.creator_id === session.user.id && isValidUUID(r.id))
-      .map(r => r.id);
+    const ownedRoomIds = rooms.filter(r => r.creator_id === session.user.id).map(r => r.id);
 
-    // If the user doesn't own any valid rooms, there are no requests to fetch for them.
+    // If the user doesn't own any rooms, there are no requests to fetch for them.
     if (ownedRoomIds.length === 0) {
       setPendingRequests([]);
       setLoading(false);
