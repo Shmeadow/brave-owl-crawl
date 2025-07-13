@@ -29,7 +29,7 @@ export function useRooms() {
     handleJoinRoomByPassword,
     handleLeaveRoom,
     handleKickUser,
-  } = useRoomMembership({ rooms, fetchRooms });
+  } = useRoomMembership({ rooms, setRooms, fetchRooms });
 
   const {
     pendingRequests,

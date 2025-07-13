@@ -33,15 +33,15 @@ export function RoomListItem({ room }: RoomListItemProps) {
     toast.success("Room ID copied to clipboard!");
   };
 
-  const onDeleteClick = async () => {
-    await handleDeleteRoom(room.id);
+  const onDeleteClick = () => {
+    handleDeleteRoom(room.id);
     if (currentRoomId === room.id) {
       setCurrentRoom(null, "My Room");
     }
   };
 
-  const onLeaveClick = async () => {
-    await handleLeaveRoom(room.id);
+  const onLeaveClick = () => {
+    handleLeaveRoom(room.id);
     if (currentRoomId === room.id) {
       setCurrentRoom(null, "My Room");
     }

@@ -9,6 +9,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 
 interface UseRoomMembershipProps {
   rooms: RoomData[];
+  setRooms: React.Dispatch<React.SetStateAction<RoomData[]>>;
   fetchRooms: () => Promise<void>;
 }
 
@@ -46,7 +47,7 @@ async function resolveRoomId(supabase: SupabaseClient, id: string): Promise<stri
   return null;
 }
 
-export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps) {
+export function useRoomMembership({ rooms, setRooms, fetchRooms }: UseRoomMembershipProps) {
   const { supabase, session } = useSupabase();
   const { addNotification } = useNotifications();
 
@@ -179,10 +180,26 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
       return;
     }
 
-    const room = rooms.find(r => r.id === roomId);
-    if (room && room.creator_id === session.user.id) {
+    const originalRooms = [...rooms];
+    const roomToLeave = originalRooms.find(r => r.id === roomId);
+
+    if (!roomToLeave) {
+        toast.error("Room not found.");
+        return;
+    }
+
+    if (roomToLeave.creator_id === session.user.id) {
       toast.error("You cannot leave a room you created. Please delete it instead.");
       return;
+    }
+
+    // Optimistic update:
+    // If the room is private, leaving it means it disappears from the list.
+    // If it's public, it should remain in the list but with is_member: false.
+    if (roomToLeave.type === 'private') {
+        setRooms(prev => prev.filter(r => r.id !== roomId));
+    } else {
+        setRooms(prev => prev.map(r => r.id === roomId ? { ...r, is_member: false } : r));
     }
 
     const { error } = await supabase
@@ -194,12 +211,13 @@ export function useRoomMembership({ rooms, fetchRooms }: UseRoomMembershipProps)
     if (error) {
       toast.error("Error leaving room: " + error.message);
       console.error("Error leaving room:", error);
+      // Revert on error
+      setRooms(originalRooms);
     } else {
       toast.success("Successfully left the room.");
-      fetchRooms();
-      addNotification(`You left the room: "${room?.name || roomId.substring(0, 8) + '...'}"`);
+      addNotification(`You left the room: "${roomToLeave.name}".`);
     }
-  }, [session, supabase, rooms, fetchRooms, addNotification]);
+  }, [session, supabase, rooms, setRooms, addNotification]);
 
   const handleKickUser = useCallback(async (roomId: string, userIdToKick: string) => {
     if (!session?.user?.id || !supabase) {
