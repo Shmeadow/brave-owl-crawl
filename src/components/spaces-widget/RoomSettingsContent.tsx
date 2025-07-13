@@ -30,6 +30,7 @@ export function RoomSettingsContent({ room }: RoomSettingsContentProps) {
     handleSetRoomPassword,
     handleUpdateRoomDescription,
     handleUpdateRoomBackground,
+    handleUpdateRoomName,
     fetchRooms,
   } = useRooms();
   const { setCurrentRoom } = useCurrentRoom();
@@ -112,31 +113,10 @@ export function RoomSettingsContent({ room }: RoomSettingsContentProps) {
     setSelectedUserToKick(null);
   }, [room.id, isOwnerOfCurrentRoom, selectedUserToKick, handleKickUser]);
 
-  const handleUpdateRoomName = async () => {
-    if (!room.id || !isOwnerOfCurrentRoom || !supabase || !session) {
-      toast.error("You must be the owner of this room and logged in to change its name.");
-      return;
-    }
-    if (!editedRoomName.trim()) {
-      toast.error("Room name cannot be empty.");
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from('rooms')
-      .update({ name: editedRoomName.trim() })
-      .eq('id', room.id)
-      .eq('creator_id', session.user.id)
-      .select('name')
-      .single();
-
-    if (error) {
-      toast.error("Error updating room name: " + error.message);
-      console.error("Error updating room name:", error);
-    } else if (data) {
-      toast.success(`Room name updated to "${data.name}"!`);
+  const handleUpdateRoomNameClick = async () => {
+    const { data, error } = await handleUpdateRoomName(room.id, editedRoomName);
+    if (!error && data) {
       setCurrentRoom(room.id, data.name);
-      fetchRooms();
     }
   };
 
@@ -205,7 +185,7 @@ export function RoomSettingsContent({ room }: RoomSettingsContentProps) {
               value={editedRoomName}
               onChange={(e) => setEditedRoomName(e.target.value)}
             />
-            <Button onClick={handleUpdateRoomName} className="w-full">
+            <Button onClick={handleUpdateRoomNameClick} className="w-full">
               Update Room Name
             </Button>
           </div>

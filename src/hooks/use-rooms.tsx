@@ -20,6 +20,7 @@ export function useRooms() {
     handleSetRoomPassword, // Exposed
     handleUpdateRoomDescription, // Exposed
     handleUpdateRoomBackground, // Exposed
+    handleUpdateRoomName, // New
   } = useRoomManagement({ setRooms, fetchRooms, refreshProfile }); // Pass setRooms and refreshProfile to useRoomManagement
   const {
     handleJoinRoomByRoomId,
@@ -44,6 +45,7 @@ export function useRooms() {
     handleSetRoomPassword, // Exposed
     handleUpdateRoomDescription, // Exposed
     handleUpdateRoomBackground, // Exposed
+    handleUpdateRoomName, // New
     handleJoinRoomByRoomId,
     handleJoinRoomByPassword,
     handleLeaveRoom,

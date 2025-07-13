@@ -33,6 +33,20 @@ export function RoomListItem({ room }: RoomListItemProps) {
     toast.success("Room ID copied to clipboard!");
   };
 
+  const onDeleteClick = async () => {
+    await handleDeleteRoom(room.id);
+    if (currentRoomId === room.id) {
+      setCurrentRoom(null, "My Room");
+    }
+  };
+
+  const onLeaveClick = async () => {
+    await handleLeaveRoom(room.id);
+    if (currentRoomId === room.id) {
+      setCurrentRoom(null, "My Room");
+    }
+  };
+
   const getRoomCreatorDisplay = () => {
     if (isOwner) return "Created by You";
     const profile = room.profiles?.[0];
@@ -85,12 +99,12 @@ export function RoomListItem({ room }: RoomListItemProps) {
           <LogIn className="h-4 w-4" />
         </Button>
         {isOwner && (
-          <Button variant="ghost" size="icon" className="text-red-500 hover:bg-red-100 hover:text-red-600" onClick={() => handleDeleteRoom(room.id)} title="Close Room">
+          <Button variant="ghost" size="icon" className="text-red-500 hover:bg-red-100 hover:text-red-600" onClick={onDeleteClick} title="Close Room">
             <Trash2 className="h-4 w-4" />
           </Button>
         )}
         {isJoined && !isOwner && (
-          <Button variant="ghost" size="icon" className="text-red-500 hover:bg-red-100 hover:text-red-600" onClick={() => handleLeaveRoom(room.id)} title="Leave Room">
+          <Button variant="ghost" size="icon" className="text-red-500 hover:bg-red-100 hover:text-red-600" onClick={onLeaveClick} title="Leave Room">
             <LogOut className="h-4 w-4" />
           </Button>
         )}

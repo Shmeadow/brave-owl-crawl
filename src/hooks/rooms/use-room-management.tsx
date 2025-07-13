@@ -101,6 +101,34 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
     return { data: null, error: { message: "Unknown error creating room" } }; // Fallback
   }, [session, supabase, setRooms, addNotification, refreshProfile]);
 
+  const handleUpdateRoomName = useCallback(async (roomId: string, newName: string) => {
+    if (!session?.user?.id || !supabase) {
+      toast.error("You must be logged in to update room settings.");
+      return { data: null, error: { message: "Not logged in" } };
+    }
+    if (!newName.trim()) {
+      toast.error("Room name cannot be empty.");
+      return { data: null, error: { message: "Room name cannot be empty" } };
+    }
+
+    const { data, error } = await supabase
+      .from('rooms')
+      .update({ name: newName.trim() })
+      .eq('id', roomId)
+      .eq('creator_id', session.user.id)
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("Error updating room name: " + error.message);
+      return { data: null, error };
+    } else {
+      toast.success(`Room name updated to "${newName}"!`);
+      await fetchRooms(); // Re-fetch to update the list everywhere
+      return { data, error: null };
+    }
+  }, [session, supabase, fetchRooms]);
+
   const handleUpdateRoomType = useCallback(async (roomId: string, newType: 'public' | 'private') => {
     if (!session?.user?.id || !supabase) {
       toast.error("You must be logged in to update room settings.");
@@ -353,6 +381,7 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
 
   return {
     handleCreateRoom,
+    handleUpdateRoomName,
     handleUpdateRoomType,
     handleSetRoomPassword,
     handleSendRoomInvitation,
