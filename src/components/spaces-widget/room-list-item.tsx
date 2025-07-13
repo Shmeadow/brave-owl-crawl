@@ -65,12 +65,15 @@ export function RoomListItem({ room }: RoomListItemProps) {
     >
       <div className="flex items-center flex-1 min-w-0">
         <div className="relative w-16 h-10 rounded-md overflow-hidden mr-3 flex-shrink-0 bg-muted">
-          {room.background_url && (
+          {room.background_url ? (
             room.is_video_background ? (
-              <video src={room.background_url} className="w-full h-full object-cover" muted playsInline />
+              <video src={room.background_url} className="w-full h-full object-cover" muted playsInline autoPlay loop key={room.background_url} />
             ) : (
               <Image src={room.background_url} alt={room.name} fill className="object-cover" sizes="64px" priority={false} />
             )
+          ) : (
+            // Fallback for when there is no background_url
+            <Image src="/static/bg1.jpg" alt="Default room background" fill className="object-cover" sizes="64px" priority={false} />
           )}
         </div>
         <div className="flex-1 pr-2 mb-2 sm:mb-0">

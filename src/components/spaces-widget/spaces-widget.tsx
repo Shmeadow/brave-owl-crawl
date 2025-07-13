@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { MyRoomsList } from "./my-rooms-list";
 import { ExploreRoomsList } from "./explore-rooms-list";
 import { RoomActions } from "./room-actions";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface SpacesWidgetProps {
   isCurrentRoomWritable: boolean;
@@ -38,11 +39,20 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
 
         <Separator className="w-full" />
 
-        <RoomActions />
-
-        {publicRoomsToExplore.length > 0 && (
-          <ExploreRoomsList publicRooms={publicRoomsToExplore} />
-        )}
+        <Card className="w-full bg-background/50 backdrop-blur-xl border-white/20 p-4">
+          <CardHeader className="p-0 pb-4">
+            <CardTitle className="text-xl">Join or Explore Rooms</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0 space-y-4">
+            <RoomActions />
+            {publicRoomsToExplore.length > 0 && (
+              <>
+                <Separator />
+                <ExploreRoomsList publicRooms={publicRoomsToExplore} />
+              </>
+            )}
+          </CardContent>
+        </Card>
 
         {!session && (
           <p className="text-sm text-muted-foreground mt-4 text-center">

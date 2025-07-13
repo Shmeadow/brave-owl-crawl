@@ -297,11 +297,11 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
       toast.error("Error deleting room: " + error.message);
       console.error("Error deleting room:", error);
     } else if (data) {
-      setRooms(prev => prev.filter(r => r.id !== roomId)); // Optimistic update
       toast.success("Room deleted successfully.");
       addNotification(`You deleted the room: "${roomToDelete.name}".`);
+      await fetchRooms(); // Explicitly re-fetch rooms to update the UI
     }
-  }, [session, supabase, setRooms, addNotification]);
+  }, [session, supabase, addNotification, fetchRooms]);
 
   const handleUpdateRoomDescription = useCallback(async (roomId: string, newDescription: string | null) => {
     if (!session?.user?.id || !supabase) {
