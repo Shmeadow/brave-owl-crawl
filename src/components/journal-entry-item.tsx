@@ -2,9 +2,9 @@
 
 import React, { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Star, Trash2, MessageSquare, ChevronDown, ChevronUp, Edit } from "lucide-react"; // Added Edit icon
+import { Star, Trash2, MessageSquare, ChevronDown, ChevronUp, Edit } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { NoteData } from "@/hooks/use-notes"; // Still using NoteData as the base type
+import { JournalEntryData } from "@/hooks/use-journal";
 import { toast } from "sonner";
 import { RichTextEditor } from "./rich-text-editor";
 import { AnnotationData, useAnnotations } from "@/hooks/use-annotations";
@@ -22,20 +22,20 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Import Card components
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-interface EntryItemProps {
-  entry: NoteData; // Renamed from 'note' to 'entry'
-  onToggleStar: (entryId: string) => void; // Renamed from 'noteId'
-  onDelete: (entryId: string) => void; // Renamed from 'noteId'
+interface JournalEntryItemProps {
+  entry: JournalEntryData;
+  onToggleStar: (entryId: string) => void;
+  onDelete: (entryId: string) => void;
   isCurrentRoomWritable: boolean;
-  onUpdateEntryContent: (entryId: string, newContent: string) => void; // Renamed from 'noteId'
-  onUpdateEntryTitle: (entryId: string, newTitle: string) => void; // Renamed from 'noteId'
-  onSelectEntryForAnnotations: (entryId: string | null) => void; // Renamed from 'noteId'
-  activeEntryForAnnotations: string | null; // Renamed from 'noteId'
+  onUpdateEntryContent: (entryId: string, newContent: string) => void;
+  onUpdateEntryTitle: (entryId: string, newTitle: string) => void;
+  onSelectEntryForAnnotations: (entryId: string | null) => void;
+  activeEntryForAnnotations: string | null;
 }
 
-export function EntryItem({
+export function JournalEntryItem({
   entry,
   onToggleStar,
   onDelete,
@@ -44,7 +44,7 @@ export function EntryItem({
   onUpdateEntryTitle,
   onSelectEntryForAnnotations,
   activeEntryForAnnotations,
-}: EntryItemProps) {
+}: JournalEntryItemProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(entry.title || '');
   const [isAnnotationCommentDialogOpen, setIsAnnotationCommentDialogOpen] = useState(false);
@@ -55,7 +55,7 @@ export function EntryItem({
 
   const handleToggleStarClick = () => {
     if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to star/unstar entries in this room.");
+      toast.error("You do not have permission to star/unstar journal entries in this room.");
       return;
     }
     onToggleStar(entry.id);
@@ -63,7 +63,7 @@ export function EntryItem({
 
   const handleDeleteClick = () => {
     if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to delete entries in this room.");
+      toast.error("You do not have permission to delete journal entries in this room.");
       return;
     }
     onDelete(entry.id);
@@ -71,7 +71,7 @@ export function EntryItem({
 
   const handleTitleDoubleClick = () => {
     if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to edit entries in this room.");
+      toast.error("You do not have permission to edit journal entries in this room.");
       return;
     }
     setIsEditingTitle(true);
@@ -96,7 +96,7 @@ export function EntryItem({
       return null;
     }
     const newAnno = await addAnnotation({
-      note_id: entry.id, // Still refers to note_id in DB, but conceptually entry_id
+      note_id: entry.id,
       highlight_id: highlightId,
       highlighted_text: highlightedText,
       comment: null,
@@ -234,7 +234,7 @@ export function EntryItem({
                   content={entry.content}
                   onChange={handleContentChange}
                   disabled={!isCurrentRoomWritable}
-                  noteId={entry.id} // Pass entry.id as noteId for annotations
+                  noteId={entry.id}
                   annotations={annotations}
                   onAddAnnotation={handleAddAnnotation}
                   onDeleteAnnotation={handleDeleteAnnotation}

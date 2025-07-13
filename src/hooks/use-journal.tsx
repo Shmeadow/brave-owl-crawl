@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
 
-// Reusing NoteData interface as journal entries share the same table structure
 export interface JournalEntryData {
   id: string;
   user_id?: string; // Optional for local storage entries
@@ -15,13 +14,48 @@ export interface JournalEntryData {
   type: 'note' | 'journal'; // Will always be 'journal' for this hook
 }
 
+export interface ImportantReminder {
+  entryId: string;
+  entryTitle: string | null;
+  text: string | null;
+  timestamp: string;
+}
+
 const LOCAL_STORAGE_KEY = 'guest_journal_entries';
 
 export function useJournal() {
   const { supabase, session, loading: authLoading } = useSupabase();
   const [journalEntries, setJournalEntries] = useState<JournalEntryData[]>([]);
+  const [importantReminders, setImportantReminders] = useState<ImportantReminder[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
+
+  // Function to extract important reminders from journal entries
+  const extractImportantReminders = useCallback((entries: JournalEntryData[]): ImportantReminder[] => {
+    const reminders: ImportantReminder[] = [];
+    entries.forEach(entry => {
+      if (entry.type === 'journal' && entry.content) {
+        try {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(entry.content, 'text/html');
+          const importantSpans = doc.querySelectorAll('.important-journal-item');
+          importantSpans.forEach(span => {
+            reminders.push({
+              entryId: entry.id,
+              entryTitle: entry.title,
+              text: span.textContent,
+              timestamp: entry.created_at,
+            });
+          });
+        } catch (e) {
+          console.error("Error parsing entry content for reminders:", e);
+        }
+      }
+    });
+    // Sort reminders by timestamp, newest first
+    reminders.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    return reminders;
+  }, []);
 
   // Effect to handle initial load and auth state changes
   useEffect(() => {
@@ -119,6 +153,11 @@ export function useJournal() {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(journalEntries));
     }
   }, [journalEntries, isLoggedInMode, loading]);
+
+  // Effect to update reminders whenever journal entries change
+  useEffect(() => {
+    setImportantReminders(extractImportantReminders(journalEntries));
+  }, [journalEntries, extractImportantReminders]);
 
   const handleAddJournalEntry = useCallback(async ({ title, content }: { title: string; content: string; }) => {
     if (isLoggedInMode && session && supabase) {
@@ -268,6 +307,7 @@ export function useJournal() {
 
   return {
     journalEntries,
+    importantReminders,
     loading,
     isLoggedInMode,
     handleAddJournalEntry,

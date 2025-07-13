@@ -2,12 +2,15 @@
 
 import React, { useState, useMemo, useRef, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AddEntryForm } from "@/components/add-entry-form"; // Reusing generic form
-import { EntryList } from "@/components/entry-list"; // Reusing generic list
-import { useJournal, JournalEntryData } from "@/hooks/use-journal"; // New hook for journal
-import { Loader2 } from "lucide-react";
-import { AnnotationsSidebar } from "@/components/annotations-sidebar"; // Annotations still apply
+import { AddJournalEntryForm } from "@/components/add-journal-entry-form";
+import { JournalEntryList } from "@/components/journal-entry-list";
+import { useJournal, JournalEntryData, ImportantReminder } from "@/hooks/use-journal";
+import { Loader2, Star } from "lucide-react";
+import { AnnotationsSidebar } from "@/components/annotations-sidebar";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 interface JournalWidgetProps {
   isCurrentRoomWritable: boolean;
@@ -16,6 +19,7 @@ interface JournalWidgetProps {
 export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
   const {
     journalEntries,
+    importantReminders,
     loading,
     isLoggedInMode,
     handleAddJournalEntry,
@@ -25,6 +29,7 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
     handleUpdateJournalEntryTitle,
   } = useJournal();
   const [activeEntryForAnnotations, setActiveEntryForAnnotations] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'entries' | 'reminders'>('entries');
 
   const handleSelectEntryForAnnotations = useCallback((entryId: string | null) => {
     setActiveEntryForAnnotations(entryId);
@@ -58,31 +63,61 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full h-full">
         {/* Left Column: Add New Journal Entry Form */}
         <div className="md:col-span-2 flex flex-col gap-6">
-          <AddEntryForm
+          <AddJournalEntryForm
             onAddEntry={handleAddJournalEntry}
             isCurrentRoomWritable={isCurrentRoomWritable}
-            defaultType={'journal'} // Always 'journal'
-            showTypeToggle={false} // Hide type toggle
           />
         </div>
 
-        {/* Right Columns: Journal Entry List and Annotations Sidebar */}
+        {/* Right Columns: Journal Entry List / Reminders and Annotations Sidebar */}
         <div className={`md:col-span-1 flex flex-col gap-6 ${activeEntryForAnnotations ? 'md:grid md:grid-cols-1' : ''}`}>
           <Card className="w-full flex-1 bg-card backdrop-blur-xl border-white/20">
-            <CardHeader>
-              <CardTitle>Your Journal Entries</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle>Journal Content</CardTitle>
             </CardHeader>
-            <CardContent className="p-4">
-              <EntryList
-                entries={journalEntries}
-                onToggleStar={handleToggleStarJournalEntry}
-                onDelete={handleDeleteJournalEntry}
-                isCurrentRoomWritable={isCurrentRoomWritable}
-                onUpdateEntryContent={handleUpdateJournalEntryContent}
-                onUpdateEntryTitle={handleUpdateJournalEntryTitle}
-                onSelectEntryForAnnotations={handleSelectEntryForAnnotations}
-                activeEntryForAnnotations={activeEntryForAnnotations}
-              />
+            <CardContent className="p-4 pt-0">
+              <Tabs defaultValue="entries" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-4">
+                  <TabsTrigger value="entries" onClick={() => setActiveTab('entries')}>Entries</TabsTrigger>
+                  <TabsTrigger value="reminders" onClick={() => setActiveTab('reminders')}>Reminders ({importantReminders.length})</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="entries" className="mt-0">
+                  <JournalEntryList
+                    entries={journalEntries}
+                    onToggleStar={handleToggleStarJournalEntry}
+                    onDelete={handleDeleteJournalEntry}
+                    isCurrentRoomWritable={isCurrentRoomWritable}
+                    onUpdateEntryContent={handleUpdateJournalEntryContent}
+                    onUpdateEntryTitle={handleUpdateJournalEntryTitle}
+                    onSelectEntryForAnnotations={handleSelectEntryForAnnotations}
+                    activeEntryForAnnotations={activeEntryForAnnotations}
+                  />
+                </TabsContent>
+
+                <TabsContent value="reminders" className="mt-0">
+                  <ScrollArea className="h-[400px] pr-4">
+                    {importantReminders.length === 0 ? (
+                      <p className="text-muted-foreground text-sm text-center py-8">No important reminders yet. Mark text with the 🌟 button in your journal entries!</p>
+                    ) : (
+                      <ul className="space-y-4">
+                        {importantReminders.map((reminder, index) => (
+                          <li key={index} className="text-sm border-b border-border/50 pb-3 last:border-b-0">
+                            <p className="font-semibold text-foreground flex items-center gap-2">
+                              <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                              From: "{reminder.entryTitle || 'Untitled Entry'}"
+                            </p>
+                            <p className="text-muted-foreground ml-6">"{reminder.text}"</p>
+                            <p className="text-xs text-muted-foreground ml-6 mt-1">
+                              {new Date(reminder.timestamp).toLocaleString()}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </ScrollArea>
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
           {activeEntryForAnnotations && (
