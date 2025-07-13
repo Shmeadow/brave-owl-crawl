@@ -23,8 +23,8 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
   // Filter rooms for MyRoomsSection
   const myCreatedRooms = rooms.filter(room => 
     room.creator_id === session?.user?.id && 
-    !room.deleted_at && 
-    room.id !== profile?.personal_room_id // Exclude the personal room
+    !room.deleted_at 
+    // Removed: room.id !== profile?.personal_room_id // Now include the personal room
   );
   const myJoinedRooms = rooms.filter(room => room.is_member && room.creator_id !== session?.user?.id && !room.deleted_at);
   const publicRooms = rooms.filter(room => room.type === 'public' && !room.is_member && room.creator_id !== session?.user?.id && !room.deleted_at);

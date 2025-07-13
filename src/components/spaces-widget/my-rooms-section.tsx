@@ -78,9 +78,9 @@ export function MyRoomsSection({ myCreatedRooms, myJoinedRooms }: MyRoomsSection
 
   return (
     <>
-      <Card className="w-full bg-card backdrop-blur-xl border-white/20 p-4">
+      <Card className="w-full bg-background/50 backdrop-blur-xl border-white/20 p-4">
         <CardHeader className="pb-4">
-          <CardTitle className="text-xl">Other Rooms You Manage & Joined Rooms</CardTitle>
+          <CardTitle className="text-xl">Your Rooms</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <ScrollArea className="max-h-[300px] pr-4">

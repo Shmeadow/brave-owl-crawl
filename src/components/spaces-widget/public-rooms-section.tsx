@@ -51,7 +51,7 @@ export function PublicRoomsSection({ publicRooms }: PublicRoomsSectionProps) {
   }
 
   return (
-    <Card className="w-full bg-card backdrop-blur-xl border-white/20 p-4">
+    <Card className="w-full bg-background/50 backdrop-blur-xl border-white/20 p-4">
       <CardHeader className="pb-4">
         <CardTitle className="text-xl">Public Rooms</CardTitle>
       </CardHeader>
