@@ -81,8 +81,17 @@ export function NotesWidget({ isCurrentRoomWritable }: NotesWidgetProps) {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full h-full">
-        {/* Left/Middle Columns: Note List and Annotations Sidebar */}
-        <div className={`md:col-span-2 flex flex-col gap-6 ${activeNoteForAnnotations ? 'md:grid md:grid-cols-2' : ''}`}>
+        {/* Left Column: Add New Entry Form */}
+        <div className="md:col-span-2 flex flex-col gap-6"> {/* Changed to md:col-span-2 */}
+          <AddNoteForm
+            onAddNote={handleAddNote}
+            isCurrentRoomWritable={isCurrentRoomWritable}
+            defaultType={viewMode === 'journal' ? 'journal' : 'note'}
+          />
+        </div>
+
+        {/* Right Columns: Note List and Annotations Sidebar */}
+        <div className={`md:col-span-1 flex flex-col gap-6 ${activeNoteForAnnotations ? 'md:grid md:grid-cols-1' : ''}`}> {/* Changed to md:col-span-1 */}
           <Card className="w-full flex-1 bg-card backdrop-blur-xl border-white/20">
             <CardHeader>
               <CardTitle>Your Entries</CardTitle>
@@ -120,15 +129,6 @@ export function NotesWidget({ isCurrentRoomWritable }: NotesWidgetProps) {
               />
             </div>
           )}
-        </div>
-
-        {/* Right Column: Add New Entry Form */}
-        <div className="md:col-span-1 flex flex-col gap-6">
-          <AddNoteForm
-            onAddNote={handleAddNote}
-            isCurrentRoomWritable={isCurrentRoomWritable}
-            defaultType={viewMode === 'journal' ? 'journal' : 'note'}
-          />
         </div>
       </div>
     </div>
