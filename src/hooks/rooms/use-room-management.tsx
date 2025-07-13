@@ -132,6 +132,10 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
       return { data: null, error: { message: "Room name cannot be empty" } };
     }
 
+    const originalRooms = [...rooms];
+    const updatedRooms = rooms.map(r => r.id === roomId ? { ...r, name: newName.trim() } : r);
+    setRooms(updatedRooms); // Optimistic update
+
     const { data, error } = await supabase
       .from('rooms')
       .update({ name: newName.trim() })
@@ -142,13 +146,13 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
 
     if (error) {
       toast.error("Error updating room name: " + error.message);
+      setRooms(originalRooms); // Revert on error
       return { data: null, error };
     } else {
       toast.success(`Room name updated to "${newName}"!`);
-      await fetchRooms();
       return { data, error: null };
     }
-  }, [session, supabase, fetchRooms]);
+  }, [session, supabase, rooms, setRooms]);
 
   const handleUpdateRoomType = useCallback(async (roomId: string, newType: 'public' | 'private') => {
     if (!session?.user?.id || !supabase) {
@@ -156,26 +160,21 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
       return;
     }
 
-    const { data: room, error: fetchRoomError } = await supabase
-      .from('rooms')
-      .select('creator_id, name, password_hash')
-      .eq('id', roomId)
-      .single();
+    const originalRooms = [...rooms];
+    const roomToUpdate = originalRooms.find(r => r.id === roomId);
+    if (!roomToUpdate) return;
 
-    if (fetchRoomError || !room) {
-      toast.error("Room not found or access denied.");
-      console.error("Error fetching room for type update:", fetchRoomError);
-      return;
-    }
-
-    if (room.creator_id !== session.user.id) {
+    if (roomToUpdate.creator_id !== session.user.id) {
       toast.error("You can only change the type of rooms you created.");
       return;
     }
 
-    let updateData: { type: 'public' | 'private'; password_hash?: string | null } = { type: newType };
+    // Optimistic update
+    const updatedRooms = rooms.map(r => r.id === roomId ? { ...r, type: newType, password_hash: newType === 'public' ? null : r.password_hash } : r);
+    setRooms(updatedRooms);
 
-    if (newType === 'public' && room.password_hash) {
+    let updateData: { type: 'public' | 'private'; password_hash?: string | null } = { type: newType };
+    if (newType === 'public' && roomToUpdate.password_hash) {
       updateData.password_hash = null;
     }
 
@@ -187,12 +186,11 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
 
     if (error) {
       toast.error("Error updating room type: " + error.message);
-      console.error("Error updating room type:", error);
+      setRooms(originalRooms); // Revert on error
     } else {
-      setRooms(prev => prev.map(r => r.id === roomId ? { ...r, type: newType, password_hash: newType === 'public' ? null : r.password_hash } : r));
-      toast.success(`Room "${room.name}" is now ${newType}.`);
+      toast.success(`Room "${roomToUpdate.name}" is now ${newType}.`);
     }
-  }, [session, supabase, setRooms]);
+  }, [session, supabase, rooms, setRooms]);
 
   const handleSetRoomPassword = useCallback(async (roomId: string, password: string | null) => {
     if (!session?.user?.id || !supabase) {
@@ -200,15 +198,9 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
       return;
     }
 
-    const { data: room, error: fetchRoomError } = await supabase
-      .from('rooms')
-      .select('creator_id, name, type')
-      .eq('id', roomId)
-      .single();
-
-    if (fetchRoomError || !room) {
-      toast.error("Room not found or access denied.");
-      console.error("Error fetching room for password update:", fetchRoomError);
+    const room = rooms.find(r => r.id === roomId);
+    if (!room) {
+      toast.error("Room not found.");
       return;
     }
 
@@ -236,16 +228,14 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
 
       if (!response.ok) {
         toast.error("Error setting password: " + (data.error || "Unknown error"));
-        console.error("Error setting password:", data.error);
       } else {
         setRooms(prev => prev.map(r => r.id === roomId ? { ...r, password_hash: password ? 'set' : null } : r));
         toast.success(password ? "Room password set successfully!" : "Room password removed successfully!");
       }
     } catch (error) {
       toast.error("Failed to set password due to network error.");
-      console.error("Network error setting password:", error);
     }
-  }, [session, supabase, setRooms]);
+  }, [session, supabase, rooms, setRooms]);
 
   const handleSendRoomInvitation = useCallback(async (roomId: string, receiverEmail: string) => {
     if (!session?.user?.id || !supabase) {
@@ -261,7 +251,6 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
 
     if (roomError || !room) {
       toast.error("Room not found or access denied.");
-      console.error("Error fetching room for sending invitation:", roomError);
       return;
     }
 
@@ -303,9 +292,7 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
 
     if (error) {
       toast.error("Error deleting room: " + error.message);
-      console.error("Error deleting room:", error);
-      // Revert on error
-      setRooms(originalRooms);
+      setRooms(originalRooms); // Revert on error
     } else {
       toast.success("Room deleted successfully.");
       addNotification(`You deleted the room: "${roomToDelete.name}".`);
@@ -318,22 +305,17 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
       return;
     }
 
-    const { data: room, error: fetchRoomError } = await supabase
-      .from('rooms')
-      .select('creator_id, name')
-      .eq('id', roomId)
-      .single();
+    const originalRooms = [...rooms];
+    const roomToUpdate = originalRooms.find(r => r.id === roomId);
+    if (!roomToUpdate) return;
 
-    if (fetchRoomError || !room) {
-      toast.error("Room not found or access denied.");
-      console.error("Error fetching room for description update:", fetchRoomError);
-      return;
-    }
-
-    if (room.creator_id !== session.user.id) {
+    if (roomToUpdate.creator_id !== session.user.id) {
       toast.error("You can only change the description of rooms you created.");
       return;
     }
+
+    // Optimistic update
+    setRooms(prev => prev.map(r => r.id === roomId ? { ...r, description: newDescription } : r));
 
     const { error } = await supabase
       .from('rooms')
@@ -343,12 +325,11 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
 
     if (error) {
       toast.error("Error updating room description: " + error.message);
-      console.error("Error updating room description:", error);
+      setRooms(originalRooms); // Revert on error
     } else {
-      setRooms(prev => prev.map(r => r.id === roomId ? { ...r, description: newDescription } : r));
-      toast.success(`Room "${room.name}" description updated!`);
+      toast.success(`Room "${roomToUpdate.name}" description updated!`);
     }
-  }, [session, supabase, setRooms]);
+  }, [session, supabase, rooms, setRooms]);
 
   const handleUpdateRoomBackground = useCallback(async (roomId: string, backgroundUrl: string, isVideoBackground: boolean) => {
     if (!session?.user?.id || !supabase) {
@@ -356,22 +337,17 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
       return;
     }
 
-    const { data: room, error: fetchRoomError } = await supabase
-      .from('rooms')
-      .select('creator_id, name')
-      .eq('id', roomId)
-      .single();
+    const originalRooms = [...rooms];
+    const roomToUpdate = originalRooms.find(r => r.id === roomId);
+    if (!roomToUpdate) return;
 
-    if (fetchRoomError || !room) {
-      toast.error("Room not found or access denied.");
-      console.error("Error fetching room for background update:", fetchRoomError);
-      return;
-    }
-
-    if (room.creator_id !== session.user.id) {
+    if (roomToUpdate.creator_id !== session.user.id) {
       toast.error("You can only change the background of rooms you created.");
       return;
     }
+
+    // Optimistic update
+    setRooms(prev => prev.map(r => r.id === roomId ? { ...r, background_url: backgroundUrl, is_video_background: isVideoBackground } : r));
 
     const { error } = await supabase
       .from('rooms')
@@ -381,12 +357,11 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
 
     if (error) {
       toast.error("Error updating room background: " + error.message);
-      console.error("Error updating room background:", error);
+      setRooms(originalRooms); // Revert on error
     } else {
-      setRooms(prev => prev.map(r => r.id === roomId ? { ...r, background_url: backgroundUrl, is_video_background: isVideoBackground } : r));
-      toast.success(`Room "${room.name}" background updated!`);
+      toast.success(`Room "${roomToUpdate.name}" background updated!`);
     }
-  }, [session, supabase, setRooms]);
+  }, [session, supabase, rooms, setRooms]);
 
   return {
     handleCreateRoom,

@@ -36,14 +36,14 @@ export function RoomListItem({ room }: RoomListItemProps) {
   const onDeleteClick = () => {
     handleDeleteRoom(room.id);
     if (currentRoomId === room.id) {
-      setCurrentRoom(null, "My Room");
+      setCurrentRoom(null, "Dashboard");
     }
   };
 
   const onLeaveClick = () => {
     handleLeaveRoom(room.id);
     if (currentRoomId === room.id) {
-      setCurrentRoom(null, "My Room");
+      setCurrentRoom(null, "Dashboard");
     }
   };
 

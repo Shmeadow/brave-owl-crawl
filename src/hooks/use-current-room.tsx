@@ -21,9 +21,9 @@ export function useCurrentRoom() {
 
   const [currentRoomName, setCurrentRoomNameState] = useState<string>(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem(LOCAL_STORAGE_CURRENT_ROOM_NAME_KEY) || "My Room";
+      return localStorage.getItem(LOCAL_STORAGE_CURRENT_ROOM_NAME_KEY) || "Dashboard";
     }
-    return "My Room";
+    return "Dashboard";
   });
 
   const [isCurrentRoomWritable, setIsCurrentRoomWritable] = useState(true);
@@ -34,7 +34,7 @@ export function useCurrentRoom() {
     if (id) {
       toast.info(`Switched to room: ${name}`);
     } else {
-      toast.info("Switched to your personal space.");
+      toast.info("Switched to your Dashboard.");
     }
   }, []);
 
@@ -46,7 +46,7 @@ export function useCurrentRoom() {
 
     let shouldUpdateCurrentRoom = false;
     let newTargetRoomId: string | null = null;
-    let newTargetRoomName: string = "My Room";
+    let newTargetRoomName: string = "Dashboard";
 
     // Check if the currentRoomId is still valid and accessible
     const existingCurrentRoom = rooms.find(room => room.id === currentRoomId);
@@ -88,9 +88,9 @@ export function useCurrentRoom() {
           }
         }
       } else {
-        // Guest user: default to null (My Room)
+        // Guest user: default to null (Dashboard)
         newTargetRoomId = null;
-        newTargetRoomName = "My Room";
+        newTargetRoomName = "Dashboard";
       }
 
       // Only update if the new target is different from the current state
@@ -126,7 +126,7 @@ export function useCurrentRoom() {
     }
 
     if (!currentRoomId) {
-      setIsCurrentRoomWritable(true); // "My Room" (guest mode or no room selected) is always writable
+      setIsCurrentRoomWritable(true); // "Dashboard" (guest mode or no room selected) is always writable
       return;
     }
 
