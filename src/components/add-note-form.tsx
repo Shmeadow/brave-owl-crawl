@@ -13,15 +13,17 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { RichTextEditor } from "./rich-text-editor";
 
 const formSchema = z.object({
+  title: z.string().min(1, { message: "Title cannot be empty." }),
   content: z.string().min(1, { message: "Note content cannot be empty." }),
 });
 
 interface AddNoteFormProps {
-  onAddNote: (content: string) => void;
+  onAddNote: (note: { title: string; content: string }) => void;
   isCurrentRoomWritable: boolean;
 }
 
@@ -29,6 +31,7 @@ export function AddNoteForm({ onAddNote, isCurrentRoomWritable }: AddNoteFormPro
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      title: "",
       content: "",
     },
   });
@@ -38,7 +41,7 @@ export function AddNoteForm({ onAddNote, isCurrentRoomWritable }: AddNoteFormPro
       toast.error("You do not have permission to add notes in this room.");
       return;
     }
-    onAddNote(values.content);
+    onAddNote(values);
     form.reset();
     toast.success("Note added successfully!");
   }
@@ -48,12 +51,29 @@ export function AddNoteForm({ onAddNote, isCurrentRoomWritable }: AddNoteFormPro
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
         <FormField
           control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input placeholder="Your note's title or today's date..." {...field} disabled={!isCurrentRoomWritable} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="content"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>New Note</FormLabel>
+              <FormLabel>Content</FormLabel>
               <FormControl>
-                <Textarea placeholder="Write your note here..." {...field} rows={4} disabled={!isCurrentRoomWritable} />
+                <RichTextEditor
+                  content={field.value}
+                  onChange={field.onChange}
+                  disabled={!isCurrentRoomWritable}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

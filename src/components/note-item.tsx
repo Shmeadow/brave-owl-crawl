@@ -33,9 +33,10 @@ export function NoteItem({ note, onToggleStar, onDelete, isCurrentRoomWritable }
 
   return (
     <div className="flex items-start justify-between p-3 border rounded-md bg-card backdrop-blur-xl text-card-foreground shadow-sm">
-      <div className="flex-1 pr-2">
-        <p className="text-sm">{note.content}</p>
-        <p className="text-xs text-muted-foreground mt-1">
+      <div className="flex-1 pr-2 prose dark:prose-invert prose-sm max-w-none">
+        <h4 className="font-semibold mt-0 mb-2">{note.title || 'Untitled Note'}</h4>
+        <div dangerouslySetInnerHTML={{ __html: note.content }} />
+        <p className="text-xs text-muted-foreground mt-2 not-prose">
           {new Date(note.created_at).toLocaleString()}
         </p>
       </div>

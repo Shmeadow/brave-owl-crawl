@@ -7,6 +7,7 @@ import { toast } from "sonner";
 export interface NoteData {
   id: string;
   user_id?: string; // Optional for local storage notes
+  title: string | null;
   content: string;
   starred: boolean;
   created_at: string;
@@ -29,9 +30,7 @@ export function useNotes() {
       if (session && supabase) {
         // User is logged in
         setIsLoggedInMode(true);
-        // console.log("User logged in. Checking for local notes to migrate..."); // Removed for cleaner logs
-
-        // 1. Load local notes (if any)
+        
         const localNotesString = localStorage.getItem(LOCAL_STORAGE_KEY);
         let localNotes: NoteData[] = [];
         try {
@@ -41,7 +40,6 @@ export function useNotes() {
           localNotes = [];
         }
 
-        // 2. Fetch user's existing notes from Supabase
         const { data: supabaseNotes, error: fetchError } = await supabase
           .from('notes')
           .select('*')
@@ -55,11 +53,8 @@ export function useNotes() {
         } else {
           let mergedNotes = [...(supabaseNotes as NoteData[])];
 
-          // 3. Migrate local notes to Supabase if they don't already exist
           if (localNotes.length > 0) {
-            // console.log(`Found ${localNotes.length} local notes. Attempting migration...`); // Removed for cleaner logs
             for (const localNote of localNotes) {
-              // Check if a similar note (by content) already exists in Supabase for this user
               const existsInSupabase = mergedNotes.some(
                 sn => sn.content === localNote.content
               );
@@ -69,9 +64,10 @@ export function useNotes() {
                   .from('notes')
                   .insert({
                     user_id: session.user.id,
+                    title: localNote.title,
                     content: localNote.content,
                     starred: localNote.starred,
-                    created_at: localNote.created_at || new Date().toISOString(), // Ensure created_at
+                    created_at: localNote.created_at || new Date().toISOString(),
                   })
                   .select()
                   .single();
@@ -81,11 +77,9 @@ export function useNotes() {
                   toast.error("Error migrating some local notes.");
                 } else if (newSupabaseNote) {
                   mergedNotes.push(newSupabaseNote as NoteData);
-                  // console.log("Migrated local note:", newSupabaseNote.content); // Removed for cleaner logs
                 }
               }
             }
-            // Clear local storage after migration attempt
             localStorage.removeItem(LOCAL_STORAGE_KEY);
             toast.success("Local notes migrated to your account!");
           }
@@ -120,13 +114,14 @@ export function useNotes() {
     }
   }, [notes, isLoggedInMode, loading]);
 
-  const handleAddNote = useCallback(async (content: string) => {
+  const handleAddNote = useCallback(async ({ title, content }: { title: string; content: string }) => {
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase
         .from('notes')
         .insert({
           user_id: session.user.id,
-          content: content,
+          title,
+          content,
           starred: false,
         })
         .select()
@@ -142,7 +137,8 @@ export function useNotes() {
     } else {
       const newNote: NoteData = {
         id: crypto.randomUUID(),
-        content: content,
+        title,
+        content,
         starred: false,
         created_at: new Date().toISOString(),
       };
