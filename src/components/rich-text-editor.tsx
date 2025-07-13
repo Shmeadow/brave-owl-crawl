@@ -24,6 +24,7 @@ export function RichTextEditor({ content, onChange, disabled }: RichTextEditorPr
       onChange(editor.getHTML());
     },
     editable: !disabled,
+    immediatelyRender: false, // Add this line to prevent hydration mismatches
   });
 
   return (
