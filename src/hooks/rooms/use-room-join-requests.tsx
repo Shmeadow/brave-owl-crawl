@@ -43,7 +43,9 @@ export function useRoomJoinRequests({ rooms }: UseRoomJoinRequestsProps) {
 
     setLoading(true);
     
-    const ownedRoomIds = rooms.filter(r => r.creator_id === session.user.id).map(r => r.id);
+    const ownedRoomIds = rooms
+      .filter(r => r.creator_id === session.user.id && !r.id.startsWith('temp-'))
+      .map(r => r.id);
 
     // If the user doesn't own any rooms, there are no requests to fetch for them.
     if (ownedRoomIds.length === 0) {
