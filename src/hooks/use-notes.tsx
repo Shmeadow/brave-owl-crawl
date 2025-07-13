@@ -11,6 +11,7 @@ export interface NoteData {
   content: string;
   starred: boolean;
   created_at: string;
+  type: 'note' | 'journal'; // New: Type of note
 }
 
 const LOCAL_STORAGE_KEY = 'guest_notes';
@@ -68,6 +69,7 @@ export function useNotes() {
                     content: localNote.content,
                     starred: localNote.starred,
                     created_at: localNote.created_at || new Date().toISOString(),
+                    type: localNote.type || 'note', // Ensure type is set during migration
                   })
                   .select()
                   .single();
@@ -96,6 +98,8 @@ export function useNotes() {
           console.error("Error parsing local storage notes:", e);
           loadedNotes = [];
         }
+        // Ensure all loaded notes have a 'type' property, default to 'note' if missing
+        loadedNotes = loadedNotes.map(note => ({ ...note, type: note.type || 'note' }));
         setNotes(loadedNotes);
         if (loadedNotes.length === 0) {
           toast.info("You are browsing notes as a guest. Your notes will be saved locally.");
@@ -114,7 +118,7 @@ export function useNotes() {
     }
   }, [notes, isLoggedInMode, loading]);
 
-  const handleAddNote = useCallback(async ({ title, content }: { title: string; content: string }) => {
+  const handleAddNote = useCallback(async ({ title, content, type }: { title: string; content: string; type: 'note' | 'journal' }) => {
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase
         .from('notes')
@@ -123,6 +127,7 @@ export function useNotes() {
           title,
           content,
           starred: false,
+          type, // Include type here
         })
         .select()
         .single();
@@ -141,6 +146,7 @@ export function useNotes() {
         content,
         starred: false,
         created_at: new Date().toISOString(),
+        type, // Include type here
       };
       setNotes((prevNotes) => [...prevNotes, newNote]);
       toast.success("Note added successfully (saved locally)!");
