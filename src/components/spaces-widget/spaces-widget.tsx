@@ -45,12 +45,8 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
           </CardHeader>
           <CardContent className="p-0 space-y-4">
             <RoomActions />
-            {publicRoomsToExplore.length > 0 && (
-              <>
-                <Separator />
-                <ExploreRoomsList publicRooms={publicRoomsToExplore} />
-              </>
-            )}
+            <Separator />
+            <ExploreRoomsList publicRooms={publicRoomsToExplore} />
           </CardContent>
         </Card>
 

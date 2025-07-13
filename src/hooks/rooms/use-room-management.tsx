@@ -5,32 +5,32 @@ import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
 import { RoomData } from "./types";
 import { getRandomBackground } from "@/lib/backgrounds";
-import { useNotifications } from "@/hooks/use-notifications"; // Import useNotifications
+import { useNotifications } from "@/hooks/use-notifications";
 
 interface UseRoomManagementProps {
   setRooms: React.Dispatch<React.SetStateAction<RoomData[]>>;
   fetchRooms: () => Promise<void>;
-  refreshProfile: () => Promise<void>; // Add refreshProfile prop
+  refreshProfile: () => Promise<void>;
+  setCurrentRoom: (id: string | null, name: string) => void; // Add setCurrentRoom prop
 }
 
-export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseRoomManagementProps) {
+export function useRoomManagement({ setRooms, fetchRooms, refreshProfile, setCurrentRoom }: UseRoomManagementProps) {
   const { supabase, session } = useSupabase();
-  const { addNotification } = useNotifications(); // Use the notifications hook
+  const { addNotification } = useNotifications();
 
-  const handleCreateRoom = useCallback(async (name: string, type: 'public' | 'private', description: string | null) => { // Added type and description parameters
+  const handleCreateRoom = useCallback(async (name: string, type: 'public' | 'private', description: string | null) => {
     if (!session?.user?.id || !supabase) {
       toast.error("You must be logged in to create a room.");
-      return { data: null, error: { message: "Not logged in" } }; // Return error object
+      return { data: null, error: { message: "Not logged in" } };
     }
 
-    // Check if the user already owns an *active* room
     const nowIso = new Date().toISOString();
     const { data: existingRooms, error: existingRoomsError } = await supabase
       .from('rooms')
       .select('id')
       .eq('creator_id', session.user.id)
-      .is('deleted_at', null) // Only count non-soft-deleted rooms
-      .gt('closes_at', nowIso); // Only count non-expired rooms
+      .is('deleted_at', null)
+      .gt('closes_at', nowIso);
 
     if (existingRoomsError) {
       console.error("Error checking for existing rooms:", existingRoomsError);
@@ -44,7 +44,7 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
     }
 
     const randomBg = getRandomBackground();
-    const closesAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(); // Set closes_at to 2 hours from now
+    const closesAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
 
     const { data, error } = await supabase
       .from('rooms')
@@ -53,9 +53,9 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
         name: name,
         background_url: randomBg.url,
         is_video_background: randomBg.isVideo,
-        type: type, // Set the room type
-        description: description, // Set the room description
-        closes_at: closesAt, // Set the closes_at timestamp
+        type: type,
+        description: description,
+        closes_at: closesAt,
       })
       .select(`
         id,
@@ -70,18 +70,18 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
         deleted_at,
         description,
         profiles!creator_id(first_name, last_name)
-      `) // Select only necessary fields, remove direct creator join
+      `)
       .single();
 
     if (error) {
       toast.error("Error creating room: " + error.message);
       console.error("Error creating room:", error);
-      return { data: null, error }; // Return error object
+      return { data: null, error };
     } else if (data) {
       const newRoom = { ...data, is_member: true } as RoomData;
-      setRooms(prev => [...prev, newRoom]); // Optimistic update
-      
-      // Update user's profile with the new personal_room_id
+      setRooms(prev => [...prev, newRoom]);
+      setCurrentRoom(data.id, data.name); // Set the new room as current immediately
+
       const { error: profileUpdateError } = await supabase
         .from('profiles')
         .update({ personal_room_id: data.id })
@@ -94,12 +94,11 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
         await refreshProfile();
       }
 
-      toast.success(`Room "${data.name}" created successfully!`);
       addNotification(`You created a new room: "${data.name}".`);
       return { data: newRoom, error: null };
     }
-    return { data: null, error: { message: "Unknown error creating room" } }; // Fallback
-  }, [session, supabase, setRooms, addNotification, refreshProfile]);
+    return { data: null, error: { message: "Unknown error creating room" } };
+  }, [session, supabase, setRooms, addNotification, refreshProfile, setCurrentRoom]);
 
   const handleUpdateRoomName = useCallback(async (roomId: string, newName: string) => {
     if (!session?.user?.id || !supabase) {
@@ -124,7 +123,7 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
       return { data: null, error };
     } else {
       toast.success(`Room name updated to "${newName}"!`);
-      await fetchRooms(); // Re-fetch to update the list everywhere
+      await fetchRooms();
       return { data, error: null };
     }
   }, [session, supabase, fetchRooms]);
@@ -154,7 +153,6 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
 
     let updateData: { type: 'public' | 'private'; password_hash?: string | null } = { type: newType };
 
-    // If changing to public, remove any password
     if (newType === 'public' && room.password_hash) {
       updateData.password_hash = null;
     }
@@ -218,7 +216,7 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
         toast.error("Error setting password: " + (data.error || "Unknown error"));
         console.error("Error setting password:", data.error);
       } else {
-        setRooms(prev => prev.map(r => r.id === roomId ? { ...r, password_hash: password ? 'set' : null } : r)); // Optimistic update
+        setRooms(prev => prev.map(r => r.id === roomId ? { ...r, password_hash: password ? 'set' : null } : r));
         toast.success(password ? "Room password set successfully!" : "Room password removed successfully!");
       }
     } catch (error) {
@@ -227,13 +225,12 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
     }
   }, [session, supabase, setRooms]);
 
-  const handleSendRoomInvitation = useCallback(async (roomId: string, receiverEmail: string) => { // Changed receiverId to receiverEmail
+  const handleSendRoomInvitation = useCallback(async (roomId: string, receiverEmail: string) => {
     if (!session?.user?.id || !supabase) {
       toast.error("You must be logged in to send invitations.");
       return;
     }
 
-    // Verify room ownership
     const { data: room, error: roomError } = await supabase
       .from('rooms')
       .select('creator_id, name')
@@ -251,14 +248,7 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
       return;
     }
 
-    // Simplified: Just send a notification to the user if they exist.
-    // In a real app, you'd want to get the user ID from the email first.
-    // For now, we'll just create a generic notification.
-    // This part is simplified as we removed the get-user-id-by-email function.
     toast.info(`An invitation email would be sent to ${receiverEmail} for the room "${room.name}". (This is a mock-up as direct user-to-user invites are complex).`);
-    // In a full implementation, you would use the receiver's ID to create a notification for them.
-    // addNotification(`You have been invited to join "${room.name}".`, receiverId);
-
   }, [session, supabase, addNotification]);
 
   const handleDeleteRoom = useCallback(async (roomId: string) => {
@@ -284,14 +274,12 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
       return;
     }
 
-    // Perform a soft delete by setting deleted_at timestamp
-    // Explicitly select 'id' to avoid RLS violation on implicit full row return
     const { data, error } = await supabase
       .from('rooms')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', roomId)
       .eq('creator_id', session.user.id)
-      .select('id'); // Explicitly select 'id' to avoid RLS issue
+      .select('id');
 
     if (error) {
       toast.error("Error deleting room: " + error.message);
@@ -299,7 +287,7 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
     } else if (data) {
       toast.success("Room deleted successfully.");
       addNotification(`You deleted the room: "${roomToDelete.name}".`);
-      await fetchRooms(); // Explicitly re-fetch rooms to update the UI
+      await fetchRooms();
     }
   }, [session, supabase, addNotification, fetchRooms]);
 

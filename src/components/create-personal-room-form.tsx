@@ -19,7 +19,6 @@ import { PlusCircle } from "lucide-react";
 import { useRooms, RoomData } from "@/hooks/use-rooms";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
-import { useCurrentRoom } from "@/hooks/use-current-room";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -37,7 +36,6 @@ interface CreatePersonalRoomFormProps {
 export function CreatePersonalRoomForm({ onRoomCreated, onClose }: CreatePersonalRoomFormProps) {
   const { session } = useSupabase();
   const { handleCreateRoom } = useRooms();
-  const { setCurrentRoom } = useCurrentRoom();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -56,7 +54,6 @@ export function CreatePersonalRoomForm({ onRoomCreated, onClose }: CreatePersona
     const { data, error } = await handleCreateRoom(values.name.trim(), values.type, values.description?.trim() || null);
     if (!error && data) {
       toast.success(`Your personal room "${data.name}" created successfully!`);
-      setCurrentRoom(data.id, data.name);
       onRoomCreated(data);
       onClose();
     }
@@ -108,7 +105,7 @@ export function CreatePersonalRoomForm({ onRoomCreated, onClose }: CreatePersona
                       <SelectValue placeholder="Select room type" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="z-[1200]"> {/* Updated z-index to 1200 */}
+                  <SelectContent className="z-[1200]">
                     <SelectItem value="private">Private (Invite/Password Only)</SelectItem>
                     <SelectItem value="public">Public (Anyone Can Join by ID)</SelectItem>
                   </SelectContent>

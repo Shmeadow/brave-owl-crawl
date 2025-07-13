@@ -13,13 +13,19 @@ export function ExploreRoomsList({ publicRooms }: ExploreRoomsListProps) {
   return (
     <div>
       <h4 className="text-md font-semibold mb-2">Public Rooms</h4>
-      <ScrollArea className="max-h-[250px] pr-4">
-        <div className="space-y-3">
-          {publicRooms.map((room) => (
-            <RoomListItem key={room.id} room={room} />
-          ))}
-        </div>
-      </ScrollArea>
+      {publicRooms.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center p-4">
+          No public rooms to explore right now.
+        </p>
+      ) : (
+        <ScrollArea className="max-h-[250px] pr-4">
+          <div className="space-y-3">
+            {publicRooms.map((room) => (
+              <RoomListItem key={room.id} room={room} />
+            ))}
+          </div>
+        </ScrollArea>
+      )}
     </div>
   );
 }
