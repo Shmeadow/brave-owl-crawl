@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { Highlight } from '@tiptap/extension-highlight';
 import { Color } from '@tiptap/extension-color';
 import ListItem from '@tiptap/extension-list-item';
-import TextStyle from '@tiptap/extension-text-style';
+import { TextStyle } from '@tiptap/extension-text-style'; // Fixed: Named import
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 import { toast } from 'sonner';
 import { AnnotationData } from '@/hooks/use-annotations'; // Import AnnotationData
@@ -108,7 +108,8 @@ export function RichTextEditor({
   // Sync content from props to editor
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content, { emitUpdate: false, preserveCursor: true });
+      // Fixed: Removed 'preserveCursor: true' as it's not a valid option for setContent
+      editor.commands.setContent(content, { emitUpdate: false });
     }
   }, [content, editor]);
 
@@ -154,7 +155,8 @@ export function RichTextEditor({
     const highlightId = uuidv4();
 
     // Apply the highlight mark with the unique ID
-    editor.chain().focus().setHighlight({ color, 'data-highlight-id': highlightId }).run();
+    // Fixed: Cast to any to bypass TypeScript error for custom attribute
+    editor.chain().focus().setHighlight({ color, 'data-highlight-id': highlightId } as any).run();
 
     // Add the annotation to the database
     const newAnnotation = await onAddAnnotation(highlightId, selectedText);
