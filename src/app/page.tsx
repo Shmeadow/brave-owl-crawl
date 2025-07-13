@@ -1,23 +1,27 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js';
+"use client";
 
-export default async function HomePage() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSupabase } from '@/integrations/supabase/auth';
+import { LoadingScreen } from '@/components/loading-screen';
 
-  if (supabaseUrl && supabaseAnonKey) {
-    try {
-      const supabaseServer = createClient(supabaseUrl, supabaseAnonKey);
-      const { data: { session } } = await supabaseServer.auth.getSession();
+export default function HomePage() {
+  const { session, loading } = useSupabase();
+  const router = useRouter();
 
+  useEffect(() => {
+    // We only want to redirect once the session loading is complete
+    if (!loading) {
       if (session) {
-        redirect('/dashboard');
+        // If there's a session, go to the dashboard
+        router.replace('/dashboard');
+      } else {
+        // If there's no session, go to the landing page
+        router.replace('/landing');
       }
-    } catch (e) {
-      console.error("Error checking session on root page:", e);
-      // Fall through to landing if session check fails
     }
-  }
-  
-  redirect('/landing');
+  }, [session, loading, router]);
+
+  // Show a loading screen while the session is being determined
+  return <LoadingScreen />;
 }

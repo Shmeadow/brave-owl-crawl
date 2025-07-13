@@ -78,6 +78,9 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
       console.error("Error creating room:", error);
       return { data: null, error }; // Return error object
     } else if (data) {
+      const newRoom = { ...data, is_member: true } as RoomData;
+      setRooms(prev => [...prev, newRoom]); // Optimistic update
+      
       // Update user's profile with the new personal_room_id
       const { error: profileUpdateError } = await supabase
         .from('profiles')
@@ -88,19 +91,15 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
         console.error("Error updating user's personal_room_id:", profileUpdateError);
         toast.error("Failed to link room to your profile.");
       } else {
-        // Refresh the profile state in useSupabase context
         await refreshProfile();
       }
 
       toast.success(`Room "${data.name}" created successfully!`);
-      // The fetchRooms() call will update the state in useRoomFetching,
-      // so we don't need to manually update `setRooms` here.
-      fetchRooms();
       addNotification(`You created a new room: "${data.name}".`);
-      return { data: data as RoomData, error: null }; // Return data object
+      return { data: newRoom, error: null };
     }
     return { data: null, error: { message: "Unknown error creating room" } }; // Fallback
-  }, [session, supabase, fetchRooms, addNotification, refreshProfile]);
+  }, [session, supabase, setRooms, addNotification, refreshProfile]);
 
   const handleUpdateRoomType = useCallback(async (roomId: string, newType: 'public' | 'private') => {
     if (!session?.user?.id || !supabase) {
@@ -142,10 +141,10 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
       toast.error("Error updating room type: " + error.message);
       console.error("Error updating room type:", error);
     } else {
+      setRooms(prev => prev.map(r => r.id === roomId ? { ...r, type: newType, password_hash: newType === 'public' ? null : r.password_hash } : r));
       toast.success(`Room "${room.name}" is now ${newType}.`);
-      fetchRooms(); // Re-fetch to update local state and other components
     }
-  }, [session, supabase, fetchRooms]);
+  }, [session, supabase, setRooms]);
 
   const handleSetRoomPassword = useCallback(async (roomId: string, password: string | null) => {
     if (!session?.user?.id || !supabase) {
@@ -191,14 +190,14 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
         toast.error("Error setting password: " + (data.error || "Unknown error"));
         console.error("Error setting password:", data.error);
       } else {
+        setRooms(prev => prev.map(r => r.id === roomId ? { ...r, password_hash: password ? 'set' : null } : r)); // Optimistic update
         toast.success(password ? "Room password set successfully!" : "Room password removed successfully!");
-        fetchRooms(); // Re-fetch to update local state
       }
     } catch (error) {
       toast.error("Failed to set password due to network error.");
       console.error("Network error setting password:", error);
     }
-  }, [session, supabase, fetchRooms]);
+  }, [session, supabase, setRooms]);
 
   const handleSendRoomInvitation = useCallback(async (roomId: string, receiverEmail: string) => { // Changed receiverId to receiverEmail
     if (!session?.user?.id || !supabase) {
@@ -270,11 +269,11 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
       toast.error("Error deleting room: " + error.message);
       console.error("Error deleting room:", error);
     } else if (data) {
-      fetchRooms(); // Re-fetch to update local state immediately
+      setRooms(prev => prev.filter(r => r.id !== roomId)); // Optimistic update
       toast.success("Room deleted successfully.");
       addNotification(`You deleted the room: "${roomToDelete.name}".`);
     }
-  }, [session, supabase, fetchRooms, addNotification]);
+  }, [session, supabase, setRooms, addNotification]);
 
   const handleUpdateRoomDescription = useCallback(async (roomId: string, newDescription: string | null) => {
     if (!session?.user?.id || !supabase) {
@@ -309,10 +308,10 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
       toast.error("Error updating room description: " + error.message);
       console.error("Error updating room description:", error);
     } else {
+      setRooms(prev => prev.map(r => r.id === roomId ? { ...r, description: newDescription } : r));
       toast.success(`Room "${room.name}" description updated!`);
-      fetchRooms(); // Re-fetch to update local state
     }
-  }, [session, supabase, fetchRooms]);
+  }, [session, supabase, setRooms]);
 
   const handleUpdateRoomBackground = useCallback(async (roomId: string, backgroundUrl: string, isVideoBackground: boolean) => {
     if (!session?.user?.id || !supabase) {
@@ -347,10 +346,10 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
       toast.error("Error updating room background: " + error.message);
       console.error("Error updating room background:", error);
     } else {
+      setRooms(prev => prev.map(r => r.id === roomId ? { ...r, background_url: backgroundUrl, is_video_background: isVideoBackground } : r));
       toast.success(`Room "${room.name}" background updated!`);
-      fetchRooms(); // Re-fetch to update local state
     }
-  }, [session, supabase, fetchRooms]);
+  }, [session, supabase, setRooms]);
 
   return {
     handleCreateRoom,
