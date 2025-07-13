@@ -70,7 +70,7 @@ export function NotesWidget({ isCurrentRoomWritable }: NotesWidgetProps) {
 
   return (
     <div className="h-full w-full">
-      <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto py-4">
+      <div className="flex flex-col items-center gap-4 w-full mx-auto py-4"> {/* Removed max-w-2xl, reduced gap */}
         <Card className="w-full bg-card backdrop-blur-xl border-white/20">
           <CardHeader>
             <CardTitle>Add New Entry</CardTitle>
@@ -85,7 +85,7 @@ export function NotesWidget({ isCurrentRoomWritable }: NotesWidgetProps) {
         </Card>
 
         <div className="flex w-full gap-4" ref={noteListRef}>
-          <div className="flex-1 flex flex-col gap-4">
+          <div className="flex-[2] flex flex-col gap-4"> {/* Changed flex-1 to flex-[2] to give more space */}
             <Card className="w-full bg-card backdrop-blur-xl border-white/20">
               <CardHeader>
                 <CardTitle>Your Entries</CardTitle>
@@ -116,7 +116,7 @@ export function NotesWidget({ isCurrentRoomWritable }: NotesWidgetProps) {
             </Card>
           </div>
           {activeNoteForAnnotations && (
-            <div className="w-1/3 flex-shrink-0">
+            <div className="flex-1 flex-shrink-0"> {/* Changed w-1/3 to flex-1 */}
               <AnnotationsSidebar
                 noteId={activeNoteForAnnotations}
                 onJumpToHighlight={handleJumpToHighlight}

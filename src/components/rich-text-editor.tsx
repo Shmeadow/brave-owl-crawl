@@ -11,6 +11,7 @@ import { TextStyle } from '@tiptap/extension-text-style'; // Fixed: Named import
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 import { toast } from 'sonner';
 import { AnnotationData } from '@/hooks/use-annotations'; // Import AnnotationData
+import { Button } from '@/components/ui/button'; // Import Button for consistency
 
 interface RichTextEditorProps {
   content: string;
@@ -108,7 +109,6 @@ export function RichTextEditor({
   // Sync content from props to editor
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
-      // Fixed: Removed 'preserveCursor: true' as it's not a valid option for setContent
       editor.commands.setContent(content, { emitUpdate: false });
     }
   }, [content, editor]);
@@ -155,7 +155,6 @@ export function RichTextEditor({
     const highlightId = uuidv4();
 
     // Apply the highlight mark with the unique ID
-    // Fixed: Cast to any to bypass TypeScript error for custom attribute
     editor.chain().focus().setHighlight({ color, 'data-highlight-id': highlightId } as any).run();
 
     // Add the annotation to the database
@@ -192,149 +191,215 @@ export function RichTextEditor({
   return (
     <div className={cn("rounded-md border border-input bg-transparent", disabled && "cursor-not-allowed opacity-50")}>
       <div className="flex flex-wrap items-center gap-1 p-2 border-b border-input">
-        <button
+        <Button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
           disabled={!editor.can().chain().focus().toggleBold().run() || disabled}
-          className={cn("p-1 rounded", editor.isActive('bold') ? 'bg-accent' : 'hover:bg-muted')}
+          variant="ghost"
+          size="sm"
+          className={cn("h-8 w-8", editor.isActive('bold') && 'bg-accent')}
           title="Bold"
         >
           B
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
           disabled={!editor.can().chain().focus().toggleItalic().run() || disabled}
-          className={cn("p-1 rounded", editor.isActive('italic') ? 'bg-accent' : 'hover:bg-muted')}
+          variant="ghost"
+          size="sm"
+          className={cn("h-8 w-8", editor.isActive('italic') && 'bg-accent')}
           title="Italic"
         >
           I
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => editor.chain().focus().toggleStrike().run()}
           disabled={!editor.can().chain().focus().toggleStrike().run() || disabled}
-          className={cn("p-1 rounded", editor.isActive('strike') ? 'bg-accent' : 'hover:bg-muted')}
+          variant="ghost"
+          size="sm"
+          className={cn("h-8 w-8", editor.isActive('strike') && 'bg-accent')}
           title="Strike"
         >
           S
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => editor.chain().focus().toggleCode().run()}
           disabled={!editor.can().chain().focus().toggleCode().run() || disabled}
-          className={cn("p-1 rounded", editor.isActive('code') ? 'bg-accent' : 'hover:bg-muted')}
+          variant="ghost"
+          size="sm"
+          className={cn("h-8 w-8", editor.isActive('code') && 'bg-accent')}
           title="Code"
         >
           Code
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => editor.chain().focus().setParagraph().run()}
-          className={cn("p-1 rounded", editor.isActive('paragraph') ? 'bg-accent' : 'hover:bg-muted')}
+          variant="ghost"
+          size="sm"
+          className={cn("h-8 w-8", editor.isActive('paragraph') && 'bg-accent')}
           title="Paragraph"
         >
           P
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
           disabled={!editor.can().chain().focus().toggleHeading({ level: 1 }).run() || disabled}
-          className={cn("p-1 rounded", editor.isActive('heading', { level: 1 }) ? 'bg-accent' : 'hover:bg-muted')}
+          variant="ghost"
+          size="sm"
+          className={cn("h-8 w-8", editor.isActive('heading', { level: 1 }) && 'bg-accent')}
           title="Heading 1"
         >
           H1
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
           disabled={!editor.can().chain().focus().toggleHeading({ level: 2 }).run() || disabled}
-          className={cn("p-1 rounded", editor.isActive('heading', { level: 2 }) ? 'bg-accent' : 'hover:bg-muted')}
+          variant="ghost"
+          size="sm"
+          className={cn("h-8 w-8", editor.isActive('heading', { level: 2 }) && 'bg-accent')}
           title="Heading 2"
         >
           H2
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           disabled={!editor.can().chain().focus().toggleBulletList().run() || disabled}
-          className={cn("p-1 rounded", editor.isActive('bulletList') ? 'bg-accent' : 'hover:bg-muted')}
+          variant="ghost"
+          size="sm"
+          className={cn("h-8 w-8", editor.isActive('bulletList') && 'bg-accent')}
           title="Bullet List"
         >
           UL
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           disabled={!editor.can().chain().focus().toggleOrderedList().run() || disabled}
-          className={cn("p-1 rounded", editor.isActive('orderedList') ? 'bg-accent' : 'hover:bg-muted')}
+          variant="ghost"
+          size="sm"
+          className={cn("h-8 w-8", editor.isActive('orderedList') && 'bg-accent')}
           title="Ordered List"
         >
           OL
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
           disabled={!editor.can().chain().focus().toggleCodeBlock().run() || disabled}
-          className={cn("p-1 rounded", editor.isActive('codeBlock') ? 'bg-accent' : 'hover:bg-muted')}
+          variant="ghost"
+          size="sm"
+          className={cn("h-8 w-8", editor.isActive('codeBlock') && 'bg-accent')}
           title="Code Block"
         >
           CB
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
           disabled={disabled}
-          className="p-1 rounded hover:bg-muted"
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8"
           title="Horizontal Rule"
         >
           HR
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => editor.chain().focus().setHardBreak().run()}
           disabled={disabled}
-          className="p-1 rounded hover:bg-muted"
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8"
           title="Hard Break"
         >
           BR
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo() || disabled}
-          className="p-1 rounded hover:bg-muted"
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8"
           title="Undo"
         >
           Undo
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo() || disabled}
-          className="p-1 rounded hover:bg-muted"
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8"
           title="Redo"
         >
           Redo
-        </button>
-        <button
+        </Button>
+        {/* Highlight Color Buttons */}
+        <Button
           type="button"
-          onClick={() => applyHighlight('#fff59d')} // Yellow highlight
-          disabled={disabled || !noteId} // Disable if no noteId
-          className={cn("p-1 rounded", editor.isActive('highlight') ? 'bg-yellow-200' : 'hover:bg-muted')}
-          title="Highlight"
+          onClick={() => applyHighlight('#fff59d')} // Yellow
+          disabled={disabled || !noteId}
+          variant="ghost"
+          size="sm"
+          className={cn("h-8 w-8 bg-yellow-200/50 hover:bg-yellow-200", editor.isActive('highlight', { color: '#fff59d' }) && 'ring-2 ring-yellow-500')}
+          title="Highlight Yellow"
         >
-          Highlight
-        </button>
-        <button
+          <div className="h-4 w-4 rounded-full bg-yellow-500" />
+        </Button>
+        <Button
+          type="button"
+          onClick={() => applyHighlight('#a7f3d0')} // Green
+          disabled={disabled || !noteId}
+          variant="ghost"
+          size="sm"
+          className={cn("h-8 w-8 bg-green-200/50 hover:bg-green-200", editor.isActive('highlight', { color: '#a7f3d0' }) && 'ring-2 ring-green-500')}
+          title="Highlight Green"
+        >
+          <div className="h-4 w-4 rounded-full bg-green-500" />
+        </Button>
+        <Button
+          type="button"
+          onClick={() => applyHighlight('#bfdbfe')} // Blue
+          disabled={disabled || !noteId}
+          variant="ghost"
+          size="sm"
+          className={cn("h-8 w-8 bg-blue-200/50 hover:bg-blue-200", editor.isActive('highlight', { color: '#bfdbfe' }) && 'ring-2 ring-blue-500')}
+          title="Highlight Blue"
+        >
+          <div className="h-4 w-4 rounded-full bg-blue-500" />
+        </Button>
+        <Button
+          type="button"
+          onClick={() => applyHighlight('#fecaca')} // Red
+          disabled={disabled || !noteId}
+          variant="ghost"
+          size="sm"
+          className={cn("h-8 w-8 bg-red-200/50 hover:bg-red-200", editor.isActive('highlight', { color: '#fecaca' }) && 'ring-2 ring-red-500')}
+          title="Highlight Red"
+        >
+          <div className="h-4 w-4 rounded-full bg-red-500" />
+        </Button>
+        <Button
           type="button"
           onClick={removeHighlight}
-          disabled={!editor.isActive('highlight') || disabled || !noteId} // Disable if no noteId
-          className="p-1 rounded hover:bg-muted"
+          disabled={!editor.isActive('highlight') || disabled || !noteId}
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8"
           title="Remove Highlight"
         >
           Un-highlight
-        </button>
+        </Button>
       </div>
       <EditorContent editor={editor} />
     </div>
