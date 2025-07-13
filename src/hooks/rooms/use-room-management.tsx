@@ -285,9 +285,9 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
     } else if (data) {
       toast.success("Room deleted successfully.");
       addNotification(`You deleted the room: "${roomToDelete.name}".`);
-      await fetchRooms();
+      setRooms(prev => prev.filter(r => r.id !== roomId));
     }
-  }, [session, supabase, addNotification, fetchRooms]);
+  }, [session, supabase, addNotification, setRooms]);
 
   const handleUpdateRoomDescription = useCallback(async (roomId: string, newDescription: string | null) => {
     if (!session?.user?.id || !supabase) {
