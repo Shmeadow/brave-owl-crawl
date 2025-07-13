@@ -104,6 +104,11 @@ export function AddNoteForm({ onAddNote, isCurrentRoomWritable, defaultType }: A
                   content={field.value}
                   onChange={field.onChange}
                   disabled={!isCurrentRoomWritable}
+                  noteId={null} // No noteId for new notes
+                  annotations={[]} // No annotations for new notes
+                  onAddAnnotation={async () => null} // Dummy function
+                  onDeleteAnnotation={() => {}} // Dummy function
+                  onUpdateAnnotationComment={() => {}} // Dummy function
                 />
               </FormControl>
               <FormMessage />

@@ -16,12 +16,12 @@ interface RichTextEditorProps {
   content: string;
   onChange: (richText: string) => void;
   disabled?: boolean;
-  noteId: string; // New: Pass noteId to link annotations
-  annotations: AnnotationData[]; // New: Pass existing annotations
-  onAddAnnotation: (highlightId: string, highlightedText: string) => Promise<AnnotationData | null>; // New: Callback for new annotations
-  onDeleteAnnotation: (highlightId: string) => void; // New: Callback for deleting annotations
-  onUpdateAnnotationComment: (annotationId: string, comment: string) => void; // New: Callback for updating comments
-  onEditorReady?: (editor: any) => void; // New: Callback when editor is ready
+  noteId: string | null; // Made optional for new notes
+  annotations: AnnotationData[]; // Made optional
+  onAddAnnotation: (highlightId: string, highlightedText: string) => Promise<AnnotationData | null>; // Made optional
+  onDeleteAnnotation: (highlightId: string) => void; // Made optional
+  onUpdateAnnotationComment: (annotationId: string, comment: string) => void; // Made optional
+  onEditorReady?: (editor: any) => void;
 }
 
 // Custom Highlight extension to add a unique ID and link to annotations
@@ -31,8 +31,8 @@ const CustomHighlight = Highlight.extend({
       ...this.parent?.(),
       'data-highlight-id': {
         default: null,
-        parseHTML: element => element.getAttribute('data-highlight-id'),
-        renderHTML: attributes => {
+        parseHTML: (element: HTMLElement) => element.getAttribute('data-highlight-id'),
+        renderHTML: (attributes: Record<string, any>) => {
           if (!attributes['data-highlight-id']) {
             return {};
           }
@@ -69,9 +69,7 @@ export function RichTextEditor({
           keepMarks: true,
           keepAttributes: false,
         },
-        // Disable default highlight if it's part of StarterKit
-        // Or ensure CustomHighlight overrides it
-        highlight: false,
+        // Removed 'highlight: false' as it's not a valid option for StarterKit
       }),
       ListItem.configure({
         HTMLAttributes: {
@@ -110,13 +108,13 @@ export function RichTextEditor({
   // Sync content from props to editor
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content, false, { preserveCursor: true });
+      editor.commands.setContent(content, { emitUpdate: false, preserveCursor: true });
     }
   }, [content, editor]);
 
   // Apply existing annotations to the editor content
   useEffect(() => {
-    if (editor && annotations.length > 0) {
+    if (editor && annotations && annotations.length > 0) {
       editor.chain().focus().unsetHighlight().run(); // Clear existing highlights first
 
       annotations.forEach(annotation => {
@@ -138,7 +136,7 @@ export function RichTextEditor({
   }, [editor, annotations]); // Only re-apply when annotations change
 
   const applyHighlight = useCallback(async (color: string) => {
-    if (!editor || disabled) return;
+    if (!editor || disabled || !onAddAnnotation || !noteId) return;
 
     const { from, to, empty } = editor.state.selection;
     if (empty) {
@@ -167,13 +165,13 @@ export function RichTextEditor({
       editor.chain().focus().unsetHighlight().run();
       toast.error("Failed to save highlight.");
     }
-  }, [editor, disabled, onAddAnnotation]);
+  }, [editor, disabled, onAddAnnotation, noteId]);
 
   const removeHighlight = useCallback(() => {
-    if (!editor || disabled) return;
+    if (!editor || disabled || !onDeleteAnnotation) return;
 
     const { from, to } = editor.state.selection;
-    const selectedNodes = editor.state.doc.nodesBetween(from, to, (node, pos) => {
+    editor.state.doc.nodesBetween(from, to, (node, pos) => {
       node.marks.forEach(mark => {
         if (mark.type.name === 'highlight' && mark.attrs['data-highlight-id']) {
           const highlightId = mark.attrs['data-highlight-id'];
@@ -320,7 +318,7 @@ export function RichTextEditor({
         <button
           type="button"
           onClick={() => applyHighlight('#fff59d')} // Yellow highlight
-          disabled={disabled}
+          disabled={disabled || !noteId} // Disable if no noteId
           className={cn("p-1 rounded", editor.isActive('highlight') ? 'bg-yellow-200' : 'hover:bg-muted')}
           title="Highlight"
         >
@@ -329,7 +327,7 @@ export function RichTextEditor({
         <button
           type="button"
           onClick={removeHighlight}
-          disabled={!editor.isActive('highlight') || disabled}
+          disabled={!editor.isActive('highlight') || disabled || !noteId} // Disable if no noteId
           className="p-1 rounded hover:bg-muted"
           title="Remove Highlight"
         >

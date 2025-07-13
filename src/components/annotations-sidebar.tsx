@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, MessageSquare, X } from 'lucide-react';
+import { Edit, Trash2, MessageSquare, X, Check } from 'lucide-react'; // Import Check
 import { AnnotationData, useAnnotations } from '@/hooks/use-annotations';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';

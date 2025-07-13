@@ -9,6 +9,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { AnnotationsSidebar } from "@/components/annotations-sidebar"; // Import the new sidebar
+import { toast } from "sonner"; // Import toast
 
 type NoteViewMode = 'all' | 'note' | 'journal';
 

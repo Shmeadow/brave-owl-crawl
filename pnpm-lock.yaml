@@ -110,6 +110,18 @@ importers:
       '@tailwindcss/typography':
         specifier: ^0.5.16
         version: 0.5.16(tailwindcss@3.4.17)
+      '@tiptap/extension-color':
+        specifier: ^3.0.1
+        version: 3.0.1(@tiptap/extension-text-style@3.0.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1)))
+      '@tiptap/extension-highlight':
+        specifier: ^3.0.1
+        version: 3.0.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))
+      '@tiptap/extension-list-item':
+        specifier: ^3.0.1
+        version: 3.0.1(@tiptap/extension-list@3.0.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))(@tiptap/pm@3.0.1))
+      '@tiptap/extension-text-style':
+        specifier: ^3.0.1
+        version: 3.0.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))
       '@tiptap/pm':
         specifier: ^3.0.1
         version: 3.0.1
@@ -194,6 +206,9 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.17)
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
       vaul:
         specifier: ^1.1.2
         version: 1.1.2(@types/react-dom@19.1.5(@types/react@19.1.5))(@types/react@19.1.5)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -1288,6 +1303,11 @@ packages:
     peerDependencies:
       '@tiptap/core': ^3.0.1
 
+  '@tiptap/extension-color@3.0.1':
+    resolution: {integrity: sha512-/I5Tjgiiw7rYkPx4r+AG95UlhQB8D0NJ8/OQTicvsklYmVmSuTCNZe/1TqjvlEEcwAO+7Y85ervjRQ7J34S9yg==}
+    peerDependencies:
+      '@tiptap/extension-text-style': ^3.0.1
+
   '@tiptap/extension-document@3.0.1':
     resolution: {integrity: sha512-93JuaoT3QfdTvLr8frtBS7DczXHKToU5WDpzEefUtMNCnJCKhnTMcDGSGuU8aKq5zNNzppNywEL/2+KyGwLS1A==}
     peerDependencies:
@@ -1317,6 +1337,11 @@ packages:
 
   '@tiptap/extension-heading@3.0.1':
     resolution: {integrity: sha512-o3sQGa2GegbJX+ieBrKBKya9+OD89knKXrVv6TCB6XzZUCLjyz6xxaQyEvkK7IqX7e6W/2/qYcTdPZotmq6UAA==}
+    peerDependencies:
+      '@tiptap/core': ^3.0.1
+
+  '@tiptap/extension-highlight@3.0.1':
+    resolution: {integrity: sha512-VudEB7fnTpxTbYhe5E+dGZ3cd17eU0MjGjY74z9vT8V6ZgCdbNOFAHOkCgdSY+YIm73fqDqcRV7xIpwUr5CG/A==}
     peerDependencies:
       '@tiptap/core': ^3.0.1
 
@@ -1365,6 +1390,11 @@ packages:
 
   '@tiptap/extension-strike@3.0.1':
     resolution: {integrity: sha512-ZYC/yLBtVtaABxj49jbM2uFmV2qM4RnpB52bMbFgL/5zlLaD1lGLPYgZkU1ZVaWhxLqx9lodXyEfRdNJSQnqrg==}
+    peerDependencies:
+      '@tiptap/core': ^3.0.1
+
+  '@tiptap/extension-text-style@3.0.1':
+    resolution: {integrity: sha512-GigZSuaDn2kcNFA0KLEJQRAfBiuedOKMMWy5fAWpnsh1cZU2fatKfPPRB+xRbOCNlb5VaMtMt25S8iBWckGFwg==}
     peerDependencies:
       '@tiptap/core': ^3.0.1
 
@@ -3561,6 +3591,10 @@ packages:
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
+  uuid@11.1.0:
+    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+    hasBin: true
+
   vaul@1.1.2:
     resolution: {integrity: sha512-ZFkClGpWyI2WUQjdLJ/BaGuV6AVQiJ3uELGk3OYtP+B6yCO7Cmn9vPFXVJkRaGkOJu3m8bQMgtyzNHixULceQA==}
     peerDependencies:
@@ -4729,6 +4763,10 @@ snapshots:
     dependencies:
       '@tiptap/core': 3.0.1(@tiptap/pm@3.0.1)
 
+  '@tiptap/extension-color@3.0.1(@tiptap/extension-text-style@3.0.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1)))':
+    dependencies:
+      '@tiptap/extension-text-style': 3.0.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))
+
   '@tiptap/extension-document@3.0.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))':
     dependencies:
       '@tiptap/core': 3.0.1(@tiptap/pm@3.0.1)
@@ -4753,6 +4791,10 @@ snapshots:
       '@tiptap/core': 3.0.1(@tiptap/pm@3.0.1)
 
   '@tiptap/extension-heading@3.0.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))':
+    dependencies:
+      '@tiptap/core': 3.0.1(@tiptap/pm@3.0.1)
+
+  '@tiptap/extension-highlight@3.0.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))':
     dependencies:
       '@tiptap/core': 3.0.1(@tiptap/pm@3.0.1)
 
@@ -4793,6 +4835,10 @@ snapshots:
       '@tiptap/core': 3.0.1(@tiptap/pm@3.0.1)
 
   '@tiptap/extension-strike@3.0.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))':
+    dependencies:
+      '@tiptap/core': 3.0.1(@tiptap/pm@3.0.1)
+
+  '@tiptap/extension-text-style@3.0.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))':
     dependencies:
       '@tiptap/core': 3.0.1(@tiptap/pm@3.0.1)
 
@@ -7321,6 +7367,8 @@ snapshots:
       react: 19.1.0
 
   util-deprecate@1.0.2: {}
+
+  uuid@11.1.0: {}
 
   vaul@1.1.2(@types/react-dom@19.1.5(@types/react@19.1.5))(@types/react@19.1.5)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
