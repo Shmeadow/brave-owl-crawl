@@ -4,7 +4,7 @@ import React, { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Star, Trash2, MessageSquare, ChevronDown, ChevronUp, Edit } from "lucide-react"; // Added Edit icon
 import { cn } from "@/lib/utils";
-import { NoteData } from "@/hooks/use-notes";
+import { NoteData } from "@/hooks/use-notes"; // Still using NoteData as the base type
 import { toast } from "sonner";
 import { RichTextEditor } from "./rich-text-editor";
 import { AnnotationData, useAnnotations } from "@/hooks/use-annotations";
@@ -24,71 +24,71 @@ import {
 } from "@/components/ui/collapsible";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Import Card components
 
-interface NoteItemProps {
-  note: NoteData;
-  onToggleStar: (noteId: string) => void;
-  onDelete: (noteId: string) => void;
+interface EntryItemProps {
+  entry: NoteData; // Renamed from 'note' to 'entry'
+  onToggleStar: (entryId: string) => void; // Renamed from 'noteId'
+  onDelete: (entryId: string) => void; // Renamed from 'noteId'
   isCurrentRoomWritable: boolean;
-  onUpdateNoteContent: (noteId: string, newContent: string) => void;
-  onUpdateNoteTitle: (noteId: string, newTitle: string) => void;
-  onSelectNoteForAnnotations: (noteId: string | null) => void;
-  activeNoteForAnnotations: string | null;
+  onUpdateEntryContent: (entryId: string, newContent: string) => void; // Renamed from 'noteId'
+  onUpdateEntryTitle: (entryId: string, newTitle: string) => void; // Renamed from 'noteId'
+  onSelectEntryForAnnotations: (entryId: string | null) => void; // Renamed from 'noteId'
+  activeEntryForAnnotations: string | null; // Renamed from 'noteId'
 }
 
-export function NoteItem({
-  note,
+export function EntryItem({
+  entry,
   onToggleStar,
   onDelete,
   isCurrentRoomWritable,
-  onUpdateNoteContent,
-  onUpdateNoteTitle,
-  onSelectNoteForAnnotations,
-  activeNoteForAnnotations,
-}: NoteItemProps) {
+  onUpdateEntryContent,
+  onUpdateEntryTitle,
+  onSelectEntryForAnnotations,
+  activeEntryForAnnotations,
+}: EntryItemProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [editedTitle, setEditedTitle] = useState(note.title || '');
+  const [editedTitle, setEditedTitle] = useState(entry.title || '');
   const [isAnnotationCommentDialogOpen, setIsAnnotationCommentDialogOpen] = useState(false);
   const [currentAnnotationToEdit, setCurrentAnnotationToEdit] = useState<AnnotationData | null>(null);
   const [isContentOpen, setIsContentOpen] = useState(false);
 
-  const { annotations, addAnnotation, updateAnnotation, deleteAnnotation } = useAnnotations(note.id);
+  const { annotations, addAnnotation, updateAnnotation, deleteAnnotation } = useAnnotations(entry.id);
 
   const handleToggleStarClick = () => {
     if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to star/unstar notes in this room.");
+      toast.error("You do not have permission to star/unstar entries in this room.");
       return;
     }
-    onToggleStar(note.id);
+    onToggleStar(entry.id);
   };
 
   const handleDeleteClick = () => {
     if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to delete notes in this room.");
+      toast.error("You do not have permission to delete entries in this room.");
       return;
     }
-    onDelete(note.id);
+    onDelete(entry.id);
   };
 
   const handleTitleDoubleClick = () => {
     if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to edit notes in this room.");
+      toast.error("You do not have permission to edit entries in this room.");
       return;
     }
     setIsEditingTitle(true);
-    setEditedTitle(note.title || '');
+    setEditedTitle(entry.title || '');
   };
 
   const handleSaveTitle = () => {
     if (!isCurrentRoomWritable) return;
-    if (editedTitle.trim() !== (note.title || '')) {
-      onUpdateNoteTitle(note.id, editedTitle.trim());
+    if (editedTitle.trim() !== (entry.title || '')) {
+      onUpdateEntryTitle(entry.id, editedTitle.trim());
     }
     setIsEditingTitle(false);
   };
 
   const handleContentChange = useCallback((newContent: string) => {
-    onUpdateNoteContent(note.id, newContent);
-  }, [note.id, onUpdateNoteContent]);
+    onUpdateEntryContent(entry.id, newContent);
+  }, [entry.id, onUpdateEntryContent]);
 
   const handleAddAnnotation = useCallback(async (highlightId: string, highlightedText: string) => {
     if (!isCurrentRoomWritable) {
@@ -96,7 +96,7 @@ export function NoteItem({
       return null;
     }
     const newAnno = await addAnnotation({
-      note_id: note.id,
+      note_id: entry.id, // Still refers to note_id in DB, but conceptually entry_id
       highlight_id: highlightId,
       highlighted_text: highlightedText,
       comment: null,
@@ -106,7 +106,7 @@ export function NoteItem({
       setIsAnnotationCommentDialogOpen(true);
     }
     return newAnno;
-  }, [isCurrentRoomWritable, addAnnotation, note.id]);
+  }, [isCurrentRoomWritable, addAnnotation, entry.id]);
 
   const handleDeleteAnnotation = useCallback((highlightId: string) => {
     if (!isCurrentRoomWritable) {
@@ -142,10 +142,10 @@ export function NoteItem({
   };
 
   const handleToggleAnnotationsSidebar = () => {
-    if (activeNoteForAnnotations === note.id) {
-      onSelectNoteForAnnotations(null);
+    if (activeEntryForAnnotations === entry.id) {
+      onSelectEntryForAnnotations(null);
     } else {
-      onSelectNoteForAnnotations(note.id);
+      onSelectEntryForAnnotations(entry.id);
     }
   };
 
@@ -154,7 +154,7 @@ export function NoteItem({
       <Card className={cn(
         "w-full bg-card backdrop-blur-xl border-white/20 shadow-sm transition-all duration-200 ease-in-out",
         "hover:shadow-md hover:border-primary/50",
-        activeNoteForAnnotations === note.id && "ring-2 ring-primary border-primary"
+        activeEntryForAnnotations === entry.id && "ring-2 ring-primary border-primary"
       )}>
         <Collapsible open={isContentOpen} onOpenChange={setIsContentOpen}>
           <CardHeader className="flex flex-row items-center justify-between p-4 pb-2">
@@ -174,7 +174,7 @@ export function NoteItem({
                 onDoubleClick={handleTitleDoubleClick}
                 title="Double click to edit title"
               >
-                {note.title || 'Untitled Note'}
+                {entry.title || 'Untitled Entry'}
               </CardTitle>
             )}
             <div className="flex items-center gap-1">
@@ -183,13 +183,13 @@ export function NoteItem({
                 size="icon"
                 className={cn(
                   "h-8 w-8",
-                  note.starred ? "text-yellow-500 hover:bg-yellow-100" : "text-muted-foreground hover:bg-accent"
+                  entry.starred ? "text-yellow-500 hover:bg-yellow-100" : "text-muted-foreground hover:bg-accent"
                 )}
                 onClick={handleToggleStarClick}
                 disabled={!isCurrentRoomWritable}
                 title="Toggle Star"
               >
-                <Star className={cn("h-4 w-4", note.starred && "fill-current")} />
+                <Star className={cn("h-4 w-4", entry.starred && "fill-current")} />
                 <span className="sr-only">Toggle Star</span>
               </Button>
               <Button
@@ -197,7 +197,7 @@ export function NoteItem({
                 size="icon"
                 className={cn(
                   "h-8 w-8",
-                  activeNoteForAnnotations === note.id ? "text-primary" : "text-muted-foreground hover:bg-accent"
+                  activeEntryForAnnotations === entry.id ? "text-primary" : "text-muted-foreground hover:bg-accent"
                 )}
                 onClick={handleToggleAnnotationsSidebar}
                 title="View Annotations"
@@ -211,10 +211,10 @@ export function NoteItem({
                 className="h-8 w-8 text-red-500 hover:bg-red-100 hover:text-red-600"
                 onClick={handleDeleteClick}
                 disabled={!isCurrentRoomWritable}
-                title="Delete Note"
+                title="Delete Entry"
               >
                 <Trash2 className="h-4 w-4" />
-                <span className="sr-only">Delete Note</span>
+                <span className="sr-only">Delete Entry</span>
               </Button>
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -226,15 +226,15 @@ export function NoteItem({
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <p className="text-xs text-muted-foreground mb-3">
-              {new Date(note.created_at).toLocaleString()}
+              {new Date(entry.created_at).toLocaleString()}
             </p>
             <CollapsibleContent>
               <div className="pt-2 border-t border-border/50">
                 <RichTextEditor
-                  content={note.content}
+                  content={entry.content}
                   onChange={handleContentChange}
                   disabled={!isCurrentRoomWritable}
-                  noteId={note.id}
+                  noteId={entry.id} // Pass entry.id as noteId for annotations
                   annotations={annotations}
                   onAddAnnotation={handleAddAnnotation}
                   onDeleteAnnotation={handleDeleteAnnotation}

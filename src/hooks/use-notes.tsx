@@ -11,7 +11,7 @@ export interface NoteData {
   content: string;
   starred: boolean;
   created_at: string;
-  type: 'note' | 'journal'; // New: Type of note
+  type: 'note' | 'journal'; // Will always be 'note' for this hook
 }
 
 const LOCAL_STORAGE_KEY = 'guest_notes';
@@ -45,6 +45,7 @@ export function useNotes() {
           .from('notes')
           .select('*')
           .eq('user_id', session.user.id)
+          .eq('type', 'note') // Filter by type 'note'
           .order('created_at', { ascending: true });
 
         if (fetchError) {
@@ -56,29 +57,32 @@ export function useNotes() {
 
           if (localNotes.length > 0) {
             for (const localNote of localNotes) {
-              const existsInSupabase = mergedNotes.some(
-                sn => sn.content === localNote.content
-              );
+              // Only migrate notes, not journal entries
+              if (localNote.type === 'note') {
+                const existsInSupabase = mergedNotes.some(
+                  sn => sn.content === localNote.content && sn.created_at === localNote.created_at
+                );
 
-              if (!existsInSupabase) {
-                const { data: newSupabaseNote, error: insertError } = await supabase
-                  .from('notes')
-                  .insert({
-                    user_id: session.user.id,
-                    title: localNote.title,
-                    content: localNote.content,
-                    starred: localNote.starred,
-                    created_at: localNote.created_at || new Date().toISOString(),
-                    type: localNote.type || 'note', // Ensure type is set during migration
-                  })
-                  .select()
-                  .single();
+                if (!existsInSupabase) {
+                  const { data: newSupabaseNote, error: insertError } = await supabase
+                    .from('notes')
+                    .insert({
+                      user_id: session.user.id,
+                      title: localNote.title,
+                      content: localNote.content,
+                      starred: localNote.starred,
+                      created_at: localNote.created_at || new Date().toISOString(),
+                      type: 'note', // Ensure type is set during migration
+                    })
+                    .select()
+                    .single();
 
-                if (insertError) {
-                  console.error("Error migrating local note to Supabase:", insertError);
-                  toast.error("Error migrating some local notes.");
-                } else if (newSupabaseNote) {
-                  mergedNotes.push(newSupabaseNote as NoteData);
+                  if (insertError) {
+                    console.error("Error migrating local note to Supabase:", insertError);
+                    toast.error("Error migrating some local notes.");
+                  } else if (newSupabaseNote) {
+                    mergedNotes.push(newSupabaseNote as NoteData);
+                  }
                 }
               }
             }
@@ -98,8 +102,8 @@ export function useNotes() {
           console.error("Error parsing local storage notes:", e);
           loadedNotes = [];
         }
-        // Ensure all loaded notes have a 'type' property, default to 'note' if missing
-        loadedNotes = loadedNotes.map(note => ({ ...note, type: note.type || 'note' }));
+        // Ensure all loaded notes have a 'type' property and filter for 'note'
+        loadedNotes = loadedNotes.filter(note => note.type === 'note' || !note.type); // Include old notes without type
         setNotes(loadedNotes);
         if (loadedNotes.length === 0) {
           toast.info("You are browsing notes as a guest. Your notes will be saved locally.");
@@ -118,7 +122,7 @@ export function useNotes() {
     }
   }, [notes, isLoggedInMode, loading]);
 
-  const handleAddNote = useCallback(async ({ title, content, type }: { title: string; content: string; type: 'note' | 'journal' }) => {
+  const handleAddNote = useCallback(async ({ title, content }: { title: string; content: string; }) => { // Removed 'type' from params
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase
         .from('notes')
@@ -127,7 +131,7 @@ export function useNotes() {
           title,
           content,
           starred: false,
-          type, // Include type here
+          type: 'note', // Always 'note' for this hook
         })
         .select()
         .single();
@@ -146,7 +150,7 @@ export function useNotes() {
         content,
         starred: false,
         created_at: new Date().toISOString(),
-        type, // Include type here
+        type: 'note', // Always 'note' for this hook
       };
       setNotes((prevNotes) => [...prevNotes, newNote]);
       toast.success("Note added successfully (saved locally)!");
@@ -159,7 +163,8 @@ export function useNotes() {
         .from('notes')
         .delete()
         .eq('id', noteId)
-        .eq('user_id', session.user.id);
+        .eq('user_id', session.user.id)
+        .eq('type', 'note'); // Ensure deleting only notes
 
       if (error) {
         toast.error("Error deleting note (Supabase): " + error.message);
@@ -186,6 +191,7 @@ export function useNotes() {
         .update({ starred: newStarredStatus })
         .eq('id', noteId)
         .eq('user_id', session.user.id)
+        .eq('type', 'note') // Ensure updating only notes
         .select()
         .single();
 
@@ -214,6 +220,7 @@ export function useNotes() {
         .update({ content: newContent })
         .eq('id', noteId)
         .eq('user_id', session.user.id)
+        .eq('type', 'note') // Ensure updating only notes
         .select()
         .single();
 
@@ -242,6 +249,7 @@ export function useNotes() {
         .update({ title: newTitle })
         .eq('id', noteId)
         .eq('user_id', session.user.id)
+        .eq('type', 'note') // Ensure updating only notes
         .select()
         .single();
 
