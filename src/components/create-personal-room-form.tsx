@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -14,13 +14,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { PlusCircle } from "lucide-react";
 import { useRooms, RoomData } from "@/hooks/use-rooms";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useCurrentRoom } from "@/hooks/use-current-room";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Room name cannot be empty." }),
@@ -36,13 +36,14 @@ interface CreatePersonalRoomFormProps {
 export function CreatePersonalRoomForm({ onRoomCreated, onClose }: CreatePersonalRoomFormProps) {
   const { session } = useSupabase();
   const { handleCreateRoom } = useRooms();
+  const { setCurrentRoom } = useCurrentRoom();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       description: "",
-      type: "private", // Default to private for personal rooms
+      type: "private",
     },
   });
 
@@ -54,6 +55,7 @@ export function CreatePersonalRoomForm({ onRoomCreated, onClose }: CreatePersona
     const { data, error } = await handleCreateRoom(values.name.trim(), values.type, values.description?.trim() || null);
     if (!error && data) {
       toast.success(`Your personal room "${data.name}" created successfully!`);
+      setCurrentRoom(data.id, data.name);
       onRoomCreated(data);
       onClose();
     }

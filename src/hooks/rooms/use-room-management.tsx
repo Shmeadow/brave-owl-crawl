@@ -11,10 +11,9 @@ interface UseRoomManagementProps {
   setRooms: React.Dispatch<React.SetStateAction<RoomData[]>>;
   fetchRooms: () => Promise<void>;
   refreshProfile: () => Promise<void>;
-  setCurrentRoom: (id: string | null, name: string) => void; // Add setCurrentRoom prop
 }
 
-export function useRoomManagement({ setRooms, fetchRooms, refreshProfile, setCurrentRoom }: UseRoomManagementProps) {
+export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseRoomManagementProps) {
   const { supabase, session } = useSupabase();
   const { addNotification } = useNotifications();
 
@@ -80,7 +79,6 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile, setCur
     } else if (data) {
       const newRoom = { ...data, is_member: true } as RoomData;
       setRooms(prev => [...prev, newRoom]);
-      setCurrentRoom(data.id, data.name); // Set the new room as current immediately
 
       const { error: profileUpdateError } = await supabase
         .from('profiles')
@@ -98,7 +96,7 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile, setCur
       return { data: newRoom, error: null };
     }
     return { data: null, error: { message: "Unknown error creating room" } };
-  }, [session, supabase, setRooms, addNotification, refreshProfile, setCurrentRoom]);
+  }, [session, supabase, setRooms, addNotification, refreshProfile]);
 
   const handleUpdateRoomName = useCallback(async (roomId: string, newName: string) => {
     if (!session?.user?.id || !supabase) {
