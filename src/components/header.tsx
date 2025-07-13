@@ -95,11 +95,11 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
                   <Button
                     variant="ghost"
                     size="icon"
-                    title={userOwnsPersonalRoom ? "Manage Your Room" : "Create Your Room"}
+                    title="Room Options"
                     className="flex-shrink-0"
                   >
                     <Settings className="h-5 w-5" />
-                    <span className="sr-only">{userOwnsPersonalRoom ? "Manage Your Room" : "Create Your Room"}</span>
+                    <span className="sr-only">Room Options</span>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent

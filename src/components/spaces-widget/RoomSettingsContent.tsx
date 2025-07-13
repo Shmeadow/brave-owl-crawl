@@ -186,195 +186,167 @@ export function RoomSettingsContent({ room }: RoomSettingsContentProps) {
   }
 
   return (
-    <div className="p-4 space-y-6">
-      {/* Room Name Editing */}
-      <div className="space-y-2">
-        <Label htmlFor="room-name-edit">Room Name</Label>
-        <Input
-          id="room-name-edit"
-          placeholder="e.g., Cozy Study Nook"
-          value={editedRoomName}
-          onChange={(e) => setEditedRoomName(e.target.value)}
-        />
-        <Button onClick={handleUpdateRoomName} className="w-full">
-          Update Room Name
-        </Button>
-      </div>
+    <div className="p-4">
+      <h3 className="text-lg font-semibold mb-4">Room Options</h3>
+      <Tabs defaultValue="general" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="access">Access</TabsTrigger>
+          <TabsTrigger value="members">Members</TabsTrigger>
+          <TabsTrigger value="appearance">Appearance</TabsTrigger>
+        </TabsList>
 
-      {/* Room Description Editing */}
-      <div className="space-y-2">
-        <Label htmlFor="room-description-edit">Description (Optional)</Label>
-        <Textarea
-          id="room-description-edit"
-          placeholder="A brief description of your room..."
-          value={editedRoomDescription}
-          onChange={(e) => setEditedRoomDescription(e.target.value)}
-          rows={3}
-        />
-        <Button onClick={handleUpdateRoomDescriptionClick} className="w-full">
-          Update Room Description
-        </Button>
-      </div>
-
-      {/* Room Type (Public/Private) */}
-      <div className="space-y-2">
-        <Label>Room Type</Label>
-        <Select value={roomType} onValueChange={handleUpdateRoomTypeClick}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select room type" />
-          </SelectTrigger>
-          <SelectContent className="z-[1200]"> {/* Updated z-index to 1200 */}
-            <SelectItem value="private">Private (Invite/Password Only)</SelectItem>
-            <SelectItem value="public">Public (Anyone Can Join by ID)</SelectItem>
-          </SelectContent>
-        </Select>
-        <p className="text-sm text-muted-foreground">
-          {roomType === 'private'
-            ? 'Only invited members or those with a password can join.'
-            : 'Anyone with the Room ID can join directly.'}
-        </p>
-      </div>
-
-      {/* Password Management (only for private rooms) */}
-      {roomType === 'private' && (
-        <div className="space-y-2">
-          <Label htmlFor="room-password">Room Password (Optional)</Label>
-          <div className="relative">
+        <TabsContent value="general" className="mt-4 space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="room-name-edit">Room Name</Label>
             <Input
-              id="room-password"
-              type={showPassword ? "text" : "password"}
-              placeholder="Set a password for this room"
-              value={roomPassword}
-              onChange={(e) => setRoomPassword(e.target.value)}
+              id="room-name-edit"
+              placeholder="e.g., Cozy Study Nook"
+              value={editedRoomName}
+              onChange={(e) => setEditedRoomName(e.target.value)}
             />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-              onClick={() => setShowPassword(!showPassword)}
-              title={showPassword ? "Hide password" : "Show password"}
-            >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            <Button onClick={handleUpdateRoomName} className="w-full">
+              Update Room Name
             </Button>
           </div>
-          <Button onClick={handleSetPasswordClick} className="w-full" disabled={!roomPassword.trim()}>
-            <Lock className="mr-2 h-4 w-4" /> Set Password
-          </Button>
-          {room.password_hash && (
-            <Button onClick={handleRemovePasswordClick} variant="outline" className="w-full mt-2">
-              Remove Password
+          <div className="space-y-2">
+            <Label htmlFor="room-description-edit">Description (Optional)</Label>
+            <Textarea
+              id="room-description-edit"
+              placeholder="A brief description of your room..."
+              value={editedRoomDescription}
+              onChange={(e) => setEditedRoomDescription(e.target.value)}
+              rows={3}
+            />
+            <Button onClick={handleUpdateRoomDescriptionClick} className="w-full">
+              Update Room Description
             </Button>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="access" className="mt-4 space-y-4">
+          <div className="space-y-2">
+            <Label>Room Type</Label>
+            <Select value={roomType} onValueChange={handleUpdateRoomTypeClick}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select room type" />
+              </SelectTrigger>
+              <SelectContent className="z-[1200]">
+                <SelectItem value="private">Private (Invite/Password Only)</SelectItem>
+                <SelectItem value="public">Public (Anyone Can Join by ID)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {roomType === 'private' && (
+            <div className="space-y-2">
+              <Label htmlFor="room-password">Room Password (Optional)</Label>
+              <div className="relative">
+                <Input
+                  id="room-password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Set a password for this room"
+                  value={roomPassword}
+                  onChange={(e) => setRoomPassword(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                  onClick={() => setShowPassword(!showPassword)}
+                  title={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
+              <Button onClick={handleSetPasswordClick} className="w-full" disabled={!roomPassword.trim()}>
+                <Lock className="mr-2 h-4 w-4" /> Set Password
+              </Button>
+              {room.password_hash && (
+                <Button onClick={handleRemovePasswordClick} variant="outline" className="w-full mt-2">
+                  Remove Password
+                </Button>
+              )}
+            </div>
           )}
-          <p className="text-sm text-muted-foreground">
-            Set a password for this private room. Users can join using this password.
-          </p>
-        </div>
-      )}
+        </TabsContent>
 
-      {/* Room Background Selection */}
-      <div className="space-y-2">
-        <Label>Room Background</Label>
-        <Tabs defaultValue="static-images" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-auto">
-            <TabsTrigger value="static-images">Static</TabsTrigger>
-            <TabsTrigger value="animated-backgrounds">Animated</TabsTrigger>
-          </TabsList>
+        <TabsContent value="members" className="mt-4 space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="send-invitation-user-email">Send Invitation (by Email)</Label>
+            <Input
+              id="send-invitation-user-email"
+              type="email"
+              placeholder="Enter Recipient Email Address"
+              value={receiverEmailInput}
+              onChange={(e) => setReceiverEmailInput(e.target.value)}
+            />
+            <Button onClick={handleSendInvitation} className="w-full">
+              <Send className="mr-2 h-4 w-4" /> Send Invitation
+            </Button>
+          </div>
+          {roomMembers.filter(member => member.user_id !== session?.user?.id).length > 0 ? (
+            <div className="space-y-2">
+              <Label htmlFor="kick-user-select">Kick a User</Label>
+              <Select onValueChange={setSelectedUserToKick} value={selectedUserToKick || ""}>
+                <SelectTrigger id="kick-user-select">
+                  <SelectValue placeholder="Select a user to kick" />
+                </SelectTrigger>
+                <SelectContent className="z-[1200]">
+                  {roomMembers.filter(member => member.user_id !== session?.user?.id).map(member => (
+                    <SelectItem key={member.user_id} value={member.user_id}>
+                      {member.profiles?.[0]?.first_name || member.profiles?.[0]?.last_name || `User (${member.user_id.substring(0, 8)}...)`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button onClick={handleKickSelectedUser} className="w-full" disabled={!selectedUserToKick}>
+                <UserMinus className="mr-2 h-4 w-4" /> Kick User
+              </Button>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center">No other members in this room.</p>
+          )}
+        </TabsContent>
 
-          <TabsContent value="static-images" className="mt-4">
-            <ScrollArea className="h-[200px] p-2">
-              <div className="grid grid-cols-2 gap-4">
-                {staticImages.map((imageUrl) => {
-                  const isActive = !selectedIsVideoBackground && selectedBackgroundUrl === imageUrl;
-                  return (
-                    <div
-                      key={imageUrl}
-                      className={`relative w-full h-24 cursor-pointer rounded-md overflow-hidden group ${
-                        isActive
-                          ? "ring-2 ring-blue-500 ring-offset-2"
-                          : "hover:ring-2 hover:ring-gray-300"
-                      }`}
-                      onClick={() => handleBackgroundChange(imageUrl, false)}
-                    >
-                      <Image
-                        src={imageUrl}
-                        alt={`Background ${imageUrl.split("/").pop()}`}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        priority={false}
-                      />
-                      {isActive && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 text-white text-sm font-bold">
-                          Active
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </ScrollArea>
-          </TabsContent>
-
-          <TabsContent value="animated-backgrounds" className="mt-4">
-            <ScrollArea className="h-[200px] p-2">
-              <div className="grid grid-cols-2 gap-4">
-                {animatedBackgrounds.map((bg) => (
-                  <AnimatedBackgroundPreviewItem
-                    key={bg.videoUrl}
-                    videoUrl={bg.videoUrl}
-                    isActive={selectedIsVideoBackground && selectedBackgroundUrl === bg.videoUrl}
-                    onClick={handleBackgroundChange}
-                    previewOffset={bg.previewOffset}
-                  />
-                ))}
-              </div>
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
-      </div>
-
-      {/* Send Invitation */}
-      <div className="space-y-2">
-        <Label htmlFor="send-invitation-user-email">Send Invitation (by Email)</Label>
-        <Input
-          id="send-invitation-user-email"
-          type="email"
-          placeholder="Enter Recipient Email Address"
-          value={receiverEmailInput}
-          onChange={(e) => setReceiverEmailInput(e.target.value)}
-        />
-        <Button onClick={handleSendInvitation} className="w-full">
-          <Send className="mr-2 h-4 w-4" /> Send Invitation
-        </Button>
-      </div>
-      <p className="text-sm text-muted-foreground">
-        Send an invitation to another user by their email address. They will receive a notification to join.
-      </p>
-
-      {/* Kick Users */}
-      {roomMembers.filter(member => member.user_id !== session?.user?.id).length > 0 ? (
-        <div className="space-y-2">
-          <Label htmlFor="kick-user-select">Kick a User</Label>
-          <Select onValueChange={setSelectedUserToKick} value={selectedUserToKick || ""}>
-            <SelectTrigger id="kick-user-select">
-              <SelectValue placeholder="Select a user to kick" />
-            </SelectTrigger>
-            <SelectContent className="z-[1200]"> {/* Updated z-index to 1200 */}
-              {roomMembers.filter(member => member.user_id !== session?.user?.id).map(member => (
-                <SelectItem key={member.user_id} value={member.user_id}>
-                  {member.profiles?.[0]?.first_name || member.profiles?.[0]?.last_name || `User (${member.user_id.substring(0, 8)}...)`}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button onClick={handleKickSelectedUser} className="w-full" disabled={!selectedUserToKick}>
-            <UserMinus className="mr-2 h-4 w-4" /> Kick User
-          </Button>
-        </div>
-      ) : (
-        <p className="text-sm text-muted-foreground text-center">No other members in this room to kick.</p>
-      )}
+        <TabsContent value="appearance" className="mt-4 space-y-2">
+          <Label>Room Background</Label>
+          <Tabs defaultValue="static-images" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 h-auto">
+              <TabsTrigger value="static-images">Static</TabsTrigger>
+              <TabsTrigger value="animated-backgrounds">Animated</TabsTrigger>
+            </TabsList>
+            <TabsContent value="static-images" className="mt-4">
+              <ScrollArea className="h-[200px] p-2">
+                <div className="grid grid-cols-2 gap-4">
+                  {staticImages.map((imageUrl) => {
+                    const isActive = !selectedIsVideoBackground && selectedBackgroundUrl === imageUrl;
+                    return (
+                      <div
+                        key={imageUrl}
+                        className={`relative w-full h-24 cursor-pointer rounded-md overflow-hidden group ${isActive ? "ring-2 ring-blue-500 ring-offset-2" : "hover:ring-2 hover:ring-gray-300"}`}
+                        onClick={() => handleBackgroundChange(imageUrl, false)}
+                      >
+                        <Image src={imageUrl} alt={`Background ${imageUrl.split("/").pop()}`} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" priority={false} />
+                        {isActive && <div className="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 text-white text-sm font-bold">Active</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </TabsContent>
+            <TabsContent value="animated-backgrounds" className="mt-4">
+              <ScrollArea className="h-[200px] p-2">
+                <div className="grid grid-cols-2 gap-4">
+                  {animatedBackgrounds.map((bg) => (
+                    <AnimatedBackgroundPreviewItem key={bg.videoUrl} videoUrl={bg.videoUrl} isActive={selectedIsVideoBackground && selectedBackgroundUrl === bg.videoUrl} onClick={handleBackgroundChange} previewOffset={bg.previewOffset} />
+                  ))}
+                </div>
+              </ScrollArea>
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
