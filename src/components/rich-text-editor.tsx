@@ -239,6 +239,7 @@ export function RichTextEditor({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          disabled={!editor.can().chain().focus().toggleHeading({ level: 1 }).run() || disabled}
           className={cn("p-1 rounded", editor.isActive('heading', { level: 1 }) ? 'bg-accent' : 'hover:bg-muted')}
           title="Heading 1"
         >
@@ -247,6 +248,7 @@ export function RichTextEditor({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          disabled={!editor.can().chain().focus().toggleHeading({ level: 2 }).run() || disabled}
           className={cn("p-1 rounded", editor.isActive('heading', { level: 2 }) ? 'bg-accent' : 'hover:bg-muted')}
           title="Heading 2"
         >
@@ -255,6 +257,7 @@ export function RichTextEditor({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
+          disabled={!editor.can().chain().focus().toggleBulletList().run() || disabled}
           className={cn("p-1 rounded", editor.isActive('bulletList') ? 'bg-accent' : 'hover:bg-muted')}
           title="Bullet List"
         >
@@ -263,6 +266,7 @@ export function RichTextEditor({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          disabled={!editor.can().chain().focus().toggleOrderedList().run() || disabled}
           className={cn("p-1 rounded", editor.isActive('orderedList') ? 'bg-accent' : 'hover:bg-muted')}
           title="Ordered List"
         >
@@ -271,6 +275,7 @@ export function RichTextEditor({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+          disabled={!editor.can().chain().focus().toggleCodeBlock().run() || disabled}
           className={cn("p-1 rounded", editor.isActive('codeBlock') ? 'bg-accent' : 'hover:bg-muted')}
           title="Code Block"
         >
@@ -279,6 +284,7 @@ export function RichTextEditor({
         <button
           type="button"
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
+          disabled={disabled}
           className="p-1 rounded hover:bg-muted"
           title="Horizontal Rule"
         >
@@ -287,6 +293,7 @@ export function RichTextEditor({
         <button
           type="button"
           onClick={() => editor.chain().focus().setHardBreak().run()}
+          disabled={disabled}
           className="p-1 rounded hover:bg-muted"
           title="Hard Break"
         >
