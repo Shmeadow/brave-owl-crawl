@@ -8,13 +8,14 @@ import { getRandomBackground } from "@/lib/backgrounds";
 import { useNotifications } from "@/hooks/use-notifications";
 
 interface UseRoomManagementProps {
+  rooms: RoomData[];
   setRooms: React.Dispatch<React.SetStateAction<RoomData[]>>;
   fetchRooms: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
-export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseRoomManagementProps) {
-  const { supabase, session } = useSupabase();
+export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile }: UseRoomManagementProps) {
+  const { supabase, session, profile } = useSupabase();
   const { addNotification } = useNotifications();
 
   const handleCreateRoom = useCallback(async (name: string, type: 'public' | 'private', description: string | null) => {
@@ -43,6 +44,26 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
     }
 
     const randomBg = getRandomBackground();
+    const tempId = `temp-${crypto.randomUUID()}`;
+    const newRoomOptimistic: RoomData = {
+        id: tempId,
+        creator_id: session.user.id,
+        name,
+        type,
+        description,
+        created_at: new Date().toISOString(),
+        closes_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+        background_url: randomBg.url,
+        is_video_background: randomBg.isVideo,
+        is_member: true,
+        password_hash: null,
+        deleted_at: null,
+        profiles: [{ first_name: profile?.first_name || 'You', last_name: profile?.last_name || '' }]
+    };
+
+    // Optimistic update
+    setRooms(prev => [...prev, newRoomOptimistic]);
+
     const closesAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
 
     const { data, error } = await supabase
@@ -75,10 +96,13 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
     if (error) {
       toast.error("Error creating room: " + error.message);
       console.error("Error creating room:", error);
+      // Revert optimistic update on error
+      setRooms(prev => prev.filter(r => r.id !== tempId));
       return { data: null, error };
     } else if (data) {
-      const newRoom = { ...data, is_member: true } as RoomData;
-      setRooms(prev => [...prev, newRoom]);
+      const finalRoom = { ...data, is_member: true } as RoomData;
+      // Replace temp room with real one from DB
+      setRooms(prev => prev.map(r => r.id === tempId ? finalRoom : r));
 
       const { error: profileUpdateError } = await supabase
         .from('profiles')
@@ -93,10 +117,10 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
       }
 
       addNotification(`You created a new room: "${data.name}".`);
-      return { data: newRoom, error: null };
+      return { data: finalRoom, error: null };
     }
     return { data: null, error: { message: "Unknown error creating room" } };
-  }, [session, supabase, setRooms, addNotification, refreshProfile]);
+  }, [session, supabase, setRooms, addNotification, refreshProfile, profile]);
 
   const handleUpdateRoomName = useCallback(async (roomId: string, newName: string) => {
     if (!session?.user?.id || !supabase) {
@@ -255,15 +279,11 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
       return;
     }
 
-    const { data: roomToDelete, error: fetchRoomError } = await supabase
-      .from('rooms')
-      .select('name, creator_id')
-      .eq('id', roomId)
-      .single();
+    const originalRooms = [...rooms];
+    const roomToDelete = originalRooms.find(r => r.id === roomId);
 
-    if (fetchRoomError || !roomToDelete) {
-      toast.error("Room not found or you don't have permission.");
-      console.error("Error fetching room for deletion:", fetchRoomError);
+    if (!roomToDelete) {
+      toast.error("Room not found.");
       return;
     }
 
@@ -272,22 +292,25 @@ export function useRoomManagement({ setRooms, fetchRooms, refreshProfile }: UseR
       return;
     }
 
-    const { data, error } = await supabase
+    // Optimistic update
+    setRooms(prev => prev.filter(r => r.id !== roomId));
+
+    const { error } = await supabase
       .from('rooms')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', roomId)
-      .eq('creator_id', session.user.id)
-      .select('id');
+      .eq('creator_id', session.user.id);
 
     if (error) {
       toast.error("Error deleting room: " + error.message);
       console.error("Error deleting room:", error);
-    } else if (data) {
+      // Revert on error
+      setRooms(originalRooms);
+    } else {
       toast.success("Room deleted successfully.");
       addNotification(`You deleted the room: "${roomToDelete.name}".`);
-      setRooms(prev => prev.filter(r => r.id !== roomId));
     }
-  }, [session, supabase, addNotification, setRooms]);
+  }, [session, supabase, addNotification, setRooms, rooms]);
 
   const handleUpdateRoomDescription = useCallback(async (roomId: string, newDescription: string | null) => {
     if (!session?.user?.id || !supabase) {

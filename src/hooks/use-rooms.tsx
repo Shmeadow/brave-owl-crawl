@@ -22,7 +22,7 @@ export function useRooms() {
     handleUpdateRoomDescription,
     handleUpdateRoomBackground,
     handleUpdateRoomName,
-  } = useRoomManagement({ setRooms, fetchRooms, refreshProfile });
+  } = useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile });
 
   const {
     handleJoinRoomByRoomId,

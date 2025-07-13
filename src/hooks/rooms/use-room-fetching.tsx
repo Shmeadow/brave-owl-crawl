@@ -177,7 +177,23 @@ export function useRoomFetching() {
     const roomsChannel = supabase
       .channel('public:rooms')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms' }, (payload) => {
-        fetchRooms(); // Re-fetch all rooms on any change
+        const { eventType, new: newRecord, old: oldRecord } = payload;
+
+        if (eventType === 'UPDATE') {
+          const updatedRoom = newRecord as RoomData;
+          // If the room is soft-deleted, remove it from the list
+          if (updatedRoom.deleted_at) {
+            setRooms(prev => prev.filter(r => r.id !== updatedRoom.id));
+          } else {
+            // Otherwise, update the existing room data
+            setRooms(prev => prev.map(r => r.id === updatedRoom.id ? { ...r, ...updatedRoom } : r));
+          }
+        } else if (eventType === 'DELETE') { // For hard deletes
+          setRooms(prev => prev.filter(r => r.id !== (oldRecord as any).id));
+        } else if (eventType === 'INSERT') {
+          // A full fetch is safer here to ensure all joins and permissions are correct.
+          fetchRooms();
+        }
       })
       .subscribe();
 
@@ -185,7 +201,8 @@ export function useRoomFetching() {
     const roomMembersChannel = supabase
       .channel('public:room_members')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'room_members' }, (payload) => {
-        fetchRooms(); // Re-fetch all rooms on any change
+        // Membership changes are complex to handle optimistically, a refetch is safer.
+        fetchRooms();
       })
       .subscribe();
 
