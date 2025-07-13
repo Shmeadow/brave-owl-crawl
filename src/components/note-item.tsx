@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Star, Trash2, MessageSquare } from "lucide-react";
+import { Star, Trash2, MessageSquare, ChevronDown, ChevronUp } from "lucide-react"; // Added ChevronUp
 import { cn } from "@/lib/utils";
 import { NoteData } from "@/hooks/use-notes";
 import { toast } from "sonner";
@@ -17,6 +17,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"; // Import Collapsible
 
 interface NoteItemProps {
   note: NoteData;
@@ -41,9 +46,9 @@ export function NoteItem({
 }: NoteItemProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(note.title || '');
-  const [isEditingContent, setIsEditingContent] = useState(false); // State to control editor's editable mode
   const [isAnnotationCommentDialogOpen, setIsAnnotationCommentDialogOpen] = useState(false);
   const [currentAnnotationToEdit, setCurrentAnnotationToEdit] = useState<AnnotationData | null>(null);
+  const [isContentOpen, setIsContentOpen] = useState(false); // State for collapsible content
 
   const { annotations, addAnnotation, updateAnnotation, deleteAnnotation } = useAnnotations(note.id);
 
@@ -145,80 +150,94 @@ export function NoteItem({
 
   return (
     <>
-      <div className="flex items-start justify-between p-3 border rounded-md bg-card backdrop-blur-xl text-card-foreground shadow-sm">
-        <div className="flex-1 pr-2">
-          {isEditingTitle ? (
-            <Input
-              value={editedTitle}
-              onChange={(e) => setEditedTitle(e.target.value)}
-              onBlur={handleSaveTitle}
-              onKeyDown={(e) => e.key === 'Enter' && handleSaveTitle()}
-              className="font-semibold text-lg mb-2"
-              autoFocus
-              disabled={!isCurrentRoomWritable}
-            />
-          ) : (
-            <h4
-              className="font-semibold text-lg mt-0 mb-2 cursor-pointer hover:text-primary"
-              onDoubleClick={handleTitleDoubleClick}
-              title="Double click to edit title"
-            >
-              {note.title || 'Untitled Note'}
-            </h4>
-          )}
-          <RichTextEditor
-            content={note.content}
-            onChange={handleContentChange}
-            disabled={!isCurrentRoomWritable}
-            noteId={note.id}
-            annotations={annotations}
-            onAddAnnotation={handleAddAnnotation}
-            onDeleteAnnotation={handleDeleteAnnotation}
-            onUpdateAnnotationComment={handleUpdateAnnotationComment}
-          />
-          <p className="text-xs text-muted-foreground mt-2">
+      <Collapsible open={isContentOpen} onOpenChange={setIsContentOpen} className="w-full">
+        <div className="flex flex-col p-3 border rounded-md bg-card backdrop-blur-xl text-card-foreground shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            {isEditingTitle ? (
+              <Input
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                onBlur={handleSaveTitle}
+                onKeyDown={(e) => e.key === 'Enter' && handleSaveTitle()}
+                className="font-semibold text-lg flex-1 mr-2"
+                autoFocus
+                disabled={!isCurrentRoomWritable}
+              />
+            ) : (
+              <h4
+                className="font-semibold text-lg flex-1 mr-2 cursor-pointer hover:text-primary truncate"
+                onDoubleClick={handleTitleDoubleClick}
+                title="Double click to edit title"
+              >
+                {note.title || 'Untitled Note'}
+              </h4>
+            )}
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "h-7 w-7",
+                  note.starred ? "text-yellow-500 hover:bg-yellow-100" : "text-muted-foreground hover:bg-accent"
+                )}
+                onClick={handleToggleStarClick}
+                disabled={!isCurrentRoomWritable}
+                title="Toggle Star"
+              >
+                <Star className={cn("h-4 w-4", note.starred && "fill-current")} />
+                <span className="sr-only">Toggle Star</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "h-7 w-7",
+                  activeNoteForAnnotations === note.id ? "text-primary" : "text-muted-foreground hover:bg-accent"
+                )}
+                onClick={handleToggleAnnotationsSidebar}
+                title="View Annotations"
+              >
+                <MessageSquare className="h-4 w-4" />
+                <span className="sr-only">View Annotations</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-red-500 hover:bg-red-100 hover:text-red-600"
+                onClick={handleDeleteClick}
+                disabled={!isCurrentRoomWritable}
+                title="Delete Note"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span className="sr-only">Delete Note</span>
+              </Button>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7">
+                  {isContentOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  <span className="sr-only">Toggle Content</span>
+                </Button>
+              </CollapsibleTrigger>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mb-2">
             {new Date(note.created_at).toLocaleString()}
           </p>
+          <CollapsibleContent>
+            <div className="pt-2 border-t border-border/50">
+              <RichTextEditor
+                content={note.content}
+                onChange={handleContentChange}
+                disabled={!isCurrentRoomWritable}
+                noteId={note.id}
+                annotations={annotations}
+                onAddAnnotation={handleAddAnnotation}
+                onDeleteAnnotation={handleDeleteAnnotation}
+                onUpdateAnnotationComment={handleUpdateAnnotationComment}
+              />
+            </div>
+          </CollapsibleContent>
         </div>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "h-7 w-7",
-              note.starred ? "text-yellow-500 hover:bg-yellow-100" : "text-muted-foreground hover:bg-accent"
-            )}
-            onClick={handleToggleStarClick}
-            disabled={!isCurrentRoomWritable}
-          >
-            <Star className={cn("h-4 w-4", note.starred && "fill-current")} />
-            <span className="sr-only">Toggle Star</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "h-7 w-7",
-              activeNoteForAnnotations === note.id ? "text-primary" : "text-muted-foreground hover:bg-accent"
-            )}
-            onClick={handleToggleAnnotationsSidebar}
-            title="View Annotations"
-          >
-            <MessageSquare className="h-4 w-4" />
-            <span className="sr-only">View Annotations</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 text-red-500 hover:bg-red-100 hover:text-red-600"
-            onClick={handleDeleteClick}
-            disabled={!isCurrentRoomWritable}
-          >
-            <Trash2 className="h-4 w-4" />
-            <span className="sr-only">Delete Note</span>
-          </Button>
-        </div>
-      </div>
+      </Collapsible>
 
       <Dialog open={isAnnotationCommentDialogOpen} onOpenChange={setIsAnnotationCommentDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">

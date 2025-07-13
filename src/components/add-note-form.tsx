@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { RichTextEditor } from "./rich-text-editor";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"; // Import ToggleGroup
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Import Card components
 
 const formSchema = z.object({
   title: z.string().min(1, { message: "Title cannot be empty." }),
@@ -56,67 +57,74 @@ export function AddNoteForm({ onAddNote, isCurrentRoomWritable, defaultType }: A
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
-        <FormField
-          control={form.control}
-          name="type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Entry Type</FormLabel>
-              <FormControl>
-                <ToggleGroup
-                  type="single"
-                  value={field.value}
-                  onValueChange={(value: 'note' | 'journal') => value && field.onChange(value)}
-                  disabled={!isCurrentRoomWritable}
-                  className="grid grid-cols-2"
-                >
-                  <ToggleGroupItem value="note">Note</ToggleGroupItem>
-                  <ToggleGroupItem value="journal">Journal Entry</ToggleGroupItem>
-                </ToggleGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input placeholder="Your note's title or today's date..." {...field} disabled={!isCurrentRoomWritable} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="content"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Content</FormLabel>
-              <FormControl>
-                <RichTextEditor
-                  content={field.value}
-                  onChange={field.onChange}
-                  disabled={!isCurrentRoomWritable}
-                  noteId={null} // No noteId for new notes
-                  annotations={[]} // No annotations for new notes
-                  onAddAnnotation={async () => null} // Dummy function
-                  onDeleteAnnotation={() => {}} // Dummy function
-                  onUpdateAnnotationComment={() => {}} // Dummy function
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit" className="w-full" disabled={!isCurrentRoomWritable}>Add Entry</Button>
-      </form>
-    </Form>
+    <Card className="w-full bg-card backdrop-blur-xl border-white/20">
+      <CardHeader>
+        <CardTitle>Add New Entry</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Entry Type</FormLabel>
+                  <FormControl>
+                    <ToggleGroup
+                      type="single"
+                      value={field.value}
+                      onValueChange={(value: 'note' | 'journal') => value && field.onChange(value)}
+                      disabled={!isCurrentRoomWritable}
+                      className="grid grid-cols-2"
+                    >
+                      <ToggleGroupItem value="note">Note</ToggleGroupItem>
+                      <ToggleGroupItem value="journal">Journal Entry</ToggleGroupItem>
+                    </ToggleGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Your note's title or today's date..." {...field} disabled={!isCurrentRoomWritable} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Content</FormLabel>
+                  <FormControl>
+                    <RichTextEditor
+                      content={field.value}
+                      onChange={field.onChange}
+                      disabled={!isCurrentRoomWritable}
+                      noteId={null} // No noteId for new notes
+                      annotations={[]} // No annotations for new notes
+                      onAddAnnotation={async () => null} // Dummy function
+                      onDeleteAnnotation={() => {}} // Dummy function
+                      onUpdateAnnotationComment={() => {}} // Dummy function
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={!isCurrentRoomWritable}>Add Entry</Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }

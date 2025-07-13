@@ -28,33 +28,28 @@ export function NoteList({
   activeNoteForAnnotations,
 }: NoteListProps) {
   return (
-    <Card className="w-full flex flex-col flex-1 bg-card backdrop-blur-xl border-white/20">
-      <CardHeader>
-        <CardTitle>Your Notes</CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 p-0 flex flex-col">
-        {notes.length === 0 ? (
-          <p className="p-4 text-muted-foreground text-sm text-center">No notes added yet. Start by adding one above!</p>
-        ) : (
-          <ScrollArea className="flex-1 h-full">
-            <div className="p-4 space-y-3">
-              {notes.map((note) => (
-                <NoteItem
-                  key={note.id}
-                  note={note}
-                  onToggleStar={onToggleStar}
-                  onDelete={onDelete}
-                  isCurrentRoomWritable={isCurrentRoomWritable}
-                  onUpdateNoteContent={onUpdateNoteContent}
-                  onUpdateNoteTitle={onUpdateNoteTitle}
-                  onSelectNoteForAnnotations={onSelectNoteForAnnotations}
-                  activeNoteForAnnotations={activeNoteForAnnotations}
-                />
-              ))}
-            </div>
-          </ScrollArea>
-        )}
-      </CardContent>
-    </Card>
+    <div className="w-full flex flex-col flex-1"> {/* Removed Card wrapper here, now handled by parent NotesWidget */}
+      {notes.length === 0 ? (
+        <p className="p-4 text-muted-foreground text-sm text-center">No notes added yet. Start by adding one above!</p>
+      ) : (
+        <ScrollArea className="flex-1 h-full">
+          <div className="p-1 space-y-3"> {/* Reduced padding */}
+            {notes.map((note) => (
+              <NoteItem
+                key={note.id}
+                note={note}
+                onToggleStar={onToggleStar}
+                onDelete={onDelete}
+                isCurrentRoomWritable={isCurrentRoomWritable}
+                onUpdateNoteContent={onUpdateNoteContent}
+                onUpdateNoteTitle={onUpdateNoteTitle}
+                onSelectNoteForAnnotations={onSelectNoteForAnnotations}
+                activeNoteForAnnotations={activeNoteForAnnotations}
+              />
+            ))}
+          </div>
+        </ScrollArea>
+      )}
+    </div>
   );
 }

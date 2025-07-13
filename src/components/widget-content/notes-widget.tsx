@@ -69,67 +69,68 @@ export function NotesWidget({ isCurrentRoomWritable }: NotesWidgetProps) {
   }
 
   return (
-    <div className="h-full w-full">
-      <div className="flex flex-col items-center gap-4 w-full mx-auto py-4"> {/* Removed max-w-2xl, reduced gap */}
+    <div className="h-full w-full flex flex-col items-center gap-6 p-4">
+      <h1 className="text-3xl font-bold text-foreground text-center">Your Notes & Journal</h1>
+
+      {!isLoggedInMode && (
         <Card className="w-full bg-card backdrop-blur-xl border-white/20">
-          <CardHeader>
-            <CardTitle>Add New Entry</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AddNoteForm
-              onAddNote={handleAddNote}
-              isCurrentRoomWritable={isCurrentRoomWritable}
-              defaultType={viewMode === 'journal' ? 'journal' : 'note'}
-            />
+          <CardContent className="text-center text-sm text-muted-foreground p-2">
+            You are currently browsing as a guest. Your entries are saved locally. Log in to save them to your account!
           </CardContent>
         </Card>
+      )}
 
-        <div className="flex w-full gap-4" ref={noteListRef}>
-          <div className="flex-[2] flex flex-col gap-4"> {/* Changed flex-1 to flex-[2] to give more space */}
-            <Card className="w-full bg-card backdrop-blur-xl border-white/20">
-              <CardHeader>
-                <CardTitle>Your Entries</CardTitle>
-              </CardHeader>
-              <CardContent className="p-4">
-                <Label htmlFor="note-view-mode" className="sr-only">View Mode</Label>
-                <ToggleGroup
-                  type="single"
-                  value={viewMode}
-                  onValueChange={(value: NoteViewMode) => value && setViewMode(value)}
-                  className="grid grid-cols-3 mb-4"
-                >
-                  <ToggleGroupItem value="all">All</ToggleGroupItem>
-                  <ToggleGroupItem value="note">Notes</ToggleGroupItem>
-                  <ToggleGroupItem value="journal">Journal</ToggleGroupItem>
-                </ToggleGroup>
-                <NoteList
-                  notes={filteredNotes}
-                  onToggleStar={handleToggleStar}
-                  onDelete={handleDeleteNote}
-                  isCurrentRoomWritable={isCurrentRoomWritable}
-                  onUpdateNoteContent={handleUpdateNoteContent}
-                  onUpdateNoteTitle={handleUpdateNoteTitle}
-                  onSelectNoteForAnnotations={handleSelectNoteForAnnotations}
-                  activeNoteForAnnotations={activeNoteForAnnotations}
-                />
-              </CardContent>
-            </Card>
-          </div>
-          {activeNoteForAnnotations && (
-            <div className="flex-1 flex-shrink-0"> {/* Changed w-1/3 to flex-1 */}
-              <AnnotationsSidebar
-                noteId={activeNoteForAnnotations}
-                onJumpToHighlight={handleJumpToHighlight}
-                isCurrentRoomWritable={isCurrentRoomWritable}
-              />
-            </div>
-          )}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full h-full">
+        {/* Left Column: Add New Entry Form */}
+        <div className="md:col-span-1 flex flex-col gap-6">
+          <AddNoteForm
+            onAddNote={handleAddNote}
+            isCurrentRoomWritable={isCurrentRoomWritable}
+            defaultType={viewMode === 'journal' ? 'journal' : 'note'}
+          />
         </div>
 
-        {!isLoggedInMode && (
-          <p className="text-sm text-muted-foreground mt-4 text-center">
-            You are currently browsing as a guest. Your entries are saved locally in your browser. Log in to save them to your account!
-          </p>
+        {/* Middle Column: Note List */}
+        <div className="md:col-span-2 flex flex-col gap-6">
+          <Card className="w-full flex-1 bg-card backdrop-blur-xl border-white/20">
+            <CardHeader>
+              <CardTitle>Your Entries</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <Label htmlFor="note-view-mode" className="sr-only">View Mode</Label>
+              <ToggleGroup
+                type="single"
+                value={viewMode}
+                onValueChange={(value: NoteViewMode) => value && setViewMode(value)}
+                className="grid grid-cols-3 mb-4"
+              >
+                <ToggleGroupItem value="all">All</ToggleGroupItem>
+                <ToggleGroupItem value="note">Notes</ToggleGroupItem>
+                <ToggleGroupItem value="journal">Journal</ToggleGroupItem>
+              </ToggleGroup>
+              <NoteList
+                notes={filteredNotes}
+                onToggleStar={handleToggleStar}
+                onDelete={handleDeleteNote}
+                isCurrentRoomWritable={isCurrentRoomWritable}
+                onUpdateNoteContent={handleUpdateNoteContent}
+                onUpdateNoteTitle={handleUpdateNoteTitle}
+                onSelectNoteForAnnotations={handleSelectNoteForAnnotations}
+                activeNoteForAnnotations={activeNoteForAnnotations}
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column: Annotations Sidebar (conditionally rendered) */}
+        {activeNoteForAnnotations && (
+          <div className="md:col-span-1 flex flex-col gap-6">
+            <AnnotationsSidebar
+              noteId={activeNoteForAnnotations}
+              onJumpToHighlight={handleJumpToHighlight}
+              isCurrentRoomWritable={isCurrentRoomWritable}
+            />
+          </div>
         )}
       </div>
     </div>
