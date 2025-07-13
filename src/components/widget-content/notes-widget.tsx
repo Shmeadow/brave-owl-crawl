@@ -90,8 +90,8 @@ export function NotesWidget({ isCurrentRoomWritable }: NotesWidgetProps) {
           />
         </div>
 
-        {/* Middle Column: Note List */}
-        <div className="md:col-span-2 flex flex-col gap-6">
+        {/* Middle/Right Columns: Note List and Annotations Sidebar */}
+        <div className={`md:col-span-2 flex flex-col gap-6 ${activeNoteForAnnotations ? 'md:grid md:grid-cols-2' : ''}`}>
           <Card className="w-full flex-1 bg-card backdrop-blur-xl border-white/20">
             <CardHeader>
               <CardTitle>Your Entries</CardTitle>
@@ -120,18 +120,16 @@ export function NotesWidget({ isCurrentRoomWritable }: NotesWidgetProps) {
               />
             </CardContent>
           </Card>
+          {activeNoteForAnnotations && (
+            <div className="flex-1 flex-shrink-0">
+              <AnnotationsSidebar
+                noteId={activeNoteForAnnotations}
+                onJumpToHighlight={handleJumpToHighlight}
+                isCurrentRoomWritable={isCurrentRoomWritable}
+              />
+            </div>
+          )}
         </div>
-
-        {/* Right Column: Annotations Sidebar (conditionally rendered) */}
-        {activeNoteForAnnotations && (
-          <div className="md:col-span-1 flex flex-col gap-6">
-            <AnnotationsSidebar
-              noteId={activeNoteForAnnotations}
-              onJumpToHighlight={handleJumpToHighlight}
-              isCurrentRoomWritable={isCurrentRoomWritable}
-            />
-          </div>
-        )}
       </div>
     </div>
   );

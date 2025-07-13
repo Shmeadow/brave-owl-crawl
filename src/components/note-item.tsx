@@ -2,12 +2,12 @@
 
 import React, { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Star, Trash2, MessageSquare, ChevronDown, ChevronUp } from "lucide-react"; // Added ChevronUp
+import { Star, Trash2, MessageSquare, ChevronDown, ChevronUp, Edit } from "lucide-react"; // Added Edit icon
 import { cn } from "@/lib/utils";
 import { NoteData } from "@/hooks/use-notes";
 import { toast } from "sonner";
-import { RichTextEditor } from "./rich-text-editor"; // Import the enhanced editor
-import { AnnotationData, useAnnotations } from "@/hooks/use-annotations"; // Import annotation hook and type
+import { RichTextEditor } from "./rich-text-editor";
+import { AnnotationData, useAnnotations } from "@/hooks/use-annotations";
 import {
   Dialog,
   DialogContent,
@@ -21,17 +21,18 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible"; // Import Collapsible
+} from "@/components/ui/collapsible";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Import Card components
 
 interface NoteItemProps {
   note: NoteData;
   onToggleStar: (noteId: string) => void;
   onDelete: (noteId: string) => void;
   isCurrentRoomWritable: boolean;
-  onUpdateNoteContent: (noteId: string, newContent: string) => void; // New prop for content updates
-  onUpdateNoteTitle: (noteId: string, newTitle: string) => void; // New prop for title updates
-  onSelectNoteForAnnotations: (noteId: string | null) => void; // New prop to select note for annotations sidebar
-  activeNoteForAnnotations: string | null; // New prop to indicate if this note is active for annotations
+  onUpdateNoteContent: (noteId: string, newContent: string) => void;
+  onUpdateNoteTitle: (noteId: string, newTitle: string) => void;
+  onSelectNoteForAnnotations: (noteId: string | null) => void;
+  activeNoteForAnnotations: string | null;
 }
 
 export function NoteItem({
@@ -48,7 +49,7 @@ export function NoteItem({
   const [editedTitle, setEditedTitle] = useState(note.title || '');
   const [isAnnotationCommentDialogOpen, setIsAnnotationCommentDialogOpen] = useState(false);
   const [currentAnnotationToEdit, setCurrentAnnotationToEdit] = useState<AnnotationData | null>(null);
-  const [isContentOpen, setIsContentOpen] = useState(false); // State for collapsible content
+  const [isContentOpen, setIsContentOpen] = useState(false);
 
   const { annotations, addAnnotation, updateAnnotation, deleteAnnotation } = useAnnotations(note.id);
 
@@ -98,7 +99,7 @@ export function NoteItem({
       note_id: note.id,
       highlight_id: highlightId,
       highlighted_text: highlightedText,
-      comment: null, // Initial comment is null
+      comment: null,
     });
     if (newAnno) {
       setCurrentAnnotationToEdit(newAnno);
@@ -142,42 +143,46 @@ export function NoteItem({
 
   const handleToggleAnnotationsSidebar = () => {
     if (activeNoteForAnnotations === note.id) {
-      onSelectNoteForAnnotations(null); // Deselect if already active
+      onSelectNoteForAnnotations(null);
     } else {
-      onSelectNoteForAnnotations(note.id); // Select this note
+      onSelectNoteForAnnotations(note.id);
     }
   };
 
   return (
     <>
-      <Collapsible open={isContentOpen} onOpenChange={setIsContentOpen} className="w-full">
-        <div className="flex flex-col p-3 border rounded-md bg-card backdrop-blur-xl text-card-foreground shadow-sm">
-          <div className="flex items-center justify-between mb-2">
+      <Card className={cn(
+        "w-full bg-card backdrop-blur-xl border-white/20 shadow-sm transition-all duration-200 ease-in-out",
+        "hover:shadow-md hover:border-primary/50",
+        activeNoteForAnnotations === note.id && "ring-2 ring-primary border-primary"
+      )}>
+        <Collapsible open={isContentOpen} onOpenChange={setIsContentOpen}>
+          <CardHeader className="flex flex-row items-center justify-between p-4 pb-2">
             {isEditingTitle ? (
               <Input
                 value={editedTitle}
                 onChange={(e) => setEditedTitle(e.target.value)}
                 onBlur={handleSaveTitle}
                 onKeyDown={(e) => e.key === 'Enter' && handleSaveTitle()}
-                className="font-semibold text-lg flex-1 mr-2"
+                className="font-semibold text-lg flex-1 mr-2 h-9"
                 autoFocus
                 disabled={!isCurrentRoomWritable}
               />
             ) : (
-              <h4
-                className="font-semibold text-lg flex-1 mr-2 cursor-pointer hover:text-primary truncate"
+              <CardTitle
+                className="text-lg font-semibold flex-1 mr-2 cursor-pointer hover:text-primary truncate"
                 onDoubleClick={handleTitleDoubleClick}
                 title="Double click to edit title"
               >
                 {note.title || 'Untitled Note'}
-              </h4>
+              </CardTitle>
             )}
             <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "h-7 w-7",
+                  "h-8 w-8",
                   note.starred ? "text-yellow-500 hover:bg-yellow-100" : "text-muted-foreground hover:bg-accent"
                 )}
                 onClick={handleToggleStarClick}
@@ -191,7 +196,7 @@ export function NoteItem({
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "h-7 w-7",
+                  "h-8 w-8",
                   activeNoteForAnnotations === note.id ? "text-primary" : "text-muted-foreground hover:bg-accent"
                 )}
                 onClick={handleToggleAnnotationsSidebar}
@@ -203,7 +208,7 @@ export function NoteItem({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 text-red-500 hover:bg-red-100 hover:text-red-600"
+                className="h-8 w-8 text-red-500 hover:bg-red-100 hover:text-red-600"
                 onClick={handleDeleteClick}
                 disabled={!isCurrentRoomWritable}
                 title="Delete Note"
@@ -212,32 +217,34 @@ export function NoteItem({
                 <span className="sr-only">Delete Note</span>
               </Button>
               <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7">
+                <Button variant="ghost" size="icon" className="h-8 w-8">
                   {isContentOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   <span className="sr-only">Toggle Content</span>
                 </Button>
               </CollapsibleTrigger>
             </div>
-          </div>
-          <p className="text-xs text-muted-foreground mb-2">
-            {new Date(note.created_at).toLocaleString()}
-          </p>
-          <CollapsibleContent>
-            <div className="pt-2 border-t border-border/50">
-              <RichTextEditor
-                content={note.content}
-                onChange={handleContentChange}
-                disabled={!isCurrentRoomWritable}
-                noteId={note.id}
-                annotations={annotations}
-                onAddAnnotation={handleAddAnnotation}
-                onDeleteAnnotation={handleDeleteAnnotation}
-                onUpdateAnnotationComment={handleUpdateAnnotationComment}
-              />
-            </div>
-          </CollapsibleContent>
-        </div>
-      </Collapsible>
+          </CardHeader>
+          <CardContent className="p-4 pt-0">
+            <p className="text-xs text-muted-foreground mb-3">
+              {new Date(note.created_at).toLocaleString()}
+            </p>
+            <CollapsibleContent>
+              <div className="pt-2 border-t border-border/50">
+                <RichTextEditor
+                  content={note.content}
+                  onChange={handleContentChange}
+                  disabled={!isCurrentRoomWritable}
+                  noteId={note.id}
+                  annotations={annotations}
+                  onAddAnnotation={handleAddAnnotation}
+                  onDeleteAnnotation={handleDeleteAnnotation}
+                  onUpdateAnnotationComment={handleUpdateAnnotationComment}
+                />
+              </div>
+            </CollapsibleContent>
+          </CardContent>
+        </Collapsible>
+      </Card>
 
       <Dialog open={isAnnotationCommentDialogOpen} onOpenChange={setIsAnnotationCommentDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">

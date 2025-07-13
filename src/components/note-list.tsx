@@ -4,7 +4,7 @@ import React from "react";
 import { NoteItem } from "@/components/note-item";
 import { NoteData } from "@/hooks/use-notes";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Keep Card imports if needed for other components, but not for this one's direct return.
 
 interface NoteListProps {
   notes: NoteData[];
@@ -28,12 +28,12 @@ export function NoteList({
   activeNoteForAnnotations,
 }: NoteListProps) {
   return (
-    <div className="w-full flex flex-col flex-1"> {/* Removed Card wrapper here, now handled by parent NotesWidget */}
+    <> {/* Use a fragment as the outer div is removed */}
       {notes.length === 0 ? (
         <p className="p-4 text-muted-foreground text-sm text-center">No notes added yet. Start by adding one above!</p>
       ) : (
         <ScrollArea className="flex-1 h-full">
-          <div className="p-1 space-y-3"> {/* Reduced padding */}
+          <div className="p-2 space-y-3"> {/* Adjusted padding from p-1 to p-2 */}
             {notes.map((note) => (
               <NoteItem
                 key={note.id}
@@ -50,6 +50,6 @@ export function NoteList({
           </div>
         </ScrollArea>
       )}
-    </div>
+    </>
   );
 }
