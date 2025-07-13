@@ -29,10 +29,10 @@ export function UserNameCapsule() {
     displayName = profile.first_name;
     idToCopy = session?.user?.id || null;
   } else if (session?.user?.id) {
-    displayName = `User (${session.user.id.substring(0, 6)}...)`;
+    displayName = `${session.user.id.substring(0, 6)}...`;
     idToCopy = session.user.id;
   } else {
-    displayName = guestId ? `Guest (${guestId.split('-')[1]})` : "Guest";
+    displayName = guestId ? `${guestId.split('-')[1]}` : "Guest";
     idToCopy = guestId;
   }
 
