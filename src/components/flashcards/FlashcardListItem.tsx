@@ -91,6 +91,7 @@ export function FlashcardListItem({
               onClick={(e) => e.stopPropagation()}
               side="bottom"
               align="end"
+              onOpenAutoFocus={(e) => e.preventDefault()}
             >
               <FlashcardForm
                 editingCard={card}
