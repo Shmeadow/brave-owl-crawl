@@ -4,18 +4,18 @@ import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, Gamepad2, BookOpen, Goal, WandSparkles, BarChart2 } from "lucide-react"; // Added BarChart2
 import dynamic from 'next/dynamic'; // Import dynamic
 
-// Import all widget content components dynamically
-const DynamicSpacesWidget = dynamic(() => import("@/components/widget-content/spaces-widget").then(mod => mod.SpacesWidget));
-const DynamicSoundsWidget = dynamic(() => import("@/components/widget-content/sounds-widget").then(mod => mod.SoundsWidget));
-const DynamicCalendarWidget = dynamic(() => import("@/components/widget-content/calendar-widget").then(mod => mod.CalendarWidget));
-const DynamicTimerWidget = dynamic(() => import("@/components/widget-content/timer-widget").then(mod => mod.TimerWidget));
-const DynamicTasksWidget = dynamic(() => import("@/components/widget-content/tasks-widget").then(mod => mod.TasksWidget));
-const DynamicNotesWidget = dynamic(() => import("@/components/widget-content/notes-widget").then(mod => mod.NotesWidget));
-const DynamicMediaWidget = dynamic(() => import("@/components/widget-content/media-widget").then(mod => mod.MediaWidget));
-const DynamicStatsProgressWidget = dynamic(() => import("@/components/widget-content/stats-progress-widget").then(mod => mod.StatsProgressWidget));
-const DynamicFlashCardsWidget = dynamic(() => import("@/components/widget-content/flash-cards-widget").then(mod => mod.FlashCardsWidget));
-const DynamicGoalFocusWidget = dynamic(() => import("@/components/widget-content/goal-focus-widget").then(mod => mod.GoalFocusWidget));
-const DynamicBackgroundEffectsWidget = dynamic(() => import("@/components/widget-content/background-effects-widget").then(mod => mod.BackgroundEffectsWidget));
+// Import all widget content components dynamically with SSR disabled
+const DynamicSpacesWidget = dynamic(() => import("@/components/widget-content/spaces-widget").then(mod => mod.SpacesWidget), { ssr: false });
+const DynamicSoundsWidget = dynamic(() => import("@/components/widget-content/sounds-widget").then(mod => mod.SoundsWidget), { ssr: false });
+const DynamicCalendarWidget = dynamic(() => import("@/components/widget-content/calendar-widget").then(mod => mod.CalendarWidget), { ssr: false });
+const DynamicTimerWidget = dynamic(() => import("@/components/widget-content/timer-widget").then(mod => mod.TimerWidget), { ssr: false });
+const DynamicTasksWidget = dynamic(() => import("@/components/widget-content/tasks-widget").then(mod => mod.TasksWidget), { ssr: false });
+const DynamicNotesWidget = dynamic(() => import("@/components/widget-content/notes-widget").then(mod => mod.NotesWidget), { ssr: false });
+const DynamicMediaWidget = dynamic(() => import("@/components/widget-content/media-widget").then(mod => mod.MediaWidget), { ssr: false });
+const DynamicStatsProgressWidget = dynamic(() => import("@/components/widget-content/stats-progress-widget").then(mod => mod.StatsProgressWidget), { ssr: false });
+const DynamicFlashCardsWidget = dynamic(() => import("@/components/widget-content/flash-cards-widget").then(mod => mod.FlashCardsWidget), { ssr: false });
+const DynamicGoalFocusWidget = dynamic(() => import("@/components/widget-content/goal-focus-widget").then(mod => mod.GoalFocusWidget), { ssr: false });
+const DynamicBackgroundEffectsWidget = dynamic(() => import("@/components/widget-content/background-effects-widget").then(mod => mod.BackgroundEffectsWidget), { ssr: false });
 
 import { useWidget } from "./widget-provider";
 import { Widget } from "./widget";
