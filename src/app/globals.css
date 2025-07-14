@@ -182,9 +182,9 @@
   .dark .prose .important-journal-item[data-color="#4ade80"] { @apply bg-green-900/50 text-green-300; }
   .dark .prose .important-journal-item[data-color="#f87171"] { @apply bg-red-900/50 text-red-300; }
 
+  /* Light mode highlight styles for better contrast */
+  .prose mark[data-color="#fff59d"] { @apply bg-yellow-200 text-yellow-950 rounded-sm px-0.5; }
+
   /* Dark mode highlight styles for better contrast */
-  .dark .prose mark[data-color="#fff59d"] { @apply bg-yellow-600/40 text-yellow-200; }
-  .dark .prose mark[data-color="#a7f3d0"] { @apply bg-green-600/40 text-green-200; }
-  .dark .prose mark[data-color="#bfdbfe"] { @apply bg-blue-600/40 text-blue-200; }
-  .dark .prose mark[data-color="#fecaca"] { @apply bg-red-600/40 text-red-200; }
+  .dark .prose mark[data-color="#fff59d"] { @apply bg-yellow-700/40 text-yellow-200 rounded-sm px-0.5; }
 }
