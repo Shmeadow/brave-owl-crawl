@@ -1,63 +1,31 @@
 "use client";
 
-import { useEditor, EditorContent, Extension } from '@tiptap/react';
+import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Highlight } from '@tiptap/extension-highlight';
 import { Color } from '@tiptap/extension-color';
 import ListItem from '@tiptap/extension-list-item';
-import { TextStyle } from '@tiptap/extension-text-style'; // Fixed: Named import
-import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
-import { toast } from 'sonner';
-import { AnnotationData } from '@/hooks/use-annotations'; // Import AnnotationData
-import { Button } from '@/components/ui/button'; // Import Button for consistency
+import { TextStyle } from '@tiptap/extension-text-style';
+import { Button } from '@/components/ui/button';
+import { Important } from '@/lib/tiptap-extensions'; // Import new extension
+import { Star } from 'lucide-react';
 
 interface RichTextEditorProps {
-  content: string;
-  onChange: (richText: string) => void;
+  content: string; // Expects a JSON string or HTML string for backward compatibility
+  onChange: (richText: string) => void; // Will now emit a JSON string
   disabled?: boolean;
-  noteId: string | null; // Made optional for new notes
-  annotations: AnnotationData[]; // Made optional
-  onAddAnnotation: (highlightId: string, highlightedText: string) => Promise<AnnotationData | null>; // Made optional
-  onDeleteAnnotation: (highlightId: string) => void; // Made optional
-  onUpdateAnnotationComment: (annotationId: string, comment: string) => void; // Made optional
   onEditorReady?: (editor: any) => void;
 }
-
-// Custom Highlight extension to add a unique ID and link to annotations
-const CustomHighlight = Highlight.extend({
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      'data-highlight-id': {
-        default: null,
-        parseHTML: (element: HTMLElement) => element.getAttribute('data-highlight-id'),
-        renderHTML: (attributes: Record<string, any>) => {
-          if (!attributes['data-highlight-id']) {
-            return {};
-          }
-          return {
-            'data-highlight-id': attributes['data-highlight-id'],
-          };
-        },
-      },
-    };
-  },
-});
 
 export function RichTextEditor({
   content,
   onChange,
   disabled,
-  noteId,
-  annotations,
-  onAddAnnotation,
-  onDeleteAnnotation,
-  onUpdateAnnotationComment,
   onEditorReady,
 }: RichTextEditorProps) {
-  const editorRef = useRef<any>(null); // Ref to store the editor instance
+  const editorRef = useRef<any>(null);
 
   const editor = useEditor({
     extensions: [
@@ -70,7 +38,6 @@ export function RichTextEditor({
           keepMarks: true,
           keepAttributes: false,
         },
-        // Removed 'highlight: false' as it's not a valid option for StarterKit
       }),
       ListItem.configure({
         HTMLAttributes: {
@@ -79,21 +46,17 @@ export function RichTextEditor({
       }),
       TextStyle,
       Color,
-      CustomHighlight.configure({
-        multicolor: true,
-        HTMLAttributes: {
-          class: 'highlighted-text',
-        },
-      }),
+      Highlight.configure({ multicolor: true }),
+      Important, // Add the custom extension
     ],
-    content: content,
+    content: '', // Start empty, content is set via useEffect
     editorProps: {
       attributes: {
         class: 'prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none min-h-[100px] max-w-none',
       },
     },
     onUpdate({ editor }) {
-      onChange(editor.getHTML());
+      onChange(JSON.stringify(editor.getJSON()));
     },
     editable: !disabled,
     immediatelyRender: false,
@@ -108,81 +71,31 @@ export function RichTextEditor({
 
   // Sync content from props to editor
   useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content, { emitUpdate: false });
+    if (editor) {
+      const isJson = (str: string) => {
+        try {
+          JSON.parse(str);
+        } catch (e) {
+          return false;
+        }
+        return true;
+      };
+
+      const currentJsonContent = JSON.stringify(editor.getJSON());
+      
+      if (isJson(content)) {
+        // If new content is JSON and different from current editor content
+        if (content !== currentJsonContent) {
+          editor.commands.setContent(JSON.parse(content), false);
+        }
+      } else {
+        // If new content is HTML (for backward compatibility)
+        if (content !== editor.getHTML()) {
+          editor.commands.setContent(content, false);
+        }
+      }
     }
   }, [content, editor]);
-
-  // Apply existing annotations to the editor content
-  useEffect(() => {
-    if (editor && annotations && annotations.length > 0) {
-      editor.chain().focus().unsetHighlight().run(); // Clear existing highlights first
-
-      annotations.forEach(annotation => {
-        const { highlight_id, highlighted_text } = annotation;
-        // This is a simplified re-application. A more robust solution would parse the HTML
-        // and find the exact text range to re-apply the highlight.
-        // For now, we'll assume the highlighted_text is unique enough to find.
-        // A better approach would be to store exact text positions or use a library
-        // that handles this. For Tiptap, it's usually done by storing the mark in the JSON.
-        // However, since we're storing in a separate DB table, we need to re-apply.
-
-        // This is a placeholder logic. Tiptap doesn't easily re-apply marks by text content.
-        // The ideal way is to store the Tiptap JSON state in the DB, or use a more complex
-        // text-range-to-mark mapping.
-        // For now, we'll just ensure the highlight mark is available.
-        // The `data-highlight-id` attribute will be added when the highlight is created.
-      });
-    }
-  }, [editor, annotations]); // Only re-apply when annotations change
-
-  const applyHighlight = useCallback(async (color: string) => {
-    if (!editor || disabled || !onAddAnnotation || !noteId) return;
-
-    const { from, to, empty } = editor.state.selection;
-    if (empty) {
-      toast.info("Select text to highlight.");
-      return;
-    }
-
-    const selectedText = editor.state.doc.textBetween(from, to);
-    if (!selectedText.trim()) {
-      toast.info("Select valid text to highlight.");
-      return;
-    }
-
-    // Generate a unique ID for this highlight instance
-    const highlightId = uuidv4();
-
-    // Apply the highlight mark with the unique ID
-    editor.chain().focus().setHighlight({ color, 'data-highlight-id': highlightId } as any).run();
-
-    // Add the annotation to the database
-    const newAnnotation = await onAddAnnotation(highlightId, selectedText);
-    if (newAnnotation) {
-      toast.success("Text highlighted!");
-    } else {
-      // If DB add fails, remove the highlight from the editor
-      editor.chain().focus().unsetHighlight().run();
-      toast.error("Failed to save highlight.");
-    }
-  }, [editor, disabled, onAddAnnotation, noteId]);
-
-  const removeHighlight = useCallback(() => {
-    if (!editor || disabled || !onDeleteAnnotation) return;
-
-    const { from, to } = editor.state.selection;
-    editor.state.doc.nodesBetween(from, to, (node, pos) => {
-      node.marks.forEach(mark => {
-        if (mark.type.name === 'highlight' && mark.attrs['data-highlight-id']) {
-          const highlightId = mark.attrs['data-highlight-id'];
-          onDeleteAnnotation(highlightId);
-        }
-      });
-    });
-    editor.chain().focus().unsetHighlight().run();
-    toast.info("Highlight removed.");
-  }, [editor, disabled, onDeleteAnnotation]);
 
   if (!editor) {
     return null;
@@ -347,8 +260,8 @@ export function RichTextEditor({
         {/* Highlight Color Buttons */}
         <Button
           type="button"
-          onClick={() => applyHighlight('#fff59d')} // Yellow
-          disabled={disabled || !noteId}
+          onClick={() => editor.chain().focus().toggleHighlight({ color: '#fff59d' }).run()}
+          disabled={disabled}
           variant="ghost"
           size="sm"
           className={cn("h-8 w-8 bg-yellow-200/50 hover:bg-yellow-200", editor.isActive('highlight', { color: '#fff59d' }) && 'ring-2 ring-yellow-500')}
@@ -358,8 +271,8 @@ export function RichTextEditor({
         </Button>
         <Button
           type="button"
-          onClick={() => applyHighlight('#a7f3d0')} // Green
-          disabled={disabled || !noteId}
+          onClick={() => editor.chain().focus().toggleHighlight({ color: '#a7f3d0' }).run()}
+          disabled={disabled}
           variant="ghost"
           size="sm"
           className={cn("h-8 w-8 bg-green-200/50 hover:bg-green-200", editor.isActive('highlight', { color: '#a7f3d0' }) && 'ring-2 ring-green-500')}
@@ -369,8 +282,8 @@ export function RichTextEditor({
         </Button>
         <Button
           type="button"
-          onClick={() => applyHighlight('#bfdbfe')} // Blue
-          disabled={disabled || !noteId}
+          onClick={() => editor.chain().focus().toggleHighlight({ color: '#bfdbfe' }).run()}
+          disabled={disabled}
           variant="ghost"
           size="sm"
           className={cn("h-8 w-8 bg-blue-200/50 hover:bg-blue-200", editor.isActive('highlight', { color: '#bfdbfe' }) && 'ring-2 ring-blue-500')}
@@ -380,8 +293,8 @@ export function RichTextEditor({
         </Button>
         <Button
           type="button"
-          onClick={() => applyHighlight('#fecaca')} // Red
-          disabled={disabled || !noteId}
+          onClick={() => editor.chain().focus().toggleHighlight({ color: '#fecaca' }).run()}
+          disabled={disabled}
           variant="ghost"
           size="sm"
           className={cn("h-8 w-8 bg-red-200/50 hover:bg-red-200", editor.isActive('highlight', { color: '#fecaca' }) && 'ring-2 ring-red-500')}
@@ -391,14 +304,25 @@ export function RichTextEditor({
         </Button>
         <Button
           type="button"
-          onClick={removeHighlight}
-          disabled={!editor.isActive('highlight') || disabled || !noteId}
+          onClick={() => editor.chain().focus().unsetHighlight().run()}
+          disabled={!editor.isActive('highlight') || disabled}
           variant="ghost"
           size="sm"
           className="h-8 w-8"
           title="Remove Highlight"
         >
           Un-highlight
+        </Button>
+        <Button
+          type="button"
+          onClick={() => editor.chain().focus().toggleImportant().run()}
+          disabled={disabled}
+          variant="ghost"
+          size="sm"
+          className={cn("h-8 w-8", editor.isActive('important') && 'bg-accent')}
+          title="Mark as Important"
+        >
+          <Star className="h-4 w-4 text-yellow-500" />
         </Button>
       </div>
       <EditorContent editor={editor} />

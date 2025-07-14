@@ -1,16 +1,13 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useCallback } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddJournalEntryForm } from "@/components/add-journal-entry-form";
 import { JournalEntryList } from "@/components/journal-entry-list";
-import { useJournal, JournalEntryData, ImportantReminder } from "@/hooks/use-journal";
+import { useJournal, ImportantReminder } from "@/hooks/use-journal";
 import { Loader2, Star } from "lucide-react";
-import { AnnotationsSidebar } from "@/components/annotations-sidebar";
-import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
 
 interface JournalWidgetProps {
   isCurrentRoomWritable: boolean;
@@ -28,16 +25,6 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
     handleUpdateJournalEntryContent,
     handleUpdateJournalEntryTitle,
   } = useJournal();
-  const [activeEntryForAnnotations, setActiveEntryForAnnotations] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'entries' | 'reminders'>('entries');
-
-  const handleSelectEntryForAnnotations = useCallback((entryId: string | null) => {
-    setActiveEntryForAnnotations(entryId);
-  }, []);
-
-  const handleJumpToHighlight = useCallback((highlightId: string) => {
-    toast.info(`Attempting to scroll to highlight: ${highlightId}`);
-  }, []);
 
   if (loading) {
     return (
@@ -60,17 +47,17 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full h-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full h-full">
         {/* Left Column: Add New Journal Entry Form */}
-        <div className="md:col-span-2 flex flex-col gap-6">
+        <div className="flex flex-col gap-6">
           <AddJournalEntryForm
             onAddEntry={handleAddJournalEntry}
             isCurrentRoomWritable={isCurrentRoomWritable}
           />
         </div>
 
-        {/* Right Columns: Journal Entry List / Reminders and Annotations Sidebar */}
-        <div className={`md:col-span-1 flex flex-col gap-6 ${activeEntryForAnnotations ? 'md:grid md:grid-cols-1' : ''}`}>
+        {/* Right Column: Journal Entry List / Reminders */}
+        <div className="flex flex-col gap-6">
           <Card className="w-full flex-1 bg-card backdrop-blur-xl border-white/20">
             <CardHeader className="pb-2">
               <CardTitle>Journal Content</CardTitle>
@@ -78,8 +65,8 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
             <CardContent className="p-4 pt-0">
               <Tabs defaultValue="entries" className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-4">
-                  <TabsTrigger value="entries" onClick={() => setActiveTab('entries')}>Entries</TabsTrigger>
-                  <TabsTrigger value="reminders" onClick={() => setActiveTab('reminders')}>Reminders ({importantReminders.length})</TabsTrigger>
+                  <TabsTrigger value="entries">Entries</TabsTrigger>
+                  <TabsTrigger value="reminders">Reminders ({importantReminders.length})</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="entries" className="mt-0">
@@ -90,15 +77,15 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
                     isCurrentRoomWritable={isCurrentRoomWritable}
                     onUpdateEntryContent={handleUpdateJournalEntryContent}
                     onUpdateEntryTitle={handleUpdateJournalEntryTitle}
-                    onSelectEntryForAnnotations={handleSelectEntryForAnnotations}
-                    activeEntryForAnnotations={activeEntryForAnnotations}
+                    onSelectEntryForAnnotations={() => {}} // No-op, sidebar removed
+                    activeEntryForAnnotations={null} // No active entry
                   />
                 </TabsContent>
 
                 <TabsContent value="reminders" className="mt-0">
                   <ScrollArea className="h-[400px] pr-4">
                     {importantReminders.length === 0 ? (
-                      <p className="text-muted-foreground text-sm text-center py-8">No important reminders yet. Mark text with the 🌟 button in your journal entries!</p>
+                      <p className="text-muted-foreground text-sm text-center py-8">No important reminders yet. Mark text with the ⭐ button in your journal entries!</p>
                     ) : (
                       <ul className="space-y-4">
                         {importantReminders.map((reminder, index) => (
@@ -120,15 +107,6 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
               </Tabs>
             </CardContent>
           </Card>
-          {activeEntryForAnnotations && (
-            <div className="flex-1 flex-shrink-0">
-              <AnnotationsSidebar
-                noteId={activeEntryForAnnotations}
-                onJumpToHighlight={handleJumpToHighlight}
-                isCurrentRoomWritable={isCurrentRoomWritable}
-              />
-            </div>
-          )}
         </div>
       </div>
     </div>

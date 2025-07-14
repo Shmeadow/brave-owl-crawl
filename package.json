@@ -38,6 +38,7 @@
     "@tiptap/extension-highlight": "^2.5.5",
     "@tiptap/extension-list-item": "^2.5.5",
     "@tiptap/extension-text-style": "^2.5.5",
+    "@tiptap/html": "^3.0.1",
     "@tiptap/pm": "^3.0.1",
     "@tiptap/react": "^3.0.1",
     "@tiptap/starter-kit": "^3.0.1",

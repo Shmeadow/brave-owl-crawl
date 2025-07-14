@@ -3,12 +3,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
+import { generateHTML } from '@tiptap/html';
+import StarterKit from '@tiptap/starter-kit';
+import Highlight from '@tiptap/extension-highlight';
+import { Important } from '@/lib/tiptap-extensions';
 
 export interface JournalEntryData {
   id: string;
   user_id?: string; // Optional for local storage entries
   title: string | null;
-  content: string;
+  content: string; // Can be HTML or JSON string
   starred: boolean;
   created_at: string;
   type: 'note' | 'journal'; // Will always be 'journal' for this hook
@@ -33,11 +37,20 @@ export function useJournal() {
   // Function to extract important reminders from journal entries
   const extractImportantReminders = useCallback((entries: JournalEntryData[]): ImportantReminder[] => {
     const reminders: ImportantReminder[] = [];
+    const extensions = [StarterKit, Highlight, Important];
+
     entries.forEach(entry => {
       if (entry.type === 'journal' && entry.content) {
         try {
+          let htmlContent = entry.content;
+          // Check if content is JSON and convert to HTML for parsing
+          if (entry.content.trim().startsWith('{')) {
+            const jsonContent = JSON.parse(entry.content);
+            htmlContent = generateHTML(jsonContent, extensions);
+          }
+          
           const parser = new DOMParser();
-          const doc = parser.parseFromString(entry.content, 'text/html');
+          const doc = parser.parseFromString(htmlContent, 'text/html');
           const importantSpans = doc.querySelectorAll('.important-journal-item');
           importantSpans.forEach(span => {
             reminders.push({

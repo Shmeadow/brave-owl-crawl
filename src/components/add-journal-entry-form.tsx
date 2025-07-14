@@ -18,8 +18,15 @@ import { toast } from "sonner";
 import { RichTextEditor } from "./rich-text-editor";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+const today = new Date();
+const dateString = today.toLocaleDateString('en-US', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+
 const formSchema = z.object({
-  title: z.string().min(1, { message: "Title cannot be empty." }),
+  prefix: z.string().optional(),
   content: z.string().min(1, { message: "Entry content cannot be empty." }),
 });
 
@@ -32,7 +39,7 @@ export function AddJournalEntryForm({ onAddEntry, isCurrentRoomWritable }: AddJo
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
+      prefix: "",
       content: "",
     },
   });
@@ -42,7 +49,8 @@ export function AddJournalEntryForm({ onAddEntry, isCurrentRoomWritable }: AddJo
       toast.error("You do not have permission to add journal entries in this room.");
       return;
     }
-    onAddEntry(values);
+    const title = values.prefix ? `${values.prefix} - ${dateString}` : dateString;
+    onAddEntry({ title, content: values.content });
     form.reset(); // Reset form after submission
     toast.success("Journal entry added successfully!");
   }
@@ -57,13 +65,16 @@ export function AddJournalEntryForm({ onAddEntry, isCurrentRoomWritable }: AddJo
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
             <FormField
               control={form.control}
-              name="title"
+              name="prefix"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Today's thoughts, e.g., 'Morning Reflection'" {...field} disabled={!isCurrentRoomWritable} />
-                  </FormControl>
+                  <div className="flex items-center gap-2">
+                    <FormControl>
+                      <Input placeholder="Daily Reflection" {...field} disabled={!isCurrentRoomWritable} />
+                    </FormControl>
+                    <span className="text-muted-foreground whitespace-nowrap">- {dateString}</span>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -79,11 +90,6 @@ export function AddJournalEntryForm({ onAddEntry, isCurrentRoomWritable }: AddJo
                       content={field.value}
                       onChange={field.onChange}
                       disabled={!isCurrentRoomWritable}
-                      noteId={null} // No noteId for new entries
-                      annotations={[]} // No annotations for new entries
-                      onAddAnnotation={async () => null} // Dummy function
-                      onDeleteAnnotation={() => {}} // Dummy function
-                      onUpdateAnnotationComment={() => {}} // Dummy function
                     />
                   </FormControl>
                   <FormMessage />
