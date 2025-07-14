@@ -77,8 +77,6 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
                     isCurrentRoomWritable={isCurrentRoomWritable}
                     onUpdateEntryContent={handleUpdateJournalEntryContent}
                     onUpdateEntryTitle={handleUpdateJournalEntryTitle}
-                    onSelectEntryForAnnotations={() => {}} // No-op, sidebar removed
-                    activeEntryForAnnotations={null} // No active entry
                   />
                 </TabsContent>
 

@@ -12,8 +12,6 @@ interface JournalEntryListProps {
   isCurrentRoomWritable: boolean;
   onUpdateEntryContent: (entryId: string, newContent: string) => void;
   onUpdateEntryTitle: (entryId: string, newTitle: string) => void;
-  onSelectEntryForAnnotations: (entryId: string | null) => void;
-  activeEntryForAnnotations: string | null;
 }
 
 export function JournalEntryList({
@@ -23,8 +21,6 @@ export function JournalEntryList({
   isCurrentRoomWritable,
   onUpdateEntryContent,
   onUpdateEntryTitle,
-  onSelectEntryForAnnotations,
-  activeEntryForAnnotations,
 }: JournalEntryListProps) {
   return (
     <>
@@ -42,8 +38,6 @@ export function JournalEntryList({
                 isCurrentRoomWritable={isCurrentRoomWritable}
                 onUpdateEntryContent={onUpdateEntryContent}
                 onUpdateEntryTitle={onUpdateEntryTitle}
-                onSelectEntryForAnnotations={onSelectEntryForAnnotations}
-                activeEntryForAnnotations={activeEntryForAnnotations}
               />
             ))}
           </div>

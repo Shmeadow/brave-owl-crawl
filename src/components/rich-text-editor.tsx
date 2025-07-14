@@ -86,12 +86,12 @@ export function RichTextEditor({
       if (isJson(content)) {
         // If new content is JSON and different from current editor content
         if (content !== currentJsonContent) {
-          editor.commands.setContent(JSON.parse(content), false);
+          editor.commands.setContent(JSON.parse(content), { emitUpdate: false });
         }
       } else {
         // If new content is HTML (for backward compatibility)
         if (content !== editor.getHTML()) {
-          editor.commands.setContent(content, false);
+          editor.commands.setContent(content, { emitUpdate: false });
         }
       }
     }
