@@ -4,9 +4,13 @@ declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     important: {
       /**
-       * Toggle the important mark
+       * Toggle the important mark with optional color attribute
        */
-      toggleImportant: () => ReturnType;
+      toggleImportant: (attributes?: { color: string }) => ReturnType;
+      /**
+       * Remove the important mark
+       */
+      unsetImportant: () => ReturnType;
     };
   }
 }

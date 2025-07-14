@@ -47,65 +47,59 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full h-full">
-        {/* Left Column: Add New Journal Entry Form */}
-        <div className="flex flex-col gap-6">
-          <AddJournalEntryForm
-            onAddEntry={handleAddJournalEntry}
-            isCurrentRoomWritable={isCurrentRoomWritable}
-          />
-        </div>
+      <div className="w-full max-w-4xl mx-auto flex flex-col gap-6">
+        <AddJournalEntryForm
+          onAddEntry={handleAddJournalEntry}
+          isCurrentRoomWritable={isCurrentRoomWritable}
+        />
 
-        {/* Right Column: Journal Entry List / Reminders */}
-        <div className="flex flex-col gap-6">
-          <Card className="w-full flex-1 bg-card backdrop-blur-xl border-white/20">
-            <CardHeader className="pb-2">
-              <CardTitle>Journal Content</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-              <Tabs defaultValue="entries" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-4">
-                  <TabsTrigger value="entries">Entries</TabsTrigger>
-                  <TabsTrigger value="reminders">Reminders ({importantReminders.length})</TabsTrigger>
-                </TabsList>
+        <Card className="w-full flex-1 bg-card backdrop-blur-xl border-white/20">
+          <CardHeader className="pb-2">
+            <CardTitle>Journal Content</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0">
+            <Tabs defaultValue="entries" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="entries">Entries ({journalEntries.length})</TabsTrigger>
+                <TabsTrigger value="reminders">Reminders ({importantReminders.length})</TabsTrigger>
+              </TabsList>
 
-                <TabsContent value="entries" className="mt-0">
-                  <JournalEntryList
-                    entries={journalEntries}
-                    onToggleStar={handleToggleStarJournalEntry}
-                    onDelete={handleDeleteJournalEntry}
-                    isCurrentRoomWritable={isCurrentRoomWritable}
-                    onUpdateEntryContent={handleUpdateJournalEntryContent}
-                    onUpdateEntryTitle={handleUpdateJournalEntryTitle}
-                  />
-                </TabsContent>
+              <TabsContent value="entries" className="mt-0">
+                <JournalEntryList
+                  entries={journalEntries}
+                  onToggleStar={handleToggleStarJournalEntry}
+                  onDelete={handleDeleteJournalEntry}
+                  isCurrentRoomWritable={isCurrentRoomWritable}
+                  onUpdateEntryContent={handleUpdateJournalEntryContent}
+                  onUpdateEntryTitle={handleUpdateJournalEntryTitle}
+                />
+              </TabsContent>
 
-                <TabsContent value="reminders" className="mt-0">
-                  <ScrollArea className="h-[400px] pr-4">
-                    {importantReminders.length === 0 ? (
-                      <p className="text-muted-foreground text-sm text-center py-8">No important reminders yet. Mark text with the ⭐ button in your journal entries!</p>
-                    ) : (
-                      <ul className="space-y-4">
-                        {importantReminders.map((reminder, index) => (
-                          <li key={index} className="text-sm border-b border-border/50 pb-3 last:border-b-0">
-                            <p className="font-semibold text-foreground flex items-center gap-2">
-                              <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                              From: "{reminder.entryTitle || 'Untitled Entry'}"
-                            </p>
-                            <p className="text-muted-foreground ml-6">"{reminder.text}"</p>
-                            <p className="text-xs text-muted-foreground ml-6 mt-1">
-                              {new Date(reminder.timestamp).toLocaleString()}
-                            </p>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </ScrollArea>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        </div>
+              <TabsContent value="reminders" className="mt-0">
+                <ScrollArea className="h-[400px] pr-4">
+                  {importantReminders.length === 0 ? (
+                    <p className="text-muted-foreground text-sm text-center py-8">No important reminders yet. Mark text with the ⭐ button in your journal entries!</p>
+                  ) : (
+                    <ul className="space-y-4">
+                      {importantReminders.map((reminder, index) => (
+                        <li key={index} className="text-sm border-b border-border/50 pb-3 last:border-b-0">
+                          <p className="font-semibold text-foreground flex items-center gap-2">
+                            <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                            From: "{reminder.entryTitle || 'Untitled Entry'}"
+                          </p>
+                          <p className="text-muted-foreground ml-6">"{reminder.text}"</p>
+                          <p className="text-xs text-muted-foreground ml-6 mt-1">
+                            {new Date(reminder.timestamp).toLocaleString()}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </ScrollArea>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

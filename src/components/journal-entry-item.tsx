@@ -150,7 +150,7 @@ export function JournalEntryItem({
             {new Date(entry.created_at).toLocaleString()}
           </p>
           <CollapsibleContent>
-            <div className="pt-2 border-t border-border/50 max-h-[60vh] overflow-y-auto">
+            <div className="pt-2 border-t border-border/50">
               <RichTextEditor
                 content={entry.content}
                 onChange={handleContentChange}

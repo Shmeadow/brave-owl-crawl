@@ -148,22 +148,24 @@
   }
 
   .prose .important-journal-item {
-    background-color: hsl(var(--accent)/0.2); /* Use accent color with transparency */
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.375rem;
-    display: inline-block;
-    position: relative;
-    color: hsl(var(--accent-foreground));
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    padding: 0.1em 0.3em;
+    border-radius: 0.3em;
+    font-weight: 600;
   }
 
-  .prose .important-journal-item::before {
-    content: '⭐ ';
-  }
+  .prose .important-journal-item[data-color="#fbbf24"] { @apply bg-yellow-400/20 text-yellow-500; }
+  .prose .important-journal-item[data-color="#60a5fa"] { @apply bg-blue-400/20 text-blue-500; }
+  .prose .important-journal-item[data-color="#4ade80"] { @apply bg-green-400/20 text-green-500; }
+  .prose .important-journal-item[data-color="#f87171"] { @apply bg-red-400/20 text-red-500; }
+
+  .dark .prose .important-journal-item[data-color="#fbbf24"] { @apply bg-yellow-400/20 text-yellow-400; }
+  .dark .prose .important-journal-item[data-color="#60a5fa"] { @apply bg-blue-400/20 text-blue-400; }
+  .dark .prose .important-journal-item[data-color="#4ade80"] { @apply bg-green-400/20 text-green-400; }
+  .dark .prose .important-journal-item[data-color="#f87171"] { @apply bg-red-400/20 text-red-400; }
 
   /* Dark mode highlight styles for better contrast */
-  .dark .prose mark[data-color="#fff59d"] { @apply bg-yellow-400/30 text-yellow-100; }
-  .dark .prose mark[data-color="#a7f3d0"] { @apply bg-green-400/30 text-green-100; }
-  .dark .prose mark[data-color="#bfdbfe"] { @apply bg-blue-400/30 text-blue-100; }
-  .dark .prose mark[data-color="#fecaca"] { @apply bg-red-400/30 text-red-100; }
+  .dark .prose mark[data-color="#fff59d"] { @apply bg-yellow-600/40 text-yellow-200; }
+  .dark .prose mark[data-color="#a7f3d0"] { @apply bg-green-600/40 text-green-200; }
+  .dark .prose mark[data-color="#bfdbfe"] { @apply bg-blue-600/40 text-blue-200; }
+  .dark .prose mark[data-color="#fecaca"] { @apply bg-red-600/40 text-red-200; }
 }

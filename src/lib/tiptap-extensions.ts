@@ -4,6 +4,23 @@ import type { ChainedCommands, Attributes } from '@tiptap/core';
 export const Important = Mark.create({
   name: 'important',
 
+  addAttributes() {
+    return {
+      color: {
+        default: '#fbbf24', // Default to yellow
+        parseHTML: element => element.getAttribute('data-color'),
+        renderHTML: attributes => {
+          if (!attributes.color) {
+            return {};
+          }
+          return {
+            'data-color': attributes.color,
+          };
+        },
+      },
+    };
+  },
+
   addOptions() {
     return {
       HTMLAttributes: {
@@ -16,6 +33,12 @@ export const Important = Mark.create({
     return [
       {
         tag: 'span.important-journal-item',
+        getAttrs: node => {
+          if (node instanceof HTMLElement) {
+            return { color: node.dataset.color };
+          }
+          return false;
+        },
       },
     ];
   },
@@ -26,8 +49,11 @@ export const Important = Mark.create({
 
   addCommands() {
     return {
-      toggleImportant: () => ({ commands }) => {
-        return commands.toggleMark(this.name);
+      toggleImportant: (attributes) => ({ commands }) => {
+        return commands.toggleMark(this.name, attributes);
+      },
+      unsetImportant: () => ({ commands }) => {
+        return commands.unsetMark(this.name);
       },
     };
   },
