@@ -1,5 +1,5 @@
 import { Mark, mergeAttributes } from '@tiptap/core';
-import type { ChainedCommands, HTMLAttributes } from '@tiptap/core';
+import type { ChainedCommands, Attributes } from '@tiptap/core';
 
 export const Important = Mark.create({
   name: 'important',
@@ -20,13 +20,13 @@ export const Important = Mark.create({
     ];
   },
 
-  renderHTML({ HTMLAttributes }: { HTMLAttributes: HTMLAttributes }) {
+  renderHTML({ HTMLAttributes }: { HTMLAttributes: Attributes }) {
     return ['span', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
   },
 
   addCommands() {
     return {
-      toggleImportant: () => ({ commands }: { commands: ChainedCommands }) => {
+      toggleImportant: () => ({ commands }) => {
         return commands.toggleMark(this.name);
       },
     };
