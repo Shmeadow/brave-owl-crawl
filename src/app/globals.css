@@ -160,4 +160,10 @@
   .prose .important-journal-item::before {
     content: '⭐ ';
   }
+
+  /* Dark mode highlight styles for better contrast */
+  .dark .prose mark[data-color="#fff59d"] { @apply bg-yellow-400/30 text-yellow-100; }
+  .dark .prose mark[data-color="#a7f3d0"] { @apply bg-green-400/30 text-green-100; }
+  .dark .prose mark[data-color="#bfdbfe"] { @apply bg-blue-400/30 text-blue-100; }
+  .dark .prose mark[data-color="#fecaca"] { @apply bg-red-400/30 text-red-100; }
 }
