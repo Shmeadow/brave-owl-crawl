@@ -106,7 +106,7 @@ export function RichTextEditor({
         <Button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} disabled={!editor.can().chain().focus().toggleOrderedList().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('orderedList') && 'bg-accent')} title="Ordered List"><ListOrdered className="h-4 w-4" /></Button>
         <Separator orientation="vertical" className="h-6 mx-1" />
         {/* Highlight Group */}
-        <Button type="button" onClick={() => editor.chain().focus().toggleHighlight({ color: '#fff59d' }).run()} disabled={disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('highlight', { color: '#fff59d' }) && 'ring-2 ring-yellow-500')} title="Highlight"><Highlighter className="h-4 w-4" /></Button>
+        <Button type="button" onClick={() => editor.chain().focus().setHighlight({ color: '#fff59d' }).run()} disabled={disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('highlight', { color: '#fff59d' }) && 'ring-2 ring-yellow-500')} title="Highlight"><Highlighter className="h-4 w-4" /></Button>
         <Button type="button" onClick={() => editor.chain().focus().unsetHighlight().run()} disabled={!editor.isActive('highlight') || disabled} variant="ghost" size="icon" className="h-8 w-8" title="Remove Highlight"><X className="h-4 w-4" /></Button>
         <Separator orientation="vertical" className="h-6 mx-1" />
         {/* Important/Star Group */}
