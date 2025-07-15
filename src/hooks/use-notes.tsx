@@ -112,6 +112,26 @@ export function useNotes() {
     }
   }, [notes, isLoggedInMode, loading]);
 
+  useEffect(() => {
+    if (!currentRoomId || !supabase) return;
+    const channel = supabase.channel(`room-notes-${currentRoomId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notes', filter: `room_id=eq.${currentRoomId}` },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const newNote = payload.new as NoteData;
+            setNotes(prev => [newNote, ...prev]);
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedNote = payload.new as NoteData;
+            setNotes(prev => prev.map(n => n.id === updatedNote.id ? updatedNote : n));
+          } else if (payload.eventType === 'DELETE') {
+            const deletedNoteId = (payload.old as any).id;
+            setNotes(prev => prev.filter(n => n.id !== deletedNoteId));
+          }
+        }
+      ).subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [currentRoomId, supabase]);
+
   const handleAddNote = useCallback(async ({ title, content }: { title: string; content: string; }) => {
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase
@@ -129,7 +149,7 @@ export function useNotes() {
       if (error) {
         toast.error("Error adding note: " + error.message);
       } else if (data) {
-        setNotes((prevNotes) => [...prevNotes, data as NoteData]);
+        // No need to setNotes here, realtime will handle it
         toast.success("Note added successfully!");
       }
     } else {
@@ -160,7 +180,7 @@ export function useNotes() {
       if (error) {
         toast.error("Error deleting note: " + error.message);
       } else {
-        setNotes(prevNotes => prevNotes.filter(note => note.id !== noteId));
+        // Realtime will handle UI update
         toast.success("Note deleted.");
       }
     } else {
@@ -174,16 +194,14 @@ export function useNotes() {
     if (!noteToUpdate) return;
     const newStarredStatus = !noteToUpdate.starred;
     if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('notes')
         .update({ starred: newStarredStatus })
-        .eq('id', noteId)
-        .select()
-        .single();
+        .eq('id', noteId);
       if (error) {
         toast.error("Error updating star status: " + error.message);
-      } else if (data) {
-        setNotes(prevNotes => prevNotes.map(note => note.id === noteId ? data as NoteData : note));
+      } else {
+        // Realtime will handle UI update
         toast.info(newStarredStatus ? "Note starred!" : "Note unstarred.");
       }
     } else {
@@ -198,16 +216,12 @@ export function useNotes() {
     const noteToUpdate = notes.find(note => note.id === noteId);
     if (!noteToUpdate) return;
     if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('notes')
         .update({ content: newContent })
-        .eq('id', noteId)
-        .select()
-        .single();
+        .eq('id', noteId);
       if (error) {
         toast.error("Error updating note content: " + error.message);
-      } else if (data) {
-        setNotes(prevNotes => prevNotes.map(note => note.id === noteId ? data as NoteData : note));
       }
     } else {
       setNotes(prevNotes => prevNotes.map(note =>
@@ -220,16 +234,13 @@ export function useNotes() {
     const noteToUpdate = notes.find(note => note.id === noteId);
     if (!noteToUpdate) return;
     if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('notes')
         .update({ title: newTitle })
-        .eq('id', noteId)
-        .select()
-        .single();
+        .eq('id', noteId);
       if (error) {
         toast.error("Error updating note title: " + error.message);
-      } else if (data) {
-        setNotes(prevNotes => prevNotes.map(note => note.id === noteId ? data as NoteData : note));
+      } else {
         toast.success("Note title updated!");
       }
     } else {

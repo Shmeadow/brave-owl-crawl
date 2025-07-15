@@ -149,9 +149,26 @@ export function useGoals() {
     return () => clearInterval(interval);
   }, [goals, loading, addNotification]);
 
+  useEffect(() => {
+    if (!currentRoomId || !supabase) return;
+    const channel = supabase.channel(`room-goals-${currentRoomId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'goals', filter: `room_id=eq.${currentRoomId}` },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setGoals(prev => [...prev, payload.new as GoalData]);
+          } else if (payload.eventType === 'UPDATE') {
+            setGoals(prev => prev.map(g => g.id === (payload.new as GoalData).id ? payload.new as GoalData : g));
+          } else if (payload.eventType === 'DELETE') {
+            setGoals(prev => prev.filter(g => g.id !== (payload.old as any).id));
+          }
+        }
+      ).subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [currentRoomId, supabase]);
+
   const handleAddGoal = useCallback(async (title: string, description: string | null, targetCompletionDate: string | null) => {
     if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('goals')
         .insert({
           user_id: session.user.id,
@@ -160,13 +177,10 @@ export function useGoals() {
           description: description,
           target_completion_date: targetCompletionDate,
           completed: false,
-        })
-        .select()
-        .single();
+        });
       if (error) {
         toast.error("Error adding goal: " + error.message);
-      } else if (data) {
-        setGoals((prevGoals) => [...prevGoals, data as GoalData]);
+      } else {
         toast.success("Goal added successfully!");
       }
     } else {
@@ -193,16 +207,13 @@ export function useGoals() {
     const newCompletedStatus = !currentCompleted;
     const newCompletedAt = newCompletedStatus ? new Date().toISOString() : null;
     if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('goals')
         .update({ completed: newCompletedStatus, completed_at: newCompletedAt })
-        .eq('id', goalId)
-        .select()
-        .single();
+        .eq('id', goalId);
       if (error) {
         toast.error("Error updating goal status: " + error.message);
-      } else if (data) {
-        setGoals(prevGoals => prevGoals.map(goal => goal.id === goalId ? data as GoalData : goal));
+      } else {
         toast.info(newCompletedStatus ? "🎉 Goal Complete! Great job!" : "Goal marked as incomplete.");
       }
     } else {
@@ -211,20 +222,17 @@ export function useGoals() {
       ));
       toast.info(newCompletedStatus ? "🎉 Goal Complete! Great job!" : "Goal marked as incomplete (locally).");
     }
-  }, [isLoggedInMode, session, supabase, goals]);
+  }, [isLoggedInMode, session, supabase]);
 
   const handleUpdateGoal = useCallback(async (goalId: string, updatedData: Partial<Omit<GoalData, 'id' | 'user_id' | 'created_at' | 'completed_at' | 'room_id'>>) => {
     if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('goals')
         .update(updatedData)
-        .eq('id', goalId)
-        .select()
-        .single();
+        .eq('id', goalId);
       if (error) {
         toast.error("Error updating goal: " + error.message);
-      } else if (data) {
-        setGoals(prevGoals => prevGoals.map(goal => goal.id === goalId ? data as GoalData : goal));
+      } else {
         toast.success("Goal updated successfully!");
       }
     } else {
@@ -233,7 +241,7 @@ export function useGoals() {
       ));
       toast.success("Goal updated (locally)!");
     }
-  }, [isLoggedInMode, session, supabase, goals]);
+  }, [isLoggedInMode, session, supabase]);
 
   const handleDeleteGoal = useCallback(async (goalId: string) => {
     if (isLoggedInMode && session && supabase) {
@@ -244,7 +252,6 @@ export function useGoals() {
       if (error) {
         toast.error("Error deleting goal: " + error.message);
       } else {
-        setGoals(prevGoals => prevGoals.filter(goal => goal.id !== goalId));
         toast.success("Goal deleted.");
         localStorage.removeItem(`${LOCAL_STORAGE_NOTIFICATION_KEY_PREFIX}${goalId}`);
       }

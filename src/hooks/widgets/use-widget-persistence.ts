@@ -16,7 +16,8 @@ import {
   DOCKED_WIDGET_HEIGHT,
   DOCKED_WIDGET_HORIZONTAL_GAP,
   BOTTOM_DOCK_OFFSET,
-} from './types'; // Corrected import path
+} from './types';
+import { useCurrentRoom } from "../use-current-room";
 
 interface UseWidgetPersistenceProps {
   initialWidgetConfigs: { [key: string]: WidgetConfig };
@@ -25,6 +26,7 @@ interface UseWidgetPersistenceProps {
 
 export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: UseWidgetPersistenceProps) {
   const { supabase, session, loading: authLoading } = useSupabase();
+  const { currentRoomId } = useCurrentRoom();
   const [activeWidgets, setActiveWidgets] = useState<WidgetState[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
@@ -38,7 +40,6 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
 
   const recalculatePinnedWidgets = useCallback((currentWidgets: WidgetState[]) => {
     let currentX = mainContentArea.left + DOCKED_WIDGET_HORIZONTAL_GAP;
-
     return currentWidgets.map((widget: WidgetState) => {
       if (widget.isPinned) {
         const newPosition = {
@@ -46,131 +47,66 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
           y: mainContentArea.top + mainContentArea.height - DOCKED_WIDGET_HEIGHT - BOTTOM_DOCK_OFFSET,
         };
         currentX += DOCKED_WIDGET_WIDTH + DOCKED_WIDGET_HORIZONTAL_GAP;
-
-        return {
-          ...widget,
-          position: newPosition,
-          size: {
-            width: DOCKED_WIDGET_WIDTH,
-            height: DOCKED_WIDGET_HEIGHT,
-          },
-          isMinimized: true,
-          isMaximized: false,
-          isClosed: false, // Pinned widgets are always visible
-        };
+        return { ...widget, position: newPosition, size: { width: DOCKED_WIDGET_WIDTH, height: DOCKED_WIDGET_HEIGHT }, isMinimized: true, isMaximized: false, isClosed: false };
       }
       return widget;
     });
   }, [mainContentArea]);
 
-  // Load state from Supabase or local storage on mount/auth change
   useEffect(() => {
-    if (authLoading || !mounted.current) return; // Removed `mainContentArea.width === 0`
+    if (authLoading || !mounted.current) return;
 
-    const currentSessionId = session?.user?.id || 'guest';
-    if (currentSessionId === hasLoadedForSession.current) return; // Don't reload for the same session
+    const sessionId = session?.user?.id || 'guest';
+    const contextId = currentRoomId || sessionId;
+    if (contextId === hasLoadedForSession.current) return;
 
     const loadWidgetStates = async () => {
       setLoading(true);
-      hasLoadedForSession.current = currentSessionId;
+      hasLoadedForSession.current = contextId;
       let loadedWidgetStates: WidgetState[] = [];
 
       if (session && supabase) {
         setIsLoggedInMode(true);
-        // 1. Try to fetch from Supabase
-        const { data: supabaseWidgets, error: fetchError } = await supabase
-          .from('user_widget_states')
-          .select('*')
-          .eq('user_id', session.user.id);
-
-        if (fetchError) {
-          console.error("Error fetching widget states from Supabase:", fetchError);
-          toast.error("Failed to load widget states.");
-        }
-
-        if (supabaseWidgets && supabaseWidgets.length > 0) {
-          loadedWidgetStates = supabaseWidgets.map((w: DbWidgetState) => fromDbWidgetState(w)).filter((w: WidgetState) => initialWidgetConfigs[w.id]);
-        } else {
-          // 2. If no Supabase data, check local storage for migration
-          const savedState = localStorage.getItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
-          if (savedState) {
-            try {
-              const parsedState: WidgetState[] = JSON.parse(savedState);
-              const validWidgets = parsedState.filter((w: WidgetState) => initialWidgetConfigs[w.id]);
-              
-              // Migrate to Supabase
-              const { error: insertError } = await supabase
-                .from('user_widget_states')
-                .upsert(validWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id)), { onConflict: 'user_id,widget_id' });
-
-              if (insertError) {
-                console.error("Error migrating local widget states to Supabase:", insertError);
-                toast.error("Error migrating local widget settings.");
-              } else {
-                loadedWidgetStates = validWidgets;
-                localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
+        if (currentRoomId) {
+          const { data: roomWidgets, error } = await supabase.from('user_widget_states').select('*').eq('room_id', currentRoomId);
+          if (error) {
+            toast.error("Failed to load room widget layout.");
+          } else if (roomWidgets) {
+            const latestStates = new Map<string, DbWidgetState>();
+            for (const widget of roomWidgets) {
+              const existing = latestStates.get(widget.widget_id);
+              if (!existing || new Date(widget.updated_at) > new Date(existing.updated_at)) {
+                latestStates.set(widget.widget_id, widget);
               }
-            } catch (e) {
-              console.error("Error parsing local storage widget states:", e);
-              loadedWidgetStates = [];
             }
-          } else {
-            // 3. If neither, start with empty state (new user)
-            loadedWidgetStates = [];
+            loadedWidgetStates = Array.from(latestStates.values()).map(fromDbWidgetState);
           }
+        } else {
+          const { data: personalWidgets, error } = await supabase.from('user_widget_states').select('*').eq('user_id', session.user.id).is('room_id', null);
+          if (error) toast.error("Failed to load personal widget layout.");
+          else if (personalWidgets) loadedWidgetStates = personalWidgets.map(fromDbWidgetState);
         }
       } else {
-        // User is a guest (not logged in)
         setIsLoggedInMode(false);
-        // For guests, always start with an empty screen, ignoring local storage.
         loadedWidgetStates = [];
-        localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY); // Clear any previous guest state
+        localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
       }
 
-      // Initialize all widgets based on initialWidgetConfigs, marking them as closed by default
       const allWidgets: WidgetState[] = Object.keys(initialWidgetConfigs).map(id => {
         const config = initialWidgetConfigs[id];
         const existingState = loadedWidgetStates.find(w => w.id === id);
-
         if (existingState) {
-          // Clamp positions for existing widgets
-          const clampedCurrentPos = clampPosition(
-            existingState.position.x,
-            existingState.position.y,
-            existingState.size.width,
-            existingState.size.height,
-            mainContentArea
-          );
-          const clampedNormalPos = existingState.normalPosition ? clampPosition(
-            existingState.normalPosition.x,
-            existingState.normalPosition.y,
-            existingState.normalSize?.width || config.initialWidth,
-            existingState.normalSize?.height || config.initialHeight,
-            mainContentArea
-          ) : clampedCurrentPos;
-
-          return {
-            ...existingState,
-            position: clampedCurrentPos,
-            normalPosition: clampedNormalPos,
-            isClosed: existingState.isClosed || false, // Ensure isClosed is set, default to false if undefined
-          };
-        } else {
-          // Default state for widgets not found in persistence (closed by default)
-          return {
-            id,
-            title: id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '), // Basic title from ID
-            position: clampPosition(config.initialPosition.x, config.initialPosition.y, config.initialWidth, config.initialHeight, mainContentArea),
-            size: { width: config.initialWidth, height: config.initialHeight },
-            zIndex: 903, // Base zIndex
-            isMinimized: false,
-            isMaximized: false,
-            isPinned: false,
-            isClosed: true, // New widgets are closed by default
-            normalPosition: clampPosition(config.initialPosition.x, config.initialPosition.y, config.initialWidth, config.initialHeight, mainContentArea),
-            normalSize: { width: config.initialWidth, height: config.initialHeight },
-          };
+          const clampedPos = clampPosition(existingState.position.x, existingState.position.y, existingState.size.width, existingState.size.height, mainContentArea);
+          return { ...existingState, position: clampedPos, normalPosition: existingState.normalPosition || clampedPos };
         }
+        return {
+          id, title: id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+          position: clampPosition(config.initialPosition.x, config.initialPosition.y, config.initialWidth, config.initialHeight, mainContentArea),
+          size: { width: config.initialWidth, height: config.initialHeight },
+          zIndex: 903, isMinimized: false, isMaximized: false, isPinned: false, isClosed: true,
+          normalPosition: clampPosition(config.initialPosition.x, config.initialPosition.y, config.initialWidth, config.initialHeight, mainContentArea),
+          normalSize: { width: config.initialWidth, height: config.initialHeight },
+        };
       });
       
       setActiveWidgets(recalculatePinnedWidgets(allWidgets));
@@ -178,42 +114,50 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
     };
 
     loadWidgetStates();
-  }, [session, supabase, authLoading, initialWidgetConfigs, mainContentArea, recalculatePinnedWidgets]);
+  }, [session, supabase, authLoading, initialWidgetConfigs, mainContentArea, recalculatePinnedWidgets, currentRoomId]);
 
-  // Save state to Supabase or local storage whenever activeWidgets changes
-  const isInitialSaveLoad = useRef(true); // Use a different ref for saving
   useEffect(() => {
-    if (isInitialSaveLoad.current) {
-      isInitialSaveLoad.current = false;
-      return;
-    }
-
-    if (!mounted.current || loading) return; // Don't save if not mounted or still loading
-
+    if (!mounted.current || loading) return;
     const saveWidgetStates = async () => {
       if (isLoggedInMode && session && supabase) {
-        // Use upsert with onConflict to update existing rows or insert new ones
-        const { error: upsertError } = await supabase
-          .from('user_widget_states')
-          .upsert(activeWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id)), { onConflict: 'user_id,widget_id' });
-
-        if (upsertError) {
-          console.error("Error saving widget states to Supabase:", upsertError);
-          toast.error("Failed to save widget layout.");
-        } else {
-          // toast.success("Widget layout saved to your account!"); // Too frequent, removed
+        const statesToSave = activeWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id, currentRoomId));
+        if (statesToSave.length > 0) {
+          const { error } = await supabase.from('user_widget_states').upsert(statesToSave, { onConflict: 'user_id,widget_id,room_id' });
+          if (error) toast.error("Failed to save widget layout.");
         }
-      } else {
-        // For guests, do not save the layout to local storage to ensure a clean start.
       }
     };
-
-    const debounceSave = setTimeout(() => {
-      saveWidgetStates();
-    }, 500); // Debounce saves to avoid too many writes
-
+    const debounceSave = setTimeout(saveWidgetStates, 1000);
     return () => clearTimeout(debounceSave);
-  }, [activeWidgets, isLoggedInMode, session, supabase, loading, mounted]);
+  }, [activeWidgets, isLoggedInMode, session, supabase, loading, mounted, currentRoomId]);
+
+  useEffect(() => {
+    if (!currentRoomId || !supabase) return;
+    const channel = supabase.channel(`room-widgets-${currentRoomId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'user_widget_states', filter: `room_id=eq.${currentRoomId}` },
+        (payload) => {
+          if ((payload.new as DbWidgetState)?.user_id === session?.user?.id) return;
+          
+          const processPayload = (dbWidget: DbWidgetState) => {
+            const widgetState = fromDbWidgetState(dbWidget);
+            setActiveWidgets(prev => {
+              const existingIndex = prev.findIndex(w => w.id === widgetState.id);
+              if (existingIndex > -1) {
+                const newWidgets = [...prev];
+                newWidgets[existingIndex] = { ...newWidgets[existingIndex], ...widgetState };
+                return recalculatePinnedWidgets(newWidgets);
+              }
+              return recalculatePinnedWidgets([...prev, widgetState]);
+            });
+          };
+
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            processPayload(payload.new as DbWidgetState);
+          }
+        }
+      ).subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [currentRoomId, supabase, session?.user?.id, setActiveWidgets, recalculatePinnedWidgets]);
 
   return { activeWidgets, setActiveWidgets, loading, isLoggedInMode };
 }

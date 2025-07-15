@@ -119,9 +119,26 @@ export function useTasks() {
     }
   }, [tasks, isLoggedInMode, loading]);
 
+  useEffect(() => {
+    if (!currentRoomId || !supabase) return;
+    const channel = supabase.channel(`room-tasks-${currentRoomId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks', filter: `room_id=eq.${currentRoomId}` },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setTasks(prev => [...prev, payload.new as TaskData]);
+          } else if (payload.eventType === 'UPDATE') {
+            setTasks(prev => prev.map(t => t.id === (payload.new as TaskData).id ? payload.new as TaskData : t));
+          } else if (payload.eventType === 'DELETE') {
+            setTasks(prev => prev.filter(t => t.id !== (payload.old as any).id));
+          }
+        }
+      ).subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [currentRoomId, supabase]);
+
   const handleAddTask = useCallback(async (title: string, description: string | null, dueDate: string | null) => {
     if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('tasks')
         .insert({
           user_id: session.user.id,
@@ -130,15 +147,11 @@ export function useTasks() {
           description: description,
           due_date: dueDate,
           completed: false,
-        })
-        .select()
-        .single();
+        });
 
       if (error) {
         toast.error("Error adding task (Supabase): " + error.message);
-        console.error("Error adding task (Supabase):", error);
-      } else if (data) {
-        setTasks((prevTasks) => [...prevTasks, data as TaskData]);
+      } else {
         toast.success("Task added successfully!");
       }
     } else {
@@ -162,22 +175,16 @@ export function useTasks() {
   }, [isLoggedInMode, session, supabase, currentRoomId]);
 
   const handleToggleComplete = useCallback(async (taskId: string, currentCompleted: boolean) => {
-    const taskToUpdate = tasks.find(task => task.id === taskId);
-    if (!taskToUpdate) return;
-
     const newCompletedStatus = !currentCompleted;
-
     if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('tasks')
         .update({ completed: newCompletedStatus })
         .eq('id', taskId);
 
       if (error) {
         toast.error("Error updating task status (Supabase): " + error.message);
-        console.error("Error updating task status (Supabase):", error);
       } else {
-        setTasks(prevTasks => prevTasks.map(task => task.id === taskId ? { ...task, completed: newCompletedStatus, updated_at: new Date().toISOString() } : task));
         toast.info(newCompletedStatus ? "Task marked as complete!" : "Task marked as incomplete.");
       }
     } else {
@@ -186,25 +193,18 @@ export function useTasks() {
       ));
       toast.info(newCompletedStatus ? "Task marked as complete (locally)!" : "Task marked as incomplete (locally).");
     }
-  }, [tasks, isLoggedInMode, session, supabase]);
+  }, [isLoggedInMode, session, supabase]);
 
   const handleUpdateTask = useCallback(async (taskId: string, updatedData: Partial<Omit<TaskData, 'id' | 'user_id' | 'room_id' | 'created_at' | 'updated_at'>>) => {
-    const taskToUpdate = tasks.find(task => task.id === taskId);
-    if (!taskToUpdate) return;
-
     if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('tasks')
         .update(updatedData)
-        .eq('id', taskId)
-        .select()
-        .single();
+        .eq('id', taskId);
 
       if (error) {
         toast.error("Error updating task (Supabase): " + error.message);
-        console.error("Error updating task (Supabase):", error);
-      } else if (data) {
-        setTasks(prevTasks => prevTasks.map(task => task.id === taskId ? data as TaskData : task));
+      } else {
         toast.success("Task updated successfully!");
       }
     } else {
@@ -213,7 +213,7 @@ export function useTasks() {
       ));
       toast.success("Task updated (locally)!");
     }
-  }, [tasks, isLoggedInMode, session, supabase]);
+  }, [isLoggedInMode, session, supabase]);
 
   const handleDeleteTask = useCallback(async (taskId: string) => {
     if (isLoggedInMode && session && supabase) {
@@ -224,9 +224,7 @@ export function useTasks() {
 
       if (error) {
         toast.error("Error deleting task (Supabase): " + error.message);
-        console.error("Error deleting task (Supabase):", error);
       } else {
-        setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
         toast.success("Task deleted from your account.");
       }
     } else {

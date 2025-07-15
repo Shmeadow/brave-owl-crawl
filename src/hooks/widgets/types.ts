@@ -21,6 +21,7 @@ export interface DbWidgetState {
   id?: string; // PK from DB
   user_id: string;
   widget_id: string;
+  room_id: string | null;
   title: string;
   position_x: number;
   position_y: number;
@@ -39,6 +40,7 @@ export interface DbWidgetState {
   normal_position_y: number | null;
   normal_size_width: number | null;
   normal_size_height: number | null;
+  updated_at: string;
 }
 
 export interface MainContentArea {
@@ -80,9 +82,10 @@ export const clampPosition = (x: number, y: number, width: number, height: numbe
   return { x: clampedX, y: clampedY };
 };
 
-export const toDbWidgetState = (widget: WidgetState, userId: string): Omit<DbWidgetState, 'id'> => ({
+export const toDbWidgetState = (widget: WidgetState, userId: string, roomId: string | null): Omit<DbWidgetState, 'id' | 'updated_at'> => ({
   user_id: userId,
   widget_id: widget.id,
+  room_id: roomId,
   title: widget.title,
   position_x: widget.position.x,
   position_y: widget.position.y,

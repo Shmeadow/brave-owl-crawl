@@ -106,9 +106,26 @@ export function useCalendarEvents() {
     }
   }, [events, isLoggedInMode, loading]);
 
+  useEffect(() => {
+    if (!currentRoomId || !supabase) return;
+    const channel = supabase.channel(`room-calendar-${currentRoomId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'calendar_events', filter: `room_id=eq.${currentRoomId}` },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setEvents(prev => [...prev, payload.new as CalendarEventData]);
+          } else if (payload.eventType === 'UPDATE') {
+            setEvents(prev => prev.map(e => e.id === (payload.new as CalendarEventData).id ? payload.new as CalendarEventData : e));
+          } else if (payload.eventType === 'DELETE') {
+            setEvents(prev => prev.filter(e => e.id !== (payload.old as any).id));
+          }
+        }
+      ).subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [currentRoomId, supabase]);
+
   const handleAddEvent = useCallback(async (title: string, description: string | null, eventDate: string) => {
     if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('calendar_events')
         .insert({
           user_id: session.user.id,
@@ -116,13 +133,10 @@ export function useCalendarEvents() {
           title: title,
           description: description,
           event_date: eventDate,
-        })
-        .select()
-        .single();
+        });
       if (error) {
         toast.error("Error adding event: " + error.message);
-      } else if (data) {
-        setEvents((prevEvents) => [...prevEvents, data as CalendarEventData]);
+      } else {
         toast.success("Event added successfully!");
       }
     } else {
@@ -146,16 +160,13 @@ export function useCalendarEvents() {
 
   const handleUpdateEvent = useCallback(async (eventId: string, updatedData: Partial<Omit<CalendarEventData, 'id' | 'user_id' | 'room_id' | 'created_at' | 'updated_at'>>) => {
     if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('calendar_events')
         .update(updatedData)
-        .eq('id', eventId)
-        .select()
-        .single();
+        .eq('id', eventId);
       if (error) {
         toast.error("Error updating event: " + error.message);
-      } else if (data) {
-        setEvents(prevEvents => prevEvents.map(event => event.id === eventId ? data as CalendarEventData : event));
+      } else {
         toast.success("Event updated successfully!");
       }
     } else {
@@ -164,7 +175,7 @@ export function useCalendarEvents() {
       ));
       toast.success("Event updated (locally)!");
     }
-  }, [isLoggedInMode, session, supabase, events]);
+  }, [isLoggedInMode, session, supabase]);
 
   const handleDeleteEvent = useCallback(async (eventId: string) => {
     if (isLoggedInMode && session && supabase) {
@@ -175,7 +186,6 @@ export function useCalendarEvents() {
       if (error) {
         toast.error("Error deleting event: " + error.message);
       } else {
-        setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
         toast.success("Event deleted.");
       }
     } else {
