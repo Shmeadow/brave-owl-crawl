@@ -1,6 +1,7 @@
 export interface CardData {
   id: string;
   user_id?: string;
+  room_id: string | null;
   category_id?: string | null;
   front: string;
   back: string;

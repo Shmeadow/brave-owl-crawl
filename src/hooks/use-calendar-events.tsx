@@ -7,11 +7,11 @@ import { toast } from "sonner";
 
 export interface CalendarEventData {
   id: string;
-  user_id?: string; // Optional for local storage events
+  user_id?: string;
   room_id: string | null;
   title: string;
   description: string | null;
-  event_date: string; // Stored as 'YYYY-MM-DD' string
+  event_date: string;
   created_at: string;
   updated_at: string;
 }
@@ -27,48 +27,39 @@ export function useCalendarEvents() {
 
   const fetchEvents = useCallback(async () => {
     if (authLoading) return;
-
     setLoading(true);
     if (session && supabase) {
       setIsLoggedInMode(true);
-      // 1. Load local events (if any) for migration
       const localEventsString = localStorage.getItem(LOCAL_STORAGE_KEY);
       let localEvents: CalendarEventData[] = [];
       try {
         localEvents = localEventsString ? JSON.parse(localEventsString) : [];
       } catch (e) {
         console.error("Error parsing local storage events:", e);
-        localEvents = [];
       }
 
-      // 2. Fetch user's existing events from Supabase
-      const { data: supabaseEvents, error: fetchError } = await supabase
-        .from('calendar_events')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('event_date', { ascending: true })
-        .order('created_at', { ascending: true });
+      const query = supabase.from('calendar_events').select('*');
+      if (currentRoomId) {
+        query.eq('room_id', currentRoomId);
+      } else {
+        query.is('room_id', null).eq('user_id', session.user.id);
+      }
+      const { data: supabaseEvents, error: fetchError } = await query.order('event_date', { ascending: true }).order('created_at', { ascending: true });
 
       if (fetchError) {
-        toast.error("Error fetching calendar events from Supabase: " + fetchError.message);
-        console.error("Error fetching events (Supabase):", fetchError);
+        toast.error("Error fetching calendar events: " + fetchError.message);
         setEvents([]);
       } else {
         let mergedEvents = [...(supabaseEvents as CalendarEventData[])];
-
-        // 3. Migrate local events to Supabase if they don't already exist
-        if (localEvents.length > 0) {
+        if (localEvents.length > 0 && !currentRoomId) {
           for (const localEvent of localEvents) {
-            const existsInSupabase = mergedEvents.some(
-              se => se.title === localEvent.title && se.event_date === localEvent.event_date
-            );
-
+            const existsInSupabase = mergedEvents.some(se => se.title === localEvent.title && se.event_date === localEvent.event_date);
             if (!existsInSupabase) {
               const { data: newSupabaseEvent, error: insertError } = await supabase
                 .from('calendar_events')
                 .insert({
                   user_id: session.user.id,
-                  room_id: null, // Local events are personal, not room-specific
+                  room_id: null,
                   title: localEvent.title,
                   description: localEvent.description,
                   event_date: localEvent.event_date,
@@ -76,10 +67,8 @@ export function useCalendarEvents() {
                 })
                 .select()
                 .single();
-
               if (insertError) {
-                console.error("Error migrating local event to Supabase:", insertError);
-                toast.error("Error migrating some local events.");
+                console.error("Error migrating local event:", insertError);
               } else if (newSupabaseEvent) {
                 mergedEvents.push(newSupabaseEvent as CalendarEventData);
               }
@@ -91,7 +80,6 @@ export function useCalendarEvents() {
         setEvents(mergedEvents);
       }
     } else {
-      // User is a guest (not logged in)
       setIsLoggedInMode(false);
       const storedEventsString = localStorage.getItem(LOCAL_STORAGE_KEY);
       let loadedEvents: CalendarEventData[] = [];
@@ -99,21 +87,19 @@ export function useCalendarEvents() {
         loadedEvents = storedEventsString ? JSON.parse(storedEventsString) : [];
       } catch (e) {
         console.error("Error parsing local storage events:", e);
-        loadedEvents = [];
       }
       setEvents(loadedEvents);
-      if (loadedEvents.length === 0) {
+      if (loadedEvents.length === 0 && !currentRoomId) {
         toast.info("You are browsing calendar events as a guest. Your events will be saved locally.");
       }
     }
     setLoading(false);
-  }, [session, supabase, authLoading]);
+  }, [session, supabase, authLoading, currentRoomId]);
 
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents]);
 
-  // Effect to save events to local storage when in guest mode
   useEffect(() => {
     if (!isLoggedInMode && !loading) {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(events));
@@ -126,25 +112,27 @@ export function useCalendarEvents() {
         .from('calendar_events')
         .insert({
           user_id: session.user.id,
-          room_id: currentRoomId, // Link to current room if available
+          room_id: currentRoomId,
           title: title,
           description: description,
           event_date: eventDate,
         })
         .select()
         .single();
-
       if (error) {
-        toast.error("Error adding event (Supabase): " + error.message);
-        console.error("Error adding event (Supabase):", error);
+        toast.error("Error adding event: " + error.message);
       } else if (data) {
         setEvents((prevEvents) => [...prevEvents, data as CalendarEventData]);
-        toast.success("Event added successfully to your account!");
+        toast.success("Event added successfully!");
       }
     } else {
+      if (currentRoomId) {
+        toast.error("You must be logged in to add events to a room.");
+        return;
+      }
       const newEvent: CalendarEventData = {
         id: crypto.randomUUID(),
-        room_id: null, // Guest events are always personal
+        room_id: null,
         title: title,
         description: description,
         event_date: eventDate,
@@ -157,21 +145,15 @@ export function useCalendarEvents() {
   }, [isLoggedInMode, session, supabase, currentRoomId]);
 
   const handleUpdateEvent = useCallback(async (eventId: string, updatedData: Partial<Omit<CalendarEventData, 'id' | 'user_id' | 'room_id' | 'created_at' | 'updated_at'>>) => {
-    const eventToUpdate = events.find(event => event.id === eventId);
-    if (!eventToUpdate) return;
-
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase
         .from('calendar_events')
         .update(updatedData)
         .eq('id', eventId)
-        .eq('user_id', session.user.id) // Ensure user owns the event
         .select()
         .single();
-
       if (error) {
-        toast.error("Error updating event (Supabase): " + error.message);
-        console.error("Error updating event (Supabase):", error);
+        toast.error("Error updating event: " + error.message);
       } else if (data) {
         setEvents(prevEvents => prevEvents.map(event => event.id === eventId ? data as CalendarEventData : event));
         toast.success("Event updated successfully!");
@@ -182,22 +164,19 @@ export function useCalendarEvents() {
       ));
       toast.success("Event updated (locally)!");
     }
-  }, [events, isLoggedInMode, session, supabase]);
+  }, [isLoggedInMode, session, supabase, events]);
 
   const handleDeleteEvent = useCallback(async (eventId: string) => {
     if (isLoggedInMode && session && supabase) {
       const { error } = await supabase
         .from('calendar_events')
         .delete()
-        .eq('id', eventId)
-        .eq('user_id', session.user.id); // Ensure user owns the event
-
+        .eq('id', eventId);
       if (error) {
-        toast.error("Error deleting event (Supabase): " + error.message);
-        console.error("Error deleting event (Supabase):", error);
+        toast.error("Error deleting event: " + error.message);
       } else {
         setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
-        toast.success("Event deleted from your account.");
+        toast.success("Event deleted.");
       }
     } else {
       setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));

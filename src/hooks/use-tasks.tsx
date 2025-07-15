@@ -32,7 +32,6 @@ export function useTasks() {
     setLoading(true);
     if (session && supabase) {
       setIsLoggedInMode(true);
-      // 1. Load local tasks (if any) for migration
       const localTasksString = localStorage.getItem(LOCAL_STORAGE_KEY);
       let localTasks: TaskData[] = [];
       try {
@@ -42,12 +41,14 @@ export function useTasks() {
         localTasks = [];
       }
 
-      // 2. Fetch user's existing tasks from Supabase
-      const { data: supabaseTasks, error: fetchError } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: true });
+      const query = supabase.from('tasks').select('*');
+      if (currentRoomId) {
+        query.eq('room_id', currentRoomId);
+      } else {
+        query.is('room_id', null).eq('user_id', session.user.id);
+      }
+      
+      const { data: supabaseTasks, error: fetchError } = await query.order('created_at', { ascending: true });
 
       if (fetchError) {
         toast.error("Error fetching tasks from Supabase: " + fetchError.message);
@@ -56,8 +57,7 @@ export function useTasks() {
       } else {
         let mergedTasks = [...(supabaseTasks as TaskData[])];
 
-        // 3. Migrate local tasks to Supabase if they don't already exist
-        if (localTasks.length > 0) {
+        if (localTasks.length > 0 && !currentRoomId) { // Only migrate local tasks when in personal dashboard
           for (const localTask of localTasks) {
             const existsInSupabase = mergedTasks.some(
               st => st.title === localTask.title && st.created_at === localTask.created_at
@@ -68,7 +68,7 @@ export function useTasks() {
                 .from('tasks')
                 .insert({
                   user_id: session.user.id,
-                  room_id: null, // Local tasks are personal, not room-specific
+                  room_id: null,
                   title: localTask.title,
                   description: localTask.description,
                   due_date: localTask.due_date,
@@ -92,7 +92,6 @@ export function useTasks() {
         setTasks(mergedTasks);
       }
     } else {
-      // User is a guest (not logged in)
       setIsLoggedInMode(false);
       const storedTasksString = localStorage.getItem(LOCAL_STORAGE_KEY);
       let loadedTasks: TaskData[] = [];
@@ -103,18 +102,17 @@ export function useTasks() {
         loadedTasks = [];
       }
       setTasks(loadedTasks);
-      if (loadedTasks.length === 0) {
+      if (loadedTasks.length === 0 && !currentRoomId) {
         toast.info("You are browsing tasks as a guest. Your tasks will be saved locally.");
       }
     }
     setLoading(false);
-  }, [session, supabase, authLoading]);
+  }, [session, supabase, authLoading, currentRoomId]);
 
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
 
-  // Effect to save tasks to local storage when in guest mode
   useEffect(() => {
     if (!isLoggedInMode && !loading) {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tasks));
@@ -127,7 +125,7 @@ export function useTasks() {
         .from('tasks')
         .insert({
           user_id: session.user.id,
-          room_id: currentRoomId, // Link to current room if available
+          room_id: currentRoomId,
           title: title,
           description: description,
           due_date: dueDate,
@@ -141,12 +139,16 @@ export function useTasks() {
         console.error("Error adding task (Supabase):", error);
       } else if (data) {
         setTasks((prevTasks) => [...prevTasks, data as TaskData]);
-        toast.success("Task added successfully to your account!");
+        toast.success("Task added successfully!");
       }
     } else {
+      if (currentRoomId) {
+        toast.error("You must be logged in to add tasks to a room.");
+        return;
+      }
       const newTask: TaskData = {
         id: crypto.randomUUID(),
-        room_id: null, // Guest tasks are always personal
+        room_id: null,
         title: title,
         description: description,
         due_date: dueDate,
@@ -169,8 +171,7 @@ export function useTasks() {
       const { data, error } = await supabase
         .from('tasks')
         .update({ completed: newCompletedStatus })
-        .eq('id', taskId)
-        .eq('user_id', session.user.id); // Ensure user owns the task
+        .eq('id', taskId);
 
       if (error) {
         toast.error("Error updating task status (Supabase): " + error.message);
@@ -196,7 +197,6 @@ export function useTasks() {
         .from('tasks')
         .update(updatedData)
         .eq('id', taskId)
-        .eq('user_id', session.user.id) // Ensure user owns the task
         .select()
         .single();
 
@@ -220,8 +220,7 @@ export function useTasks() {
       const { error } = await supabase
         .from('tasks')
         .delete()
-        .eq('id', taskId)
-        .eq('user_id', session.user.id); // Ensure user owns the task
+        .eq('id', taskId);
 
       if (error) {
         toast.error("Error deleting task (Supabase): " + error.message);
