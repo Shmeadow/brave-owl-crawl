@@ -34,11 +34,12 @@ interface ChatPanelProps {
   onClearUnreadMessages: () => void;
   unreadCount: number;
   currentRoomId: string | null;
+  currentRoomName: string;
   isCurrentRoomWritable: boolean;
   isMobile: boolean; // New prop
 }
 
-export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnreadMessages, unreadCount, currentRoomId, isCurrentRoomWritable, isMobile }: ChatPanelProps) {
+export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnreadMessages, unreadCount, currentRoomId, currentRoomName, isCurrentRoomWritable, isMobile }: ChatPanelProps) {
   const { supabase, session, profile, loading: authLoading } = useSupabase();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
@@ -209,7 +210,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
         <DrawerContent className="h-[80vh] flex flex-col">
           <DrawerHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
             <DrawerTitle className="text-lg">
-              {showSupportContact ? "Contact Support" : `Chat: ${currentRoomId ? currentRoomId.substring(0, 8) + '...' : 'No Room Selected'}`}
+              {showSupportContact ? "Contact Support" : `Chat: ${currentRoomName}`}
             </DrawerTitle>
             <Button
               variant="ghost"
@@ -316,7 +317,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
     )}>
       <CardHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
         <CardTitle className="text-lg">
-          {showSupportContact ? "Contact Support" : `Chat: ${currentRoomId ? currentRoomId.substring(0, 8) + '...' : 'No Room Selected'}`}
+          {showSupportContact ? "Contact Support" : `Chat: ${currentRoomName}`}
         </CardTitle>
         <Button
           variant="ghost"

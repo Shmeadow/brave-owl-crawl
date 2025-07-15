@@ -240,7 +240,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               onNewUnreadMessage={handleNewUnreadMessage}
               onClearUnreadMessages={handleClearUnreadMessages}
               unreadCount={unreadChatCount}
-              currentRoomId={currentRoomId} // Pass currentRoomId here
+              currentRoomId={currentRoomId}
+              currentRoomName={currentRoomName}
               isCurrentRoomWritable={isCurrentRoomWritable}
               isMobile={isMobile}
             />
