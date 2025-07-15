@@ -38,6 +38,24 @@ export function useCurrentRoom() {
     }
   }, []);
 
+  // New effect to listen for room join events
+  useEffect(() => {
+    const handleRoomJoined = (event: Event) => {
+      if (event instanceof CustomEvent) {
+        const { roomId, roomName } = event.detail;
+        if (roomId && roomName) {
+          setCurrentRoom(roomId, roomName);
+        }
+      }
+    };
+
+    window.addEventListener('roomJoined', handleRoomJoined);
+
+    return () => {
+      window.removeEventListener('roomJoined', handleRoomJoined);
+    };
+  }, [setCurrentRoom]);
+
   // Effect to synchronize current room with session and available rooms
   useEffect(() => {
     if (authLoading || roomsLoading) {

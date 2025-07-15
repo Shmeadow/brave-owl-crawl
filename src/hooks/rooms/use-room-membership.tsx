@@ -92,6 +92,8 @@ export function useRoomMembership({ rooms, setRooms, fetchRooms }: UseRoomMember
         return;
       }
       toast.success(`You successfully joined "${room.name}"!`);
+      // Dispatch event to update current room immediately
+      window.dispatchEvent(new CustomEvent('roomJoined', { detail: { roomId: resolvedRoomId, roomName: room.name } }));
       fetchRooms();
       addNotification(`You joined the room: "${room.name}".`);
       return;
@@ -129,6 +131,8 @@ export function useRoomMembership({ rooms, setRooms, fetchRooms }: UseRoomMember
         return;
       }
       toast.success(`You successfully joined "${room.name}"!`);
+      // Dispatch event to update current room immediately
+      window.dispatchEvent(new CustomEvent('roomJoined', { detail: { roomId: resolvedRoomId, roomName: room.name } }));
       fetchRooms();
       addNotification(`You joined the room: "${room.name}".`);
       return;
