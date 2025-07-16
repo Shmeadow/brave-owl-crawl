@@ -63,7 +63,8 @@ export const DOCKED_WIDGET_HEIGHT = 48; // Changed to match h-12 w-12
 export const DOCKED_WIDGET_HORIZONTAL_GAP = 4;
 export const BOTTOM_DOCK_OFFSET = 16;
 
-// Removed MINIMIZED_WIDGET_WIDTH and MINIMIZED_WIDGET_HEIGHT
+export const MINIMIZED_WIDGET_WIDTH = 224;
+export const MINIMIZED_WIDGET_HEIGHT = 48;
 
 export const SIDEBAR_OPEN_OFFSET_X = 20;
 export const SIDEBAR_OPEN_OFFSET_Y = 20;

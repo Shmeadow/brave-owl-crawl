@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Play, Pause, Volume2, VolumeX, FastForward, Rewind, Maximize, Minimize } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, FastForward, Rewind, Maximize, Minimize, ChevronRight } from 'lucide-react';
 
 interface PlayerControlsProps {
   playerType: 'audio' | 'youtube' | 'spotify' | null;
@@ -16,7 +16,8 @@ interface PlayerControlsProps {
   handleVolumeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   canPlayPause: boolean;
   canSeek: boolean;
-  // Removed displayMode and setDisplayMode props
+  displayMode: 'normal' | 'maximized' | 'minimized';
+  setDisplayMode: (mode: 'normal' | 'maximized' | 'minimized') => void;
 }
 
 export function PlayerControls({
@@ -32,7 +33,8 @@ export function PlayerControls({
   handleVolumeChange,
   canPlayPause,
   canSeek,
-  // Removed displayMode and setDisplayMode from destructuring
+  displayMode,
+  setDisplayMode,
 }: PlayerControlsProps) {
 
   const isVolumeControlDisabled = !playerIsReady || playerType === 'spotify';
@@ -94,8 +96,34 @@ export function PlayerControls({
         />
       </div>
 
-      {/* Player Mode Buttons (now handled by FloatingMediaPlayer directly) */}
-      {/* Removed Maximize/Minimize buttons from here */}
+      {/* Player Mode Buttons (now integrated) */}
+      <div className="flex justify-end gap-1 ml-2">
+        {displayMode === 'normal' && (
+          <button
+            onClick={() => setDisplayMode('maximized')}
+            className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-7 w-7 flex items-center justify-center"
+            title="Maximize Player"
+          >
+            <Maximize size={16} />
+          </button>
+        )}
+        {displayMode === 'maximized' && (
+          <button
+            onClick={() => setDisplayMode('normal')}
+            className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-7 w-7 flex items-center justify-center"
+            title="Shrink Player"
+          >
+            <Minimize size={16} />
+          </button>
+        )}
+        <button
+          onClick={() => setDisplayMode('minimized')}
+          className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-7 w-7 flex items-center justify-center"
+          title="Minimize Player"
+        >
+          <ChevronRight size={16} />
+        </button>
+      </div>
     </div>
   );
 }

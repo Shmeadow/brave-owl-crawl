@@ -26,12 +26,11 @@ import dynamic from 'next/dynamic';
 import { useRooms } from "@/hooks/use-rooms";
 import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification";
 import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar"; // New import
-import { WidgetConfig } from "@/hooks/widgets/types"; // Import WidgetConfig type
-import { FloatingMediaPlayerProps } from "@/components/media-player/floating-media-player"; // Import the props interface
 
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
 const DynamicPomodoroWidget = dynamic(() => import("@/components/pomodoro-widget").then(mod => mod.PomodoroWidget), { ssr: false });
+const DynamicSimpleAudioPlayer = dynamic(() => import("@/components/simple-audio-player").then(mod => mod.SimpleAudioPlayer), { ssr: false });
 const DynamicRainEffect = dynamic(() => import("@/components/effects/rain-effect").then(mod => mod.RainEffect), { ssr: false });
 const DynamicSnowEffect = dynamic(() => import("@/components/effects/snow-effect").then(mod => mod.SnowEffect), { ssr: false });
 const DynamicRaindropsEffect = dynamic(() => import("@/components/effects/raindrops-effect").then(mod => mod.RaindropsEffect), { ssr: false });
@@ -40,7 +39,6 @@ const DynamicMobileControls = dynamic(() => import("@/components/mobile-controls
 const DynamicWelcomeBackModal = dynamic(() => import("@/components/welcome-back-modal").then(mod => mod.WelcomeBackModal), { ssr: false });
 const DynamicNotificationsDropdown = dynamic(() => import("@/components/notifications/notifications-dropdown").then(mod => mod.NotificationsDropdown), { ssr: false });
 const DynamicTimeAndProgressDisplay = dynamic(() => import("@/components/time-and-progress-display").then(mod => mod.TimeAndProgressDisplay), { ssr: false });
-const DynamicFloatingMediaPlayer = dynamic<FloatingMediaPlayerProps>(() => import("@/components/media-player/floating-media-player").then(mod => mod.FloatingMediaPlayer), { ssr: false });
 
 
 // Constants for layout dimensions
@@ -49,7 +47,7 @@ const TOTAL_HEADER_AREA_HEIGHT = HEADER_HEIGHT;
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
 const SIDEBAR_WIDTH_MOBILE = 250; // px (from sidebar.tsx)
 
-export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: { [key: string]: WidgetConfig } }) {
+export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
   const { loading, session, profile } = useSupabase();
   const pathname = usePathname();
   const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
@@ -171,17 +169,12 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     );
   }
 
-  // Filter out 'media' from initialWidgetConfigs before passing to WidgetProvider
-  const filteredWidgetConfigs = Object.fromEntries(
-    Object.entries(initialWidgetConfigs).filter(([key]) => key !== 'media')
-  ) as { [key: string]: WidgetConfig };
-
   // Render the main application layout for all other pages
   return (
     <AmbientSoundProvider>
       <FocusSessionProvider>
         {/* WidgetProvider wraps everything that needs widget context */}
-        <WidgetProvider initialWidgetConfigs={filteredWidgetConfigs} mainContentArea={mainContentArea}>
+        <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea}>
           <div className="relative h-screen bg-transparent">
             {activeEffect === 'rain' && <DynamicRainEffect />}
             {activeEffect === 'snow' && <DynamicSnowEffect />}
@@ -247,6 +240,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
                   chatPanelWidth={chatPanelWidth}
                   isMobile={isMobile}
                 />
+                <DynamicSimpleAudioPlayer isMobile={isMobile} displayMode="minimized" /> {/* Pass displayMode for initial state */}
               </DynamicMobileControls>
             )}
 
@@ -258,12 +252,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
                   chatPanelWidth={chatPanelWidth}
                   isMobile={isMobile}
                 />
+                <DynamicSimpleAudioPlayer isMobile={isMobile} />
               </>
-            )}
-
-            {/* Floating Media Player */}
-            {isDashboard && (
-              <DynamicFloatingMediaPlayer isCurrentRoomWritable={isCurrentRoomWritable} isMobile={isMobile} chatPanelWidth={chatPanelWidth} />
             )}
 
             <DynamicChatPanel

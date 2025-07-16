@@ -8,13 +8,13 @@ interface MediaInputProps {
   inputUrl: string;
   setInputUrl: (url: string) => void;
   onLoadMedia: () => void;
-  // Removed onClosePopover prop
+  onClosePopover: () => void; // New prop to close the popover from within
 }
 
-export function MediaInput({ inputUrl, setInputUrl, onLoadMedia }: MediaInputProps) {
+export function MediaInput({ inputUrl, setInputUrl, onLoadMedia, onClosePopover }: MediaInputProps) {
   const handleLoadAndClose = () => {
     onLoadMedia();
-    // Removed onClosePopover call
+    onClosePopover(); // Close popover after loading media
   };
 
   return (

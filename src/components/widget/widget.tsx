@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { useDraggable } from "@dnd-kit/core";
 import { ResizableBox } from "@/components/resizable-box";
 import type { ResizeCallbackData } from 'react-resizable';
-import { DOCKED_WIDGET_WIDTH, DOCKED_WIDGET_HEIGHT } from "@/hooks/widgets/types"; // Import constants
+import { DOCKED_WIDGET_WIDTH, DOCKED_WIDGET_HEIGHT, MINIMIZED_WIDGET_WIDTH, MINIMIZED_WIDGET_HEIGHT } from "@/hooks/widgets/types"; // Import constants
 import { WidgetHeader } from './widget-header';
 
 interface WidgetProps {
@@ -84,9 +84,12 @@ export function Widget({
   if (isMaximized) {
     actualWidth = mainContentArea.width;
     actualHeight = mainContentArea.height;
-  } else if (isPinned || isMinimized) { // Apply compact size for both pinned and minimized
+  } else if (isPinned) {
     actualWidth = DOCKED_WIDGET_WIDTH;
     actualHeight = DOCKED_WIDGET_HEIGHT;
+  } else if (isMinimized) {
+    actualWidth = MINIMIZED_WIDGET_WIDTH;
+    actualHeight = MINIMIZED_WIDGET_HEIGHT;
   }
 
   // Ensure minimum dimensions for ResizableBox, matching minConstraints

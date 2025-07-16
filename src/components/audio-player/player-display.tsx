@@ -16,7 +16,7 @@ interface PlayerDisplayProps {
   onTimeUpdate: () => void;
   onEnded: () => void;
   className?: string;
-  // Removed isMaximized prop
+  isMaximized: boolean;
 }
 
 export function PlayerDisplay({
@@ -29,7 +29,7 @@ export function PlayerDisplay({
   onTimeUpdate,
   onEnded,
   className,
-  // Removed isMaximized from destructuring
+  isMaximized,
 }: PlayerDisplayProps) {
   const youtubeEmbedUrl = playerType === 'youtube' ? getYouTubeEmbedUrl(inputUrl) : null;
   const albumArtUrl = spotifyCurrentTrack?.album?.images?.[0]?.url;
