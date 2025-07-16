@@ -31,20 +31,20 @@ export default function LandingPage() {
   };
 
   const allFeatures = [
-    { icon: LayoutGrid, title: "Dashboards" },
-    { icon: Timer, title: "Focus Timers" },
-    { icon: ListTodo, title: "Task Lists" },
-    { icon: Goal, title: "Goal Tracking" },
-    { icon: NotebookPen, title: "Journaling" },
-    { icon: BookOpen, title: "Flashcards" },
-    { icon: Volume2, title: "Ambient Sounds" },
-    { icon: Image, title: "Backgrounds" },
-    { icon: MessageSquare, title: "Live Chat" },
-    { icon: Calendar, title: "Calendar" },
-    { icon: Palette, title: "Drawing Board" },
-    { icon: BarChart2, title: "Analytics" },
-    { icon: WandSparkles, title: "Visual Effects" },
-    { icon: Crown, title: "Premium Access" },
+    { icon: LayoutGrid, title: "Dashboards", color: "text-blue-400" },
+    { icon: Timer, title: "Focus Timers", color: "text-green-400" },
+    { icon: ListTodo, title: "Task Lists", color: "text-purple-400" },
+    { icon: Goal, title: "Goal Tracking", color: "text-yellow-400" },
+    { icon: NotebookPen, title: "Journaling", color: "text-pink-400" },
+    { icon: BookOpen, title: "Flashcards", color: "text-orange-400" },
+    { icon: Volume2, title: "Ambient Sounds", color: "text-teal-400" },
+    { icon: Image, title: "Backgrounds", color: "text-indigo-400" },
+    { icon: MessageSquare, title: "Live Chat", color: "text-red-400" },
+    { icon: Calendar, title: "Calendar", color: "text-cyan-400" },
+    { icon: Palette, title: "Drawing Board", color: "text-lime-400" },
+    { icon: BarChart2, title: "Analytics", color: "text-fuchsia-400" },
+    { icon: WandSparkles, title: "Visual Effects", color: "text-emerald-400" },
+    { icon: Crown, title: "Premium Access", color: "text-gold" },
   ];
 
   return (
@@ -68,7 +68,7 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
       </div>
 
-      {/* Cute Funny Shapes */}
+      {/* Illustrative Shapes (Canva-inspired) */}
       <motion.div
         className="absolute top-1/4 left-1/4 w-24 h-24 bg-white/10 rounded-full animate-pulse-slow"
         initial={{ scale: 0, rotate: 0 }}
@@ -86,6 +86,19 @@ export default function LandingPage() {
         initial={{ scale: 0, rotate: 0 }}
         animate={{ scale: 1, rotate: 360 }}
         transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+      />
+      {/* Additional shapes for more illustrative feel */}
+      <motion.div
+        className="absolute top-1/10 right-1/10 w-16 h-16 bg-blue-400/10 rounded-full animate-pulse-slow-reverse"
+        initial={{ scale: 0, rotate: 0 }}
+        animate={{ scale: 1, rotate: -270 }}
+        transition={{ duration: 9, repeat: Infinity, ease: "linear" }}
+      />
+      <motion.div
+        className="absolute bottom-1/5 left-1/5 w-28 h-28 bg-green-400/10 rounded-full animate-pulse-slow"
+        initial={{ scale: 0, rotate: 0 }}
+        animate={{ scale: 1, rotate: 180 }}
+        transition={{ duration: 11, repeat: Infinity, ease: "linear" }}
       />
 
       {/* Hero Section Content */}
@@ -131,7 +144,7 @@ export default function LandingPage() {
               variants={featureIconVariants}
               custom={index}
             >
-              <feature.icon className="h-6 w-6 text-primary-foreground mb-1" /> {/* Adjusted icon size */}
+              <feature.icon className={cn("h-6 w-6 mb-1", feature.color)} /> {/* Adjusted icon size and added color */}
               <p className="text-xs font-semibold">{feature.title}</p> {/* Adjusted font size */}
             </motion.div>
           ))}
