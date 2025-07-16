@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2, Edit, CalendarIcon } from "lucide-react";
 import { TaskData } from "@/hooks/use-tasks";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { toast } from '@/context/toast-visibility-provider'; // Updated toast import
 import { format } from "date-fns";
 import {
   Dialog,

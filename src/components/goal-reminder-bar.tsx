@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCurrentRoom } from "@/hooks/use-current-room";
-import { toast } from "sonner";
+import { toast } from '@/context/toast-visibility-provider'; // Updated toast import
 
 export function GoalReminderBar() {
   const { goals, loading, handleToggleComplete, handleDeleteGoal } = useGoals();

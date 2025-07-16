@@ -4,7 +4,7 @@ import React from "react";
 import { Slider } from "@/components/ui/slider";
 import { useAmbientSound } from "@/context/ambient-sound-provider";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { toast } from '@/context/toast-visibility-provider'; // Updated toast import
 
 interface AmbientSoundItemProps {
   name: string;

@@ -25,7 +25,9 @@ import { checkAndClearClientData } from "@/lib/client-version";
 import dynamic from 'next/dynamic';
 import { useRooms } from "@/hooks/use-rooms";
 import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification";
-import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar"; // New import
+import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar";
+import { ToastVisibilityProvider } from '@/context/toast-visibility-provider'; // Import new provider
+import { useUserPreferences } from '@/hooks/use-user-preferences'; // Import useUserPreferences
 
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
@@ -155,104 +157,106 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   return (
     <AmbientSoundProvider>
       <FocusSessionProvider>
-        {/* WidgetProvider wraps everything that needs widget context */}
-        <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea}>
-          <div className="relative h-screen bg-transparent">
-            {activeEffect === 'rain' && <DynamicRainEffect />}
-            {activeEffect === 'snow' && <DynamicSnowEffect />}
-            {activeEffect === 'raindrops' && <DynamicRaindropsEffect />}
-            <Header
-              isChatOpen={isChatOpen}
-              onToggleChat={() => setIsChatOpen(!isChatOpen)}
-              onNewUnreadMessage={handleNewUnreadMessage}
-              onClearUnreadMessages={handleClearUnreadMessages}
-              unreadChatCount={unreadChatCount}
-              isMobile={isMobile}
-              onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-            />
-            <DynamicWelcomeBackModal
-              isOpen={showWelcomeBack}
-              onClose={() => setShowWelcomeBack(false)}
-              profile={profile}
-              firstGoal={firstIncompleteGoal}
-              currentRoomName={currentRoomName}
-            />
-            <DynamicPlayingSoundsBar isMobile={isMobile} />
-            <Sidebar isMobile={isMobile} />
-            
-            {/* Time and Progress Display - now always visible on main app pages */}
-            <DynamicTimeAndProgressDisplay isMobile={isMobile} />
-
-            {/* Guest Mode Warning Bar */}
-            <GuestModeWarningBar />
-
-            {/* Room Join Request Notification */}
-            {pendingRequests.length > 0 && (
-              <RoomJoinRequestNotification
-                request={pendingRequests[0]}
-                onDismiss={dismissRequest}
+        <ToastVisibilityProvider> {/* Wrap with ToastVisibilityProvider */}
+          {/* WidgetProvider wraps everything that needs widget context */}
+          <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea}>
+            <div className="relative h-screen bg-transparent">
+              {activeEffect === 'rain' && <DynamicRainEffect />}
+              {activeEffect === 'snow' && <DynamicSnowEffect />}
+              {activeEffect === 'raindrops' && <DynamicRaindropsEffect />}
+              <Header
+                isChatOpen={isChatOpen}
+                onToggleChat={() => setIsChatOpen(!isChatOpen)}
+                onNewUnreadMessage={handleNewUnreadMessage}
+                onClearUnreadMessages={handleClearUnreadMessages}
+                unreadChatCount={unreadChatCount}
+                isMobile={isMobile}
+                onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
               />
-            )}
+              <DynamicWelcomeBackModal
+                isOpen={showWelcomeBack}
+                onClose={() => setShowWelcomeBack(false)}
+                profile={profile}
+                firstGoal={firstIncompleteGoal}
+                currentRoomName={currentRoomName}
+              />
+              <DynamicPlayingSoundsBar isMobile={isMobile} />
+              <Sidebar isMobile={isMobile} />
+              
+              {/* Time and Progress Display - now always visible on main app pages */}
+              <DynamicTimeAndProgressDisplay isMobile={isMobile} />
 
-            {/* Main content area, where widgets and page content live */}
-            <div
-              role="main"
-              className="absolute right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
-              style={{ left: `${sidebarCurrentWidth}px`, top: `${TOTAL_HEADER_AREA_HEIGHT}px` }}
-            >
-              <main className="flex-1 relative overflow-y-auto bg-transparent">
-                <div className="p-4 sm:p-6 lg:p-8 h-full">
-                  {children}
-                  {isDashboard && (
-                    // WidgetContainer now renders ALL widgets, managing their visibility internally
-                    <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} isMobile={isMobile} />
-                  )}
-                </div>
-              </main>
+              {/* Guest Mode Warning Bar */}
+              <GuestModeWarningBar />
+
+              {/* Room Join Request Notification */}
+              {pendingRequests.length > 0 && (
+                <RoomJoinRequestNotification
+                  request={pendingRequests[0]}
+                  onDismiss={dismissRequest}
+                />
+              )}
+
+              {/* Main content area, where widgets and page content live */}
+              <div
+                role="main"
+                className="absolute right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
+                style={{ left: `${sidebarCurrentWidth}px`, top: `${TOTAL_HEADER_AREA_HEIGHT}px` }}
+              >
+                <main className="flex-1 relative overflow-y-auto bg-transparent">
+                  <div className="p-4 sm:p-6 lg:p-8 h-full">
+                    {children}
+                    {isDashboard && (
+                      // WidgetContainer now renders ALL widgets, managing their visibility internally
+                      <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} isMobile={isMobile} />
+                    )}
+                  </div>
+                </main>
+              </div>
+              
+              {/* PinnedWidgetsDock is now a sibling to WidgetContainer, ensuring independence */}
+              {isDashboard && !isMobile && <IndependentPinnedWidgetsDock isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />}
+
+              {isDashboard && isMobile && (
+                <DynamicMobileControls>
+                  <DynamicPomodoroWidget 
+                    isMinimized={isPomodoroMinimized}
+                    setIsMinimized={setIsPomodoroMinimized}
+                    chatPanelWidth={chatPanelWidth}
+                    isMobile={isMobile}
+                  />
+                  <DynamicSimpleAudioPlayer isMobile={isMobile} />
+                </DynamicMobileControls>
+              )}
+
+              {isDashboard && !isMobile && (
+                <>
+                  <DynamicPomodoroWidget 
+                    isMinimized={isPomodoroMinimized}
+                    setIsMinimized={setIsPomodoroMinimized}
+                    chatPanelWidth={chatPanelWidth}
+                    isMobile={isMobile}
+                  />
+                  <DynamicSimpleAudioPlayer isMobile={isMobile} />
+                </>
+              )}
+
+              <DynamicChatPanel
+                isOpen={isChatOpen}
+                onToggleOpen={() => setIsChatOpen(!isChatOpen)}
+                onNewUnreadMessage={handleNewUnreadMessage}
+                onClearUnreadMessages={handleClearUnreadMessages}
+                unreadCount={unreadChatCount}
+                currentRoomId={currentRoomId}
+                currentRoomName={currentRoomName}
+                isCurrentRoomWritable={isCurrentRoomWritable}
+                isMobile={isMobile}
+              />
+
+              <Toaster />
             </div>
-            
-            {/* PinnedWidgetsDock is now a sibling to WidgetContainer, ensuring independence */}
-            {isDashboard && !isMobile && <IndependentPinnedWidgetsDock isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />}
-
-            {isDashboard && isMobile && (
-              <DynamicMobileControls>
-                <DynamicPomodoroWidget 
-                  isMinimized={isPomodoroMinimized}
-                  setIsMinimized={setIsPomodoroMinimized}
-                  chatPanelWidth={chatPanelWidth}
-                  isMobile={isMobile}
-                />
-                <DynamicSimpleAudioPlayer isMobile={isMobile} />
-              </DynamicMobileControls>
-            )}
-
-            {isDashboard && !isMobile && (
-              <>
-                <DynamicPomodoroWidget 
-                  isMinimized={isPomodoroMinimized}
-                  setIsMinimized={setIsPomodoroMinimized}
-                  chatPanelWidth={chatPanelWidth}
-                  isMobile={isMobile}
-                />
-                <DynamicSimpleAudioPlayer isMobile={isMobile} />
-              </>
-            )}
-
-            <DynamicChatPanel
-              isOpen={isChatOpen}
-              onToggleOpen={() => setIsChatOpen(!isChatOpen)}
-              onNewUnreadMessage={handleNewUnreadMessage}
-              onClearUnreadMessages={handleClearUnreadMessages}
-              unreadCount={unreadChatCount}
-              currentRoomId={currentRoomId}
-              currentRoomName={currentRoomName}
-              isCurrentRoomWritable={isCurrentRoomWritable}
-              isMobile={isMobile}
-            />
-
-            <Toaster />
-          </div>
-        </WidgetProvider>
+          </WidgetProvider>
+        </ToastVisibilityProvider>
       </FocusSessionProvider>
     </AmbientSoundProvider>
   );

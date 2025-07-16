@@ -1,11 +1,11 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useSupabase } from '@/integrations/supabase/auth';
-import { toast } from 'sonner';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { toast } from '@/context/toast-visibility-provider'; // Use custom toast
 import { getRandomBackground } from '@/lib/backgrounds';
-import { useCurrentRoom } from '@/hooks/use-current-room'; // Import useCurrentRoom
-import { useRooms } from '@/hooks/use-rooms'; // Import useRooms
+import { useCurrentRoom } from '@/hooks/use-current-room';
+import { useRooms } from '@/hooks/use-rooms';
+import { useUserPreferences } from '@/hooks/use-user-preferences'; // Import the new user preferences hook
 
 interface BackgroundState {
   url: string;
@@ -19,10 +19,6 @@ interface BackgroundContextType {
 }
 
 const BackgroundContext = createContext<BackgroundContextType | undefined>(undefined);
-
-const LOCAL_STORAGE_BG_KEY = 'app_background_url';
-const LOCAL_STORAGE_BG_TYPE_KEY = 'app_background_type';
-const LOCAL_STORAGE_BG_MIRRORED_KEY = 'app_background_mirrored';
 
 // This component will manage rendering the background video or image
 function BackgroundManager({ url, isVideo, isMirrored }: { url: string; isVideo: boolean; isMirrored: boolean }) {
@@ -84,138 +80,40 @@ function BackgroundManager({ url, isVideo, isMirrored }: { url: string; isVideo:
 }
 
 export function BackgroundProvider({ children, initialBackground }: { children: React.ReactNode; initialBackground: BackgroundState }) {
-  const { supabase, session, loading: authLoading } = useSupabase();
-  const { currentRoomId } = useCurrentRoom(); // Get current room ID
-  const { rooms, loading: roomsLoading } = useRooms(); // Get rooms data
-  const [userBackground, setUserBackground] = useState<BackgroundState>(initialBackground); // User's personal background preference
-  const [loading, setLoading] = useState(true);
-  const [isLoggedInMode, setIsLoggedInMode] = useState(false);
+  const { preferences, updatePreference, loading: preferencesLoading } = useUserPreferences();
+  const { currentRoomId } = useCurrentRoom();
+  const { rooms, loading: roomsLoading } = useRooms();
 
-  // Effect to load user's personal background settings
-  useEffect(() => {
-    if (authLoading) return;
-
-    const loadUserBackground = async () => {
-      setLoading(true);
-      if (session && supabase) {
-        setIsLoggedInMode(true);
-        // 1. Try to fetch from Supabase
-        const { data: supabasePrefs, error: fetchError } = await supabase
-          .from('user_preferences')
-          .select('background_url, is_video_background, is_mirrored_background')
-          .eq('user_id', session.user.id)
-          .single();
-
-        if (fetchError && fetchError.code !== 'PGRST116') {
-          console.error("Error fetching background preferences from Supabase:", fetchError);
-          toast.error("Failed to load background preferences.");
-        }
-
-        if (supabasePrefs && supabasePrefs.background_url) {
-          setUserBackground({
-            url: supabasePrefs.background_url,
-            isVideo: supabasePrefs.is_video_background ?? false,
-            isMirrored: supabasePrefs.is_mirrored_background ?? false,
-          });
-        } else {
-          // 2. If no Supabase data, check local storage for migration
-          const savedUrl = localStorage.getItem(LOCAL_STORAGE_BG_KEY);
-          const savedType = localStorage.getItem(LOCAL_STORAGE_BG_TYPE_KEY);
-          const savedMirrored = localStorage.getItem(LOCAL_STORAGE_BG_MIRRORED_KEY);
-
-          if (savedUrl) {
-            const isVideo = savedType === 'video';
-            const isMirrored = savedMirrored === 'true';
-            
-            // Migrate to Supabase
-            const { error: insertError } = await supabase
-              .from('user_preferences')
-              .upsert({
-                user_id: session.user.id,
-                background_url: savedUrl,
-                is_video_background: isVideo,
-                is_mirrored_background: isMirrored,
-              }, { onConflict: 'user_id' });
-
-            if (insertError) {
-              console.error("Error migrating local background to Supabase:", insertError);
-              toast.error("Error migrating local background settings.");
-            } else {
-              setUserBackground({ url: savedUrl, isVideo, isMirrored });
-              localStorage.removeItem(LOCAL_STORAGE_BG_KEY);
-              localStorage.removeItem(LOCAL_STORAGE_BG_TYPE_KEY);
-              localStorage.removeItem(LOCAL_STORAGE_BG_MIRRORED_KEY);
-            }
-          } else {
-            // 3. If neither, use the initialBackground from props and insert into Supabase
-            const { error: insertError } = await supabase
-              .from('user_preferences')
-              .upsert({
-                user_id: session.user.id,
-                background_url: initialBackground.url,
-                is_video_background: initialBackground.isVideo,
-                is_mirrored_background: initialBackground.isMirrored,
-              }, { onConflict: 'user_id' });
-
-            if (insertError) {
-              console.error("Error inserting default background into Supabase:", insertError);
-            } else {
-              setUserBackground(initialBackground);
-            }
-          }
-        }
-      } else {
-        // User is a guest (not logged in)
-        setIsLoggedInMode(false);
-        // Always use the random initial background for guests and don't load from local storage.
-        setUserBackground(initialBackground);
-        // Clear any previously saved background to ensure a random one on next visit.
-        localStorage.removeItem(LOCAL_STORAGE_BG_KEY);
-        localStorage.removeItem(LOCAL_STORAGE_BG_TYPE_KEY);
-        localStorage.removeItem(LOCAL_STORAGE_BG_MIRRORED_KEY);
-      }
-      setLoading(false);
+  // Use preferences for the user's personal background
+  const userBackground: BackgroundState = useMemo(() => {
+    if (preferencesLoading) return initialBackground; // Use initial until preferences load
+    return {
+      url: preferences?.background_url || initialBackground.url,
+      isVideo: preferences?.is_video_background ?? initialBackground.isVideo,
+      isMirrored: preferences?.is_mirrored_background ?? initialBackground.isMirrored,
     };
-
-    loadUserBackground();
-  }, [session, supabase, authLoading, initialBackground]);
+  }, [preferences, preferencesLoading, initialBackground]);
 
   // Callback to change the user's personal background and save the choice
-  const setBackground = useCallback(async (url: string, isVideo: boolean = false, isMirrored: boolean = false) => {
-    setUserBackground({ url, isVideo, isMirrored });
-
-    if (isLoggedInMode && session && supabase) {
-      const { error } = await supabase
-        .from('user_preferences')
-        .upsert({
-          user_id: session.user.id,
-          background_url: url,
-          is_video_background: isVideo,
-          is_mirrored_background: isMirrored,
-        }, { onConflict: 'user_id' });
-
-      if (error) {
-        console.error("Error updating background in Supabase:", error);
-        toast.error("Failed to save background preference.");
-      } else {
-        // toast.success("Background saved to your account!"); // Removed for cleaner logs
-      }
-    } else if (!loading) { // Only save to local storage if not logged in and initial load is complete
-      localStorage.setItem(LOCAL_STORAGE_BG_KEY, url);
-      localStorage.setItem(LOCAL_STORAGE_BG_TYPE_KEY, isVideo ? 'video' : 'image');
-      localStorage.setItem(LOCAL_STORAGE_BG_MIRRORED_KEY, String(isMirrored));
-      // toast.success("Background saved locally!"); // Removed for cleaner logs
-    }
-  }, [isLoggedInMode, session, supabase, loading]);
+  const setBackground = useCallback((url: string, isVideo: boolean = false, isMirrored: boolean = false) => {
+    updatePreference('background_url', url);
+    updatePreference('is_video_background', isVideo);
+    updatePreference('is_mirrored_background', isMirrored);
+  }, [updatePreference]);
 
   // Determine the active background to display: room background takes precedence
-  const activeRoom = rooms.find(room => room.id === currentRoomId);
-  const backgroundToDisplay = (activeRoom && activeRoom.background_url)
-    ? { url: activeRoom.background_url, isVideo: activeRoom.is_video_background || false, isMirrored: false } // Room background
-    : userBackground; // Fallback to user's personal background
+  const backgroundToDisplay = useMemo(() => {
+    if (roomsLoading) return userBackground; // Use user's background until rooms load
+    const activeRoom = rooms.find(room => room.id === currentRoomId);
+    return (activeRoom && activeRoom.background_url)
+      ? { url: activeRoom.background_url, isVideo: activeRoom.is_video_background || false, isMirrored: false }
+      : userBackground;
+  }, [currentRoomId, rooms, roomsLoading, userBackground]);
+
+  const value = useMemo(() => ({ background: userBackground, setBackground }), [userBackground, setBackground]);
 
   return (
-    <BackgroundContext.Provider value={{ background: userBackground, setBackground }}>
+    <BackgroundContext.Provider value={value}>
       <BackgroundManager url={backgroundToDisplay.url} isVideo={backgroundToDisplay.isVideo} isMirrored={backgroundToDisplay.isMirrored} />
       {children}
     </BackgroundContext.Provider>
