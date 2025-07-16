@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-// Removed unused import: import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Star, CheckCircle } from "lucide-react";
 import { FlashcardSize } from "@/hooks/use-flashcard-size"; // Import FlashcardSize type
@@ -34,7 +33,8 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
     { "rotate-y-180": isFlipped }
   );
 
-  const frontBackBaseClasses = "absolute w-full h-full flex flex-col justify-center items-center rounded-lg shadow-lg p-4";
+  // Added 'absolute inset-0' here
+  const frontBackBaseClasses = "absolute inset-0 w-full h-full flex flex-col justify-center items-center rounded-lg shadow-lg p-4";
 
   const textSizeClasses = cn({
     'text-4xl': size === 'sm',
@@ -52,16 +52,16 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
   );
 
   return (
-    <div className={cardClasses} style={{ perspective: '1000px' }}> {/* Added perspective inline */}
+    <div className={cardClasses} style={{ perspective: '1000px' }}>
       <div
         className={innerCardClasses}
         onClick={onClick}
-        style={{ transformStyle: 'preserve-3d' }} // Apply inline transform-style
+        style={{ transformStyle: 'preserve-3d' }}
       >
         {/* Front of the card (Question - Dark) */}
         <div
           className={cn(frontBackBaseClasses, "bg-primary text-primary-foreground border border-white/20")}
-          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(0deg)' }} // Apply inline backface-visibility and initial transform
+          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(0deg)' }}
         >
           <div className="flex flex-col items-center justify-center h-full w-full p-0">
             <p className={cn("font-semibold", textSizeClasses)}>{front}</p>
@@ -79,7 +79,7 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
         {/* Back of the card (Answer - Light) */}
         <div
           className={cn(frontBackBaseClasses, "bg-card text-card-foreground border border-white/20")}
-          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }} // Apply inline backface-visibility and initial transform
+          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
         >
           <div className="flex flex-col items-center justify-center h-full w-full p-0">
             <p className={cn("font-medium", textSizeClasses)}>{back}</p>
