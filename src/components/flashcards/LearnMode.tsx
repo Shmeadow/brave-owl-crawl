@@ -117,7 +117,8 @@ export function LearnMode({ flashcards, onGradeCard, goToSummary, flashcardSize,
               status={currentCardData.status}
               seen_count={currentCardData.seen_count}
               size={flashcardSize}
-              onSetSize={setFlashcardSize} // Pass setFlashcardSize here
+              onSetSize={setFlashcardSize}
+              disableHoverEffects={false} // Enable hover effects for Learn Mode
             />
             {isFlipped && (
               <div className="w-full max-w-md text-center space-y-2 mt-4">

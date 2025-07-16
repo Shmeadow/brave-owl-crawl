@@ -16,11 +16,13 @@ interface FlashCardProps {
   seen_count?: number;
   size?: FlashcardSize; // Add size prop
   onSetSize?: (size: FlashcardSize) => void; // Add onSetSize prop
+  disableHoverEffects?: boolean; // New prop to disable hover effects
 }
 
-export function FlashCard({ front, back, isFlipped, onClick, status, seen_count, size = 'md', onSetSize }: FlashCardProps) {
+export function FlashCard({ front, back, isFlipped, onClick, status, seen_count, size = 'md', onSetSize, disableHoverEffects = false }: FlashCardProps) {
   const cardClasses = cn(
     "relative w-full cursor-pointer transition-all duration-500 ease-in-out",
+    "mx-auto", // Ensure the card itself is centered
     {
       'h-[250px] max-w-[400px]': size === 'sm',
       'h-[350px] max-w-[550px]': size === 'md',
@@ -29,8 +31,8 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
   );
 
   const innerCardClasses = cn(
-    "relative w-full h-full text-center transition-transform duration-500 ease-in-out transform-gpu", // Added transform-gpu
-    "group-hover:rotate-y-[3deg] group-hover:scale-[1.02] group-hover:shadow-xl group-hover:shadow-primary/50" // Added hover effects
+    "relative w-full h-full text-center transition-transform duration-500 ease-in-out transform-gpu",
+    !disableHoverEffects && "group-hover:rotate-y-[3deg] group-hover:scale-[1.02] group-hover:shadow-xl group-hover:shadow-primary/50" // Conditionally apply hover effects
   );
 
   const frontBackBaseClasses = "absolute inset-0 w-full h-full flex flex-col justify-center items-center rounded-lg shadow-lg p-4";
@@ -51,15 +53,15 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
   );
 
   return (
-    <div className={cn(cardClasses, "group")} style={{ perspective: '1000px' }}> {/* Added group class here */}
+    <div className={cn(cardClasses, "group")} style={{ perspective: '1000px' }}>
       <div
         className={innerCardClasses}
         onClick={onClick}
-        style={{ transformStyle: 'preserve-3d', transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }} // Directly apply transform here
+        style={{ transformStyle: 'preserve-3d', transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
       >
         {/* Front of the card (Question - Dark) */}
         <div
-          className={cn(frontBackBaseClasses, "bg-gray-900 text-white border border-white/20")} // Explicit dark
+          className={cn(frontBackBaseClasses, "bg-gray-900 text-white border border-white/20")}
           style={{ backfaceVisibility: 'hidden' }}
         >
           <div className="flex flex-col items-center justify-center h-full w-full p-0">
@@ -77,7 +79,7 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
 
         {/* Back of the card (Answer - Light) */}
         <div
-          className={cn(frontBackBaseClasses, "bg-white text-gray-900 border border-gray-300/20")} // Explicit white
+          className={cn(frontBackBaseClasses, "bg-white text-gray-900 border border-gray-300/20")}
           style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
         >
           <div className="flex flex-col items-center justify-center h-full w-full p-0">

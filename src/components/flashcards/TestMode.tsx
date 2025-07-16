@@ -204,8 +204,15 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
 
   const progressPercentage = testDeck.length > 0 ? ((currentIndex + 1) / testDeck.length) * 100 : 0;
 
+  // Determine max-width for the container based on flashcardSize
+  const containerMaxWidthClass = cn({
+    'max-w-[450px]': flashcardSize === 'sm', // Slightly larger than card max-w to accommodate controls
+    'max-w-[600px]': flashcardSize === 'md',
+    'max-w-[750px]': flashcardSize === 'lg',
+  });
+
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-4 relative">
+    <div className={cn("w-full mx-auto space-y-4 relative", containerMaxWidthClass)}>
       <Card>
         <CardHeader className="flex flex-row justify-between items-center">
           <CardTitle>Test Mode</CardTitle>
@@ -256,6 +263,7 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
             status={currentCard.status}
             seen_count={currentCard.seen_count}
             size={flashcardSize}
+            disableHoverEffects={true} // Disable hover effects for Test Mode
           />
 
           {timerEnabled && !isAnswered && (
