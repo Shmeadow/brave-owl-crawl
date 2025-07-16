@@ -127,7 +127,30 @@ export function FlashcardApp() {
 
     const testResults = sessionHistory.filter(r => r.source === 'test');
     const testCorrectCount = testResults.filter(r => r.isCorrect).length;
-    const testAccuracy = testResults.length > 0 ? (testCorrectCount / testResults.length) * 100 : 0;
+    const testAccuracy = testResults.length > 0 ? parseFloat(((testCorrectCount / testResults.length) * 100).toFixed(2)) : 0;
+
+    const learnResults = sessionHistory.filter(r => r.source === 'learn');
+    const learnCorrectCount = learnResults.filter(r => r.isCorrect).length;
+    const learnAccuracy = learnResults.length > 0 ? parseFloat(((learnCorrectCount / learnResults.length) * 100).toFixed(2)) : 0;
+
+    const statusBreakdown: { [status: string]: number } = {};
+    cards.forEach(card => { // Use all cards, not just reviewed ones, for overall status distribution
+      statusBreakdown[card.status] = (statusBreakdown[card.status] || 0) + 1;
+    });
+
+    const incorrectCounts: { [cardId: string]: number } = {};
+    sessionHistory.filter(r => !r.isCorrect).forEach(r => {
+      incorrectCounts[r.cardId] = (incorrectCounts[r.cardId] || 0) + 1;
+    });
+
+    const topMissedCards = Object.entries(incorrectCounts)
+      .sort(([, countA], [, countB]) => countB - countA)
+      .slice(0, 5) // Top 5 missed cards
+      .map(([cardId, incorrectCount]) => ({
+        card: cards.find(c => c.id === cardId) || detailedResultsWithLatestCardData.find(r => r.cardId === cardId)?.cardData!,
+        incorrectCount,
+      }))
+      .filter(item => item.card !== undefined); // Filter out any undefined cards
 
     return {
         totalAttempted: uniqueDetailedResults.length,
@@ -138,7 +161,19 @@ export function FlashcardApp() {
             accuracy: testAccuracy,
             total: testResults.length,
             correct: testCorrectCount,
-        }
+        },
+        learnModeStats: {
+          total: learnResults.length,
+          correct: learnCorrectCount,
+          accuracy: learnAccuracy,
+        },
+        testModeStats: {
+          total: testResults.length,
+          correct: testCorrectCount,
+          accuracy: testAccuracy,
+        },
+        statusBreakdown: statusBreakdown,
+        topMissedCards: topMissedCards,
     };
   }, [sessionHistory, cards]);
 

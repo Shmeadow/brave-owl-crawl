@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Star, RefreshCcw } from 'lucide-react';
+import { Star, RefreshCcw, BookOpen, Brain, BarChart2, ListTodo, XCircle, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CardData } from '@/hooks/flashcards/types';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,10 @@ export interface SummaryData {
     total: number;
     correct: number;
   };
+  learnModeStats: { total: number; correct: number; accuracy: number; };
+  testModeStats: { total: number; correct: number; accuracy: number; };
+  statusBreakdown: { [status: string]: number; };
+  topMissedCards: { card: CardData; incorrectCount: number; }[];
 }
 
 interface SummaryModeProps {
@@ -80,9 +84,39 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
     );
   }
 
-  const overallCorrect = sessions.reduce((sum, s) => sum + s.correctCount, 0);
-  const overallTotal = sessions.reduce((sum, s) => sum + s.totalCount, 0);
+  const overallCorrect = summaryData.score;
+  const overallTotal = summaryData.totalAttempted;
   const overallAccuracy = overallTotal > 0 ? parseFloat(((overallCorrect / overallTotal) * 100).toFixed(2)) : 0;
+
+  const renderProgressBar = (value: number, max: number, label: string, colorClass: string) => {
+    const percentage = max > 0 ? (value / max) * 100 : 0;
+    return (
+      <div className="space-y-1">
+        <div className="flex justify-between text-sm">
+          <span className="font-medium text-foreground">{label}</span>
+          <span className="text-muted-foreground">{value} / {max}</span>
+        </div>
+        <div className="w-full bg-muted rounded-full h-2.5">
+          <div className={cn("h-2.5 rounded-full", colorClass)} style={{ width: `${percentage}%` }}></div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderAccuracyBar = (accuracy: number, label: string) => {
+    const colorClass = accuracy >= 75 ? 'bg-green-500' : accuracy >= 50 ? 'bg-yellow-500' : 'bg-red-500';
+    return (
+      <div className="space-y-1">
+        <div className="flex justify-between text-sm">
+          <span className="font-medium text-foreground">{label}</span>
+          <span className="text-muted-foreground">{accuracy}%</span>
+        </div>
+        <div className="w-full bg-muted rounded-full h-2.5">
+          <div className={cn("h-2.5 rounded-full", colorClass)} style={{ width: `${accuracy}%` }}></div>
+        </div>
+      </div>
+    );
+  };
 
   const renderSessionResults = (results: DetailedResult[]) => (
     <ul className="space-y-2 pt-2">
@@ -101,6 +135,8 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
       ))}
     </ul>
   );
+
+  const totalCardsInDeck = Object.values(summaryData.statusBreakdown).reduce((sum, count) => sum + count, 0);
 
   return (
     <div className="w-full space-y-6">
@@ -128,6 +164,72 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
           <div className="text-center text-2xl font-bold text-foreground mb-8">
             Overall Accuracy: {overallAccuracy}%
           </div>
+
+          <h3 className="text-xl font-bold text-foreground mb-4 text-center flex items-center justify-center gap-2">
+            <BarChart2 className="h-5 w-5" /> Performance Breakdown
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <Card className="p-4 bg-muted/50 border border-border">
+              <CardTitle className="text-lg mb-3 flex items-center gap-2"><Brain className="h-5 w-5 text-blue-500" /> Learn Mode</CardTitle>
+              {renderProgressBar(summaryData.learnModeStats.correct, summaryData.learnModeStats.total, "Correct", "bg-blue-500")}
+              {renderAccuracyBar(summaryData.learnModeStats.accuracy, "Accuracy")}
+            </Card>
+            <Card className="p-4 bg-muted/50 border border-border">
+              <CardTitle className="text-lg mb-3 flex items-center gap-2"><ListTodo className="h-5 w-5 text-purple-500" /> Test Mode</CardTitle>
+              {renderProgressBar(summaryData.testModeStats.correct, summaryData.testModeStats.total, "Correct", "bg-purple-500")}
+              {renderAccuracyBar(summaryData.testModeStats.accuracy, "Accuracy")}
+            </Card>
+          </div>
+
+          <h3 className="text-xl font-bold text-foreground mb-4 text-center flex items-center justify-center gap-2">
+            <BookOpen className="h-5 w-5" /> Card Status Distribution
+          </h3>
+          <div className="space-y-3 mb-8">
+            {Object.entries(summaryData.statusBreakdown).map(([status, count]) => (
+              <div key={status} className="space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium text-foreground">{status}</span>
+                  <span className="text-muted-foreground">{count} / {totalCardsInDeck} cards</span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-2.5">
+                  <div
+                    className={cn("h-2.5 rounded-full", {
+                      'bg-green-500': status === 'Mastered',
+                      'bg-blue-500': status === 'Advanced',
+                      'bg-purple-500': status === 'Intermediate',
+                      'bg-orange-500': status === 'Beginner',
+                      'bg-red-500': status === 'Learning',
+                    })}
+                    style={{ width: `${(count / totalCardsInDeck) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {summaryData.topMissedCards.length > 0 && (
+            <>
+              <h3 className="text-xl font-bold text-foreground mb-4 text-center flex items-center justify-center gap-2">
+                <XCircle className="h-5 w-5 text-red-500" /> Top Missed Cards
+              </h3>
+              <ul className="space-y-3 mb-8">
+                {summaryData.topMissedCards.map((item, index) => (
+                  <li key={item.card.id} className="p-3 rounded-md bg-red-50/70 dark:bg-red-900/20 border border-red-200/50 dark:border-red-800/30">
+                    <p className="font-semibold text-md text-foreground">
+                      {index + 1}. {item.card.front}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Incorrectly answered: <span className="font-medium text-red-700 dark:text-red-400">{item.incorrectCount} times</span>
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Correct Answer: <span className="font-medium text-primary">{item.card.back}</span>
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+
           <h3 className="text-xl font-bold text-foreground mb-4 text-center">Session History</h3>
           {sessions.length > 0 ? (
             <ScrollArea className="h-[400px] pr-4">
