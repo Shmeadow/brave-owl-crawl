@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { Star, CheckCircle, Edit, Trash2, GripVertical } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { EditFlashCardForm } from "@/components/edit-flash-card-form";
-import { toast } from '@/context/toast-visibility-provider'; // Updated toast import
+import { toast } from "sonner";
 import {
   DndContext,
   closestCenter,

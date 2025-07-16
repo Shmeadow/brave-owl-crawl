@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { toast } from '@/context/toast-visibility-provider'; // Updated toast import
 
 interface UseAmbientPlayerResult {
   currentSoundUrl: string | null;

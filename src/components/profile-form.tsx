@@ -12,12 +12,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
+  FormDescription, // Added FormDescription
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Camera, Trash2, Loader2 } from "lucide-react";
-import { toast } from '@/context/toast-visibility-provider'; // Use custom toast
+import { toast } from "sonner";
 import { useSupabase } from "@/integrations/supabase/auth";
 import {
   AlertDialog,
@@ -30,16 +30,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Switch } from "@/components/ui/switch";
-import Image from "next/image";
-import { useUserPreferences } from '@/hooks/use-user-preferences'; // Import useUserPreferences
+import { Switch } from "@/components/ui/switch"; // Import Switch
+import Image from "next/image"; // Import Image component
 
 const profileFormSchema = z.object({
   first_name: z.string().min(1, { message: "First name is required." }).max(50, { message: "First name too long." }).optional().or(z.literal("")),
   last_name: z.string().min(1, { message: "Last name is required." }).max(50, { message: "Last name too long." }).optional().or(z.literal("")),
   profile_image_url: z.string().url({ message: "Invalid URL" }).optional().or(z.literal("")),
-  time_format_24h: z.boolean().optional(),
-  hide_toasts: z.boolean().optional(), // New field for toast preference
+  time_format_24h: z.boolean().optional(), // New field
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -51,14 +49,13 @@ interface ProfileFormProps {
     last_name: string | null;
     profile_image_url: string | null;
     role: string | null;
-    time_format_24h: boolean | null;
+    time_format_24h: boolean | null; // Include in initialProfile
   };
   onProfileUpdated: () => void;
 }
 
 export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormProps) {
   const { supabase, session } = useSupabase();
-  const { preferences, updatePreference } = useUserPreferences(); // Use user preferences hook
   const [isUploading, setIsUploading] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
@@ -68,22 +65,20 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
       first_name: initialProfile.first_name || "",
       last_name: initialProfile.last_name || "",
       profile_image_url: initialProfile.profile_image_url || "",
-      time_format_24h: initialProfile.time_format_24h ?? true,
-      hide_toasts: preferences?.hide_toasts ?? true, // Initialize with preference value
+      time_format_24h: initialProfile.time_format_24h ?? true, // Default to true (24h) if null
     },
     mode: "onChange",
   });
 
-  // Update form defaults if initialProfile or preferences change
+  // Update form defaults if initialProfile changes (e.g., after a refresh)
   useEffect(() => {
     form.reset({
       first_name: initialProfile.first_name || "",
       last_name: initialProfile.last_name || "",
       profile_image_url: initialProfile.profile_image_url || "",
       time_format_24h: initialProfile.time_format_24h ?? true,
-      hide_toasts: preferences?.hide_toasts ?? true,
     });
-  }, [initialProfile, preferences, form]);
+  }, [initialProfile, form]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!supabase || !session) {
@@ -103,7 +98,7 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
       .from('avatars')
       .upload(filePath, file, {
         cacheControl: '3600',
-        upsert: true,
+        upsert: true, // Overwrite if file with same name exists
       });
 
     if (uploadError) {
@@ -113,6 +108,7 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
       return;
     }
 
+    // Get public URL
     const { data: publicUrlData } = supabase.storage
       .from('avatars')
       .getPublicUrl(filePath);
@@ -132,31 +128,24 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
       return;
     }
 
-    // Update profile table
-    const { error: profileError } = await supabase
+    const { error } = await supabase
       .from('profiles')
       .update({
         first_name: values.first_name || null,
         last_name: values.last_name || null,
         profile_image_url: values.profile_image_url || null,
-        time_format_24h: values.time_format_24h,
+        time_format_24h: values.time_format_24h, // Save new field
       })
       .eq('id', session.user.id);
 
-    if (profileError) {
-      toast.error("Error updating profile: " + profileError.message);
-      console.error("Error updating profile:", profileError);
-      return;
+    if (error) {
+      toast.error("Error updating profile: " + error.message);
+      console.error("Error updating profile:", error);
+    } else {
+      toast.success("Profile updated successfully!");
+      form.reset(values); // Reset form state to reflect saved changes
+      onProfileUpdated(); // Notify parent to re-fetch session/profile
     }
-
-    // Update user preferences table for hide_toasts
-    if (preferences?.hide_toasts !== values.hide_toasts) {
-      updatePreference('hide_toasts', values.hide_toasts ?? true);
-    }
-
-    toast.success("Profile updated successfully!");
-    form.reset(values);
-    onProfileUpdated();
   };
 
   const handleDeleteAccount = async () => {
@@ -167,6 +156,7 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
 
     setIsDeletingAccount(true);
     try {
+      // Call the Edge Function to delete the user
       const response = await fetch('https://mrdupsekghsnbooyrdmj.supabase.co/functions/v1/delete-user', {
         method: 'POST',
         headers: {
@@ -183,6 +173,7 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
         console.error("Error deleting account:", data.error);
       } else {
         toast.success("Account deleted successfully. Redirecting...");
+        // Supabase's onAuthStateChange will handle the sign out and redirect
       }
     } catch (error) {
       toast.error("Failed to delete account due to network error.");
@@ -300,29 +291,6 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="hide_toasts"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">
-                  Hide Toast Notifications
-                </FormLabel>
-                <FormDescription>
-                  Disable all pop-up notifications for a quieter experience.
-                </FormDescription>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
         <Button type="submit" className="w-full" disabled={!form.formState.isDirty || isUploading}>
           {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
           Save Profile
@@ -349,7 +317,7 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
                 {isDeletingAccount ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Continue
               </AlertDialogAction>
-            </AlertDialogAction>
+            </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
       </form>

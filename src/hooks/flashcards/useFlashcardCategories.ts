@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSupabase } from '@/integrations/supabase/auth';
-import { toast } from '@/context/toast-visibility-provider'; // Updated toast import
+import { toast } from 'sonner';
 import { Category } from './types';
 
 export function useFlashcardCategories() {
