@@ -41,9 +41,9 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
   );
 
   const textSizeClasses = cn({
-    'text-xl': size === 'sm', // Increased text size
-    'text-2xl': size === 'md',   // Increased text size
-    'text-3xl': size === 'lg',   // Increased text size
+    'text-2xl': size === 'sm',
+    'text-3xl': size === 'md',
+    'text-4xl': size === 'lg',
   });
 
   const statusIndicatorClasses = cn(
@@ -90,7 +90,7 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
       </div>
 
       {onSetSize && (
-        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-background/80 p-1 rounded-md shadow-sm z-10">
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-background/80 p-1 rounded-md shadow-sm z-10">
           <Label htmlFor="flashcard-size" className="sr-only">Flashcard Size</Label>
           <ToggleGroup type="single" value={size} onValueChange={(value: FlashcardSize) => onSetSize(value)} className="h-auto">
             <ToggleGroupItem value="sm" aria-label="Small" className="h-8 px-3 text-sm">

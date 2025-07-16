@@ -101,11 +101,11 @@
 
 @layer utilities {
   .backface-hidden {
-    backface-visibility: hidden;
+    backface-visibility: hidden !important;
   }
 
   .transform-style-preserve-3d {
-    transform-style: preserve-3d;
+    transform-style: preserve-3d !important;
   }
 
   @keyframes shimmer {
