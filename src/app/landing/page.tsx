@@ -31,20 +31,20 @@ export default function LandingPage() {
   };
 
   const allFeatures = [
-    { icon: LayoutGrid, title: "Dashboards", color: "text-blue-400" },
-    { icon: Timer, title: "Focus Timers", color: "text-green-400" },
-    { icon: ListTodo, title: "Task Lists", color: "text-purple-400" },
-    { icon: Goal, title: "Goal Tracking", color: "text-yellow-400" },
-    { icon: NotebookPen, title: "Journaling", color: "text-pink-400" },
-    { icon: BookOpen, title: "Flashcards", color: "text-orange-400" },
-    { icon: Volume2, title: "Ambient Sounds", color: "text-teal-400" },
-    { icon: Image, title: "Backgrounds", color: "text-indigo-400" },
-    { icon: MessageSquare, title: "Live Chat", color: "text-red-400" },
-    { icon: Calendar, title: "Calendar", color: "text-cyan-400" },
-    { icon: Palette, title: "Drawing Board", color: "text-lime-400" },
-    { icon: BarChart2, title: "Analytics", color: "text-fuchsia-400" },
-    { icon: WandSparkles, title: "Visual Effects", color: "text-emerald-400" },
-    { icon: Crown, title: "Premium Access", color: "text-gold" },
+    { icon: LayoutGrid, title: "Dashboards", color: "text-blue-400", description: "Organize your workspace with widgets." },
+    { icon: Timer, title: "Focus Timers", color: "text-green-400", description: "Boost productivity with Pomodoro sessions." },
+    { icon: ListTodo, title: "Task Lists", color: "text-purple-400", description: "Keep track of your daily to-dos." },
+    { icon: Goal, title: "Goal Tracking", color: "text-yellow-400", description: "Set and achieve your long-term aspirations." },
+    { icon: NotebookPen, title: "Journaling", color: "text-pink-400", description: "Capture ideas and reflect on your progress." },
+    { icon: BookOpen, title: "Flashcards", color: "text-orange-400", description: "Master new concepts with spaced repetition." },
+    { icon: Volume2, title: "Ambient Sounds", color: "text-teal-400", description: "Immerse yourself with calming background audio." },
+    { icon: Image, title: "Backgrounds", color: "text-indigo-400", description: "Personalize your visual environment." },
+    { icon: MessageSquare, title: "Live Chat", color: "text-red-400", description: "Collaborate with friends in shared spaces." },
+    { icon: Calendar, title: "Calendar", color: "text-cyan-400", description: "Manage events and stay organized." },
+    { icon: Palette, title: "Drawing Board", color: "text-lime-400", description: "Sketch ideas and brainstorm visually." },
+    { icon: BarChart2, title: "Analytics", color: "text-fuchsia-400", description: "Track your productivity and progress." },
+    { icon: WandSparkles, title: "Visual Effects", color: "text-emerald-400", description: "Add dynamic visual effects to your space." },
+    { icon: Crown, title: "Premium Access", color: "text-gold", description: "Unlock advanced features and customization." },
   ];
 
   return (
@@ -100,6 +100,31 @@ export default function LandingPage() {
         animate={{ scale: 1, rotate: 180 }}
         transition={{ duration: 11, repeat: Infinity, ease: "linear" }}
       />
+      {/* New "Scribble" Shapes */}
+      <motion.div
+        className="absolute top-[5%] left-[50%] w-12 h-12 bg-yellow-300/15 rounded-full animate-pulse-fast"
+        initial={{ scale: 0, rotate: 0 }}
+        animate={{ scale: 1, rotate: 180 }}
+        transition={{ duration: 7, repeat: Infinity, ease: "linear" }}
+      />
+      <motion.div
+        className="absolute bottom-[10%] right-[10%] w-16 h-16 bg-purple-300/15 rounded-full animate-pulse-slow"
+        initial={{ scale: 0, rotate: 0 }}
+        animate={{ scale: 1, rotate: -90 }}
+        transition={{ duration: 13, repeat: Infinity, ease: "linear" }}
+      />
+      <motion.div
+        className="absolute top-[30%] right-[5%] w-10 h-10 bg-red-300/15 rounded-full animate-pulse-fast-reverse"
+        initial={{ scale: 0, rotate: 0 }}
+        animate={{ scale: 1, rotate: 270 }}
+        transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+      />
+      <motion.div
+        className="absolute bottom-[20%] left-[40%] w-14 h-14 bg-cyan-300/15 rounded-full animate-pulse-slow-reverse"
+        initial={{ scale: 0, rotate: 0 }}
+        animate={{ scale: 1, rotate: -180 }}
+        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+      />
 
       {/* Hero Section Content */}
       <div className={cn(
@@ -146,6 +171,7 @@ export default function LandingPage() {
             >
               <feature.icon className={cn("h-6 w-6 mb-1", feature.color)} /> {/* Adjusted icon size and added color */}
               <p className="text-xs font-semibold">{feature.title}</p> {/* Adjusted font size */}
+              <p className="text-[0.65rem] text-white/70 mt-0.5 leading-tight">{feature.description}</p> {/* Tiny description */}
             </motion.div>
           ))}
         </motion.div>
