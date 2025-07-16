@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils"; // Import cn for styling
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // Import Popover
 import { RoomSettingsContent } from "@/components/spaces-widget/RoomSettingsContent"; // Import RoomSettingsContent
 import { CreatePersonalRoomForm } from "./create-personal-room-form"; // Import new component
+import { BugReportButton } from "./bug-report-button"; // Import the new component
 
 interface HeaderProps {
   onToggleChat: () => void;
@@ -120,6 +121,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
       </div>
 
       <div className="flex items-center gap-2 ml-auto pr-4 bg-card/50 rounded-full px-4 py-2 border border-white/20">
+        <BugReportButton />
         <Button
           variant="ghost"
           size="icon"
