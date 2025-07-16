@@ -44,7 +44,7 @@ export function Widget({
   id,
   title,
   icon: Icon,
-  content: Content,
+  content: Content, // This is the prop that is undefined
   isMinimized,
   isMaximized,
   isPinned,
@@ -96,6 +96,9 @@ export function Widget({
   actualWidth = Math.max(actualWidth, 200); 
   actualHeight = Math.max(actualHeight, 150);
 
+  // Debugging log
+  console.log(`[Widget ${id}] Render. Content: ${Content ? 'Defined' : 'Undefined'}, Type: ${typeof Content}, isVisuallyMinimized: ${isVisuallyMinimized}, isInsideDock: ${isInsideDock}`);
+
   const renderWidgetContent = (
     <Card className={cn(
       "w-full h-full flex flex-col overflow-hidden",
@@ -121,7 +124,13 @@ export function Widget({
 
       {!isVisuallyMinimized && !isInsideDock && ( // Only render content if not minimized and not inside dock
         <CardContent className="flex-grow p-0 overflow-y-auto">
-          <Content isCurrentRoomWritable={isCurrentRoomWritable} />
+          {Content ? (
+            <Content isCurrentRoomWritable={isCurrentRoomWritable} />
+          ) : (
+            <div className="flex items-center justify-center h-full text-muted-foreground">
+              Error: Widget content not found or failed to load for {title}.
+            </div>
+          )}
         </CardContent>
       )}
     </Card>
