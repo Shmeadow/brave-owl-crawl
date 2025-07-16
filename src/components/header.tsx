@@ -121,27 +121,28 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
       </div>
 
       <div className="flex items-center gap-2 ml-auto pr-4 bg-card/50 rounded-full px-4 py-2 border border-white/20">
+        {/* Always visible on mobile */}
         <BugReportButton />
+        {session && (
+          <NotificationsDropdown />
+        )}
+        <UserNameCapsule />
+        
+        {/* Hidden on mobile */}
         <Button
           variant="ghost"
           size="icon"
           title="Stats & Progress"
           onClick={() => toggleWidget('stats-progress', 'Stats & Progress')}
+          className="hidden md:flex" // Hide on mobile
         >
           <BarChart2 className="h-5 w-5" />
           <span className="sr-only">Stats & Progress</span>
         </Button>
-
-        {session && (
-          <NotificationsDropdown />
-        )}
-
-        <UserNameCapsule />
-        <BackgroundBlurSlider className="hidden md:flex" />
-
+        <BackgroundBlurSlider className="hidden md:flex" /> {/* Already hidden */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" title="Manage Spaces">
+            <Button variant="ghost" size="icon" title="Manage Spaces" className="hidden md:flex"> {/* Hide on mobile */}
               <LayoutGrid className="h-5 w-5" />
               <span className="sr-only">Manage Spaces</span>
             </Button>
@@ -152,9 +153,10 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
             </ScrollArea>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        <UpgradeButton />
-        <ThemeToggle />
+        <UpgradeButton className="hidden md:flex" /> {/* Hide on mobile */}
+        <ThemeToggle className="hidden md:flex" /> {/* Hide on mobile */}
+        
+        {/* Always visible on mobile */}
         {session && (
           <Button
             variant="ghost"

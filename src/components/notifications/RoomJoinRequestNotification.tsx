@@ -9,6 +9,7 @@ import { RoomJoinRequest } from '@/hooks/rooms/use-room-join-requests';
 import { useRooms } from '@/hooks/use-rooms';
 import { toast } from 'sonner';
 import { useNotifications } from '@/hooks/use-notifications';
+import { useIsMobile } from '@/hooks/use-mobile'; // Import useIsMobile
 
 interface RoomJoinRequestNotificationProps {
   request: RoomJoinRequest;
@@ -19,6 +20,7 @@ export function RoomJoinRequestNotification({ request, onDismiss }: RoomJoinRequ
   const { acceptRequest, declineRequest } = useRooms();
   const { addNotification } = useNotifications();
   const [isDismissedLocally, setIsDismissedLocally] = useState(false);
+  const isMobile = useIsMobile(); // Get mobile status
 
   const requesterName = request.profiles?.first_name || request.profiles?.last_name || `User (${request.requester_id.substring(0, 8)}...)`;
   const roomName = request.rooms?.name || request.room_id.substring(0, 8) + '...';
@@ -45,8 +47,10 @@ export function RoomJoinRequestNotification({ request, onDismiss }: RoomJoinRequ
 
   return (
     <Card className={cn(
-      "fixed top-40 right-4 z-[905] w-80 bg-card/80 backdrop-blur-xl border-white/20 shadow-lg rounded-lg",
-      "animate-in slide-in-from-right-full duration-500 ease-out"
+      "fixed z-[905]",
+      "bg-card/80 backdrop-blur-xl border-white/20 shadow-lg rounded-lg",
+      "animate-in slide-in-from-right-full duration-500 ease-out",
+      isMobile ? "top-16 left-1/2 -translate-x-1/2 w-full max-w-xs" : "top-40 right-4 w-80"
     )}>
       <CardContent className="p-3 flex flex-col gap-2">
         <div className="flex items-center justify-between">
