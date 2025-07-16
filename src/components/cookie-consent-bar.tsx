@@ -50,8 +50,8 @@ export function CookieConsentBar() {
 
   return (
     <Card className={cn(
-      "fixed bottom-4 left-4 z-[1004]", // Position in bottom-left corner
-      isMobile ? "w-[calc(100vw-2rem)] max-w-xs" : "w-72", // Responsive width
+      "fixed bottom-4 z-[1004]", // Position in bottom-left corner
+      isMobile ? "left-1/2 -translate-x-1/2 w-[calc(100vw-2rem)] max-w-xs" : "left-4 w-72", // Responsive width and centering
       "bg-card/90 backdrop-blur-xl border border-border shadow-lg rounded-lg", // Card styling
       "animate-in slide-in-from-left-full duration-500 ease-out" // Animation
     )}>

@@ -59,22 +59,26 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
   };
 
   return (
-    <header className="sticky top-0 z-[1002] w-full border-b border-transparent bg-transparent flex items-center h-16">
-      <div className="flex items-center pl-0">
+    <header className={cn(
+      "sticky top-0 z-[1002] w-full h-16 flex items-center",
+      "bg-card/50 backdrop-blur-xl border-b border-white/20"
+    )}>
+      <div className="flex items-center flex-1 min-w-0">
         {isMobile && (
           <Button
             variant="ghost"
             size="icon"
             onClick={onToggleSidebar}
             title="Open Menu"
+            className="ml-2" // Add margin for mobile
           >
             <Menu className="h-5 w-5" />
             <span className="sr-only">Open Menu</span>
           </Button>
         )}
         <div className={cn(
-          "bg-card/50 backdrop-blur-xl border border-white/20 rounded-full px-4 py-2",
-          "flex items-center gap-2"
+          "flex items-center gap-2",
+          isMobile ? "px-2" : "px-4 py-2 rounded-full border border-white/20" // Adjust padding/border for mobile
         )}>
           <Link href="/dashboard" className="flex items-center space-x-2">
             <h1 className="text-2xl font-bold text-primary">Cozy Hub</h1>
@@ -121,8 +125,8 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
       </div>
 
       <div className={cn(
-        "flex items-center gap-2 ml-auto pr-4",
-        isMobile ? "bg-transparent pr-0" : "bg-card/50 rounded-full px-4 py-2 border border-white/20"
+        "flex items-center gap-2 ml-auto",
+        isMobile ? "pr-2" : "px-4 py-2 rounded-full border border-white/20" // Adjust padding/border for mobile
       )}>
         {/* Always visible on mobile */}
         <BugReportButton />

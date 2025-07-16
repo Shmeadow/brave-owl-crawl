@@ -77,7 +77,7 @@ export function GuestModeWarningBar() {
       "fixed z-[905]",
       "bg-yellow-100/80 backdrop-blur-xl border-yellow-300 text-yellow-800 shadow-lg rounded-lg",
       "animate-in slide-in-from-top-full duration-500 ease-out",
-      isMobile ? "top-16 left-4 right-4" : "top-16 left-1/2 -translate-x-1/2 w-full max-w-md"
+      isMobile ? "top-16 left-1/2 -translate-x-1/2 w-[calc(100vw-2rem)] max-w-xs" : "top-16 left-1/2 -translate-x-1/2 w-full max-w-md"
     )}>
       <CardContent className="p-3 flex items-center gap-3">
         <Info className="h-5 w-5 flex-shrink-0" />

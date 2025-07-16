@@ -100,13 +100,13 @@ export function TimeAndProgressDisplay({ className, isMobile }: TimeAndProgressD
       className={cn(
         "fixed z-[902] bg-card/50 backdrop-blur-xl border border-white/20 rounded-lg p-2",
         "flex flex-col items-center text-sm font-mono text-muted-foreground",
-        isMobile ? "top-16 left-1/2 -translate-x-1/2 w-[120px]" : "top-16 right-4 w-[160px]", // Responsive positioning and width
+        isMobile ? "top-16 right-2 w-[100px]" : "top-16 right-4 w-[160px]", // Responsive positioning and width
         className
       )}
     >
       <div className="flex items-center space-x-1">
-        <div id="clock" className="text-xl font-bold leading-none text-foreground">{currentTimeStr}</div>
-        <div id="date" className="text-xs leading-none">{currentDateStr}</div>
+        <div id="clock" className={cn("font-bold leading-none text-foreground", isMobile ? "text-lg" : "text-xl")}>{currentTimeStr}</div>
+        <div id="date" className={cn("leading-none", isMobile ? "text-xs" : "text-xs")}>{currentDateStr}</div>
       </div>
       <div className="w-full mt-1 h-2 rounded-full overflow-hidden relative" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
         <div
