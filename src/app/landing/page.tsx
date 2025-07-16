@@ -38,7 +38,7 @@ export default function LandingPage() {
     { icon: NotebookPen, title: "Journaling", color: "text-pink-400", description: "Capture ideas and reflect on your progress." },
     { icon: BookOpen, title: "Flashcards", color: "text-orange-400", description: "Master new concepts with spaced repetition." },
     { icon: Volume2, title: "Ambient Sounds", color: "text-teal-400", description: "Immerse yourself with calming background audio." },
-    { icon: Image, title: "Custom Backgrounds", color: "text-indigo-400", description: "Personalize your visual environment." },
+    { icon: Image, title: "Backgrounds", color: "text-indigo-400", description: "Personalize your visual environment." },
     { icon: MessageSquare, title: "Live Chat", color: "text-red-400", description: "Collaborate with friends in shared spaces." },
     { icon: Calendar, title: "Calendar", color: "text-cyan-400", description: "Manage events and stay organized." },
     { icon: Palette, title: "Drawing Board", color: "text-lime-400", description: "Sketch ideas and brainstorm visually." },
@@ -63,7 +63,6 @@ export default function LandingPage() {
           autoPlay
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ filter: 'blur(20px)' }} // Apply blur directly here
         />
         {/* Stronger Gradient overlay for text readability and visual depth */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
@@ -135,7 +134,7 @@ export default function LandingPage() {
           className="text-4xl md:text-6xl font-extrabold mb-3 text-center drop-shadow-lg text-white leading-tight" // Adjusted font size and margin
           variants={itemVariants}
         >
-          Your Ultimate <span className="text-faded-blue-dark animate-golden-aura">Productivity Sanctuary</span> with <span className="text-cozy-hub-color animate-cozy-hub-pulse">Cozy Hub</span>
+          Your Ultimate <span className="text-faded-purple">Productivity Sanctuary</span> with <span className="text-cozy-hub-color">Cozy Hub</span>
         </motion.h1>
         <motion.p
           className="text-lg md:text-xl mb-6 max-w-3xl text-center drop-shadow-md text-white/90" // Adjusted font size and margin

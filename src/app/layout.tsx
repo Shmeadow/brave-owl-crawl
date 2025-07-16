@@ -12,7 +12,7 @@ import { EffectProvider } from "@/context/effect-provider";
 import { ClientOnlyWrapper } from '@/components/client-only-wrapper';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
-// import { getRandomBackground } from '@/lib/backgrounds'; // No longer needed for initial background
+import { getRandomBackground } from '@/lib/backgrounds';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,8 +61,8 @@ export default async function RootLayout({
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   let isCozyThemeGloballyEnabled = true; // Default to true
 
-  // Set ani2.mp4 as the initial background for all users
-  const initialBackground = { url: "/animated/ani2.mp4", isVideo: true, isMirrored: false };
+  // Generate a random background on the server
+  const initialBackground = getRandomBackground();
 
   if (supabaseUrl && supabaseAnonKey) {
     try {
@@ -115,6 +115,7 @@ export default async function RootLayout({
         <SpeedInsights />
         <Analytics />
         {/* Google Analytics Script */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-W3N6THX1KY"></script>
         <script dangerouslySetInnerHTML={{ __html: `
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
