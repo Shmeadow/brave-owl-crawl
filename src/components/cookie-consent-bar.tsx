@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile'; // Import useIsMobile
 
 // Extend Window interface to include initializeGoogleAnalytics
 declare global {
@@ -15,6 +16,7 @@ declare global {
 
 export function CookieConsentBar() {
   const [showBar, setShowBar] = useState(false);
+  const isMobile = useIsMobile(); // Get mobile status
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -49,7 +51,7 @@ export function CookieConsentBar() {
   return (
     <Card className={cn(
       "fixed bottom-4 left-4 z-[1004]", // Position in bottom-left corner
-      "w-72", // Fixed width for "cube-shaped" appearance
+      isMobile ? "w-[calc(100vw-2rem)] max-w-xs" : "w-72", // Responsive width
       "bg-card/90 backdrop-blur-xl border border-border shadow-lg rounded-lg", // Card styling
       "animate-in slide-in-from-left-full duration-500 ease-out" // Animation
     )}>

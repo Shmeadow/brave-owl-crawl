@@ -77,7 +77,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
           "flex items-center gap-2"
         )}>
           <Link href="/dashboard" className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold text-primary">CozyHub</h1>
+            <h1 className="text-2xl font-bold text-primary">Cozy Hub</h1>
           </Link>
           <Link href="/dashboard" className="flex items-center space-x-2">
             <Button variant="ghost" size="icon" title="Home">
@@ -120,7 +120,10 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         </div>
       </div>
 
-      <div className="flex items-center gap-2 ml-auto pr-4 bg-card/50 rounded-full px-4 py-2 border border-white/20">
+      <div className={cn(
+        "flex items-center gap-2 ml-auto pr-4",
+        isMobile ? "bg-transparent pr-0" : "bg-card/50 rounded-full px-4 py-2 border border-white/20"
+      )}>
         {/* Always visible on mobile */}
         <BugReportButton />
         {session && (
