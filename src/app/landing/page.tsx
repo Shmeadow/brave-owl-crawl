@@ -23,7 +23,7 @@ export default function LandingPage() {
 
       {/* Hero Section Content */}
       <div className={cn(
-        "relative z-10 flex flex-col items-center justify-center min-h-[80vh] px-4 py-16 text-white w-full", // Increased min-h for more prominent hero
+        "relative z-10 flex flex-col items-center justify-center flex-1 px-4 py-16 text-white w-full", // flex-1 to take available space, py-16 for padding
         "bg-transparent"
       )}>
         <h1 className="text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-lg text-white">
@@ -41,13 +41,10 @@ export default function LandingPage() {
             <Link href="/dashboard">Explore as Guest</Link>
           </Button>
         </div>
-        <p className="text-sm text-white/80 mt-8 drop-shadow-sm">
-          Note: Guest mode features are saved locally and will not sync across devices.
-        </p>
       </div>
 
       {/* Login Feature Section */}
-      <div className="relative z-10 w-full bg-transparent py-12 px-4">
+      <div className="relative z-10 w-full bg-background/50 backdrop-blur-xl py-20 px-4 border-t border-border">
         <LoginFeatureSection className="w-full max-w-4xl mx-auto" />
       </div>
     </div>
