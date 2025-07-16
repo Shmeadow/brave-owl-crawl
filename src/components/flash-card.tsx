@@ -31,19 +31,15 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
 
   const innerCardClasses = cn(
     "relative w-full h-full text-center transition-transform duration-500 ease-in-out",
-    "transform-style-preserve-3d", // Explicitly add transform-style
     { "rotate-y-180": isFlipped }
   );
 
-  const frontBackClasses = cn(
-    "absolute w-full h-full flex flex-col justify-center items-center rounded-lg shadow-lg p-4",
-    "backface-hidden" // Explicitly add backface-hidden
-  );
+  const frontBackBaseClasses = "absolute w-full h-full flex flex-col justify-center items-center rounded-lg shadow-lg p-4";
 
   const textSizeClasses = cn({
-    'text-3xl': size === 'sm', // Increased text size
-    'text-4xl': size === 'md',   // Increased text size
-    'text-5xl': size === 'lg',   // Increased text size
+    'text-4xl': size === 'sm',
+    'text-5xl': size === 'md',
+    'text-6xl': size === 'lg',
   });
 
   const statusIndicatorClasses = cn(
@@ -57,9 +53,16 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
 
   return (
     <div className={cardClasses}>
-      <div className={innerCardClasses} onClick={onClick}> {/* Click handler moved to inner card for flip */}
+      <div
+        className={innerCardClasses}
+        onClick={onClick}
+        style={{ transformStyle: 'preserve-3d' }} // Apply inline transform-style
+      >
         {/* Front of the card (Question - Dark) */}
-        <div className={cn(frontBackClasses, "bg-primary text-primary-foreground border border-white/20")}>
+        <div
+          className={cn(frontBackBaseClasses, "bg-primary text-primary-foreground border border-white/20")}
+          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(0deg)' }} // Apply inline backface-visibility and initial transform
+        >
           <div className="flex flex-col items-center justify-center h-full w-full p-0">
             <p className={cn("font-semibold", textSizeClasses)}>{front}</p>
             {status && (
@@ -74,7 +77,10 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
         </div>
 
         {/* Back of the card (Answer - Light) */}
-        <div className={cn(frontBackClasses, "bg-card text-card-foreground rotate-y-180 border border-white/20")}>
+        <div
+          className={cn(frontBackBaseClasses, "bg-card text-card-foreground border border-white/20")}
+          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }} // Apply inline backface-visibility and initial transform
+        >
           <div className="flex flex-col items-center justify-center h-full w-full p-0">
             <p className={cn("font-medium", textSizeClasses)}>{back}</p>
             {status && (
