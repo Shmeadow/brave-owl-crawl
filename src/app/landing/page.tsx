@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { LoginFeatureSection } from '@/components/login-feature-section';
 import { cn } from '@/lib/utils';
-import { motion, easeOut } from 'framer-motion'; // Import motion and easeOut
+import { motion, easeOut } from 'framer-motion';
+import { LayoutGrid, Timer, MessageSquare, Crown } from 'lucide-react'; // Import icons for compact features
 
 export default function LandingPage() {
   const containerVariants = {
@@ -19,12 +19,24 @@ export default function LandingPage() {
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: easeOut } }, // Use easeOut function
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: easeOut } },
   };
+
+  const featureIconVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: easeOut } },
+  };
+
+  const compactFeatures = [
+    { icon: LayoutGrid, title: "Personalized Dashboard" },
+    { icon: Timer, title: "Focus Timer" },
+    { icon: MessageSquare, title: "Collaborative Rooms" },
+    { icon: Crown, title: "Premium Features" },
+  ];
 
   return (
     <motion.div
-      className="relative min-h-screen flex flex-col items-center justify-start overflow-hidden"
+      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden" // Changed justify-start to justify-center
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -45,8 +57,7 @@ export default function LandingPage() {
 
       {/* Hero Section Content */}
       <div className={cn(
-        "relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-16 text-white w-full",
-        "bg-transparent"
+        "relative z-10 flex flex-col items-center justify-center h-full px-4 py-16 text-white w-full max-w-5xl mx-auto" // Removed min-h-screen, added max-w-5xl
       )}>
         <motion.h1
           className="text-5xl md:text-7xl font-extrabold mb-4 text-center drop-shadow-lg text-white leading-tight"
@@ -62,7 +73,7 @@ export default function LandingPage() {
           Transform your digital environment into a haven of productivity.
         </motion.p>
         <motion.div
-          className="flex flex-col sm:flex-row gap-4 justify-center"
+          className="flex flex-col sm:flex-row gap-4 justify-center mb-12" // Added mb-12 for spacing
           variants={itemVariants}
         >
           <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
@@ -72,21 +83,25 @@ export default function LandingPage() {
             <Link href="/dashboard">Explore as Guest</Link>
           </Button>
         </motion.div>
-      </div>
 
-      {/* Login Feature Section */}
-      <div className="relative z-10 w-full bg-background/50 backdrop-blur-xl py-20 px-4 border-t border-border">
+        {/* Compact Feature Highlights */}
         <motion.div
-          className="w-full max-w-4xl mx-auto text-center"
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.8, ease: easeOut }} // Use easeOut function
+          className="grid grid-cols-2 md:grid-cols-4 gap-6 w-full max-w-4xl px-4 py-6 bg-black/30 backdrop-blur-md rounded-lg border border-white/20"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
         >
-          <h2 className="text-4xl font-extrabold text-foreground mb-8 leading-tight">
-            Discover What You Can Achieve
-          </h2>
-          <LoginFeatureSection className="w-full" />
+          {compactFeatures.map((feature, index) => (
+            <motion.div
+              key={index}
+              className="flex flex-col items-center text-center text-white/90"
+              variants={featureIconVariants}
+              custom={index} // Pass index as custom prop for staggered animation
+            >
+              <feature.icon className="h-8 w-8 text-primary-foreground mb-2" />
+              <p className="text-sm font-semibold">{feature.title}</p>
+            </motion.div>
+          ))}
         </motion.div>
       </div>
     </motion.div>
