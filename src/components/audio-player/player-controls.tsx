@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Play, Pause, Volume2, VolumeX, FastForward, Rewind, Maximize, Minimize, ChevronRight } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, FastForward, Rewind, Maximize, Minimize } from 'lucide-react';
 
 interface PlayerControlsProps {
   playerType: 'audio' | 'youtube' | 'spotify' | null;
@@ -16,8 +16,8 @@ interface PlayerControlsProps {
   handleVolumeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   canPlayPause: boolean;
   canSeek: boolean;
-  displayMode: 'normal' | 'maximized' | 'minimized';
-  setDisplayMode: (mode: 'normal' | 'maximized' | 'minimized') => void;
+  displayMode: 'normal' | 'maximized'; // Removed 'minimized'
+  setDisplayMode: (mode: 'normal' | 'maximized') => void; // Removed 'minimized'
 }
 
 export function PlayerControls({
@@ -116,13 +116,7 @@ export function PlayerControls({
             <Minimize size={16} />
           </button>
         )}
-        <button
-          onClick={() => setDisplayMode('minimized')}
-          className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-7 w-7 flex items-center justify-center"
-          title="Minimize Player"
-        >
-          <ChevronRight size={16} />
-        </button>
+        {/* Removed the 'minimize' button as it's handled by the widget system */}
       </div>
     </div>
   );

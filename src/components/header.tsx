@@ -24,7 +24,7 @@ import Link from "next/link";
 import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
 import { useWidget } from "@/components/widget/widget-provider";
 import { UserNameCapsule } from "./user-name-capsule"; // Import new component
-import { cn } from "@/lib/utils"; // Import cn for styling
+import { cn } from "@/lib/utils"; // Import cn
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // Import Popover
 import { RoomSettingsContent } from "@/components/spaces-widget/RoomSettingsContent"; // Import RoomSettingsContent
 import { CreatePersonalRoomForm } from "./create-personal-room-form"; // Import new component

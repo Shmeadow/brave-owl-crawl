@@ -30,7 +30,6 @@ import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar"; // Ne
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
 const DynamicPomodoroWidget = dynamic(() => import("@/components/pomodoro-widget").then(mod => mod.PomodoroWidget), { ssr: false });
-const DynamicSimpleAudioPlayer = dynamic(() => import("@/components/simple-audio-player").then(mod => mod.SimpleAudioPlayer), { ssr: false });
 const DynamicRainEffect = dynamic(() => import("@/components/effects/rain-effect").then(mod => mod.RainEffect), { ssr: false });
 const DynamicSnowEffect = dynamic(() => import("@/components/effects/snow-effect").then(mod => mod.SnowEffect), { ssr: false });
 const DynamicRaindropsEffect = dynamic(() => import("@/components/effects/raindrops-effect").then(mod => mod.RaindropsEffect), { ssr: false });
@@ -240,7 +239,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
                   chatPanelWidth={chatPanelWidth}
                   isMobile={isMobile}
                 />
-                <DynamicSimpleAudioPlayer isMobile={isMobile} displayMode="minimized" /> {/* Pass displayMode for initial state */}
               </DynamicMobileControls>
             )}
 
@@ -252,7 +250,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
                   chatPanelWidth={chatPanelWidth}
                   isMobile={isMobile}
                 />
-                <DynamicSimpleAudioPlayer isMobile={isMobile} />
               </>
             )}
 
