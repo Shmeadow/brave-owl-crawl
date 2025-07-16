@@ -218,7 +218,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             <div
               role="main"
               className="absolute right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
-              style={{ left: `${mainContentArea.left}px`, top: `${TOTAL_HEADER_AREA_HEIGHT}px`, width: `${mainContentArea.width}px` }}
+              style={{ left: `${mainContentArea.left}px`, top: `${TOTAL_HEADER_AREA_HEIGHT}px`, width: `${mainContentArea.width}px`, height: `${mainContentArea.height}px` }}
             >
               <main className="flex-1 relative overflow-y-auto bg-transparent">
                 <div className={cn("h-full", isMobile ? "p-2" : "p-4 sm:p-6 lg:p-8")}> {/* Adjusted padding for mobile */}

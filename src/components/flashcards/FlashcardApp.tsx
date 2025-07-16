@@ -227,7 +227,7 @@ export function FlashcardApp() {
   };
 
   return (
-    <div className="flex flex-col items-center gap-8 w-full max-w-6xl mx-auto py-4">
+    <div className="flex flex-col items-center gap-8 w-full px-4 py-4">
       <h1 className="text-3xl font-bold text-foreground text-center">Flashcard Deck</h1>
       
       {!isLoggedInMode && (
