@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Check, X, RefreshCw, Flag, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { ArrowRight, Check, X, RefreshCw, Flag, CheckCircle, XCircle, Loader2, SkipForward } from 'lucide-react';
 import { CardData } from '@/hooks/flashcards/types';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,6 +12,8 @@ import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 import { FlashCard } from '@/components/flash-card'; // Import FlashCard
 import { FlashcardSize } from '@/hooks/use-flashcard-size'; // Import FlashcardSize type
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'; // Import ToggleGroup
+import { Input } from '@/components/ui/input'; // Import Input for timer setting
 
 interface TestModeProps {
   flashcards: CardData[];
@@ -41,6 +43,11 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
   const [showFeedbackOverlay, setShowFeedbackOverlay] = useState(false);
   const [choices, setChoices] = useState<string[]>([]);
 
+  const [timerEnabled, setTimerEnabled] = useState(false);
+  const [timerDuration, setTimerDuration] = useState(5); // Default 5 seconds
+  const [currentTimer, setCurrentTimer] = useState(timerDuration);
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   const cardIdString = useMemo(() => flashcards.map(c => c.id).sort().join(','), [flashcards]);
 
   // This effect now correctly restarts the test only when the set of cards changes.
@@ -53,12 +60,40 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
     setIsCorrect(null);
     setSessionResults([]);
     setIsComplete(false);
+    setCurrentTimer(timerDuration); // Reset timer for new test
     if (flashcards.length > 0) {
       toast.success("Test started!");
     }
-  }, [cardIdString]);
+  }, [cardIdString, timerDuration]); // Add timerDuration to dependencies to reset timer when it changes
 
   const currentCard = testDeck[currentIndex];
+
+  // Timer logic
+  useEffect(() => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+    }
+
+    if (timerEnabled && !isAnswered && currentCard && !isComplete) {
+      setCurrentTimer(timerDuration); // Initialize timer for new card
+      timerIntervalRef.current = setInterval(() => {
+        setCurrentTimer(prev => {
+          if (prev <= 1) {
+            clearInterval(timerIntervalRef.current!);
+            handleSubmission("[TIMED OUT]"); // Submit automatically on timeout
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+    };
+  }, [timerEnabled, isAnswered, currentCard, isComplete, timerDuration]); // Dependencies for timer
 
   useEffect(() => {
     if (currentCard && testType === 'choices') {
@@ -81,10 +116,11 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
       setIsAnswered(false);
       setUserAnswer('');
       setIsCorrect(null);
+      setCurrentTimer(timerDuration); // Reset timer for next card
     } else {
       setIsComplete(true);
     }
-  }, [currentIndex, testDeck.length]);
+  }, [currentIndex, testDeck.length, timerDuration]);
 
   const handleSubmission = useCallback((answer: string) => {
     if (!currentCard) return;
@@ -101,6 +137,10 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
       isCorrect: correct,
     }]);
 
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current); // Stop timer immediately on answer
+    }
+
     setShowFeedbackOverlay(true);
     setTimeout(() => {
       setShowFeedbackOverlay(false);
@@ -110,15 +150,7 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
 
   const handleSkip = () => {
     if (!currentCard) return;
-    onAnswer(currentCard.id, false, "[SKIPPED]");
-    setSessionResults(prev => [...prev, {
-      cardId: currentCard.id,
-      term: currentCard.front,
-      userAnswer: "[SKIPPED]",
-      correctAnswer: currentCard.back,
-      isCorrect: false,
-    }]);
-    handleNext();
+    handleSubmission("[SKIPPED]"); // Use handleSubmission to record skip
   };
 
   if (flashcards.length === 0) {
@@ -152,6 +184,7 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
               setIsCorrect(null);
               setSessionResults([]);
               setIsComplete(false);
+              setCurrentTimer(timerDuration); // Reset timer for new test
               toast.success("Test restarted!");
             }} size="lg">
               <RefreshCw className="mr-2 h-4 w-4" /> Restart Test
@@ -182,17 +215,62 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
         <CardContent>
           <Progress value={progressPercentage} className="w-full mb-6" />
           
-          <div className="bg-muted p-6 rounded-lg shadow-inner text-center border mb-4">
-            <p className="text-2xl font-semibold text-foreground">{currentCard.front}</p>
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="flashcard-size-test">Card Size:</Label>
+              <ToggleGroup type="single" value={flashcardSize} onValueChange={(value: FlashcardSize) => setFlashcardSize(value)} className="h-auto">
+                <ToggleGroupItem value="sm" aria-label="Small" className="h-8 px-3 text-sm">S</ToggleGroupItem>
+                <ToggleGroupItem value="md" aria-label="Medium" className="h-8 px-3 text-sm">M</ToggleGroupItem>
+                <ToggleGroupItem value="lg" aria-label="Large" className="h-8 px-3 text-sm">L</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="timer-toggle">Timer:</Label>
+              <input
+                type="checkbox"
+                id="timer-toggle"
+                checked={timerEnabled}
+                onChange={(e) => setTimerEnabled(e.target.checked)}
+                className="h-4 w-4"
+              />
+              {timerEnabled && (
+                <div className="flex items-center gap-1">
+                  <Input
+                    type="number"
+                    value={timerDuration}
+                    onChange={(e) => setTimerDuration(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-16 h-8 text-center text-sm"
+                    min="1"
+                  />
+                  <span className="text-sm text-muted-foreground">s</span>
+                </div>
+              )}
+            </div>
           </div>
 
+          <FlashCard
+            front={currentCard.front}
+            back={currentCard.back}
+            isFlipped={isAnswered} // Only flip when answered
+            onClick={() => {}} // Disable manual flip in test mode
+            status={currentCard.status}
+            seen_count={currentCard.seen_count}
+            size={flashcardSize}
+          />
+
+          {timerEnabled && !isAnswered && (
+            <div className="text-center text-2xl font-bold text-primary mt-4">
+              Time Left: {currentTimer}s
+            </div>
+          )}
+
           {isAnswered ? (
-            <div className="flex justify-center items-center h-48">
+            <div className="flex justify-center items-center h-24">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <p className="ml-4 text-muted-foreground">Loading next card...</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-4 mt-4">
               {testType === 'text' ? (
                 <>
                   <Textarea
@@ -203,7 +281,9 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
                     className="text-base"
                   />
                   <div className="flex justify-end gap-2">
-                    <Button onClick={handleSkip} variant="secondary">Skip</Button>
+                    <Button onClick={handleSkip} variant="secondary">
+                      <SkipForward className="mr-2 h-4 w-4" /> Skip
+                    </Button>
                     <Button onClick={() => handleSubmission(userAnswer)}>Submit Answer</Button>
                   </div>
                 </>
@@ -214,6 +294,9 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
                       {choice}
                     </Button>
                   ))}
+                  <Button onClick={handleSkip} variant="secondary" className="col-span-full">
+                    <SkipForward className="mr-2 h-4 w-4" /> Skip
+                  </Button>
                 </div>
               )}
             </div>

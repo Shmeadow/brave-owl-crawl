@@ -9,7 +9,8 @@ import { toast } from 'sonner';
 import { FlashCard } from '@/components/flash-card';
 import { useFlashcardCategories } from '@/hooks/flashcards/useFlashcardCategories';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
+import { Label } from '@/components/ui/label'; // Import Label
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'; // Import ToggleGroup
 import { FlashcardSize } from '@/hooks/use-flashcard-size'; // Import type
 
 interface LearnModeProps {
@@ -94,6 +95,14 @@ export function LearnMode({ flashcards, onGradeCard, goToSummary, flashcardSize,
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="flashcard-size-learn">Card Size:</Label>
+            <ToggleGroup type="single" value={flashcardSize} onValueChange={(value: FlashcardSize) => setFlashcardSize(value)} className="h-auto">
+              <ToggleGroupItem value="sm" aria-label="Small" className="h-8 px-3 text-sm">S</ToggleGroupItem>
+              <ToggleGroupItem value="md" aria-label="Medium" className="h-8 px-3 text-sm">M</ToggleGroupItem>
+              <ToggleGroupItem value="lg" aria-label="Large" className="h-8 px-3 text-sm">L</ToggleGroupItem>
+            </ToggleGroup>
           </div>
           <Button onClick={handleShuffle} variant="secondary" className="w-full">
             <Shuffle className="mr-2 h-4 w-4" /> Shuffle Cards
