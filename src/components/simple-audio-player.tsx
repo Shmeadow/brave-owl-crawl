@@ -97,7 +97,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     toggleMute: spotifyToggleMute,
     seekTo: spotifySeekTo,
     connectToSpotify,
-    disconnectFromSpotify,
+    disconnectFromSpotify, // Added disconnect
     transferPlayback,
     playTrack: spotifyPlayTrack,
   } = useSpotifyPlayer(session?.access_token || null);
@@ -113,15 +113,20 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
       setPlayerType('youtube');
     } else if (committedMediaUrl.includes('open.spotify.com')) {
       setPlayerType('spotify');
-      if (spotifyPlayerReady && spotifyCurrentTrack?.uri !== committedMediaUrl) {
-        spotifyPlayTrack(committedMediaUrl);
+      // If Spotify URL is set and user is logged in, try to connect/play via SDK
+      if (session?.access_token) {
+        // connectToSpotify is called by the hook itself when accessToken is provided.
+        // We only need to explicitly play the track if it's a new track and player is ready.
+        if (spotifyPlayerReady && spotifyCurrentTrack?.uri !== committedMediaUrl) {
+          spotifyPlayTrack(committedMediaUrl);
+        }
       }
     } else if (committedMediaUrl.match(/\.(mp3|wav|ogg|aac|flac)$/i)) {
       setPlayerType('audio');
     } else {
       setPlayerType(null);
     }
-  }, [committedMediaUrl, spotifyCurrentTrack, spotifyPlayerReady, spotifyPlayTrack]);
+  }, [committedMediaUrl, session?.access_token, spotifyPlayerReady, spotifyCurrentTrack, spotifyPlayTrack]);
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -192,7 +197,8 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   };
 
   const loadNewMedia = () => {
-    setCommittedMediaUrl(stagedInputUrl);
+    setStagedInputUrl(stagedInputUrl.trim()); // Trim whitespace
+    setCommittedMediaUrl(stagedInputUrl.trim());
     setIsUrlInputOpen(false); // Close popover/drawer after loading
   };
 
@@ -303,9 +309,9 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
               formatTime={formatTime}
             />
 
-            {playerType === 'spotify' && !spotifyPlayerReady && (
+            {playerType === 'spotify' && session && !spotifyPlayerReady && (
               <div className="text-center text-sm text-muted-foreground mt-2">
-                <p>Connect to Spotify to enable playback.</p>
+                <p>Log in to Spotify for full playback control.</p>
                 <Button onClick={connectToSpotify} className="text-primary hover:underline mt-1">
                   Connect to Spotify
                 </Button>
@@ -434,9 +440,9 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
           formatTime={formatTime}
         />
 
-        {playerType === 'spotify' && !spotifyPlayerReady && (
+        {playerType === 'spotify' && session && !spotifyPlayerReady && (
           <div className="text-center text-sm text-muted-foreground mt-2">
-            <p>Connect to Spotify to enable playback.</p>
+            <p>Log in to Spotify for full playback control.</p>
             <Button onClick={connectToSpotify} className="text-primary hover:underline mt-1">
               Connect to Spotify
             </Button>
