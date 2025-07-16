@@ -119,6 +119,9 @@
     0% {
       transform: translateX(-100%);
     }
+    50% { /* Adjusted midpoint for smoother transition */
+      transform: translateX(0%);
+    }
     100% {
       transform: translateX(100%);
     }
@@ -129,9 +132,9 @@
     top: 0;
     left: 0;
     height: 100%;
-    width: 20%; /* Adjusted width of the shimmer */
-    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0) 100%); /* Adjusted opacity */
-    animation: shimmer 4s infinite linear; /* Adjusted speed */
+    width: 30%; /* Increased width of the shimmer for more prominence */
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0) 100%); /* Adjusted opacity */
+    animation: shimmer 3s infinite linear; /* Adjusted speed for a more noticeable effect */
   }
 
   /* Custom styles for rich text editor content */

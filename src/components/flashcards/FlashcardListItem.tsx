@@ -62,10 +62,12 @@ export function FlashcardListItem({
         <p className="text-xs text-muted-foreground">
           Created: {new Date(card.created_at).toLocaleDateString()}
         </p>
-        <div className="flex flex-col gap-1"> {/* Changed to flex-col for vertical stacking */}
+        <div className="flex gap-1"> {/* Changed to flex for horizontal arrangement */}
           <Button
+            variant="ghost"
+            size="icon"
             onClick={(e) => { e.stopPropagation(); onOrganize(card); }}
-            className="h-auto w-auto p-0 bg-transparent hover:bg-transparent text-muted-foreground hover:text-primary" // Smaller, icon-only
+            className="h-7 w-7 text-muted-foreground hover:text-primary"
             title="Organize flashcard"
             disabled={selectionMode}
           >
@@ -74,8 +76,10 @@ export function FlashcardListItem({
           <Popover open={isEditingPopoverOpen} onOpenChange={setIsEditingPopoverOpen}>
             <PopoverTrigger asChild>
               <Button
+                variant="ghost"
+                size="icon"
                 onClick={(e) => e.stopPropagation()}
-                className="h-auto w-auto p-0 bg-transparent hover:bg-transparent text-muted-foreground hover:text-primary" // Smaller, icon-only
+                className="h-7 w-7 text-muted-foreground hover:text-primary"
                 title="Edit flashcard"
                 disabled={selectionMode}
               >
@@ -99,8 +103,10 @@ export function FlashcardListItem({
             </PopoverContent>
           </Popover>
           <Button
+            variant="ghost"
+            size="icon"
             onClick={(e) => { e.stopPropagation(); onDelete(card.id); }}
-            className="h-auto w-auto p-0 bg-transparent hover:bg-transparent text-muted-foreground hover:text-destructive" // Smaller, icon-only
+            className="h-7 w-7 text-muted-foreground hover:text-destructive"
             title="Delete flashcard"
             disabled={selectionMode}
           >

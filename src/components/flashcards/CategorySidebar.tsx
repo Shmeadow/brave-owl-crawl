@@ -96,7 +96,7 @@ export function CategorySidebar({
               <Button
                 variant="ghost"
                 className={cn(
-                  'w-full justify-start text-left h-7 px-2 text-sm', // Reduced height, padding, font size
+                  'w-full justify-start text-left h-9 px-3 text-sm', // Adjusted height and padding for consistency
                   selectedCategoryId === 'all' && 'bg-accent text-accent-foreground'
                 )}
                 onClick={() => onSelectCategory('all')}
@@ -108,7 +108,7 @@ export function CategorySidebar({
                 <div
                   key={category.id}
                   className={cn(
-                    'flex items-center justify-between p-1.5 rounded-md cursor-pointer hover:bg-accent h-7 text-sm', // Reduced height, padding, font size
+                    'flex items-center justify-between p-1.5 rounded-md cursor-pointer hover:bg-accent h-9 text-sm px-3', // Adjusted height, padding, font size for consistency
                     selectedCategoryId === category.id && 'bg-accent text-accent-foreground'
                   )}
                   onClick={() => onSelectCategory(category.id)}
@@ -120,17 +120,17 @@ export function CategorySidebar({
                       onBlur={handleSaveEdit}
                       onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit()}
                       autoFocus
-                      className="h-6 text-sm" // Reduced height and font size
+                      className="h-7 text-sm" // Adjusted height and font size
                     />
                   ) : (
                     <span className="flex-1 truncate">{category.name}</span>
                   )}
                   <div className="flex gap-0.5"> {/* Reduced gap */}
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); handleStartEdit(category); }}>
-                      <Edit className="h-3.5 w-3.5" /> {/* Reduced icon size */}
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); handleStartEdit(category); }}>
+                      <Edit className="h-4 w-4" /> {/* Adjusted icon size */}
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={(e) => { e.stopPropagation(); setDeletingCategory(category); }}>
-                      <Trash2 className="h-3.5 w-3.5" /> {/* Reduced icon size */}
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={(e) => { e.stopPropagation(); setDeletingCategory(category); }}>
+                      <Trash2 className="h-4 w-4" /> {/* Adjusted icon size */}
                     </Button>
                   </div>
                 </div>

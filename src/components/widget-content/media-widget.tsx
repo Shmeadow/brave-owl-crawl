@@ -2,16 +2,19 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Music, Link } from "lucide-react"; // Import Link icon
 
 export function MediaWidget() {
   return (
-    <div className="h-full w-full flex items-center justify-center">
-      <Card className="w-full h-full bg-card backdrop-blur-xl border-white/20 flex flex-col items-center justify-center"> {/* Removed /40 */}
-        <CardContent className="text-foreground text-center">
-          <h2 className="text-2xl font-bold mb-2">Media Widget</h2>
-          <p className="text-muted-foreground">Your image/video gallery and lightbox viewer will be displayed here.</p>
-        </CardContent>
-      </Card>
+    <div className="h-full w-full flex flex-col items-center justify-center p-4">
+      <Music className="h-16 w-16 text-primary mb-4" />
+      <h2 className="text-2xl font-bold mb-2 text-foreground text-center">Your Media Hub</h2>
+      <p className="text-muted-foreground text-center mb-4">
+        Embed YouTube videos, Spotify tracks, or audio files to set your perfect ambiance.
+      </p>
+      <p className="text-sm text-muted-foreground text-center flex items-center gap-1">
+        Click the <Link className="h-4 w-4 inline-block" /> "Embed URL" button on the player to get started!
+      </p>
     </div>
   );
 }
