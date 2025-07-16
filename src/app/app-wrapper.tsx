@@ -263,7 +263,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
 
             {/* Floating Media Player */}
             {isDashboard && (
-              <DynamicFloatingMediaPlayer isCurrentRoomWritable={isCurrentRoomWritable} isMobile={isMobile} />
+              <DynamicFloatingMediaPlayer isCurrentRoomWritable={isCurrentRoomWritable} isMobile={isMobile} chatPanelWidth={chatPanelWidth} />
             )}
 
             <DynamicChatPanel

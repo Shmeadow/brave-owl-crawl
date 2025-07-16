@@ -22,23 +22,38 @@ import { MediaInput } from '../audio-player/media-input';
 import { PlayerControls } from '../audio-player/player-controls';
 import { ProgressBar } from '../audio-player/progress-bar';
 
-interface FloatingMediaPlayerProps {
+export interface FloatingMediaPlayerProps {
   isCurrentRoomWritable: boolean;
   isMobile: boolean;
+  chatPanelWidth: number; // New prop
 }
 
-const LOCAL_STORAGE_POSITION_KEY = 'floating_media_player_position';
-const LOCAL_STORAGE_SIZE_KEY = 'floating_media_player_size';
+const LOCAL_STORAGE_MAXIMIZED_KEY = 'floating_media_player_maximized';
+const LOCAL_STORAGE_MINIMIZED_KEY = 'floating_media_player_minimized';
+const LOCAL_STORAGE_NORMAL_POS_KEY = 'floating_media_player_normal_position';
+const LOCAL_STORAGE_NORMAL_SIZE_KEY = 'floating_media_player_normal_size';
 const LOCAL_STORAGE_URL_KEY = 'floating_media_player_url';
-const LOCAL_STORAGE_DISPLAY_MODE_KEY = 'floating_media_player_display_mode';
 
-export function FloatingMediaPlayer({ isCurrentRoomWritable, isMobile }: FloatingMediaPlayerProps) {
+const DEFAULT_NORMAL_WIDTH = 300;
+const DEFAULT_NORMAL_HEIGHT = 400;
+const MINIMIZED_WIDTH = 150;
+const MINIMIZED_HEIGHT = 100;
+const BOTTOM_RIGHT_OFFSET = 16; // Padding from screen edge
+
+export function FloatingMediaPlayer({ isCurrentRoomWritable, isMobile, chatPanelWidth }: FloatingMediaPlayerProps) {
   const { session } = useSupabase();
   const [stagedInputUrl, setStagedInputUrl] = useState('');
   const [committedMediaUrl, setCommittedMediaUrl] = useState('');
   const [playerType, setPlayerType] = useState<'audio' | 'youtube' | 'spotify' | null>(null);
   const [isUrlInputOpen, setIsUrlInputOpen] = useState(false);
-  const [displayMode, setDisplayMode] = useState<'normal' | 'maximized'>('normal'); // Internal display mode for player layout
+
+  // States for player display mode
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true); // Default to minimized for "small" mode
+
+  // States to store normal (non-maximized, non-minimized) position and size
+  const [normalPosition, setNormalPosition] = useState({ x: 0, y: 0 });
+  const [normalSize, setNormalSize] = useState({ width: DEFAULT_NORMAL_WIDTH, height: DEFAULT_NORMAL_HEIGHT });
 
   const youtubeIframeRef = useRef<HTMLIFrameElement>(null);
   const playerRef = useRef<HTMLDivElement>(null); // Ref for the draggable player container
@@ -91,66 +106,74 @@ export function FloatingMediaPlayer({ isCurrentRoomWritable, isMobile }: Floatin
     playTrack: spotifyPlayTrack,
   } = useSpotifyPlayer(session?.access_token || null);
 
-  // State for position and size
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [size, setSize] = useState({ width: 350, height: 450 }); // Default size
-
-  // Load saved position and size from local storage on mount
+  // Load saved states from local storage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedPos = localStorage.getItem(LOCAL_STORAGE_POSITION_KEY);
-      const savedSize = localStorage.getItem(LOCAL_STORAGE_SIZE_KEY);
+      const savedMaximized = localStorage.getItem(LOCAL_STORAGE_MAXIMIZED_KEY);
+      const savedMinimized = localStorage.getItem(LOCAL_STORAGE_MINIMIZED_KEY);
+      const savedNormalPos = localStorage.getItem(LOCAL_STORAGE_NORMAL_POS_KEY);
+      const savedNormalSize = localStorage.getItem(LOCAL_STORAGE_NORMAL_SIZE_KEY);
       const savedUrl = localStorage.getItem(LOCAL_STORAGE_URL_KEY);
-      const savedDisplayMode = localStorage.getItem(LOCAL_STORAGE_DISPLAY_MODE_KEY);
 
-      if (savedPos) {
-        setPosition(JSON.parse(savedPos));
+      if (savedMaximized === 'true') {
+        setIsMaximized(true);
+        setIsMinimized(false);
+      } else if (savedMinimized === 'true') {
+        setIsMinimized(true);
+        setIsMaximized(false);
       } else {
-        // Default position if not saved
-        setPosition({ x: window.innerWidth - 350 - 16, y: 100 }); // Right side, below header
+        // Default to minimized if no explicit state saved
+        setIsMinimized(true);
+        setIsMaximized(false);
       }
-      if (savedSize) {
-        setSize(JSON.parse(savedSize));
+
+      if (savedNormalPos) {
+        setNormalPosition(JSON.parse(savedNormalPos));
+      } else {
+        // Default normal position if not saved (e.g., top right)
+        setNormalPosition({ x: window.innerWidth - DEFAULT_NORMAL_WIDTH - BOTTOM_RIGHT_OFFSET, y: 100 });
       }
+      if (savedNormalSize) {
+        setNormalSize(JSON.parse(savedNormalSize));
+      }
+
       if (savedUrl) {
         setCommittedMediaUrl(savedUrl);
         setStagedInputUrl(savedUrl);
       }
-      if (savedDisplayMode && (savedDisplayMode === 'normal' || savedDisplayMode === 'maximized')) {
-        setDisplayMode(savedDisplayMode);
-      }
     }
   }, []);
 
-  // Save position, size, URL, and display mode to local storage on change
+  // Save states to local storage on change
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem(LOCAL_STORAGE_POSITION_KEY, JSON.stringify(position));
-      localStorage.setItem(LOCAL_STORAGE_SIZE_KEY, JSON.stringify(size));
+      localStorage.setItem(LOCAL_STORAGE_MAXIMIZED_KEY, String(isMaximized));
+      localStorage.setItem(LOCAL_STORAGE_MINIMIZED_KEY, String(isMinimized));
+      localStorage.setItem(LOCAL_STORAGE_NORMAL_POS_KEY, JSON.stringify(normalPosition));
+      localStorage.setItem(LOCAL_STORAGE_NORMAL_SIZE_KEY, JSON.stringify(normalSize));
       localStorage.setItem(LOCAL_STORAGE_URL_KEY, committedMediaUrl);
-      localStorage.setItem(LOCAL_STORAGE_DISPLAY_MODE_KEY, displayMode);
     }
-  }, [position, size, committedMediaUrl, displayMode]);
+  }, [isMaximized, isMinimized, normalPosition, normalSize, committedMediaUrl]);
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: 'floating-media-player',
-    data: { initialPosition: position },
-    disabled: isMobile || displayMode === 'maximized', // Disable dragging on mobile or when maximized
+    data: { initialPosition: normalPosition }, // Dragging updates normalPosition
+    disabled: isMobile || isMaximized || isMinimized, // Disable dragging when maximized or minimized
   });
 
   const currentTransformStyle = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
   } : {};
 
-  // Update position state when drag ends
+  // Update normalPosition state when drag ends
   useEffect(() => {
-    if (transform) {
-      setPosition({
-        x: position.x + transform.x,
-        y: position.y + transform.y,
-      });
+    if (transform && !isMaximized && !isMinimized) {
+      setNormalPosition(prev => ({
+        x: prev.x + transform.x,
+        y: prev.y + transform.y,
+      }));
     }
-  }, [transform]);
+  }, [transform, isMaximized, isMinimized]);
 
   useEffect(() => {
     if (committedMediaUrl.includes('youtube.com') || committedMediaUrl.includes('youtu.be')) {
@@ -264,25 +287,34 @@ export function FloatingMediaPlayer({ isCurrentRoomWritable, isMobile }: Floatin
     />
   );
 
-  const handleMaximizeToggle = () => {
-    if (displayMode === 'normal') {
-      // Save current position and size before maximizing
-      localStorage.setItem(LOCAL_STORAGE_POSITION_KEY, JSON.stringify(position));
-      localStorage.setItem(LOCAL_STORAGE_SIZE_KEY, JSON.stringify(size));
-      setDisplayMode('maximized');
+  const toggleMaximize = () => {
+    if (isMaximized) {
+      // Restore from maximized
+      setIsMaximized(false);
+      setIsMinimized(false); // Ensure not minimized
     } else {
-      // Restore from saved position and size
-      const savedPos = localStorage.getItem(LOCAL_STORAGE_POSITION_KEY);
-      const savedSize = localStorage.getItem(LOCAL_STORAGE_SIZE_KEY);
-      if (savedPos) setPosition(JSON.parse(savedPos));
-      if (savedSize) setSize(JSON.parse(savedSize));
-      setDisplayMode('normal');
+      // Maximize
+      setIsMaximized(true);
+      setIsMinimized(false); // Ensure not minimized
     }
   };
 
+  const toggleMinimize = () => {
+    if (isMinimized) {
+      // Restore from minimized
+      setIsMinimized(false);
+      setIsMaximized(false); // Ensure not maximized
+    } else {
+      // Minimize
+      setIsMinimized(true);
+      setIsMaximized(false); // Ensure not maximized
+    }
+  };
+
+  // Calculate dynamic style based on states
   const playerStyle: React.CSSProperties = isMobile
-    ? { width: '100%', height: 'auto', position: 'relative' }
-    : displayMode === 'maximized'
+    ? { width: '100%', height: 'auto', position: 'relative' } // Mobile always takes full width, auto height
+    : isMaximized
       ? {
           position: 'fixed',
           top: '64px', // Below header
@@ -291,15 +323,27 @@ export function FloatingMediaPlayer({ isCurrentRoomWritable, isMobile }: Floatin
           height: `calc(100vh - 64px)`,
           zIndex: 999, // High z-index for maximized
         }
-      : {
-          position: 'fixed',
-          left: position.x,
-          top: position.y,
-          width: size.width,
-          height: size.height,
-          zIndex: 901, // Below widgets, above chat
-          ...currentTransformStyle,
-        };
+      : isMinimized
+        ? {
+            position: 'fixed',
+            right: `${BOTTOM_RIGHT_OFFSET + chatPanelWidth + BOTTOM_RIGHT_OFFSET}px`, // Right of chat panel
+            bottom: `${BOTTOM_RIGHT_OFFSET}px`,
+            width: MINIMIZED_WIDTH,
+            height: MINIMIZED_HEIGHT,
+            zIndex: 901, // Below widgets, above chat
+          }
+        : { // Normal mode (draggable, resizable)
+            position: 'fixed',
+            left: normalPosition.x,
+            top: normalPosition.y,
+            width: normalSize.width,
+            height: normalSize.height,
+            zIndex: 901, // Below widgets, above chat
+            ...currentTransformStyle,
+          };
+
+  const isDraggable = !isMobile && !isMaximized && !isMinimized;
+  const isResizable = !isMobile && !isMaximized && !isMinimized;
 
   return (
     <div
@@ -308,7 +352,7 @@ export function FloatingMediaPlayer({ isCurrentRoomWritable, isMobile }: Floatin
         "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg flex flex-col overflow-hidden",
         "transition-all duration-300 ease-in-out",
         isMobile ? "p-4" : "p-4", // Adjust padding for mobile
-        displayMode === 'maximized' ? "rounded-none" : "", // No rounded corners when maximized
+        isMaximized ? "rounded-none" : "", // No rounded corners when maximized
         !isCurrentRoomWritable && "opacity-70 cursor-not-allowed"
       )}
       style={playerStyle}
@@ -316,10 +360,10 @@ export function FloatingMediaPlayer({ isCurrentRoomWritable, isMobile }: Floatin
       <div
         className={cn(
           "flex items-center justify-between p-2 border-b border-border/50 bg-background/80 backdrop-blur-md",
-          (isMobile || displayMode === 'maximized') ? "cursor-default" : "cursor-grab"
+          isDraggable ? "cursor-grab" : "cursor-default"
         )}
         {...listeners}
-        onDoubleClick={handleMaximizeToggle} // Double click to maximize/restore
+        onDoubleClick={toggleMaximize} // Double click to maximize/restore
       >
         <div className="flex items-center flex-grow min-w-0">
           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary mr-2">
@@ -331,111 +375,123 @@ export function FloatingMediaPlayer({ isCurrentRoomWritable, isMobile }: Floatin
           <Button
             variant="ghost"
             size="icon"
-            onClick={handleMaximizeToggle}
+            onClick={toggleMinimize}
             className="h-7 w-7"
-            title={displayMode === 'maximized' ? "Restore Player" : "Maximize Player"}
+            title={isMinimized ? "Restore Player" : "Minimize Player"}
           >
-            {displayMode === 'maximized' ? <Minimize size={16} /> : <Maximize size={16} />}
+            {isMinimized ? <Maximize size={16} /> : <Minimize size={16} />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleMaximize}
+            className="h-7 w-7"
+            title={isMaximized ? "Restore Player" : "Maximize Player"}
+          >
+            {isMaximized ? <Minimize size={16} /> : <Maximize size={16} />}
           </Button>
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col p-4 pt-0 overflow-hidden">
-        <div className="flex-1 relative w-full flex items-center justify-center mb-2">
-          <PlayerDisplay
-            playerType={playerType}
-            inputUrl={committedMediaUrl}
-            audioRef={audioRef}
-            youtubeIframeRef={youtubeIframeRef}
-            spotifyCurrentTrack={spotifyCurrentTrack}
-            onLoadedMetadata={htmlAudioOnLoadedMetadata}
-            onTimeUpdate={htmlAudioOnTimeUpdate}
-            onEnded={htmlAudioOnEnded}
-            className="w-full h-full"
-          />
-        </div>
-
-        {playerType === 'spotify' && spotifyCurrentTrack && (
-          <div className="text-center p-1 flex-shrink-0">
-            <p className="text-sm font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
-            <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map(a => a.name).join(', ')}</p>
+      {/* Player content area, hidden when minimized */}
+      {!isMinimized && (
+        <div className="flex-1 flex flex-col p-4 pt-0 overflow-hidden">
+          <div className="flex-1 relative w-full flex items-center justify-center mb-2">
+            <PlayerDisplay
+              playerType={playerType}
+              inputUrl={committedMediaUrl}
+              audioRef={audioRef}
+              youtubeIframeRef={youtubeIframeRef}
+              spotifyCurrentTrack={spotifyCurrentTrack}
+              onLoadedMetadata={htmlAudioOnLoadedMetadata}
+              onTimeUpdate={htmlAudioOnTimeUpdate}
+              onEnded={htmlAudioOnEnded}
+              className="w-full h-full"
+            />
           </div>
-        )}
 
-        <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
-          <div className="flex-grow min-w-0">
-            {isMobile ? (
-              <Drawer open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
-                <DrawerTrigger asChild>
-                  <button
-                    className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
-                    title="Change Media URL"
-                  >
-                    <Link size={12} className="mr-0.5" />
-                    {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
-                  </button>
-                </DrawerTrigger>
-                <DrawerContent className="h-auto max-h-[90vh] flex flex-col">
-                  <DrawerHeader>
-                    <DrawerTitle>Embed Media URL</DrawerTitle>
-                  </DrawerHeader>
-                  <div className="p-4">
+          {playerType === 'spotify' && spotifyCurrentTrack && (
+            <div className="text-center p-1 flex-shrink-0">
+              <p className="text-sm font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
+              <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map(a => a.name).join(', ')}</p>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
+            <div className="flex-grow min-w-0">
+              {isMobile ? (
+                <Drawer open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
+                  <DrawerTrigger asChild>
+                    <button
+                      className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
+                      title="Change Media URL"
+                    >
+                      <Link size={12} className="mr-0.5" />
+                      {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
+                    </button>
+                  </DrawerTrigger>
+                  <DrawerContent className="h-auto max-h-[90vh] flex flex-col">
+                    <DrawerHeader>
+                      <DrawerTitle>Embed Media URL</DrawerTitle>
+                    </DrawerHeader>
+                    <div className="p-4">
+                      {renderMediaInput}
+                    </div>
+                  </DrawerContent>
+                </Drawer>
+              ) : (
+                <Popover open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
+                  <PopoverTrigger asChild>
+                    <button
+                      className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
+                      title="Change Media URL"
+                    >
+                      <Link size={12} className="mr-0.5" />
+                      {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-0 z-[901] bg-popover/80 backdrop-blur-lg border-white/20">
                     {renderMediaInput}
-                  </div>
-                </DrawerContent>
-              </Drawer>
-            ) : (
-              <Popover open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
-                <PopoverTrigger asChild>
-                  <button
-                    className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
-                    title="Change Media URL"
-                  >
-                    <Link size={12} className="mr-0.5" />
-                    {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-64 p-0 z-[901] bg-popover/80 backdrop-blur-lg border-white/20">
-                  {renderMediaInput}
-                </PopoverContent>
-              </Popover>
-            )}
+                  </PopoverContent>
+                </Popover>
+              )}
+            </div>
+
+            <PlayerControls
+              playerType={playerType}
+              playerIsReady={playerIsReady}
+              currentIsPlaying={currentIsPlaying}
+              togglePlayPause={togglePlayPause}
+              skipBackward={skipBackward}
+              skipForward={skipForward}
+              currentVolume={currentVolume}
+              currentIsMuted={currentIsMuted}
+              toggleMute={toggleMute}
+              handleVolumeChange={handleVolumeChange}
+              canPlayPause={canPlayPause}
+              canSeek={canSeek}
+            />
           </div>
 
-          <PlayerControls
+          <ProgressBar
             playerType={playerType}
             playerIsReady={playerIsReady}
-            currentIsPlaying={currentIsPlaying}
-            togglePlayPause={togglePlayPause}
-            skipBackward={skipBackward}
-            skipForward={skipForward}
-            currentVolume={currentVolume}
-            currentIsMuted={currentIsMuted}
-            toggleMute={toggleMute}
-            handleVolumeChange={handleVolumeChange}
-            canPlayPause={canPlayPause}
-            canSeek={canSeek}
+            currentPlaybackTime={currentPlaybackTime}
+            totalDuration={totalDuration}
+            handleProgressBarChange={handleProgressBarChange}
+            formatTime={formatTime}
           />
+
+          {playerType === 'spotify' && !spotifyPlayerReady && (
+            <div className="text-center text-sm text-muted-foreground mt-2">
+              <p>Connect to Spotify to enable playback.</p>
+              <Button onClick={connectToSpotify} className="text-primary hover:underline mt-1">
+                Connect to Spotify
+              </Button>
+            </div>
+          )}
         </div>
-
-        <ProgressBar
-          playerType={playerType}
-          playerIsReady={playerIsReady}
-          currentPlaybackTime={currentPlaybackTime}
-          totalDuration={totalDuration}
-          handleProgressBarChange={handleProgressBarChange}
-          formatTime={formatTime}
-        />
-
-        {playerType === 'spotify' && !spotifyPlayerReady && (
-          <div className="text-center text-sm text-muted-foreground mt-2">
-            <p>Connect to Spotify to enable playback.</p>
-            <Button onClick={connectToSpotify} className="text-primary hover:underline mt-1">
-              Connect to Spotify
-            </Button>
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }
