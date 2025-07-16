@@ -34,6 +34,7 @@
     --background-blur-px: 0px; /* New blur variable */
     --faded-purple: 270 30% 80%; /* Light faded purple for light theme */
     --cozy-hub-color: 280 60% 60%; /* Vibrant purple, always available */
+    --faded-blue-dark: 220 30% 40%; /* New: Blue faded dark for light theme */
   }
 
   .dark {
@@ -66,6 +67,7 @@
     --gold: 45 90% 55%;
     --faded-purple: 270 30% 60%; /* Darker faded purple for dark theme */
     --cozy-hub-color: 280 60% 60%; /* Vibrant purple, always available */
+    --faded-blue-dark: 220 30% 20%; /* New: Blue faded dark for dark theme */
   }
 
   [data-theme="cozy"] {
@@ -92,6 +94,7 @@
     --sidebar-foreground: 270 30% 90%;
     --faded-purple: 270 30% 70%; /* Faded purple for cozy theme */
     --cozy-hub-color: 280 60% 60%; /* Vibrant purple, always available */
+    --faded-blue-dark: 220 30% 30%; /* New: Blue faded dark for cozy theme */
   }
 }
 
@@ -202,5 +205,23 @@
   /* Hide tldraw branding */
   .tl-branding {
     display: none !important;
+  }
+
+  /* New animation for Cozy Hub title */
+  @keyframes cozy-hub-pulse {
+    0%, 100% { text-shadow: 0 0 5px hsl(var(--cozy-hub-color)), 0 0 10px hsl(var(--cozy-hub-color)); }
+    50% { text-shadow: 0 0 10px hsl(var(--cozy-hub-color)), 0 0 20px hsl(var(--cozy-hub-color)), 0 0 30px hsl(var(--cozy-hub-color)); }
+  }
+  .animate-cozy-hub-pulse {
+    animation: cozy-hub-pulse 2s infinite alternate ease-in-out;
+  }
+
+  /* New animation for golden aura */
+  @keyframes golden-aura {
+    0%, 100% { text-shadow: 0 0 5px hsl(var(--gold)), 0 0 10px hsl(var(--gold)); }
+    50% { text-shadow: 0 0 10px hsl(var(--gold)), 0 0 20px hsl(var(--gold)), 0 0 30px hsl(var(--gold)); }
+  }
+  .animate-golden-aura {
+    animation: golden-aura 2.5s infinite alternate ease-in-out;
   }
 }
