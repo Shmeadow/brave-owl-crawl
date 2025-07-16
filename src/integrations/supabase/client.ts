@@ -1,3 +1,5 @@
+"use client";
+
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { toast } from 'sonner'; // Import toast for notifications
 
