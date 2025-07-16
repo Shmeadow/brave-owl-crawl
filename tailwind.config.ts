@@ -61,6 +61,8 @@ export default {
   				ring: 'hsl(var(--sidebar-ring))'
   			},
             gold: 'hsl(var(--gold))',
+            'faded-purple': 'hsl(var(--faded-purple))',
+            'cozy-hub-color': 'hsl(var(--cozy-hub-color))',
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
