@@ -11,7 +11,7 @@ import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, Palette, Image, BarChar
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
 const SIDEBAR_WIDTH_EXPANDED = 60; // px - Set to 60px to match docked width
 const HOT_ZONE_WIDTH = 20; // px (includes the 4px visible strip)
-const SIDEBAR_WIDTH_MOBILE = 250; // px - Define a width for mobile sidebar
+const SIDEBAR_WIDTH_MOBILE = 60; // px - Define a width for mobile sidebar (changed from 250px)
 const UNDOCK_DELAY = 500; // ms
 const HEADER_HEIGHT_REM = 4; // 4rem = 64px
 
