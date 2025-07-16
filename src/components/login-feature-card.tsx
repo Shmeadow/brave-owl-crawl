@@ -22,10 +22,10 @@ export function LoginFeatureCard({ icon: Icon, title, description, delay, classN
       transition={{ duration: 0.5, delay: delay }}
       className={cn("h-full", className)}
     >
-      <Card className="h-full backdrop-blur-xl flex flex-col items-center text-center p-3"> {/* Reduced p-4 to p-3 */}
-        <Icon className="h-7 w-7 text-primary mb-2" /> {/* Reduced h-8 w-8 to h-7 w-7, mb-3 to mb-2 */}
-        <h3 className="text-base font-semibold text-foreground mb-1">{title}</h3> {/* Reduced text-lg to text-base */}
-        <p className="text-xs text-muted-foreground">{description}</p> {/* Reduced text-sm to text-xs */}
+      <Card className="h-full bg-card/70 backdrop-blur-xl flex flex-col items-center text-center p-3"> {/* Changed bg-card to bg-card/70 for transparency */}
+        <Icon className="h-7 w-7 text-primary mb-2" />
+        <h3 className="text-base font-semibold text-foreground mb-1">{title}</h3>
+        <p className="text-xs text-muted-foreground">{description}</p>
       </Card>
     </motion.div>
   );
