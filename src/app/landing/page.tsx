@@ -49,7 +49,7 @@ export default function LandingPage() {
 
   return (
     <motion.div
-      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden p-4" // Added p-4 for overall padding
+      className="relative min-h-dvh flex flex-col items-center justify-center overflow-hidden p-4" // Changed min-h-screen to min-h-dvh
       variants={containerVariants}
       initial="hidden"
       animate="visible"
