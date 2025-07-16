@@ -102,9 +102,6 @@ export function useTasks() {
         loadedTasks = [];
       }
       setTasks(loadedTasks);
-      if (loadedTasks.length === 0 && !currentRoomId) {
-        toast.info("You are browsing tasks as a guest. Your tasks will be saved locally.");
-      }
     }
     setLoading(false);
   }, [session, supabase, authLoading, currentRoomId]);

@@ -150,9 +150,6 @@ export function useJournal() {
         // Ensure all loaded entries have a 'type' property, default to 'journal' if missing
         loadedEntries = loadedEntries.map(entry => ({ ...entry, type: entry.type || 'journal' }));
         setJournalEntries(loadedEntries);
-        if (loadedEntries.length === 0) {
-          toast.info("You are browsing journal entries as a guest. Your entries will be saved locally.");
-        }
       }
       setLoading(false);
     };

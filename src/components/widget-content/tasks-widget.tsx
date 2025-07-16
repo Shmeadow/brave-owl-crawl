@@ -43,12 +43,6 @@ export function TasksWidget({ isCurrentRoomWritable }: TasksWidgetProps) {
           onDelete={handleDeleteTask}
           isCurrentRoomWritable={isCurrentRoomWritable}
         />
-
-        {!isLoggedInMode && (
-          <p className="text-sm text-muted-foreground mt-4 text-center">
-            You are currently browsing as a guest. Your tasks are saved locally in your browser. Log in to save them to your account!
-          </p>
-        )}
       </div>
     </div>
   );

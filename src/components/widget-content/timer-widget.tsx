@@ -23,11 +23,6 @@ export function TimerWidget({ isCurrentRoomWritable }: TimerWidgetProps) {
   return (
     <div className="h-full w-full flex flex-col items-center justify-center p-4">
       <TimeTracker isCurrentRoomWritable={isCurrentRoomWritable} />
-      {!session && (
-        <p className="text-sm text-muted-foreground mt-4 text-center">
-          You are currently browsing as a guest. Your time tracking data will not be saved unless you log in.
-        </p>
-      )}
     </div>
   );
 }
