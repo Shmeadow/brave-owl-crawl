@@ -45,7 +45,7 @@ export function AddGoalForm({ onAddGoal, isCurrentRoomWritable }: AddGoalFormPro
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to add goals in this room.");
+      
       return;
     }
     onAddGoal(
@@ -54,7 +54,7 @@ export function AddGoalForm({ onAddGoal, isCurrentRoomWritable }: AddGoalFormPro
       values.targetCompletionDate ? format(values.targetCompletionDate, 'yyyy-MM-dd') : null
     );
     form.reset();
-    toast.success("Goal added successfully!");
+    
   }
 
   return (

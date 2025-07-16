@@ -45,7 +45,7 @@ export function AddTaskForm({ onAddTask, isCurrentRoomWritable }: AddTaskFormPro
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to add tasks in this room.");
+      
       return;
     }
     onAddTask(
@@ -54,7 +54,7 @@ export function AddTaskForm({ onAddTask, isCurrentRoomWritable }: AddTaskFormPro
       values.dueDate ? format(values.dueDate, 'yyyy-MM-dd') : null
     );
     form.reset({ title: "", description: "", dueDate: undefined });
-    toast.success("Task added successfully!");
+    
   }
 
   return (
