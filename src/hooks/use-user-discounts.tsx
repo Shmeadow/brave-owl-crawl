@@ -24,7 +24,7 @@ export function useUserDiscounts() {
       .eq('user_id', session.user.id);
 
     if (error) {
-      toast.error('Failed to load your discount information.');
+      // toast.error('Failed to load your discount information.');
       console.error('Error fetching used discounts:', error);
       setUsedDiscounts([]);
     } else {
@@ -48,10 +48,10 @@ export function useUserDiscounts() {
       .insert({ user_id: session.user.id, billing_cycle: cycle });
 
     if (error) {
-      toast.error('There was an issue applying your discount.');
+      // toast.error('There was an issue applying your discount.');
       console.error('Error recording discount usage:', error);
     } else {
-      toast.success(`Your one-time ${cycle} discount has been applied!`);
+      // toast.success(`Your one-time ${cycle} discount has been applied!`);
       fetchUsedDiscounts(); // Re-fetch to update state
     }
   };
