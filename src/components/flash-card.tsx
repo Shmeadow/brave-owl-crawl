@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card"; // Keep Card import for other uses if needed
 import { cn } from "@/lib/utils";
 import { Star, CheckCircle } from "lucide-react";
 import { FlashcardSize } from "@/hooks/use-flashcard-size"; // Import FlashcardSize type
@@ -23,19 +23,27 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
   const cardClasses = cn(
     "relative w-full cursor-pointer perspective-1000 transition-all duration-500 ease-in-out",
     {
-      'h-[250px] max-w-[400px]': size === 'sm', // Increased size
-      'h-[350px] max-w-[550px]': size === 'md', // Increased size
-      'h-[450px] max-w-[700px]': size === 'lg', // Increased size
+      'h-[250px] max-w-[400px]': size === 'sm',
+      'h-[350px] max-w-[550px]': size === 'md',
+      'h-[450px] max-w-[700px]': size === 'lg',
     }
   );
 
-  const innerCardClasses = "relative w-full h-full text-center transition-transform duration-500 ease-in-out preserve-3d";
-  const frontBackClasses = "absolute w-full h-full flex flex-col justify-center items-center backface-hidden rounded-lg shadow-lg p-4";
+  const innerCardClasses = cn(
+    "relative w-full h-full text-center transition-transform duration-500 ease-in-out",
+    "transform-style-preserve-3d", // Explicitly add transform-style
+    { "rotate-y-180": isFlipped }
+  );
+
+  const frontBackClasses = cn(
+    "absolute w-full h-full flex flex-col justify-center items-center rounded-lg shadow-lg p-4",
+    "backface-hidden" // Explicitly add backface-hidden
+  );
 
   const textSizeClasses = cn({
-    'text-base': size === 'sm', // Increased text size
-    'text-lg': size === 'md',   // Increased text size
-    'text-xl': size === 'lg',   // Increased text size
+    'text-base': size === 'sm',
+    'text-lg': size === 'md',
+    'text-xl': size === 'lg',
   });
 
   const statusIndicatorClasses = cn(
@@ -48,11 +56,11 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
   );
 
   return (
-    <div className={cardClasses}>
-      <div className={cn(innerCardClasses, { "rotate-y-180": isFlipped })}>
+    <div className={cardClasses} onClick={onClick}>
+      <div className={innerCardClasses}>
         {/* Front of the card */}
-        <Card className={cn(frontBackClasses, "bg-card text-card-foreground border-white/20")}>
-          <CardContent className="flex flex-col items-center justify-center h-full w-full p-0">
+        <div className={cn(frontBackClasses, "bg-card text-card-foreground border border-white/20")}>
+          <div className="flex flex-col items-center justify-center h-full w-full p-0">
             <p className={cn("font-semibold", textSizeClasses)}>{front}</p>
             {status && (
               <span className={statusIndicatorClasses}>{status}</span>
@@ -62,12 +70,12 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
                 Views: {seen_count}
               </span>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Back of the card */}
-        <Card className={cn(frontBackClasses, "bg-primary text-primary-foreground rotate-y-180")}>
-          <CardContent className="flex flex-col items-center justify-center h-full w-full p-0">
+        <div className={cn(frontBackClasses, "bg-primary text-primary-foreground rotate-y-180")}>
+          <div className="flex flex-col items-center justify-center h-full w-full p-0">
             <p className={cn("font-medium", textSizeClasses)}>{back}</p>
             {status && (
               <span className={statusIndicatorClasses}>{status}</span>
@@ -77,21 +85,21 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
                 Views: {seen_count}
               </span>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {onSetSize && (
         <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-background/80 p-1 rounded-md shadow-sm z-10">
           <Label htmlFor="flashcard-size" className="sr-only">Flashcard Size</Label>
           <ToggleGroup type="single" value={size} onValueChange={(value: FlashcardSize) => onSetSize(value)} className="h-auto">
-            <ToggleGroupItem value="sm" aria-label="Small" className="h-8 px-3 text-sm"> {/* Increased button size */}
+            <ToggleGroupItem value="sm" aria-label="Small" className="h-8 px-3 text-sm">
               Small
             </ToggleGroupItem>
-            <ToggleGroupItem value="md" aria-label="Medium" className="h-8 px-3 text-sm"> {/* Increased button size */}
+            <ToggleGroupItem value="md" aria-label="Medium" className="h-8 px-3 text-sm">
               Medium
             </ToggleGroupItem>
-            <ToggleGroupItem value="lg" aria-label="Large" className="h-8 px-3 text-sm"> {/* Increased button size */}
+            <ToggleGroupItem value="lg" aria-label="Large" className="h-8 px-3 text-sm">
               Large
             </ToggleGroupItem>
           </ToggleGroup>
