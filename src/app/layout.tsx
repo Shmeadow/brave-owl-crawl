@@ -12,7 +12,7 @@ import { EffectProvider } from "@/context/effect-provider";
 import { ClientOnlyWrapper } from '@/components/client-only-wrapper';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
-import { getRandomBackground } from '@/lib/backgrounds';
+// import { getRandomBackground } from '@/lib/backgrounds'; // Removed this import as we're using a fixed background
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,8 +61,8 @@ export default async function RootLayout({
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   let isCozyThemeGloballyEnabled = true; // Default to true
 
-  // Generate a random background on the server
-  const initialBackground = getRandomBackground();
+  // Set a specific animated background as the initial default
+  const initialBackground = { url: "/animated/ani2.mp4", isVideo: true, isMirrored: false };
 
   if (supabaseUrl && supabaseAnonKey) {
     try {
