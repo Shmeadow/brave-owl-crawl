@@ -19,12 +19,12 @@ export default function LandingPage() {
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: easeOut } },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: easeOut } }, // Use easeOut function
   };
 
   return (
     <motion.div
-      className="relative h-screen flex flex-col items-center justify-start overflow-hidden" // Changed min-h-screen to h-screen
+      className="relative min-h-screen flex flex-col items-center justify-start overflow-hidden"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -45,24 +45,24 @@ export default function LandingPage() {
 
       {/* Hero Section Content */}
       <div className={cn(
-        "relative z-10 flex flex-col items-center justify-center h-[70vh] px-4 py-8 text-white w-full", // Adjusted height and padding
+        "relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-16 text-white w-full",
         "bg-transparent"
       )}>
         <motion.h1
-          className="text-4xl md:text-6xl font-extrabold mb-3 text-center drop-shadow-lg text-white leading-tight" // Reduced font size and margin
+          className="text-5xl md:text-7xl font-extrabold mb-4 text-center drop-shadow-lg text-white leading-tight"
           variants={itemVariants}
         >
           Your Ultimate <span className="text-primary-foreground">Productivity Sanctuary</span>
         </motion.h1>
         <motion.p
-          className="text-lg md:text-xl mb-6 max-w-2xl text-center drop-shadow-md text-white/90" // Reduced font size and margin
+          className="text-xl md:text-2xl mb-8 max-w-3xl text-center drop-shadow-md text-white/90"
           variants={itemVariants}
         >
           CozyHub is your all-in-one workspace designed to boost focus, track goals, and foster collaboration.
           Transform your digital environment into a haven of productivity.
         </motion.p>
         <motion.div
-          className="flex flex-col sm:flex-row gap-3 justify-center" // Reduced gap
+          className="flex flex-col sm:flex-row gap-4 justify-center"
           variants={itemVariants}
         >
           <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
@@ -75,15 +75,15 @@ export default function LandingPage() {
       </div>
 
       {/* Login Feature Section */}
-      <div className="relative z-10 w-full bg-background/50 backdrop-blur-xl py-8 px-4 border-t border-border h-[30vh] flex items-center justify-center"> {/* Adjusted height and padding */}
+      <div className="relative z-10 w-full bg-background/50 backdrop-blur-xl py-20 px-4 border-t border-border">
         <motion.div
           className="w-full max-w-4xl mx-auto text-center"
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.8, ease: easeOut }}
+          transition={{ duration: 0.8, ease: easeOut }} // Use easeOut function
         >
-          <h2 className="text-2xl font-extrabold text-foreground mb-4 leading-tight"> {/* Reduced font size and margin */}
+          <h2 className="text-4xl font-extrabold text-foreground mb-8 leading-tight">
             Discover What You Can Achieve
           </h2>
           <LoginFeatureSection className="w-full" />
