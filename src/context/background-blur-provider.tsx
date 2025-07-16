@@ -38,7 +38,7 @@ export function BackgroundBlurProvider({ children }: { children: React.ReactNode
 
         if (fetchError && fetchError.code !== 'PGRST116') {
           console.error("Error fetching blur preferences from Supabase:", fetchError);
-          toast.error("Failed to load blur preferences.");
+          // toast.error("Failed to load blur preferences.");
         }
 
         if (supabasePrefs && supabasePrefs.background_blur !== null) {
@@ -58,7 +58,7 @@ export function BackgroundBlurProvider({ children }: { children: React.ReactNode
 
               if (insertError) {
                 console.error("Error migrating local blur to Supabase:", insertError);
-                toast.error("Error migrating local blur settings.");
+                // toast.error("Error migrating local blur settings.");
               } else {
                 setBlurState(parsedBlur);
                 document.documentElement.style.setProperty('--background-blur-px', `${parsedBlur}px`);
