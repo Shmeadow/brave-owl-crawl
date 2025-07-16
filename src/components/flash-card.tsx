@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card"; // Keep Card import for other uses if needed
+// Removed unused import: import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Star, CheckCircle } from "lucide-react";
 import { FlashcardSize } from "@/hooks/use-flashcard-size"; // Import FlashcardSize type
@@ -21,7 +21,7 @@ interface FlashCardProps {
 
 export function FlashCard({ front, back, isFlipped, onClick, status, seen_count, size = 'md', onSetSize }: FlashCardProps) {
   const cardClasses = cn(
-    "relative w-full cursor-pointer perspective-1000 transition-all duration-500 ease-in-out",
+    "relative w-full cursor-pointer transition-all duration-500 ease-in-out",
     {
       'h-[250px] max-w-[400px]': size === 'sm',
       'h-[350px] max-w-[550px]': size === 'md',
@@ -52,7 +52,7 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
   );
 
   return (
-    <div className={cardClasses}>
+    <div className={cardClasses} style={{ perspective: '1000px' }}> {/* Added perspective inline */}
       <div
         className={innerCardClasses}
         onClick={onClick}
