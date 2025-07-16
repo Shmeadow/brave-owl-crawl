@@ -70,9 +70,12 @@ export function useFlashcardSize() {
       if (error) {
         toast.error("Failed to save size preference.");
         console.error("Error updating flashcard size:", error);
+      } else {
+        // toast.success("Size preference saved to your account!"); // Removed for cleaner logs
       }
     } else {
       localStorage.setItem(LOCAL_STORAGE_KEY, newSize);
+      // toast.success("Size preference saved locally!"); // Removed for cleaner logs
     }
   }, [isLoggedInMode, session, supabase]);
 
