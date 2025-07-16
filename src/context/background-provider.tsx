@@ -108,7 +108,7 @@ export function BackgroundProvider({ children, initialBackground }: { children: 
 
         if (fetchError && fetchError.code !== 'PGRST116') {
           console.error("Error fetching background preferences from Supabase:", fetchError);
-          // toast.error("Failed to load background preferences.");
+          toast.error("Failed to load background preferences.");
         }
 
         if (supabasePrefs && supabasePrefs.background_url) {
@@ -139,7 +139,7 @@ export function BackgroundProvider({ children, initialBackground }: { children: 
 
             if (insertError) {
               console.error("Error migrating local background to Supabase:", insertError);
-              // toast.error("Error migrating local background settings.");
+              toast.error("Error migrating local background settings.");
             } else {
               setUserBackground({ url: savedUrl, isVideo, isMirrored });
               localStorage.removeItem(LOCAL_STORAGE_BG_KEY);

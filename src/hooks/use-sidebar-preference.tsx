@@ -34,7 +34,7 @@ export function useSidebarPreference() {
 
         if (fetchError && fetchError.code !== 'PGRST116') {
           console.error("Error fetching sidebar preference from Supabase:", fetchError);
-          // toast.error("Failed to load sidebar preference.");
+          toast.error("Failed to load sidebar preference.");
         }
 
         if (supabasePrefs && supabasePrefs.is_sidebar_always_open !== null) {
@@ -52,7 +52,7 @@ export function useSidebarPreference() {
 
             if (insertError) {
               console.error("Error migrating local sidebar preference to Supabase:", insertError);
-              // toast.error("Error migrating local sidebar settings.");
+              toast.error("Error migrating local sidebar settings.");
             } else {
               setIsAlwaysOpenState(parsedPreference);
               localStorage.removeItem(LOCAL_STORAGE_SIDEBAR_PREFERENCE_KEY);
@@ -99,7 +99,7 @@ export function useSidebarPreference() {
           .then(({ error }) => {
             if (error) {
               console.error("Error updating sidebar preference in Supabase:", error);
-              // toast.error("Failed to save sidebar preference.");
+              toast.error("Failed to save sidebar preference.");
             } else {
               // toast.success("Sidebar preference saved to your account!"); // Removed for cleaner logs
             }

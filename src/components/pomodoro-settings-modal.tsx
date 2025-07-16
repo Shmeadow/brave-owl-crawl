@@ -53,7 +53,7 @@ export function PomodoroSettingsModal({ initialTimes, onSave }: PomodoroSettings
     onSave('focus', values.focusMinutes * 60);
     onSave('short-break', values.shortBreakMinutes * 60);
     onSave('long-break', values.longBreakMinutes * 60);
-    // toast.success("Pomodoro settings saved!");
+    toast.success("Pomodoro settings saved!");
   }
 
   return (

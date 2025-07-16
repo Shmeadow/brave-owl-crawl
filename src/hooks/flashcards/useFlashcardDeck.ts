@@ -15,12 +15,12 @@ interface UseFlashcardDeckProps {
 export function useFlashcardDeck({ cards, setCards, isLoggedInMode }: UseFlashcardDeckProps) {
   const handleShuffleCards = useCallback(() => {
     if (cards.length <= 1) {
-      // toast.info("Need at least two cards to shuffle.");
+      toast.info("Need at least two cards to shuffle.");
       return;
     }
     const shuffledCards = [...cards].sort(() => Math.random() - 0.5);
     setCards(shuffledCards);
-    // toast.success("Flashcards shuffled!");
+    toast.success("Flashcards shuffled!");
   }, [cards, setCards]);
 
   const handleReorderCards = useCallback(async (newOrder: CardData[]) => {
@@ -28,7 +28,7 @@ export function useFlashcardDeck({ cards, setCards, isLoggedInMode }: UseFlashca
     if (!isLoggedInMode) {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newOrder));
     }
-    // toast.success("Flashcards reordered locally!");
+    toast.success("Flashcards reordered locally!");
   }, [isLoggedInMode, setCards]);
 
   return {

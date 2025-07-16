@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Session, SupabaseClient } from '@supabase/supabase-js';
 import { createBrowserClient } from './client';
-import { toast } from 'sonner'; // Import toast for notifications
+import { toast } from 'sonner';
 
 export interface UserProfile {
   id: string;
@@ -86,7 +86,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
     // Set a timeout as a fallback to prevent infinite loading
     timeoutRef.current = setTimeout(() => {
       console.warn("Supabase auth loading timed out. Proceeding with app.");
-      // toast.warning("Could not verify session in time. You may need to log in again.");
+      toast.warning("Could not verify session in time. You may need to log in again.");
       if (loading) setLoading(false);
     }, 7000);
 

@@ -45,7 +45,7 @@ export function TimeTracker({ isCurrentRoomWritable }: TimeTrackerProps) {
       return;
     }
     setIsRunning(!isRunning);
-    
+    toast.info(isRunning ? "Time tracking paused." : "Time tracking started!");
   };
 
   const handleReset = () => {
@@ -55,7 +55,7 @@ export function TimeTracker({ isCurrentRoomWritable }: TimeTrackerProps) {
     }
     setIsRunning(false);
     setTime(0);
-    
+    toast.warning("Time tracking reset.");
   };
 
   return (

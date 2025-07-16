@@ -22,7 +22,7 @@ interface LearnModeProps {
 
 export function LearnMode({ flashcards, onGradeCard, goToSummary, flashcardSize, setFlashcardSize }: LearnModeProps) {
   const { categories } = useFlashcardCategories();
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all' | null>('all');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all'>('all');
   const [activeCards, setActiveCards] = useState<CardData[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -49,7 +49,7 @@ export function LearnMode({ flashcards, onGradeCard, goToSummary, flashcardSize,
       setActiveCards(shuffled);
       setCurrentIndex(0);
       setIsFlipped(false);
-      // toast.success("Cards shuffled!");
+      toast.success("Cards shuffled!");
     }
   };
 
@@ -83,7 +83,7 @@ export function LearnMode({ flashcards, onGradeCard, goToSummary, flashcardSize,
         <CardContent className="p-4 space-y-4">
           <div>
             <Label>Category</Label>
-            <Select value={selectedCategoryId === null ? undefined : selectedCategoryId} onValueChange={setSelectedCategoryId}>
+            <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
               <SelectTrigger>
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>

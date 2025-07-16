@@ -59,7 +59,7 @@ export function FlashcardForm({ onSave, editingCard, onCancel, categories, selec
   function onSubmit(values: z.infer<typeof formSchema>) {
     onSave({ id: editingCard?.id, ...values });
     form.reset({ front: '', back: '', category_id: values.category_id });
-    // toast.success(editingCard ? "Flashcard updated successfully!" : "Flashcard added successfully!");
+    toast.success(editingCard ? "Flashcard updated successfully!" : "Flashcard added successfully!");
   }
 
   return (

@@ -38,7 +38,7 @@ export function EffectProvider({ children }: { children: React.ReactNode }) {
 
         if (fetchError && fetchError.code !== 'PGRST116') {
           console.error("Error fetching effect preferences from Supabase:", fetchError);
-          // toast.error("Failed to load effect preferences.");
+          toast.error("Failed to load effect preferences.");
         }
 
         if (supabasePrefs && supabasePrefs.active_effect) {
@@ -55,7 +55,7 @@ export function EffectProvider({ children }: { children: React.ReactNode }) {
 
             if (insertError) {
               console.error("Error migrating local effect to Supabase:", insertError);
-              // toast.error("Error migrating local effect settings.");
+              toast.error("Error migrating local effect settings.");
             } else {
               setActiveEffectState(savedEffect as EffectType);
               localStorage.removeItem(LOCAL_STORAGE_KEY);

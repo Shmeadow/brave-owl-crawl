@@ -49,7 +49,6 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState(0.5); // 0-1 range
   const [isMuted, setIsMuted] = useState(false);
-  const prevVolumeRef = useRef(volume); // To store volume before muting
   const [currentTrack, setCurrentTrack] = useState<SpotifyTrack | null>(null);
   const [spotifyCurrentTime, setSpotifyCurrentTime] = useState(0);
   const [spotifyDuration, setSpotifyDuration] = useState(0);
@@ -145,7 +144,7 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
     // Autoplay Failed
     player.addListener('autoplay_failed', () => {
       console.warn('Autoplay is not allowed by the browser.');
-      // toast.info("Spotify: Autoplay blocked by browser. Please interact with the player.");
+      toast.info("Spotify: Autoplay blocked by browser. Please interact with the player.");
     });
 
     player.connect();
@@ -162,7 +161,7 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
       setSpotifyCurrentTime(0);
       setSpotifyDuration(0);
       clearTimeUpdateInterval();
-      // toast.info("Disconnected from Spotify.");
+      toast.info("Disconnected from Spotify.");
     }
   }, [clearTimeUpdateInterval]);
 

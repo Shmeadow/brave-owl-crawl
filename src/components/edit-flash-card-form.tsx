@@ -41,7 +41,7 @@ export function EditFlashCardForm({ initialData, onSave, onCancel, isCurrentRoom
       return;
     }
     onSave(values);
-    // toast.success("Flashcard updated successfully!");
+    toast.success("Flashcard updated successfully!");
   }
 
   return (
