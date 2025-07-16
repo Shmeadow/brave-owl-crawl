@@ -187,4 +187,9 @@
 
   /* Dark mode highlight styles for better contrast */
   .dark .prose mark[data-color="#fff59d"] { @apply bg-yellow-800 text-yellow-100 rounded-sm px-0.5; }
+
+  /* Hide tldraw branding */
+  .tl-branding {
+    display: none !important;
+  }
 }
