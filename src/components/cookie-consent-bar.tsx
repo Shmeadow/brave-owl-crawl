@@ -48,17 +48,18 @@ export function CookieConsentBar() {
 
   return (
     <Card className={cn(
-      "fixed bottom-0 left-0 right-0 z-[1004] rounded-none border-b-0 border-x-0",
-      "bg-card/90 backdrop-blur-xl shadow-lg",
-      "animate-in slide-in-from-bottom-full duration-500 ease-out"
+      "fixed bottom-4 left-4 z-[1004]", // Position in bottom-left corner
+      "w-72", // Fixed width for "cube-shaped" appearance
+      "bg-card/90 backdrop-blur-xl border border-border shadow-lg rounded-lg", // Card styling
+      "animate-in slide-in-from-left-full duration-500 ease-out" // Animation
     )}>
-      <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="text-sm text-foreground text-center sm:text-left flex-1">
+      <CardContent className="p-4 flex flex-col items-start gap-3">
+        <p className="text-sm text-foreground text-left">
           We use cookies to enhance your experience and analyze site traffic. By clicking "Accept", you agree to our use of cookies.
         </p>
-        <div className="flex gap-2 flex-shrink-0">
-          <Button onClick={handleAccept} size="sm">Accept</Button>
-          <Button onClick={handleDecline} variant="outline" size="sm">Decline</Button>
+        <div className="flex gap-2 w-full">
+          <Button onClick={handleAccept} size="sm" className="flex-1">Accept</Button>
+          <Button onClick={handleDecline} variant="outline" size="sm" className="flex-1">Decline</Button>
         </div>
       </CardContent>
     </Card>
