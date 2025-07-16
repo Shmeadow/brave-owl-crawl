@@ -14,6 +14,7 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
+  DrawerDescription,
   DrawerTrigger,
 } from "@/components/ui/drawer"; // Import Drawer components
 
@@ -31,9 +32,10 @@ const TOTAL_HEADER_AREA_HEIGHT = HEADER_HEIGHT; // Adjusted to only include head
 
 interface SimpleAudioPlayerProps {
   isMobile: boolean;
+  displayMode?: 'normal' | 'maximized' | 'minimized'; // Optional prop for initial display mode
 }
 
-const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
+const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal' }: SimpleAudioPlayerProps) => {
   const { session } = useSupabase();
   const [stagedInputUrl, setStagedInputUrl] = useState('');
   const [committedMediaUrl, setCommittedMediaUrl] = useState('');
@@ -42,9 +44,10 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
   const [displayMode, setDisplayMode] = useState<'normal' | 'maximized' | 'minimized'>(() => {
     if (typeof window !== 'undefined') {
       const savedMode = localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY);
-      return savedMode === 'minimized' ? 'minimized' : 'normal';
+      // Prioritize initialDisplayMode prop if provided, otherwise use saved mode or default to 'normal'
+      return initialDisplayMode || (savedMode === 'minimized' ? 'minimized' : 'normal');
     }
-    return 'normal';
+    return initialDisplayMode;
   });
 
   const youtubeIframeRef = useRef<HTMLIFrameElement>(null);
@@ -204,7 +207,7 @@ const SimpleAudioPlayer = ({ isMobile }: SimpleAudioPlayerProps) => {
   const canSeek = playerIsReady && totalDuration > 0;
 
   // Mobile specific state for expanded/collapsed
-  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
+  const [isMobileExpanded, setIsMobileExpanded] = useState(false); // Default to false for mobile
 
   const toggleMobileExpand = () => {
     setIsMobileExpanded(prev => !prev);

@@ -64,7 +64,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
     }
   }, [isEditingTime]);
 
-  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
+  const [isMobileExpanded, setIsMobileExpanded] = useState(false); // Default to false for mobile
 
   const toggleMobileExpand = () => {
     setIsMobileExpanded(prev => !prev);

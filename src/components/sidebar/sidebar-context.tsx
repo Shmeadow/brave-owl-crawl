@@ -17,7 +17,7 @@ const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [activePanel, setActivePanel] = useState<ActivePanel>('spaces');
   const isMobile = useIsMobile(); // Get mobile status
-  const [isSidebarOpen, setIsSidebarOpen] = useState(isMobile ? true : false); // Default to true on mobile
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default to false on mobile
 
   // Load active panel from local storage on mount
   useEffect(() => {

@@ -65,7 +65,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   // State for Header and related components
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
-  const [isPomodoroMinimized, setIsPomodoroMinimized] = useState(true);
+  const [isPomodoroMinimized, setIsPomodoroMinimized] = useState(true); // Start minimized on mobile
   const [showWelcomeBack, setShowWelcomeBack] = useState(false);
 
   const chatPanelWidth = isChatOpen ? 320 : 56;
@@ -122,10 +122,28 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
 
+      let contentLeft = 0;
+      let contentWidth = windowWidth;
+
+      if (!isMobile) {
+        contentLeft = sidebarCurrentWidth;
+        contentWidth = windowWidth - sidebarCurrentWidth;
+      } else {
+        // On mobile, if sidebar is open, adjust content area
+        if (isSidebarOpen) {
+          contentLeft = SIDEBAR_WIDTH_MOBILE;
+          contentWidth = windowWidth - SIDEBAR_WIDTH_MOBILE;
+        } else {
+          // If sidebar is closed on mobile, content takes full width
+          contentLeft = 0;
+          contentWidth = windowWidth;
+        }
+      }
+
       setMainContentArea({
-        left: sidebarCurrentWidth,
+        left: contentLeft,
         top: TOTAL_HEADER_AREA_HEIGHT,
-        width: windowWidth - sidebarCurrentWidth,
+        width: contentWidth,
         height: windowHeight - TOTAL_HEADER_AREA_HEIGHT,
       });
     };
@@ -133,7 +151,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     calculateArea();
     window.addEventListener('resize', calculateArea);
     return () => window.removeEventListener('resize', calculateArea);
-  }, [sidebarCurrentWidth, isMobile]);
+  }, [sidebarCurrentWidth, isMobile, isSidebarOpen]); // Added isSidebarOpen to dependencies
 
   if (loading) {
     return (
@@ -198,10 +216,10 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             <div
               role="main"
               className="absolute right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
-              style={{ left: `${sidebarCurrentWidth}px`, top: `${TOTAL_HEADER_AREA_HEIGHT}px` }}
+              style={{ left: `${mainContentArea.left}px`, top: `${TOTAL_HEADER_AREA_HEIGHT}px`, width: `${mainContentArea.width}px` }}
             >
               <main className="flex-1 relative overflow-y-auto bg-transparent">
-                <div className="p-4 sm:p-6 lg:p-8 h-full">
+                <div className={cn("h-full", isMobile ? "p-2" : "p-4 sm:p-6 lg:p-8")}> {/* Adjusted padding for mobile */}
                   {children}
                   {isDashboard && (
                     // WidgetContainer now renders ALL widgets, managing their visibility internally
@@ -222,7 +240,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
                   chatPanelWidth={chatPanelWidth}
                   isMobile={isMobile}
                 />
-                <DynamicSimpleAudioPlayer isMobile={isMobile} />
+                <DynamicSimpleAudioPlayer isMobile={isMobile} displayMode="minimized" /> {/* Pass displayMode for initial state */}
               </DynamicMobileControls>
             )}
 

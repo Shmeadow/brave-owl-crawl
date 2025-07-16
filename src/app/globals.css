@@ -93,7 +93,8 @@
   * {
     @apply border-border;
   }
-  body {
+  html, body { /* Apply min-h-dvh to both html and body */
+    min-height: 100dvh;
     @apply text-foreground;
     background-color: transparent; /* Ensure body is transparent */
   }
