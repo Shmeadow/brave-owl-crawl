@@ -25,7 +25,8 @@ import { checkAndClearClientData } from "@/lib/client-version";
 import dynamic from 'next/dynamic';
 import { useRooms } from "@/hooks/use-rooms";
 import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification";
-import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar"; // New import
+import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar";
+import { CookieConsentBar } from "@/components/cookie-consent-bar"; // New import
 
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
@@ -165,6 +166,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
       <>
         {children}
         <Toaster />
+        <CookieConsentBar /> {/* Render CookieConsentBar on these pages too */}
       </>
     );
   }
@@ -269,6 +271,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             />
 
             <Toaster />
+            <CookieConsentBar /> {/* Render CookieConsentBar on all app pages */}
           </div>
         </WidgetProvider>
       </FocusSessionProvider>

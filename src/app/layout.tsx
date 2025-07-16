@@ -114,6 +114,29 @@ export default async function RootLayout({
         </SessionContextProvider>
         <SpeedInsights />
         <Analytics />
+        {/* Google Analytics Script */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-W3N6THX1KY"></script>
+        <script dangerouslySetInnerHTML={{ __html: `
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          // Define a global function to initialize GA
+          window.initializeGoogleAnalytics = function() {
+            gtag('config', 'G-W3N6THX1KY');
+          };
+
+          // Check local storage for existing consent on page load
+          if (typeof window !== 'undefined') {
+            const consent = localStorage.getItem('cookie_consent');
+            if (consent === 'accepted') {
+              window.initializeGoogleAnalytics();
+            } else if (consent === 'declined') {
+              // If declined, ensure gtag is a no-op
+              window.gtag = function() {};
+            }
+          }
+        `}} />
       </body>
     </html>
   );
