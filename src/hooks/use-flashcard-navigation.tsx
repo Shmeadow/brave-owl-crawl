@@ -41,7 +41,7 @@ export function useFlashcardNavigation({ filteredCards, updateCardInteraction }:
       const nextIndex = (currentCardIndex + 1) % filteredCards.length;
       setCurrentCardIndex(nextIndex);
       updateCardInteraction(filteredCards[nextIndex].id); // Update for the *new* current card
-      toast.info("Next card!");
+      // toast.info("Next card!");
     }, 100);
   }, [currentCardIndex, filteredCards, updateCardInteraction]);
 
@@ -52,7 +52,7 @@ export function useFlashcardNavigation({ filteredCards, updateCardInteraction }:
       const prevIndex = currentCardIndex === 0 ? filteredCards.length - 1 : currentCardIndex - 1;
       setCurrentCardIndex(prevIndex);
       updateCardInteraction(filteredCards[prevIndex].id); // Update for the *new* current card
-      toast.info("Previous card!");
+      // toast.info("Previous card!");
     }, 100);
   }, [currentCardIndex, filteredCards, updateCardInteraction]);
 
