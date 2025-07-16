@@ -31,7 +31,7 @@ export function UserNav() {
         toast.error("Error signing out: " + error.message);
         console.error("Error signing out:", error);
       } else {
-        toast.success("Signed out successfully!");
+        // toast.success("Signed out successfully!");
         router.push('/login');
       }
     }

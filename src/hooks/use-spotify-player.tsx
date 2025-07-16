@@ -144,7 +144,7 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
     // Autoplay Failed
     player.addListener('autoplay_failed', () => {
       console.warn('Autoplay is not allowed by the browser.');
-      toast.info("Spotify: Autoplay blocked by browser. Please interact with the player.");
+      // toast.info("Spotify: Autoplay blocked by browser. Please interact with the player.");
     });
 
     player.connect();
@@ -161,7 +161,7 @@ export function useSpotifyPlayer(accessToken: string | null): UseSpotifyPlayerRe
       setSpotifyCurrentTime(0);
       setSpotifyDuration(0);
       clearTimeUpdateInterval();
-      toast.info("Disconnected from Spotify.");
+      // toast.info("Disconnected from Spotify.");
     }
   }, [clearTimeUpdateInterval]);
 

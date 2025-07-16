@@ -75,7 +75,7 @@ export function useAppSettings() {
       console.error(`Error updating ${String(key)}:`, error);
     } else if (data) {
       setSettings(data as AppSettings);
-      toast.success(`Setting "${String(key)}" updated successfully!`);
+      // toast.success(`Setting "${String(key)}" updated successfully!`);
     }
     setLoading(false);
   }, [supabase, isAdmin, settings]);
