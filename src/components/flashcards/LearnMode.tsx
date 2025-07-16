@@ -96,14 +96,7 @@ export function LearnMode({ flashcards, onGradeCard, goToSummary, flashcardSize,
               </SelectContent>
             </Select>
           </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="flashcard-size-learn">Card Size:</Label>
-            <ToggleGroup type="single" value={flashcardSize} onValueChange={(value: FlashcardSize) => setFlashcardSize(value)} className="h-auto">
-              <ToggleGroupItem value="sm" aria-label="Small" className="h-8 px-3 text-sm">S</ToggleGroupItem>
-              <ToggleGroupItem value="md" aria-label="Medium" className="h-8 px-3 text-sm">M</ToggleGroupItem>
-              <ToggleGroupItem value="lg" aria-label="Large" className="h-8 px-3 text-sm">L</ToggleGroupItem>
-            </ToggleGroup>
-          </div>
+          {/* Removed Card Size selector from here */}
           <Button onClick={handleShuffle} variant="secondary" className="w-full">
             <Shuffle className="mr-2 h-4 w-4" /> Shuffle Cards
           </Button>

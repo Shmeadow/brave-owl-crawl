@@ -21,8 +21,7 @@ interface CategorySidebarProps {
   onAddCategory: (name: string) => Promise<Category | null>;
   onDeleteCategory: (id: string, deleteContents: boolean) => void;
   onUpdateCategory: (id: string, name: string) => void;
-  flashcardSize: FlashcardSize; // New prop
-  setFlashcardSize: (size: FlashcardSize) => void; // New prop
+  // Removed flashcardSize and setFlashcardSize props
 }
 
 export function CategorySidebar({
@@ -32,8 +31,7 @@ export function CategorySidebar({
   onAddCategory,
   onDeleteCategory,
   onUpdateCategory,
-  flashcardSize, // Destructure new prop
-  setFlashcardSize, // Destructure new prop
+  // Removed flashcardSize and setFlashcardSize from destructuring
 }: CategorySidebarProps) {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
@@ -76,20 +74,20 @@ export function CategorySidebar({
   return (
     <>
       <Card className="w-full flex flex-col bg-card backdrop-blur-xl border-white/20">
-        <CardHeader className="p-4 pb-2"> {/* Reduced padding */}
-          <CardTitle className="text-lg">Categories</CardTitle> {/* Reduced font size */}
+        <CardHeader className="p-3 pb-1"> {/* Reduced padding */}
+          <CardTitle className="text-base">Categories</CardTitle> {/* Reduced font size */}
         </CardHeader>
         <CardContent className="p-0 flex flex-col">
-          <div className="p-2 border-b"> {/* Reduced padding */}
+          <div className="p-1 border-b"> {/* Reduced padding */}
             <div className="flex gap-1"> {/* Reduced gap */}
               <Input
                 placeholder="New category..."
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
-                className="h-8 text-sm" // Reduced height and font size
+                className="h-7 text-sm" // Reduced height and font size
               />
-              <Button onClick={handleAddCategory} size="icon" className="h-8 w-8"> {/* Reduced size */}
-                <PlusCircle className="h-4 w-4" />
+              <Button onClick={handleAddCategory} size="icon" className="h-7 w-7"> {/* Reduced size */}
+                <PlusCircle className="h-3.5 w-3.5" /> {/* Reduced icon size */}
               </Button>
             </div>
           </div>
@@ -98,7 +96,7 @@ export function CategorySidebar({
               <Button
                 variant="ghost"
                 className={cn(
-                  'w-full justify-start text-left h-8 px-2 text-sm', // Reduced height, padding, font size
+                  'w-full justify-start text-left h-7 px-2 text-sm', // Reduced height, padding, font size
                   selectedCategoryId === 'all' && 'bg-accent text-accent-foreground'
                 )}
                 onClick={() => onSelectCategory('all')}
@@ -110,7 +108,7 @@ export function CategorySidebar({
                 <div
                   key={category.id}
                   className={cn(
-                    'flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-accent h-8 text-sm', // Reduced height, padding, font size
+                    'flex items-center justify-between p-1.5 rounded-md cursor-pointer hover:bg-accent h-7 text-sm', // Reduced height, padding, font size
                     selectedCategoryId === category.id && 'bg-accent text-accent-foreground'
                   )}
                   onClick={() => onSelectCategory(category.id)}
@@ -122,7 +120,7 @@ export function CategorySidebar({
                       onBlur={handleSaveEdit}
                       onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit()}
                       autoFocus
-                      className="h-7 text-sm" // Reduced height and font size
+                      className="h-6 text-sm" // Reduced height and font size
                     />
                   ) : (
                     <span className="flex-1 truncate">{category.name}</span>

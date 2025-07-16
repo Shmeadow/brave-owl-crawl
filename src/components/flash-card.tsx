@@ -29,8 +29,8 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
   );
 
   const innerCardClasses = cn(
-    "relative w-full h-full text-center transition-transform duration-500 ease-in-out"
-    // Removed { "rotate-y-180": isFlipped } from here
+    "relative w-full h-full text-center transition-transform duration-500 ease-in-out transform-gpu", // Added transform-gpu
+    "group-hover:rotate-y-[3deg] group-hover:scale-[1.02] group-hover:shadow-xl group-hover:shadow-primary/50" // Added hover effects
   );
 
   const frontBackBaseClasses = "absolute inset-0 w-full h-full flex flex-col justify-center items-center rounded-lg shadow-lg p-4";
@@ -51,7 +51,7 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
   );
 
   return (
-    <div className={cardClasses} style={{ perspective: '1000px' }}>
+    <div className={cn(cardClasses, "group")} style={{ perspective: '1000px' }}> {/* Added group class here */}
       <div
         className={innerCardClasses}
         onClick={onClick}
@@ -59,7 +59,7 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
       >
         {/* Front of the card (Question - Dark) */}
         <div
-          className={cn(frontBackBaseClasses, "bg-primary text-primary-foreground border border-white/20")}
+          className={cn(frontBackBaseClasses, "bg-gray-900 text-white border border-white/20")} // Explicit dark
           style={{ backfaceVisibility: 'hidden' }}
         >
           <div className="flex flex-col items-center justify-center h-full w-full p-0">
@@ -68,7 +68,7 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
               <span className={statusIndicatorClasses}>{status}</span>
             )}
             {seen_count !== undefined && seen_count > 0 && (
-              <span className="absolute bottom-2 right-2 text-xs text-primary-foreground/70">
+              <span className="absolute bottom-2 right-2 text-xs text-white/70">
                 Views: {seen_count}
               </span>
             )}
@@ -77,7 +77,7 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
 
         {/* Back of the card (Answer - Light) */}
         <div
-          className={cn(frontBackBaseClasses, "bg-card text-card-foreground border border-white/20")}
+          className={cn(frontBackBaseClasses, "bg-white text-gray-900 border border-gray-300/20")} // Explicit white
           style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
         >
           <div className="flex flex-col items-center justify-center h-full w-full p-0">

@@ -102,8 +102,6 @@ export function ManageMode({
           onAddCategory={onAddCategory}
           onDeleteCategory={handleDeleteCategoryWrapper}
           onUpdateCategory={onUpdateCategory}
-          flashcardSize={flashcardSize} // Pass flashcardSize to CategorySidebar
-          setFlashcardSize={setFlashcardSize} // Pass setFlashcardSize to CategorySidebar
         />
         <Card>
           <CardHeader><CardTitle>View Options</CardTitle></CardHeader>
