@@ -41,9 +41,9 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
   );
 
   const textSizeClasses = cn({
-    'text-2xl': size === 'sm',
-    'text-3xl': size === 'md',
-    'text-4xl': size === 'lg',
+    'text-3xl': size === 'sm', // Increased text size
+    'text-4xl': size === 'md',   // Increased text size
+    'text-5xl': size === 'lg',   // Increased text size
   });
 
   const statusIndicatorClasses = cn(
@@ -58,30 +58,30 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
   return (
     <div className={cardClasses}>
       <div className={innerCardClasses} onClick={onClick}> {/* Click handler moved to inner card for flip */}
-        {/* Front of the card */}
-        <div className={cn(frontBackClasses, "bg-card text-card-foreground border border-white/20")}>
+        {/* Front of the card (Question - Dark) */}
+        <div className={cn(frontBackClasses, "bg-primary text-primary-foreground border border-white/20")}>
           <div className="flex flex-col items-center justify-center h-full w-full p-0">
             <p className={cn("font-semibold", textSizeClasses)}>{front}</p>
             {status && (
               <span className={statusIndicatorClasses}>{status}</span>
             )}
             {seen_count !== undefined && seen_count > 0 && (
-              <span className="absolute bottom-2 right-2 text-xs text-muted-foreground">
+              <span className="absolute bottom-2 right-2 text-xs text-primary-foreground/70">
                 Views: {seen_count}
               </span>
             )}
           </div>
         </div>
 
-        {/* Back of the card */}
-        <div className={cn(frontBackClasses, "bg-primary text-primary-foreground rotate-y-180")}>
+        {/* Back of the card (Answer - Light) */}
+        <div className={cn(frontBackClasses, "bg-card text-card-foreground rotate-y-180 border border-white/20")}>
           <div className="flex flex-col items-center justify-center h-full w-full p-0">
             <p className={cn("font-medium", textSizeClasses)}>{back}</p>
             {status && (
               <span className={statusIndicatorClasses}>{status}</span>
             )}
             {seen_count !== undefined && seen_count > 0 && (
-              <span className="absolute bottom-2 right-2 text-xs text-primary-foreground/70">
+              <span className="absolute bottom-2 right-2 text-xs text-muted-foreground">
                 Views: {seen_count}
               </span>
             )}
@@ -94,13 +94,13 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
           <Label htmlFor="flashcard-size" className="sr-only">Flashcard Size</Label>
           <ToggleGroup type="single" value={size} onValueChange={(value: FlashcardSize) => onSetSize(value)} className="h-auto">
             <ToggleGroupItem value="sm" aria-label="Small" className="h-8 px-3 text-sm">
-              Small
+              S
             </ToggleGroupItem>
             <ToggleGroupItem value="md" aria-label="Medium" className="h-8 px-3 text-sm">
-              Medium
+              M
             </ToggleGroupItem>
             <ToggleGroupItem value="lg" aria-label="Large" className="h-8 px-3 text-sm">
-              Large
+              L
             </ToggleGroupItem>
           </ToggleGroup>
         </div>
