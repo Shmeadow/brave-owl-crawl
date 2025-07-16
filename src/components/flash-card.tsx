@@ -33,7 +33,6 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
     { "rotate-y-180": isFlipped }
   );
 
-  // Added 'absolute inset-0' here
   const frontBackBaseClasses = "absolute inset-0 w-full h-full flex flex-col justify-center items-center rounded-lg shadow-lg p-4";
 
   const textSizeClasses = cn({
@@ -61,7 +60,7 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
         {/* Front of the card (Question - Dark) */}
         <div
           className={cn(frontBackBaseClasses, "bg-primary text-primary-foreground border border-white/20")}
-          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(0deg)' }}
+          style={{ backfaceVisibility: 'hidden' }} // Removed transform: 'rotateY(0deg)'
         >
           <div className="flex flex-col items-center justify-center h-full w-full p-0">
             <p className={cn("font-semibold", textSizeClasses)}>{front}</p>
