@@ -12,7 +12,6 @@ const DynamicTimerWidget = dynamic(() => import("@/components/widget-content/tim
 const DynamicTasksWidget = dynamic(() => import("@/components/widget-content/tasks-widget").then(mod => mod.TasksWidget), { ssr: false });
 const DynamicDrawingBoardWidget = dynamic(() => import("@/components/widget-content/drawing-board-widget").then(mod => mod.DrawingBoardWidget), { ssr: false });
 const DynamicJournalWidget = dynamic(() => import("@/components/widget-content/journal-widget").then(mod => mod.JournalWidget), { ssr: false }); // New Journal Widget
-const DynamicMediaPlayerWidget = dynamic(() => import("@/components/widget-content/media-player-widget").then(mod => mod.MediaPlayerWidget), { ssr: false }); // Renamed
 const DynamicStatsProgressWidget = dynamic(() => import("@/components/widget-content/stats-progress-widget").then(mod => mod.StatsProgressWidget), { ssr: false });
 const DynamicFlashCardsWidget = dynamic(() => import("@/components/widget-content/flash-cards-widget").then(mod => mod.FlashCardsWidget), { ssr: false });
 const DynamicGoalFocusWidget = dynamic(() => import("@/components/widget-content/goal-focus-widget").then(mod => mod.GoalFocusWidget), { ssr: false });
@@ -33,7 +32,6 @@ const WIDGET_COMPONENTS = {
   "tasks": { icon: ListTodo, content: DynamicTasksWidget, title: "Tasks" },
   "drawing-board": { icon: Palette, content: DynamicDrawingBoardWidget, title: "Drawing Board" },
   "journal": { icon: BookText, content: DynamicJournalWidget, title: "Journal" }, // New Journal Widget
-  "media": { icon: Image, content: DynamicMediaPlayerWidget, title: "Media Player" }, // Updated to MediaPlayerWidget
   "stats-progress": { icon: BarChart2, content: DynamicStatsProgressWidget, title: "Stats & Progress" }, // Renamed from games
   "flash-cards": { icon: BookOpen, content: DynamicFlashCardsWidget, title: "Flash Cards" },
   "goal-focus": { icon: Goal, content: DynamicGoalFocusWidget, title: "Goal Focus" },

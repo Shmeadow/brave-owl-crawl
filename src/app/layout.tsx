@@ -38,7 +38,6 @@ const WIDGET_CONFIGS = {
   "tasks": { initialPosition: { x: 250, y: 300 }, initialWidth: 450, initialHeight: 550 },
   "drawing-board": { initialPosition: { x: 700, y: 100 }, initialWidth: 800, initialHeight: 700 },
   "journal": { initialPosition: { x: 700, y: 100 }, initialWidth: 800, initialHeight: 700 }, // New Journal widget
-  "media": { initialPosition: { x: 300, y: 400 }, initialWidth: 550, initialHeight: 450 }, // Media Player widget
   "stats-progress": { initialPosition: { x: 850, y: 100 }, initialWidth: 600, initialHeight: 650 }, // Renamed from games
   "flash-cards": { initialPosition: { x: 500, y: 100 }, initialWidth: 800, initialHeight: 650 },
   "goal-focus": { initialPosition: { x: 400, y: 550 }, initialWidth: 500, initialHeight: 550 },

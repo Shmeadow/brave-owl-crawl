@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Music, Link } from 'lucide-react';
+import { Music, Link, Maximize, Minimize } from 'lucide-react';
 import { useYouTubePlayer } from '@/hooks/use-youtube-player';
 import { useHtmlAudioPlayer } from '@/hooks/use-html-audio-player';
 import { useSpotifyPlayer } from '@/hooks/use-spotify-player';
@@ -16,27 +16,32 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-
+import { useDraggable } from "@dnd-kit/core";
 import { PlayerDisplay } from '../audio-player/player-display';
 import { MediaInput } from '../audio-player/media-input';
 import { PlayerControls } from '../audio-player/player-controls';
 import { ProgressBar } from '../audio-player/progress-bar';
 
-interface MediaPlayerWidgetProps {
+interface FloatingMediaPlayerProps {
   isCurrentRoomWritable: boolean;
-  isMobile: boolean; // Passed from Widget component
+  isMobile: boolean;
 }
 
-export function MediaPlayerWidget({ isCurrentRoomWritable, isMobile }: MediaPlayerWidgetProps) {
+const LOCAL_STORAGE_POSITION_KEY = 'floating_media_player_position';
+const LOCAL_STORAGE_SIZE_KEY = 'floating_media_player_size';
+const LOCAL_STORAGE_URL_KEY = 'floating_media_player_url';
+const LOCAL_STORAGE_DISPLAY_MODE_KEY = 'floating_media_player_display_mode';
+
+export function FloatingMediaPlayer({ isCurrentRoomWritable, isMobile }: FloatingMediaPlayerProps) {
   const { session } = useSupabase();
   const [stagedInputUrl, setStagedInputUrl] = useState('');
   const [committedMediaUrl, setCommittedMediaUrl] = useState('');
   const [playerType, setPlayerType] = useState<'audio' | 'youtube' | 'spotify' | null>(null);
   const [isUrlInputOpen, setIsUrlInputOpen] = useState(false);
-  // Internal display mode for player layout (normal vs maximized within the widget)
-  const [internalDisplayMode, setInternalDisplayMode] = useState<'normal' | 'maximized'>('normal');
+  const [displayMode, setDisplayMode] = useState<'normal' | 'maximized'>('normal'); // Internal display mode for player layout
 
   const youtubeIframeRef = useRef<HTMLIFrameElement>(null);
+  const playerRef = useRef<HTMLDivElement>(null); // Ref for the draggable player container
 
   const {
     audioRef,
@@ -83,10 +88,69 @@ export function MediaPlayerWidget({ isCurrentRoomWritable, isMobile }: MediaPlay
     toggleMute: spotifyToggleMute,
     seekTo: spotifySeekTo,
     connectToSpotify,
-    disconnectFromSpotify, // Keep for potential future use, not directly used in UI
-    transferPlayback, // Keep for potential future use, not directly used in UI
     playTrack: spotifyPlayTrack,
   } = useSpotifyPlayer(session?.access_token || null);
+
+  // State for position and size
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [size, setSize] = useState({ width: 350, height: 450 }); // Default size
+
+  // Load saved position and size from local storage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedPos = localStorage.getItem(LOCAL_STORAGE_POSITION_KEY);
+      const savedSize = localStorage.getItem(LOCAL_STORAGE_SIZE_KEY);
+      const savedUrl = localStorage.getItem(LOCAL_STORAGE_URL_KEY);
+      const savedDisplayMode = localStorage.getItem(LOCAL_STORAGE_DISPLAY_MODE_KEY);
+
+      if (savedPos) {
+        setPosition(JSON.parse(savedPos));
+      } else {
+        // Default position if not saved
+        setPosition({ x: window.innerWidth - 350 - 16, y: 100 }); // Right side, below header
+      }
+      if (savedSize) {
+        setSize(JSON.parse(savedSize));
+      }
+      if (savedUrl) {
+        setCommittedMediaUrl(savedUrl);
+        setStagedInputUrl(savedUrl);
+      }
+      if (savedDisplayMode && (savedDisplayMode === 'normal' || savedDisplayMode === 'maximized')) {
+        setDisplayMode(savedDisplayMode);
+      }
+    }
+  }, []);
+
+  // Save position, size, URL, and display mode to local storage on change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LOCAL_STORAGE_POSITION_KEY, JSON.stringify(position));
+      localStorage.setItem(LOCAL_STORAGE_SIZE_KEY, JSON.stringify(size));
+      localStorage.setItem(LOCAL_STORAGE_URL_KEY, committedMediaUrl);
+      localStorage.setItem(LOCAL_STORAGE_DISPLAY_MODE_KEY, displayMode);
+    }
+  }, [position, size, committedMediaUrl, displayMode]);
+
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: 'floating-media-player',
+    data: { initialPosition: position },
+    disabled: isMobile || displayMode === 'maximized', // Disable dragging on mobile or when maximized
+  });
+
+  const currentTransformStyle = transform ? {
+    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+  } : {};
+
+  // Update position state when drag ends
+  useEffect(() => {
+    if (transform) {
+      setPosition({
+        x: position.x + transform.x,
+        y: position.y + transform.y,
+      });
+    }
+  }, [transform]);
 
   useEffect(() => {
     if (committedMediaUrl.includes('youtube.com') || committedMediaUrl.includes('youtu.be')) {
@@ -110,6 +174,7 @@ export function MediaPlayerWidget({ isCurrentRoomWritable, isMobile }: MediaPlay
   };
 
   const togglePlayPause = () => {
+    if (!isCurrentRoomWritable) return;
     if (playerType === 'audio') {
       htmlAudioTogglePlayPause();
     } else if (playerType === 'youtube') {
@@ -120,6 +185,7 @@ export function MediaPlayerWidget({ isCurrentRoomWritable, isMobile }: MediaPlay
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isCurrentRoomWritable) return;
     const newVolume = parseFloat(e.target.value);
     if (playerType === 'audio') {
       htmlAudioSetVolume(newVolume);
@@ -131,6 +197,7 @@ export function MediaPlayerWidget({ isCurrentRoomWritable, isMobile }: MediaPlay
   };
 
   const toggleMute = () => {
+    if (!isCurrentRoomWritable) return;
     if (playerType === 'audio') {
       htmlAudioToggleMute();
     } else if (playerType === 'youtube') {
@@ -141,6 +208,7 @@ export function MediaPlayerWidget({ isCurrentRoomWritable, isMobile }: MediaPlay
   };
 
   const handleProgressBarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isCurrentRoomWritable) return;
     const newTime = parseFloat(e.target.value);
     if (playerType === 'audio') {
       htmlAudioSeekTo(newTime);
@@ -152,6 +220,7 @@ export function MediaPlayerWidget({ isCurrentRoomWritable, isMobile }: MediaPlay
   };
 
   const skipForward = () => {
+    if (!isCurrentRoomWritable) return;
     if (playerType === 'audio') {
       htmlAudioSkipForward();
     } else if (playerType === 'youtube' && youtubePlayerReady) {
@@ -162,6 +231,7 @@ export function MediaPlayerWidget({ isCurrentRoomWritable, isMobile }: MediaPlay
   };
 
   const skipBackward = () => {
+    if (!isCurrentRoomWritable) return;
     if (playerType === 'audio') {
       htmlAudioSkipBackward();
     } else if (playerType === 'youtube' && youtubePlayerReady) {
@@ -191,17 +261,85 @@ export function MediaPlayerWidget({ isCurrentRoomWritable, isMobile }: MediaPlay
       inputUrl={stagedInputUrl}
       setInputUrl={setStagedInputUrl}
       onLoadMedia={loadNewMedia}
-      onClosePopover={() => setIsUrlInputOpen(false)}
     />
   );
 
+  const handleMaximizeToggle = () => {
+    if (displayMode === 'normal') {
+      // Save current position and size before maximizing
+      localStorage.setItem(LOCAL_STORAGE_POSITION_KEY, JSON.stringify(position));
+      localStorage.setItem(LOCAL_STORAGE_SIZE_KEY, JSON.stringify(size));
+      setDisplayMode('maximized');
+    } else {
+      // Restore from saved position and size
+      const savedPos = localStorage.getItem(LOCAL_STORAGE_POSITION_KEY);
+      const savedSize = localStorage.getItem(LOCAL_STORAGE_SIZE_KEY);
+      if (savedPos) setPosition(JSON.parse(savedPos));
+      if (savedSize) setSize(JSON.parse(savedSize));
+      setDisplayMode('normal');
+    }
+  };
+
+  const playerStyle: React.CSSProperties = isMobile
+    ? { width: '100%', height: 'auto', position: 'relative' }
+    : displayMode === 'maximized'
+      ? {
+          position: 'fixed',
+          top: '64px', // Below header
+          left: '60px', // Right of sidebar
+          width: `calc(100vw - 60px)`,
+          height: `calc(100vh - 64px)`,
+          zIndex: 999, // High z-index for maximized
+        }
+      : {
+          position: 'fixed',
+          left: position.x,
+          top: position.y,
+          width: size.width,
+          height: size.height,
+          zIndex: 901, // Below widgets, above chat
+          ...currentTransformStyle,
+        };
+
   return (
-    <div className="h-full w-full flex flex-col">
-      <div className="flex-shrink-0 p-4 pb-2">
-        <h2 className="text-xl font-bold flex items-center gap-2">
-          <Music className="h-6 w-6" /> Media Player
-        </h2>
+    <div
+      ref={setNodeRef}
+      className={cn(
+        "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg flex flex-col overflow-hidden",
+        "transition-all duration-300 ease-in-out",
+        isMobile ? "p-4" : "p-4", // Adjust padding for mobile
+        displayMode === 'maximized' ? "rounded-none" : "", // No rounded corners when maximized
+        !isCurrentRoomWritable && "opacity-70 cursor-not-allowed"
+      )}
+      style={playerStyle}
+    >
+      <div
+        className={cn(
+          "flex items-center justify-between p-2 border-b border-border/50 bg-background/80 backdrop-blur-md",
+          (isMobile || displayMode === 'maximized') ? "cursor-default" : "cursor-grab"
+        )}
+        {...listeners}
+        onDoubleClick={handleMaximizeToggle} // Double click to maximize/restore
+      >
+        <div className="flex items-center flex-grow min-w-0">
+          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary mr-2">
+            <Music className="h-5 w-5" />
+          </div>
+          <h4 className="text-sm font-semibold truncate">Media Player</h4>
+        </div>
+        <div className="flex items-center space-x-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleMaximizeToggle}
+            className="h-7 w-7"
+            title={displayMode === 'maximized' ? "Restore Player" : "Maximize Player"}
+          >
+            {displayMode === 'maximized' ? <Minimize size={16} /> : <Maximize size={16} />}
+          </Button>
+        </div>
       </div>
+
       <div className="flex-1 flex flex-col p-4 pt-0 overflow-hidden">
         <div className="flex-1 relative w-full flex items-center justify-center mb-2">
           <PlayerDisplay
@@ -213,7 +351,6 @@ export function MediaPlayerWidget({ isCurrentRoomWritable, isMobile }: MediaPlay
             onLoadedMetadata={htmlAudioOnLoadedMetadata}
             onTimeUpdate={htmlAudioOnTimeUpdate}
             onEnded={htmlAudioOnEnded}
-            isMaximized={internalDisplayMode === 'maximized'}
             className="w-full h-full"
           />
         </div>
@@ -278,8 +415,6 @@ export function MediaPlayerWidget({ isCurrentRoomWritable, isMobile }: MediaPlay
             handleVolumeChange={handleVolumeChange}
             canPlayPause={canPlayPause}
             canSeek={canSeek}
-            displayMode={internalDisplayMode} // Use internal display mode
-            setDisplayMode={setInternalDisplayMode} // Set internal display mode
           />
         </div>
 

@@ -16,8 +16,7 @@ interface PlayerControlsProps {
   handleVolumeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   canPlayPause: boolean;
   canSeek: boolean;
-  displayMode: 'normal' | 'maximized'; // Removed 'minimized'
-  setDisplayMode: (mode: 'normal' | 'maximized') => void; // Removed 'minimized'
+  // Removed displayMode and setDisplayMode props
 }
 
 export function PlayerControls({
@@ -33,8 +32,7 @@ export function PlayerControls({
   handleVolumeChange,
   canPlayPause,
   canSeek,
-  displayMode,
-  setDisplayMode,
+  // Removed displayMode and setDisplayMode from destructuring
 }: PlayerControlsProps) {
 
   const isVolumeControlDisabled = !playerIsReady || playerType === 'spotify';
@@ -96,28 +94,8 @@ export function PlayerControls({
         />
       </div>
 
-      {/* Player Mode Buttons (now integrated) */}
-      <div className="flex justify-end gap-1 ml-2">
-        {displayMode === 'normal' && (
-          <button
-            onClick={() => setDisplayMode('maximized')}
-            className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-7 w-7 flex items-center justify-center"
-            title="Maximize Player"
-          >
-            <Maximize size={16} />
-          </button>
-        )}
-        {displayMode === 'maximized' && (
-          <button
-            onClick={() => setDisplayMode('normal')}
-            className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-7 w-7 flex items-center justify-center"
-            title="Shrink Player"
-          >
-            <Minimize size={16} />
-          </button>
-        )}
-        {/* Removed the 'minimize' button as it's handled by the widget system */}
-      </div>
+      {/* Player Mode Buttons (now handled by FloatingMediaPlayer directly) */}
+      {/* Removed Maximize/Minimize buttons from here */}
     </div>
   );
 }
