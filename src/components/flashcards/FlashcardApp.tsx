@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useFlashcardSize, FlashcardSize } from '@/hooks/use-flashcard-size'; // Import new hook
+import { GuestWarningBar } from '@/components/guest-warning-bar'; // Import new component
 
 type FlashcardMode = 'manage' | 'learn' | 'test' | 'summary';
 
@@ -195,13 +196,7 @@ export function FlashcardApp() {
     <div className="flex flex-col items-center gap-8 w-full max-w-6xl mx-auto py-4">
       <h1 className="text-3xl font-bold text-foreground text-center">Flashcard Deck</h1>
       
-      {!isLoggedInMode && (
-        <Card className="w-full bg-card backdrop-blur-xl border-white/20">
-          <CardContent className="text-center text-sm text-muted-foreground p-2">
-            You are currently browsing as a guest. Your cards are saved locally. Log in to save them to your account!
-          </CardContent>
-        </Card>
-      )}
+      {/* Removed the old guest mode Card */}
 
       <div className="flex flex-wrap justify-center gap-3 mb-4 w-full">
         <Button
@@ -246,6 +241,9 @@ export function FlashcardApp() {
       )}
 
       {renderContent()}
+
+      {/* New Guest Warning Bar */}
+      {!isLoggedInMode && <GuestWarningBar />}
     </div>
   );
 }
