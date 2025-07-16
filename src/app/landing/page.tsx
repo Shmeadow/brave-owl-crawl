@@ -134,7 +134,7 @@ export default function LandingPage() {
           className="text-4xl md:text-6xl font-extrabold mb-3 text-center drop-shadow-lg text-white leading-tight" // Adjusted font size and margin
           variants={itemVariants}
         >
-          Your Ultimate <span className="text-primary-foreground">Productivity Sanctuary</span>
+          Your Ultimate <span className="text-gold">Productivity Sanctuary</span> with Cozy Hub
         </motion.h1>
         <motion.p
           className="text-lg md:text-xl mb-6 max-w-3xl text-center drop-shadow-md text-white/90" // Adjusted font size and margin
@@ -169,7 +169,7 @@ export default function LandingPage() {
               variants={featureIconVariants}
               custom={index}
             >
-              <feature.icon className={cn("h-6 w-6 mb-1", feature.color)} /> {/* Adjusted icon size and added color */}
+              <feature.icon className={cn("h-8 w-8 mb-1", feature.color)} /> {/* Adjusted icon size and added color */}
               <p className="text-xs font-semibold">{feature.title}</p> {/* Adjusted font size */}
               <p className="text-[0.65rem] text-white/70 mt-0.5 leading-tight">{feature.description}</p> {/* Tiny description */}
             </motion.div>
