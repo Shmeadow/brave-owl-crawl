@@ -96,6 +96,9 @@ export function useGoals() {
         console.error("Error parsing local storage goals:", e);
       }
       setGoals(loadedGoals);
+      if (loadedGoals.length === 0 && !currentRoomId) {
+        toast.info("You are browsing goals as a guest. Your goals will be saved locally.");
+      }
     }
     setLoading(false);
   }, [session, supabase, authLoading, currentRoomId]);

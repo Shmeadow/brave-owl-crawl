@@ -119,18 +119,11 @@ export function Widget({
         />
       )}
 
-      <CardContent className={cn(
-        "flex-grow p-0 overflow-y-auto",
-        (isVisuallyMinimized || isInsideDock) && "hidden" // Hide content instead of unmounting
-      )}>
-        {Content ? (
+      {!isVisuallyMinimized && !isInsideDock && ( // Only render content if not minimized and not inside dock
+        <CardContent className="flex-grow p-0 overflow-y-auto">
           <Content isCurrentRoomWritable={isCurrentRoomWritable} />
-        ) : (
-          <div className="flex items-center justify-center h-full text-muted-foreground">
-            Error: Widget content not found or failed to load for {title}.
-          </div>
-        )}
-      </CardContent>
+        </CardContent>
+      )}
     </Card>
   );
 

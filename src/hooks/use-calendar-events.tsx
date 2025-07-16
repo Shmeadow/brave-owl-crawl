@@ -89,6 +89,9 @@ export function useCalendarEvents() {
         console.error("Error parsing local storage events:", e);
       }
       setEvents(loadedEvents);
+      if (loadedEvents.length === 0 && !currentRoomId) {
+        toast.info("You are browsing calendar events as a guest. Your events will be saved locally.");
+      }
     }
     setLoading(false);
   }, [session, supabase, authLoading, currentRoomId]);

@@ -193,6 +193,14 @@ export function FlashcardApp() {
     <div className="flex flex-col items-center gap-8 w-full max-w-6xl mx-auto py-4">
       <h1 className="text-3xl font-bold text-foreground text-center">Flashcard Deck</h1>
       
+      {!isLoggedInMode && (
+        <Card className="w-full bg-card backdrop-blur-xl border-white/20">
+          <CardContent className="text-center text-sm text-muted-foreground p-2">
+            You are currently browsing as a guest. Your cards are saved locally. Log in to save them to your account!
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex flex-wrap justify-center gap-3 mb-4 w-full">
         <Button
           onClick={() => setCurrentMode('manage')}

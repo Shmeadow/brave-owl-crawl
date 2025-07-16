@@ -190,6 +190,11 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
         <p className="text-sm text-muted-foreground mt-4 text-center">
           Note: Integration with external calendar applications like Google Calendar or Outlook is a complex feature that requires OAuth authentication and API interactions, and is beyond the scope of this current development iteration.
         </p>
+        {!isLoggedInMode && (
+          <p className="text-sm text-muted-foreground mt-4 text-center">
+            You are currently browsing calendar events as a guest. Your events are saved locally in your browser. Log in to save them to your account!
+          </p>
+        )}
       </div>
     </div>
   );

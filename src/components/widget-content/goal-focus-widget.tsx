@@ -63,6 +63,11 @@ export function GoalFocusWidget({ isCurrentRoomWritable }: GoalFocusWidgetProps)
           isCurrentRoomWritable={isCurrentRoomWritable}
         />
       </div>
+      {!isLoggedInMode && (
+        <p className="text-sm text-muted-foreground mt-2 text-center">
+          You are currently browsing as a guest. Your goals are saved locally. Log in to save them to your account!
+        </p>
+      )}
     </div>
   );
 }

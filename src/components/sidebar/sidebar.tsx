@@ -6,10 +6,7 @@ import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
 import { useWidget } from "@/components/widget/widget-provider";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
-import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, Palette, Image, BarChart2, BookOpen, Goal, ChevronLeft, ChevronRight, WandSparkles, BookText, Info } from "lucide-react"; // Changed NotebookPen to Palette, added Info
-import { useSupabase } from "@/integrations/supabase/auth";
-import { Card } from "@/components/ui/card";
-import Link from "next/link";
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, Palette, Image, BarChart2, BookOpen, Goal, ChevronLeft, ChevronRight, WandSparkles, BookText } from "lucide-react"; // Changed NotebookPen to Palette
 
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
 const SIDEBAR_WIDTH_EXPANDED = 60; // px - Set to 60px to match docked width
@@ -26,7 +23,6 @@ export function Sidebar({ isMobile }: SidebarProps) {
   const { activePanel, setActivePanel, isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const { toggleWidget } = useWidget();
   const { isAlwaysOpen, toggleAlwaysOpen, mounted } = useSidebarPreference();
-  const { session } = useSupabase(); // Get session to check for guest status
   const sidebarRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -147,23 +143,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
           />
         ))}
       </div>
-      
-      {!session && (
-        <div className="mt-auto p-2 text-center">
-          <Card className="bg-yellow-900/30 border-yellow-700/50 p-2">
-            <div className="flex items-center gap-2 mb-1">
-              <Info className="h-4 w-4 text-yellow-300 flex-shrink-0" />
-              <p className="font-bold text-xs text-yellow-200">Guest Mode</p>
-            </div>
-            <p className="text-xs text-yellow-300/80 text-left">
-              Your data is saved locally and will not sync.
-              <Link href="/login" className="font-bold text-white hover:underline"> Log in</Link> to save your work.
-            </p>
-          </Card>
-        </div>
-      )}
-
-      <div className="pt-2"> {/* Removed mt-auto to place it right after the guest message */}
+      <div className="mt-auto pt-2"> {/* Reduced pt-4 to pt-2 */}
         {!isMobile && ( // Only show dock/undock button on desktop
           <SidebarItem
             icon={mounted && isAlwaysOpen ? ChevronLeft : ChevronRight}
