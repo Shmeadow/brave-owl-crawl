@@ -104,6 +104,10 @@
     backface-visibility: hidden;
   }
 
+  .transform-style-preserve-3d {
+    transform-style: preserve-3d;
+  }
+
   @keyframes shimmer {
     0% {
       transform: translateX(-100%);

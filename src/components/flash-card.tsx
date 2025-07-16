@@ -41,9 +41,9 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
   );
 
   const textSizeClasses = cn({
-    'text-base': size === 'sm',
-    'text-lg': size === 'md',
-    'text-xl': size === 'lg',
+    'text-xl': size === 'sm', // Increased text size
+    'text-2xl': size === 'md',   // Increased text size
+    'text-3xl': size === 'lg',   // Increased text size
   });
 
   const statusIndicatorClasses = cn(
@@ -56,8 +56,8 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
   );
 
   return (
-    <div className={cardClasses} onClick={onClick}>
-      <div className={innerCardClasses}>
+    <div className={cardClasses}>
+      <div className={innerCardClasses} onClick={onClick}> {/* Click handler moved to inner card for flip */}
         {/* Front of the card */}
         <div className={cn(frontBackClasses, "bg-card text-card-foreground border border-white/20")}>
           <div className="flex flex-col items-center justify-center h-full w-full p-0">
