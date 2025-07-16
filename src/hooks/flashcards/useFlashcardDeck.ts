@@ -15,7 +15,7 @@ interface UseFlashcardDeckProps {
 export function useFlashcardDeck({ cards, setCards, isLoggedInMode }: UseFlashcardDeckProps) {
   const handleShuffleCards = useCallback(() => {
     if (cards.length <= 1) {
-      toast.info("Need at least two cards to shuffle.");
+      // toast.info("Need at least two cards to shuffle.");
       return;
     }
     const shuffledCards = [...cards].sort(() => Math.random() - 0.5);

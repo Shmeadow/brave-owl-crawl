@@ -86,7 +86,7 @@ export function SessionContextProvider({ children }: { children: React.ReactNode
     // Set a timeout as a fallback to prevent infinite loading
     timeoutRef.current = setTimeout(() => {
       console.warn("Supabase auth loading timed out. Proceeding with app.");
-      toast.warning("Could not verify session in time. You may need to log in again.");
+      // toast.warning("Could not verify session in time. You may need to log in again.");
       if (loading) setLoading(false);
     }, 7000);
 
