@@ -38,12 +38,12 @@ export function AddFlashCardForm({ onAddCard, isCurrentRoomWritable }: AddFlashC
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to add flashcards in this room.");
+      // toast.error("You do not have permission to add flashcards in this room.");
       return;
     }
     onAddCard(values);
     form.reset();
-    toast.success("Flashcard added successfully!");
+    // toast.success("Flashcard added successfully!");
   }
 
   return (
