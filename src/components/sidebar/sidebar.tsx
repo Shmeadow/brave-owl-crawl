@@ -6,7 +6,7 @@ import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
 import { useWidget } from "@/components/widget/widget-provider";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
-import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, NotebookPen, Image, BarChart2, BookOpen, Goal, ChevronLeft, ChevronRight, WandSparkles, BookText } from "lucide-react"; // Added BookText for Journal
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, Palette, Image, BarChart2, BookOpen, Goal, ChevronLeft, ChevronRight, WandSparkles, BookText } from "lucide-react"; // Changed NotebookPen to Palette
 
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
 const SIDEBAR_WIDTH_EXPANDED = 60; // px - Set to 60px to match docked width
@@ -94,7 +94,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
     { id: "calendar", label: "Calendar", icon: Calendar },
     { id: "timer", label: "Timer", icon: Timer },
     { id: "tasks", label: "Tasks", icon: ListTodo },
-    { id: "notes", label: "Notes", icon: NotebookPen },
+    { id: "drawing-board", label: "Drawing Board", icon: Palette },
     { id: "journal", label: "Journal", icon: BookText }, // New Journal Item
     { id: "media", label: "Media", icon: Image },
     { id: "flash-cards", label: "Flash Cards", icon: BookOpen },
