@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn, throttle } from "@/lib/utils";
 import { CardData } from "@/hooks/flashcards/types";
 import { FlashcardSize } from "@/hooks/use-flashcard-size"; // Import type
+import { Button } from "@/components/ui/button"; // Import Button
 
 interface FlashCardProps {
   front: string;
@@ -13,10 +14,11 @@ interface FlashCardProps {
   onClick: () => void;
   status: CardData['status'];
   seen_count: number;
-  size?: FlashcardSize; // Add size prop
+  size?: FlashcardSize;
+  onSetSize?: (size: FlashcardSize) => void; // New prop for setting size
 }
 
-export function FlashCard({ front, back, isFlipped, onClick, status, seen_count, size = 'M' }: FlashCardProps) {
+export function FlashCard({ front, back, isFlipped, onClick, status, seen_count, size = 'M', onSetSize }: FlashCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
 
@@ -49,15 +51,15 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
   };
 
   const sizeClasses = {
-    S: 'h-56', // Increased from h-48
-    M: 'h-72', // Increased from h-60
-    L: 'h-80', // Increased from h-72
+    S: 'h-56',
+    M: 'h-72',
+    L: 'h-80',
   };
 
   const contentSizeClasses = {
-    S: 'text-xl', // Increased from text-lg
-    M: 'text-2xl', // Increased from text-xl
-    L: 'text-3xl', // Increased from text-2xl
+    S: 'text-xl',
+    M: 'text-2xl',
+    L: 'text-3xl',
   };
 
   return (
@@ -102,6 +104,34 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
             <span>Status: <span className="font-semibold capitalize">{status}</span></span>
             <span>Seen: {seen_count} times</span>
           </div>
+          {onSetSize && (
+            <div className="absolute top-2 right-2 flex gap-1 z-10">
+              <Button
+                variant={size === 'S' ? 'default' : 'outline'}
+                // size="xs" // Removed invalid size prop
+                className="h-6 w-6 text-xs p-0"
+                onClick={(e) => { e.stopPropagation(); onSetSize('S'); }}
+              >
+                S
+              </Button>
+              <Button
+                variant={size === 'M' ? 'default' : 'outline'}
+                // size="xs" // Removed invalid size prop
+                className="h-6 w-6 text-xs p-0"
+                onClick={(e) => { e.stopPropagation(); onSetSize('M'); }}
+              >
+                M
+              </Button>
+              <Button
+                variant={size === 'L' ? 'default' : 'outline'}
+                // size="xs" // Removed invalid size prop
+                className="h-6 w-6 text-xs p-0"
+                onClick={(e) => { e.stopPropagation(); onSetSize('L'); }}
+              >
+                L
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Back Face */}

@@ -10,12 +10,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
+import { FlashCard } from '@/components/flash-card'; // Import FlashCard
+import { FlashcardSize } from '@/hooks/use-flashcard-size'; // Import FlashcardSize type
 
 interface TestModeProps {
   flashcards: CardData[];
   onAnswer: (cardId: string, isCorrect: boolean, userAnswer: string) => void;
   onQuit: () => void;
   testType: 'text' | 'choices';
+  flashcardSize: FlashcardSize; // New prop
+  setFlashcardSize: (size: FlashcardSize) => void; // New prop
 }
 
 interface SessionResult {
@@ -26,7 +30,7 @@ interface SessionResult {
   isCorrect: boolean;
 }
 
-export function TestMode({ flashcards, onAnswer, onQuit, testType }: TestModeProps) {
+export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize, setFlashcardSize }: TestModeProps) {
   const [testDeck, setTestDeck] = useState<CardData[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState('');

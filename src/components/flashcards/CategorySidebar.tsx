@@ -141,17 +141,7 @@ export function CategorySidebar({
         </CardContent>
       </Card>
 
-      <Card className="w-full bg-card backdrop-blur-xl border-white/20">
-        <CardHeader><CardTitle>Card Display Size</CardTitle></CardHeader>
-        <CardContent>
-          <Label>Flashcard Size</Label>
-          <ToggleGroup type="single" value={flashcardSize} onValueChange={(value) => value && setFlashcardSize(value as FlashcardSize)} className="mt-1 grid grid-cols-3">
-              <ToggleGroupItem value="S">S</ToggleGroupItem>
-              <ToggleGroupItem value="M">M</ToggleGroupItem>
-              <ToggleGroupItem value="L">L</ToggleGroupItem>
-          </ToggleGroup>
-        </CardContent>
-      </Card>
+      {/* Removed Card Display Size section from here */}
 
       <DeleteCategoryDialog
         category={deletingCategory}

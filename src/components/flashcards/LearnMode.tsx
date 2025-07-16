@@ -17,9 +17,10 @@ interface LearnModeProps {
   onGradeCard: (cardId: string, grade: 'Easy' | 'Good' | 'Hard' | 'Again') => void;
   goToSummary: () => void;
   flashcardSize: FlashcardSize; // Add new prop
+  setFlashcardSize: (size: FlashcardSize) => void; // New prop
 }
 
-export function LearnMode({ flashcards, onGradeCard, goToSummary, flashcardSize }: LearnModeProps) {
+export function LearnMode({ flashcards, onGradeCard, goToSummary, flashcardSize, setFlashcardSize }: LearnModeProps) {
   const { categories } = useFlashcardCategories();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all'>('all');
   const [activeCards, setActiveCards] = useState<CardData[]>([]);
@@ -113,7 +114,8 @@ export function LearnMode({ flashcards, onGradeCard, goToSummary, flashcardSize 
               onClick={() => setIsFlipped(p => !p)}
               status={currentCardData.status}
               seen_count={currentCardData.seen_count}
-              size={flashcardSize} // Pass size prop
+              size={flashcardSize}
+              onSetSize={setFlashcardSize} // Pass setFlashcardSize here
             />
             {isFlipped && (
               <div className="w-full max-w-md text-center space-y-2 mt-4">
