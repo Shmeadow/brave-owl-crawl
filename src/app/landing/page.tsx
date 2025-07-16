@@ -131,20 +131,20 @@ export default function LandingPage() {
         "relative z-10 flex flex-col items-center justify-center h-full text-white w-full max-w-5xl mx-auto"
       )}>
         <motion.h1
-          className="text-4xl md:text-6xl font-extrabold mb-3 text-center drop-shadow-lg text-white leading-tight"
+          className="text-4xl md:text-6xl font-extrabold mb-3 text-center drop-shadow-lg text-white leading-tight" // Adjusted font size and margin
           variants={itemVariants}
         >
-          Your Ultimate <span className="text-faded-purple">Productivity Sanctuary</span> with <span className="text-primary">Cozy Hub</span>
+          Your Ultimate <span className="text-gold">Productivity Sanctuary</span> with Cozy Hub
         </motion.h1>
         <motion.p
-          className="text-lg md:text-xl mb-6 max-w-3xl text-center drop-shadow-md text-white/90"
+          className="text-lg md:text-xl mb-6 max-w-3xl text-center drop-shadow-md text-white/90" // Adjusted font size and margin
           variants={itemVariants}
         >
           CozyHub is your all-in-one workspace designed to boost focus, track goals, and foster collaboration.
           Transform your digital environment into a haven of productivity.
         </motion.p>
         <motion.div
-          className="flex flex-col sm:flex-row gap-3 justify-center mb-8"
+          className="flex flex-col sm:flex-row gap-3 justify-center mb-8" // Adjusted gap and margin
           variants={itemVariants}
         >
           <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
@@ -157,7 +157,7 @@ export default function LandingPage() {
 
         {/* All Features Grid */}
         <motion.div
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 w-full max-w-4xl px-4 py-4 bg-black/30 backdrop-blur-md rounded-lg border border-white/20"
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 w-full max-w-4xl px-4 py-4 bg-black/30 backdrop-blur-md rounded-lg border border-white/20" // Adjusted grid, padding
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -169,9 +169,9 @@ export default function LandingPage() {
               variants={featureIconVariants}
               custom={index}
             >
-              <feature.icon className={cn("h-10 w-10 mb-2", feature.color)} /> {/* Increased icon size */}
-              <p className="text-sm font-semibold">{feature.title}</p> {/* Increased title size */}
-              <p className="text-xs text-white/70 mt-0.5 leading-tight">{feature.description}</p> {/* Increased description size */}
+              <feature.icon className={cn("h-8 w-8 mb-1", feature.color)} /> {/* Adjusted icon size and added color */}
+              <p className="text-xs font-semibold">{feature.title}</p> {/* Adjusted font size */}
+              <p className="text-[0.65rem] text-white/70 mt-0.5 leading-tight">{feature.description}</p> {/* Tiny description */}
             </motion.div>
           ))}
         </motion.div>

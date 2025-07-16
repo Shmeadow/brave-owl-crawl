@@ -57,34 +57,32 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   // Server-side Supabase client for fetching app settings
-  // Removed isCozyThemeGloballyEnabled logic as themes are simplified to dark only
-  // const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  // const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  // let isCozyThemeGloballyEnabled = true; // Default to true
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  let isCozyThemeGloballyEnabled = true; // Default to true
 
   // Generate a random background on the server
   const initialBackground = getRandomBackground();
 
-  // Removed server-side app_settings fetching as it's no longer needed for theme control
-  // if (supabaseUrl && supabaseAnonKey) {
-  //   try {
-  //     const supabaseServer = createClient(supabaseUrl, supabaseAnonKey);
-  //     const { data, error } = await supabaseServer
-  //       .from('app_settings')
-  //       .select('is_cozy_theme_enabled')
-  //       .single();
+  if (supabaseUrl && supabaseAnonKey) {
+    try {
+      const supabaseServer = createClient(supabaseUrl, supabaseAnonKey);
+      const { data, error } = await supabaseServer
+        .from('app_settings')
+        .select('is_cozy_theme_enabled')
+        .single();
 
-  //     if (error) {
-  //       console.error("Error fetching server-side app settings:", error.message || error); // Log error message
-  //     } else if (data) {
-  //       isCozyThemeGloballyEnabled = data.is_cozy_theme_enabled;
-  //     }
-  //   } catch (e) {
-  //     console.error("Error initializing server-side Supabase client or fetching settings:", e);
-  //   }
-  // } else {
-  //   console.warn('Supabase environment variables not set for server-side fetching. NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is missing.');
-  // }
+      if (error) {
+        console.error("Error fetching server-side app settings:", error.message || error); // Log error message
+      } else if (data) {
+        isCozyThemeGloballyEnabled = data.is_cozy_theme_enabled;
+      }
+    } catch (e) {
+      console.error("Error initializing server-side Supabase client or fetching settings:", e);
+    }
+  } else {
+    console.warn('Supabase environment variables not set for server-side fetching. NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is missing.');
+  }
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -97,10 +95,10 @@ export default async function RootLayout({
               <BackgroundProvider initialBackground={initialBackground}>
                 <ThemeProvider
                   attribute="class"
-                  defaultTheme="dark" // Default to dark
-                  enableSystem={false} // Disable system theme
+                  defaultTheme="system"
+                  enableSystem
                   disableTransitionOnChange
-                  // isCozyThemeGloballyEnabled={isCozyThemeGloballyEnabled} // Removed
+                  isCozyThemeGloballyEnabled={isCozyThemeGloballyEnabled}
                 >
                   <SidebarProvider>
                     <ClientOnlyWrapper>

@@ -30,8 +30,17 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="z-[1003] bg-popover/80 backdrop-blur-lg">
+        <DropdownMenuItem onClick={() => setTheme("light")}>
+          Light
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("dark")}>
           Dark
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("system")}>
+          System
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("cozy")}>
+          Cozy
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
