@@ -10,7 +10,7 @@ const DynamicSoundsWidget = dynamic(() => import("@/components/widget-content/so
 const DynamicCalendarWidget = dynamic(() => import("@/components/widget-content/calendar-widget").then(mod => mod.CalendarWidget), { ssr: false });
 const DynamicTimerWidget = dynamic(() => import("@/components/widget-content/timer-widget").then(mod => mod.TimerWidget), { ssr: false });
 const DynamicTasksWidget = dynamic(() => import("@/components/widget-content/tasks-widget").then(mod => mod.TasksWidget), { ssr: false });
-const DynamicDrawingBoardWidget = dynamic(() => import("@/components/widget-content/drawing-board-widget").then(mod => mod.DrawingBoardWidget), { ssr: false });
+const DynamicDrawingBoardWidget = dynamic(() => import("@/components/widget-content/drawing-board-widget").then(mod => mod.DrawingBoardWidget), { ssr: false, loading: () => <div className="flex items-center justify-center h-full text-muted-foreground">Loading drawing board...</div> }); // Added loading fallback
 const DynamicJournalWidget = dynamic(() => import("@/components/widget-content/journal-widget").then(mod => mod.JournalWidget), { ssr: false }); // New Journal Widget
 const DynamicMediaWidget = dynamic(() => import("@/components/widget-content/media-widget").then(mod => mod.MediaWidget), { ssr: false });
 const DynamicStatsProgressWidget = dynamic(() => import("@/components/widget-content/stats-progress-widget").then(mod => mod.StatsProgressWidget), { ssr: false });
