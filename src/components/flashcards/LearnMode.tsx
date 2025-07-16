@@ -10,14 +10,16 @@ import { FlashCard } from '@/components/flash-card';
 import { useFlashcardCategories } from '@/hooks/flashcards/useFlashcardCategories';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { FlashcardSize } from '@/hooks/use-flashcard-size'; // Import type
 
 interface LearnModeProps {
   flashcards: CardData[];
   onGradeCard: (cardId: string, grade: 'Easy' | 'Good' | 'Hard' | 'Again') => void;
   goToSummary: () => void;
+  flashcardSize: FlashcardSize; // Add new prop
 }
 
-export function LearnMode({ flashcards, onGradeCard, goToSummary }: LearnModeProps) {
+export function LearnMode({ flashcards, onGradeCard, goToSummary, flashcardSize }: LearnModeProps) {
   const { categories } = useFlashcardCategories();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all'>('all');
   const [activeCards, setActiveCards] = useState<CardData[]>([]);
@@ -111,6 +113,7 @@ export function LearnMode({ flashcards, onGradeCard, goToSummary }: LearnModePro
               onClick={() => setIsFlipped(p => !p)}
               status={currentCardData.status}
               seen_count={currentCardData.seen_count}
+              size={flashcardSize} // Pass size prop
             />
             {isFlipped && (
               <div className="w-full max-w-md text-center space-y-2 mt-4">

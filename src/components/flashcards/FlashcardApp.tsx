@@ -14,6 +14,7 @@ import { useFlashcardCategories } from '@/hooks/flashcards/useFlashcardCategorie
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useFlashcardSize, FlashcardSize } from '@/hooks/use-flashcard-size'; // Import new hook
 
 type FlashcardMode = 'manage' | 'learn' | 'test' | 'summary';
 
@@ -27,6 +28,7 @@ export function FlashcardApp() {
   const [sessionHistory, setSessionHistory] = useState<DetailedResult[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [testType, setTestType] = useState<'text' | 'choices'>('text');
+  const { size: flashcardSize, setSize: setFlashcardSize, loading: sizeLoading } = useFlashcardSize(); // Use new hook
 
   // Load session history from local storage on mount
   useEffect(() => {
@@ -152,7 +154,7 @@ export function FlashcardApp() {
   };
 
   const renderContent = () => {
-    if (loading) {
+    if (loading || sizeLoading) {
       return (
         <div className="flex justify-center items-center h-full text-lg text-muted-foreground">
           <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading flashcards...
@@ -177,7 +179,7 @@ export function FlashcardApp() {
           />
         );
       case 'learn':
-        return <LearnMode flashcards={cards} onGradeCard={handleGradeCardWrapper} goToSummary={goToSummary} />;
+        return <LearnMode flashcards={cards} onGradeCard={handleGradeCardWrapper} goToSummary={goToSummary} flashcardSize={flashcardSize} />;
       case 'test':
         return <TestMode flashcards={cards} onAnswer={(cardId, isCorrect, userAnswer) => augmentedHandleAnswerFeedback(cardId, isCorrect, userAnswer, 'test')} onQuit={() => setCurrentMode('manage')} testType={testType} />;
       case 'summary':
@@ -226,16 +228,30 @@ export function FlashcardApp() {
         </Button>
       </div>
 
-      {currentMode === 'test' && (
+      {(currentMode === 'learn' || currentMode === 'test') && (
         <Card className="w-full max-w-md">
-            <CardContent className="p-4">
+          <CardContent className="p-4 flex flex-col sm:flex-row gap-4">
+            {currentMode === 'test' && (
+              <div className="flex-1">
                 <Label>Test Type</Label>
                 <ToggleGroup type="single" value={testType} onValueChange={(value) => value && setTestType(value as 'text' | 'choices')} disabled={cards.length < 4} className="mt-1 grid grid-cols-2">
                     <ToggleGroupItem value="text">Text Input</ToggleGroupItem>
                     <ToggleGroupItem value="choices">Multiple Choice</ToggleGroupItem>
                 </ToggleGroup>
                 {cards.length < 4 && <p className="text-xs text-muted-foreground mt-1">Multiple choice requires at least 4 cards.</p>}
-            </CardContent>
+              </div>
+            )}
+            {currentMode === 'learn' && (
+              <div className="flex-1">
+                <Label>Card Size</Label>
+                <ToggleGroup type="single" value={flashcardSize} onValueChange={(value) => value && setFlashcardSize(value as FlashcardSize)} className="mt-1 grid grid-cols-3">
+                    <ToggleGroupItem value="S">S</ToggleGroupItem>
+                    <ToggleGroupItem value="M">M</ToggleGroupItem>
+                    <ToggleGroupItem value="L">L</ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+            )}
+          </CardContent>
         </Card>
       )}
 

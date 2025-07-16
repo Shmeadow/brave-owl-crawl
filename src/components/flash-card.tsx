@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn, throttle } from "@/lib/utils";
 import { CardData } from "@/hooks/flashcards/types";
+import { FlashcardSize } from "@/hooks/use-flashcard-size"; // Import type
 
 interface FlashCardProps {
   front: string;
@@ -12,9 +13,10 @@ interface FlashCardProps {
   onClick: () => void;
   status: CardData['status'];
   seen_count: number;
+  size?: FlashcardSize; // Add size prop
 }
 
-export function FlashCard({ front, back, isFlipped, onClick, status, seen_count }: FlashCardProps) {
+export function FlashCard({ front, back, isFlipped, onClick, status, seen_count, size = 'M' }: FlashCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
 
@@ -46,15 +48,28 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count 
     setRotation({ x: 0, y: 0 });
   };
 
+  const sizeClasses = {
+    S: 'h-48',
+    M: 'h-60',
+    L: 'h-72',
+  };
+
+  const contentSizeClasses = {
+    S: 'text-lg',
+    M: 'text-xl',
+    L: 'text-2xl',
+  };
+
   return (
     <Card
       ref={cardRef}
       className={cn(
-        "relative w-full max-w-md h-60 cursor-pointer",
+        "relative w-full max-w-md cursor-pointer",
         "overflow-hidden",
-        "transition-transform duration-100 ease-out",
+        "transition-all duration-100 ease-out",
         "hover:scale-[1.01] hover:shadow-lg",
-        "hover:shadow-[0_0_15px_5px_hsl(var(--gold))] transition-shadow"
+        "hover:shadow-[0_0_15px_5px_hsl(var(--gold))] transition-shadow",
+        sizeClasses[size]
       )}
       onClick={onClick}
       onMouseMove={throttledMouseMove}
@@ -80,7 +95,7 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count 
             "bg-card backdrop-blur-xl border-white/20 text-card-foreground shadow-md",
           )}
         >
-          <CardContent className="flex-grow flex items-center justify-center text-center text-xl font-semibold">
+          <CardContent className={cn("flex-grow flex items-center justify-center text-center font-semibold", contentSizeClasses[size])}>
             {front}
           </CardContent>
           <div className="flex-shrink-0 flex justify-between items-center text-xs text-muted-foreground border-t pt-2">
@@ -97,7 +112,7 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count 
           )}
           style={{ transform: "rotateY(180deg)" }}
         >
-          <CardContent className="flex items-center justify-center h-full text-xl font-semibold">
+          <CardContent className={cn("flex items-center justify-center h-full font-semibold", contentSizeClasses[size])}>
             {back}
           </CardContent>
         </div>
