@@ -62,12 +62,10 @@ export function FlashcardListItem({
         <p className="text-xs text-muted-foreground">
           Created: {new Date(card.created_at).toLocaleDateString()}
         </p>
-        <div className="flex gap-1">
+        <div className="flex flex-col gap-1"> {/* Changed to flex-col for vertical stacking */}
           <Button
             onClick={(e) => { e.stopPropagation(); onOrganize(card); }}
-            size="icon"
-            variant="ghost"
-            className="h-7 w-7 text-muted-foreground hover:text-primary"
+            className="h-auto w-auto p-0 bg-transparent hover:bg-transparent text-muted-foreground hover:text-primary" // Smaller, icon-only
             title="Organize flashcard"
             disabled={selectionMode}
           >
@@ -77,9 +75,7 @@ export function FlashcardListItem({
             <PopoverTrigger asChild>
               <Button
                 onClick={(e) => e.stopPropagation()}
-                size="icon"
-                variant="ghost"
-                className="h-7 w-7 text-muted-foreground hover:text-primary"
+                className="h-auto w-auto p-0 bg-transparent hover:bg-transparent text-muted-foreground hover:text-primary" // Smaller, icon-only
                 title="Edit flashcard"
                 disabled={selectionMode}
               >
@@ -104,9 +100,7 @@ export function FlashcardListItem({
           </Popover>
           <Button
             onClick={(e) => { e.stopPropagation(); onDelete(card.id); }}
-            size="icon"
-            variant="ghost"
-            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+            className="h-auto w-auto p-0 bg-transparent hover:bg-transparent text-muted-foreground hover:text-destructive" // Smaller, icon-only
             title="Delete flashcard"
             disabled={selectionMode}
           >
