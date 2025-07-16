@@ -120,7 +120,7 @@ export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobi
               onClose={closeWidget}
               isCurrentRoomWritable={isCurrentRoomWritable}
               mainContentArea={mainContentArea}
-              isMobile={isMobile}
+              isMobile={isMobile} // Pass isMobile here
               isInsideDock={false} // Explicitly not inside dock
             />
           );

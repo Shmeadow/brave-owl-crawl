@@ -6,6 +6,7 @@ import '@tldraw/tldraw/tldraw.css';
 
 interface DrawingBoardWidgetProps {
   isCurrentRoomWritable: boolean;
+  isMobile: boolean; // Add isMobile prop
 }
 
 // This inner component is necessary to access the editor instance via the useEditor hook,
@@ -23,12 +24,12 @@ function TldrawReadOnlyController({ isReadOnly }: { isReadOnly: boolean }) {
   return null; // This component does not render anything itself.
 }
 
-export function DrawingBoardWidget({ isCurrentRoomWritable }: DrawingBoardWidgetProps) {
+export function DrawingBoardWidget({ isCurrentRoomWritable, isMobile }: DrawingBoardWidgetProps) {
   return (
     <div className="h-full w-full">
       <Tldraw
         persistenceKey="cozyhub_drawing_board"
-        forceMobile={false}
+        forceMobile={isMobile} // Use isMobile prop here
       >
         <TldrawReadOnlyController isReadOnly={!isCurrentRoomWritable} />
       </Tldraw>

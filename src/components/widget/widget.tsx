@@ -36,7 +36,7 @@ interface WidgetProps {
     width: number;
     height: number;
   };
-  isMobile: boolean;
+  isMobile: boolean; // New prop
   isInsideDock?: boolean; // New prop
 }
 
@@ -121,7 +121,7 @@ export function Widget({
 
       {!isVisuallyMinimized && !isInsideDock && ( // Only render content if not minimized and not inside dock
         <CardContent className="flex-grow p-0 overflow-y-auto">
-          <Content isCurrentRoomWritable={isCurrentRoomWritable} />
+          <Content isCurrentRoomWritable={isCurrentRoomWritable} isMobile={isMobile} />
         </CardContent>
       )}
     </Card>
