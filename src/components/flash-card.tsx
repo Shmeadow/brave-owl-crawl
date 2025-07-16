@@ -29,8 +29,8 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
   );
 
   const innerCardClasses = cn(
-    "relative w-full h-full text-center transition-transform duration-500 ease-in-out",
-    { "rotate-y-180": isFlipped }
+    "relative w-full h-full text-center transition-transform duration-500 ease-in-out"
+    // Removed { "rotate-y-180": isFlipped } from here
   );
 
   const frontBackBaseClasses = "absolute inset-0 w-full h-full flex flex-col justify-center items-center rounded-lg shadow-lg p-4";
@@ -55,12 +55,12 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
       <div
         className={innerCardClasses}
         onClick={onClick}
-        style={{ transformStyle: 'preserve-3d' }}
+        style={{ transformStyle: 'preserve-3d', transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }} // Directly apply transform here
       >
         {/* Front of the card (Question - Dark) */}
         <div
           className={cn(frontBackBaseClasses, "bg-primary text-primary-foreground border border-white/20")}
-          style={{ backfaceVisibility: 'hidden' }} // Removed transform: 'rotateY(0deg)'
+          style={{ backfaceVisibility: 'hidden' }}
         >
           <div className="flex flex-col items-center justify-center h-full w-full p-0">
             <p className={cn("font-semibold", textSizeClasses)}>{front}</p>
