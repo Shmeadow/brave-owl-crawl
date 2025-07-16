@@ -176,6 +176,8 @@ export function FlashcardApp() {
             onDeleteCategory={deleteCategory}
             onUpdateCategory={updateCategory}
             onUpdateCardCategory={handleUpdateCardCategory}
+            flashcardSize={flashcardSize} // Pass flashcardSize to ManageMode
+            setFlashcardSize={setFlashcardSize} // Pass setFlashcardSize to ManageMode
           />
         );
       case 'learn':
@@ -228,29 +230,17 @@ export function FlashcardApp() {
         </Button>
       </div>
 
-      {(currentMode === 'learn' || currentMode === 'test') && (
+      {currentMode === 'test' && (
         <Card className="w-full max-w-md">
           <CardContent className="p-4 flex flex-col sm:flex-row gap-4">
-            {currentMode === 'test' && (
-              <div className="flex-1">
-                <Label>Test Type</Label>
-                <ToggleGroup type="single" value={testType} onValueChange={(value) => value && setTestType(value as 'text' | 'choices')} disabled={cards.length < 4} className="mt-1 grid grid-cols-2">
-                    <ToggleGroupItem value="text">Text Input</ToggleGroupItem>
-                    <ToggleGroupItem value="choices">Multiple Choice</ToggleGroupItem>
-                </ToggleGroup>
-                {cards.length < 4 && <p className="text-xs text-muted-foreground mt-1">Multiple choice requires at least 4 cards.</p>}
-              </div>
-            )}
-            {currentMode === 'learn' && (
-              <div className="flex-1">
-                <Label>Card Size</Label>
-                <ToggleGroup type="single" value={flashcardSize} onValueChange={(value) => value && setFlashcardSize(value as FlashcardSize)} className="mt-1 grid grid-cols-3">
-                    <ToggleGroupItem value="S">S</ToggleGroupItem>
-                    <ToggleGroupItem value="M">M</ToggleGroupItem>
-                    <ToggleGroupItem value="L">L</ToggleGroupItem>
-                </ToggleGroup>
-              </div>
-            )}
+            <div className="flex-1">
+              <Label>Test Type</Label>
+              <ToggleGroup type="single" value={testType} onValueChange={(value) => value && setTestType(value as 'text' | 'choices')} disabled={cards.length < 4} className="mt-1 grid grid-cols-2">
+                  <ToggleGroupItem value="text">Text Input</ToggleGroupItem>
+                  <ToggleGroupItem value="choices">Multiple Choice</ToggleGroupItem>
+              </ToggleGroup>
+              {cards.length < 4 && <p className="text-xs text-muted-foreground mt-1">Multiple choice requires at least 4 cards.</p>}
+            </div>
           </CardContent>
         </Card>
       )}

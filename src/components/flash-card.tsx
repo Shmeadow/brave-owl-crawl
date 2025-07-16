@@ -49,15 +49,15 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
   };
 
   const sizeClasses = {
-    S: 'h-48',
-    M: 'h-60',
-    L: 'h-72',
+    S: 'h-56', // Increased from h-48
+    M: 'h-72', // Increased from h-60
+    L: 'h-80', // Increased from h-72
   };
 
   const contentSizeClasses = {
-    S: 'text-lg',
-    M: 'text-xl',
-    L: 'text-2xl',
+    S: 'text-xl', // Increased from text-lg
+    M: 'text-2xl', // Increased from text-xl
+    L: 'text-3xl', // Increased from text-2xl
   };
 
   return (

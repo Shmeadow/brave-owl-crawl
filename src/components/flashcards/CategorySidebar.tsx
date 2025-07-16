@@ -10,6 +10,9 @@ import { Category } from '@/hooks/flashcards/types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { DeleteCategoryDialog } from './DeleteCategoryDialog';
+import { Label } from '@/components/ui/label'; // Import Label
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'; // Import ToggleGroup
+import { FlashcardSize } from '@/hooks/use-flashcard-size'; // Import FlashcardSize type
 
 interface CategorySidebarProps {
   categories: Category[];
@@ -18,6 +21,8 @@ interface CategorySidebarProps {
   onAddCategory: (name: string) => Promise<Category | null>;
   onDeleteCategory: (id: string, deleteContents: boolean) => void;
   onUpdateCategory: (id: string, name: string) => void;
+  flashcardSize: FlashcardSize; // New prop
+  setFlashcardSize: (size: FlashcardSize) => void; // New prop
 }
 
 export function CategorySidebar({
@@ -27,6 +32,8 @@ export function CategorySidebar({
   onAddCategory,
   onDeleteCategory,
   onUpdateCategory,
+  flashcardSize, // Destructure new prop
+  setFlashcardSize, // Destructure new prop
 }: CategorySidebarProps) {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
@@ -133,6 +140,19 @@ export function CategorySidebar({
           </ScrollArea>
         </CardContent>
       </Card>
+
+      <Card className="w-full bg-card backdrop-blur-xl border-white/20">
+        <CardHeader><CardTitle>Card Display Size</CardTitle></CardHeader>
+        <CardContent>
+          <Label>Flashcard Size</Label>
+          <ToggleGroup type="single" value={flashcardSize} onValueChange={(value) => value && setFlashcardSize(value as FlashcardSize)} className="mt-1 grid grid-cols-3">
+              <ToggleGroupItem value="S">S</ToggleGroupItem>
+              <ToggleGroupItem value="M">M</ToggleGroupItem>
+              <ToggleGroupItem value="L">L</ToggleGroupItem>
+          </ToggleGroup>
+        </CardContent>
+      </Card>
+
       <DeleteCategoryDialog
         category={deletingCategory}
         isOpen={!!deletingCategory}

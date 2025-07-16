@@ -54,18 +54,18 @@ export function WidgetHeader({
         <h4 className="text-sm font-semibold truncate">{title}</h4>
       </div>
       <div className="flex items-center space-x-1">
-        {isCurrentRoomWritable && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onMouseDown={(e) => { e.stopPropagation(); onTogglePin(); }}
-            className="h-7 w-7"
-            title={isPinned ? "Unpin Widget" : "Pin Widget"}
-          >
-            {isPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-            <span className="sr-only">{isPinned ? "Unpin Widget" : "Pin Widget"}</span>
-          </Button>
-        )}
+        {/* Pinning button is now disabled */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onMouseDown={(e) => { e.stopPropagation(); onTogglePin(); }}
+          className="h-7 w-7 hidden" // Added 'hidden' class to visually hide
+          title={isPinned ? "Unpin Widget" : "Pin Widget"}
+          disabled={true} // Explicitly disable functionality
+        >
+          {isPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+          <span className="sr-only">{isPinned ? "Unpin Widget" : "Pin Widget"}</span>
+        </Button>
         <Button
           variant="ghost"
           size="icon"

@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { useFlashcards } from '@/hooks/use-flashcards';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FlashcardSize } from '@/hooks/use-flashcard-size'; // Import FlashcardSize type
 
 interface ManageModeProps {
   cards: CardData[];
@@ -27,6 +28,8 @@ interface ManageModeProps {
   onDeleteCategory: (id: string, deleteContents: boolean) => Promise<boolean>;
   onUpdateCategory: (id: string, name: string) => void;
   onUpdateCardCategory: (cardId: string, newCategoryId: string | null) => void;
+  flashcardSize: FlashcardSize; // New prop
+  setFlashcardSize: (size: FlashcardSize) => void; // New prop
 }
 
 export function ManageMode({
@@ -40,6 +43,8 @@ export function ManageMode({
   onDeleteCategory,
   onUpdateCategory,
   onUpdateCardCategory,
+  flashcardSize, // Destructure new prop
+  setFlashcardSize, // Destructure new prop
 }: ManageModeProps) {
   const { fetchCards, handleBulkDelete, handleBulkMove } = useFlashcards();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all' | null>('all');
@@ -97,6 +102,8 @@ export function ManageMode({
           onAddCategory={onAddCategory}
           onDeleteCategory={handleDeleteCategoryWrapper}
           onUpdateCategory={onUpdateCategory}
+          flashcardSize={flashcardSize} // Pass flashcardSize to CategorySidebar
+          setFlashcardSize={setFlashcardSize} // Pass setFlashcardSize to CategorySidebar
         />
         <Card>
           <CardHeader><CardTitle>View Options</CardTitle></CardHeader>
