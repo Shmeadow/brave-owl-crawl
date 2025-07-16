@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Tldraw, useEditor } from '@tldraw/tldraw';
 import '@tldraw/tldraw/tldraw.css';
 
@@ -10,10 +10,11 @@ interface DrawingBoardWidgetProps {
 
 // This inner component is necessary to access the editor instance via the useEditor hook,
 // as it must be a child of the <Tldraw /> component.
+// Moved to top level for stable component identity.
 function TldrawReadOnlyController({ isReadOnly }: { isReadOnly: boolean }) {
   const editor = useEditor();
 
-  React.useEffect(() => {
+  useEffect(() => {
     // We use an effect to update the editor's read-only state whenever the prop changes.
     // The correct property on the instance state is `isReadonly` (lowercase 'o').
     editor.updateInstanceState({ isReadonly: isReadOnly });
