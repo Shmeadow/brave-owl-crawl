@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Session, SupabaseClient } from '@supabase/supabase-js';
 import { createBrowserClient } from './client';
-import { toast } from 'sonner';
+import { toast } from 'sonner'; // Import toast for notifications
 
 export interface UserProfile {
   id: string;
