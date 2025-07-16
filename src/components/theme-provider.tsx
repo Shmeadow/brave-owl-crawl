@@ -6,14 +6,12 @@ import { type ThemeProviderProps } from "next-themes";
 
 // Extend ThemeProviderProps to include our custom prop
 interface CustomThemeProviderProps extends ThemeProviderProps {
-  isCozyThemeGloballyEnabled: boolean;
+  // isCozyThemeGloballyEnabled: boolean; // Removed as themes are simplified
 }
 
-export function ThemeProvider({ children, isCozyThemeGloballyEnabled, ...props }: CustomThemeProviderProps) {
+export function ThemeProvider({ children, ...props }: CustomThemeProviderProps) {
   // Define available themes based on the global setting
-  const availableThemes = isCozyThemeGloballyEnabled
-    ? ["light", "dark", "system", "cozy"]
-    : ["light", "dark", "system"];
+  const availableThemes = ["dark"]; // Only 'dark' theme is available
 
   return <NextThemesProvider {...props} themes={availableThemes}>{children}</NextThemesProvider>;
 }
