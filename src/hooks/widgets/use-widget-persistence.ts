@@ -123,7 +123,10 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
         const statesToSave = activeWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id, currentRoomId));
         if (statesToSave.length > 0) {
           const { error } = await supabase.from('user_widget_states').upsert(statesToSave, { onConflict: 'user_id,widget_id,room_id' });
-          if (error) toast.error("Failed to save widget layout.");
+          if (error) {
+            console.error("Supabase error saving widget layout:", error);
+            toast.error("Failed to save widget layout. Check console for details.");
+          }
         }
       }
     };

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { useSupabase } from "@/integrations/supabase/auth";
+import { useSupabase } from '@/integrations/supabase/auth';
 import { useSidebar } from "@/components/sidebar/sidebar-context";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { Toaster } from "@/components/ui/sonner";
@@ -22,9 +22,10 @@ import { useGoals } from "@/hooks/use-goals";
 import { PinnedWidgetsDock } from "@/components/pinned-widgets-dock";
 import { useWidget } from "@/components/widget/widget-provider";
 import { checkAndClearClientData } from "@/lib/client-version";
-import dynamic from 'next/dynamic'; // Import dynamic
-import { useRooms } from "@/hooks/use-rooms"; // Import useRooms
-import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification"; // New import
+import dynamic from 'next/dynamic';
+import { useRooms } from "@/hooks/use-rooms";
+import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification";
+import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar"; // New import
 
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
@@ -51,8 +52,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const pathname = usePathname();
   const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const { isAlwaysOpen, mounted } = useSidebarPreference();
-  const { currentRoomId, currentRoomName, isCurrentRoomWritable } = useCurrentRoom(); // Get currentRoomName
-  const { rooms, pendingRequests, dismissRequest } = useRooms(); // Get rooms data and pending requests
+  const { currentRoomId, currentRoomName, isCurrentRoomWritable } = useCurrentRoom();
+  const { rooms, pendingRequests, dismissRequest } = useRooms();
   const { activeEffect } = useEffects();
   const isMobile = useIsMobile();
   const { addNotification } = useNotifications();
@@ -70,7 +71,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const chatPanelWidth = isChatOpen ? 320 : 56;
   const isDashboard = pathname === '/dashboard';
   const isLoginPage = pathname === '/login';
-  const isLandingPage = pathname === '/landing'; // New: Check if it's the landing page
+  const isLandingPage = pathname === '/landing';
 
   const handleNewUnreadMessage = () => {
     setUnreadChatCount((prev) => prev + 1);
@@ -85,8 +86,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
 
   // Determine the background to use
   const backgroundToUse = currentRoom?.background_url
-    ? { url: currentRoom.background_url, isVideo: currentRoom.is_video_background || false, isMirrored: false } // Room background
-    : undefined; // Fallback to user preference from BackgroundProvider
+    ? { url: currentRoom.background_url, isVideo: currentRoom.is_video_background || false, isMirrored: false }
+    : undefined;
 
   // Run client version check on initial mount
   useEffect(() => {
@@ -96,9 +97,9 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   useEffect(() => {
     // Show welcome back modal only once per session
     const welcomeBackShown = sessionStorage.getItem('welcomeBackShown');
-    if (!welcomeBackShown && session) { // Only show if logged in
+    if (!welcomeBackShown && session) {
       setShowWelcomeBack(true);
-      sessionStorage.setItem('welcomeBackShown', 'true'); // Corrected typo here
+      sessionStorage.setItem('welcomeBackShown', 'true');
     }
   }, [session]);
 
@@ -122,7 +123,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
       const windowHeight = window.innerHeight;
 
       setMainContentArea({
-        left: sidebarCurrentWidth, // This will be 0 on mobile if sidebar is closed, or SIDEBAR_WIDTH_MOBILE if open
+        left: sidebarCurrentWidth,
         top: TOTAL_HEADER_AREA_HEIGHT,
         width: windowWidth - sidebarCurrentWidth,
         height: windowHeight - TOTAL_HEADER_AREA_HEIGHT,
@@ -174,7 +175,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               onClose={() => setShowWelcomeBack(false)}
               profile={profile}
               firstGoal={firstIncompleteGoal}
-              currentRoomName={currentRoomName} // Pass currentRoomName
+              currentRoomName={currentRoomName}
             />
             <DynamicPlayingSoundsBar isMobile={isMobile} />
             <Sidebar isMobile={isMobile} />
@@ -182,10 +183,13 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             {/* Time and Progress Display - now always visible on main app pages */}
             <DynamicTimeAndProgressDisplay isMobile={isMobile} />
 
+            {/* Guest Mode Warning Bar */}
+            <GuestModeWarningBar />
+
             {/* Room Join Request Notification */}
             {pendingRequests.length > 0 && (
               <RoomJoinRequestNotification
-                request={pendingRequests[0]} // Show only the first pending request
+                request={pendingRequests[0]}
                 onDismiss={dismissRequest}
               />
             )}
