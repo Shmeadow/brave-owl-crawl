@@ -10,8 +10,9 @@ import { BackgroundProvider } from "@/context/background-provider";
 import { BackgroundBlurProvider } from "@/context/background-blur-provider";
 import { EffectProvider } from "@/context/effect-provider";
 import { ClientOnlyWrapper } from '@/components/client-only-wrapper';
-import { SpeedInsights } from "@vercel/speed-insights/next"; // Corrected import for Next.js App Router
-import { getRandomBackground } from '@/lib/backgrounds'; // Import getRandomBackground
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/react";
+import { getRandomBackground } from '@/lib/backgrounds';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -112,6 +113,7 @@ export default async function RootLayout({
           </BackgroundBlurProvider>
         </SessionContextProvider>
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
