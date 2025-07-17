@@ -34,7 +34,7 @@ const WIDGET_CONFIGS = {
   "spaces": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
   "sounds": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
   "calendar": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
-  "timer": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
+  "timer": { initialPosition: { x: 80, y: 70 }, initialWidth: 300, initialHeight: 350 },
   "tasks": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
   "drawing-board": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
   "journal": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
