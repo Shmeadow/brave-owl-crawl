@@ -1,6 +1,11 @@
 {
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext", "deno.ns"],
+    // Core libs: DOM + Iterable + modern JS (no deno.ns)
+    "lib": ["dom", "dom.iterable", "esnext"],
+
+    // Support modern JS features
+    "target": "es2015",
+
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -12,15 +17,29 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+
+    // Next.js plugin
     "plugins": [
       {
         "name": "next"
       }
     ],
+
+    // Absolute imports from /src
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/types/**/*.d.ts"],
+
+  // Make sure global.d.ts is explicitly included
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "src/types/**/*.d.ts",
+    "src/types/global.d.ts"
+  ],
+
   "exclude": ["node_modules"]
 }
