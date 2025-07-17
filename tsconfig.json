@@ -1,45 +1,37 @@
 {
   "compilerOptions": {
-    // Core libs: DOM + Iterable + modern JS (no deno.ns)
+    "target": "ES2020",
     "lib": ["dom", "dom.iterable", "esnext"],
-
-    // Support modern JS features
-    "target": "es2015",
-
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
     "jsx": "preserve",
+    "noEmit": true,
     "incremental": true,
-
-    // Next.js plugin
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
     "plugins": [
       {
         "name": "next"
       }
     ],
-
-    // Absolute imports from /src
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-
-  // Make sure global.d.ts is explicitly included
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
-    "src/types/**/*.d.ts",
-    "src/types/global.d.ts"
+    "**/*.js",
+    "**/*.jsx",
+    ".next/types/**/*.ts"
   ],
-
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "supabase/functions"
+  ]
 }
