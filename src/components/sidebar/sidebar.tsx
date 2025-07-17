@@ -1,18 +1,92 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
 import { useWidget } from "@/components/widget/widget-provider";
-import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, Palette, Image, BarChart2, BookOpen, Goal, WandSparkles, BookText } from "lucide-react";
+import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
+import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, Palette, Image, BarChart2, BookOpen, Goal, ChevronLeft, ChevronRight, WandSparkles, BookText } from "lucide-react"; // Changed NotebookPen to Palette
 
-const SIDEBAR_WIDTH = 60; // px
+const SIDEBAR_WIDTH_DESKTOP = 60; // px
+const SIDEBAR_WIDTH_EXPANDED = 250; // px - Set to 250px for expanded desktop view
+const HOT_ZONE_WIDTH = 20; // px (includes the 4px visible strip)
+const SIDEBAR_WIDTH_MOBILE = 250; // px - Define a width for mobile sidebar
+const UNDOCK_DELAY = 500; // ms
 const HEADER_HEIGHT_REM = 4; // 4rem = 64px
 
-export function Sidebar() {
-  const { activePanel, setActivePanel } = useSidebar();
+interface SidebarProps {
+  isMobile: boolean; // New prop
+}
+
+export function Sidebar({ isMobile }: SidebarProps) {
+  const { activePanel, setActivePanel, isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const { toggleWidget } = useWidget();
+  const { isAlwaysOpen, toggleAlwaysOpen, mounted } = useSidebarPreference();
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Ref to track the current state of isSidebarOpen for mousemove listener
+  const isSidebarOpenRef = useRef(isSidebarOpen);
+  useEffect(() => {
+    isSidebarOpenRef.current = isSidebarOpen;
+  }, [isSidebarOpen]);
+
+  const handleMouseEnter = useCallback(() => {
+    if (isMobile) return; // Disable hot zone for mobile
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    setIsSidebarOpen(true);
+  }, [isMobile, setIsSidebarOpen]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (isMobile) return; // Disable hot zone for mobile
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      setIsSidebarOpen(false);
+    }, UNDOCK_DELAY);
+  }, [isMobile, setIsSidebarOpen]);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (isMobile || isAlwaysOpen) return; // Disable hot zone for mobile or if always open
+
+    if (e.clientX < HOT_ZONE_WIDTH && !isSidebarOpenRef.current) {
+      handleMouseEnter();
+    } 
+    else if (e.clientX >= SIDEBAR_WIDTH_EXPANDED && isSidebarOpenRef.current && !sidebarRef.current?.contains(e.target as Node)) {
+      handleMouseLeave();
+    }
+  }, [isMobile, isAlwaysOpen, handleMouseEnter, handleMouseLeave]);
+
+  useEffect(() => {
+    if (!isMobile) { // Only apply desktop hot zone logic on desktop
+      if (isAlwaysOpen) {
+        setIsSidebarOpen(true); // If docked, ensure it's open
+        document.removeEventListener('mousemove', handleMouseMove); // No hot zone if docked
+      } else {
+        setIsSidebarOpen(false); // If undocked, ensure it's closed initially
+        document.addEventListener('mousemove', handleMouseMove); // Enable hot zone
+      }
+    } else {
+      // On mobile, remove desktop listeners
+      document.removeEventListener('mousemove', handleMouseMove);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      // isSidebarOpen state for mobile is managed by SidebarProvider's initial state and Header's toggle
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [isAlwaysOpen, handleMouseMove, setIsSidebarOpen, isMobile]);
 
   const navItems = [
     { id: "background-effects", label: "Backgrounds", icon: WandSparkles },
@@ -21,7 +95,7 @@ export function Sidebar() {
     { id: "timer", label: "Timer", icon: Timer },
     { id: "tasks", label: "Tasks", icon: ListTodo },
     { id: "drawing-board", label: "Drawing Board", icon: Palette },
-    { id: "journal", label: "Journal", icon: BookText },
+    { id: "journal", label: "Journal", icon: BookText }, // New Journal Item
     { id: "media", label: "Media", icon: Image },
     { id: "flash-cards", label: "Flash Cards", icon: BookOpen },
     { id: "goal-focus", label: "Goal Focus", icon: Goal },
@@ -30,18 +104,34 @@ export function Sidebar() {
   const handleSidebarItemClick = (id: string, label: string) => {
     setActivePanel(id as any);
     toggleWidget(id, label);
+    // On mobile, clicking an item should close the sidebar
+    if (isMobile) {
+      setIsSidebarOpen(false); 
+    }
   };
+
+  // Determine actual sidebar width based on state
+  const sidebarWidth = isMobile
+    ? SIDEBAR_WIDTH_MOBILE
+    : (isAlwaysOpen ? SIDEBAR_WIDTH_DESKTOP : (isSidebarOpen ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_DESKTOP));
 
   return (
     <div
+      ref={sidebarRef}
       className={cn(
-        "fixed top-16 left-0 z-[902] flex flex-col items-center py-4",
-        "bg-card/60 backdrop-blur-xl border border-white/40 rounded-lg shadow-xl",
-        `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]`
+        "fixed top-16 z-[902] flex flex-col items-center py-4", // Increased py-2 to py-4
+        "bg-card/60 backdrop-blur-xl border border-white/40 rounded-lg shadow-xl", // Added new container styles
+        "transition-transform duration-300 ease-in-out",
+        `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]`,
+        isMobile
+          ? `${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}` // Mobile: controlled by isSidebarOpen
+          : `${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}` // Desktop: controlled by isSidebarOpen
       )}
-      style={{ width: `${SIDEBAR_WIDTH}px` }}
+      style={{ width: `${sidebarWidth}px` }} // Apply dynamic width here
+      onMouseEnter={!isMobile && !isAlwaysOpen ? handleMouseEnter : undefined}
+      onMouseLeave={!isMobile && !isAlwaysOpen ? handleMouseLeave : undefined}
     >
-      <div className="flex flex-col gap-2 overflow-y-auto">
+      <div className="flex flex-col gap-2 overflow-y-auto"> {/* Increased gap-1 to gap-2 */}
         {navItems.map((item) => (
           <SidebarItem
             key={item.id}
@@ -49,9 +139,20 @@ export function Sidebar() {
             label={item.label}
             isActive={activePanel === item.id}
             onClick={() => handleSidebarItemClick(item.id, item.label)}
-            isExpanded={false} // Sidebar is never expanded in this version
+            isExpanded={isSidebarOpen} // Pass the expanded state
           />
         ))}
+      </div>
+      <div className="mt-auto pt-4"> {/* Increased pt-2 to pt-4 */}
+        {!isMobile && ( // Only show dock/undock button on desktop
+          <SidebarItem
+            icon={mounted && isAlwaysOpen ? ChevronLeft : ChevronRight}
+            label={mounted && isAlwaysOpen ? "Undock Sidebar" : "Dock Sidebar"}
+            isActive={false}
+            onClick={toggleAlwaysOpen}
+            isExpanded={isSidebarOpen} // Pass the expanded state
+          />
+        )}
       </div>
     </div>
   );
