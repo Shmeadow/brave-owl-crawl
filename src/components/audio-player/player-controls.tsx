@@ -45,30 +45,30 @@ export function PlayerControls({
         <div className="flex items-center space-x-1">
           <button
             onClick={skipBackward}
-            className="p-0 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-7 w-7 flex items-center justify-center"
+            className="p-0 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
             aria-label="Skip backward 10 seconds"
             title="Skip Backward"
             disabled={!canSeek}
           >
-            <Rewind size={16} />
+            <Rewind size={14} />
           </button>
           <button
             onClick={togglePlayPause}
-            className="p-0.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105 h-9 w-9 flex items-center justify-center"
+            className="p-0.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105 h-8 w-8 flex items-center justify-center"
             aria-label={currentIsPlaying ? "Pause" : "Play"}
             title={currentIsPlaying ? "Pause" : "Play"}
             disabled={!canPlayPause}
           >
-            {currentIsPlaying ? <Pause size={20} /> : <Play size={20} />}
+            {currentIsPlaying ? <Pause size={18} /> : <Play size={18} />}
           </button>
           <button
             onClick={skipForward}
-            className="p-0 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-7 w-7 flex items-center justify-center"
+            className="p-0 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
             aria-label="Skip forward 10 seconds"
             title="Skip Forward"
             disabled={!canSeek}
           >
-            <FastForward size={16} />
+            <FastForward size={14} />
           </button>
         </div>
       )}
@@ -77,12 +77,12 @@ export function PlayerControls({
       <div className="flex items-center space-x-1 ml-3">
         <button
           onClick={toggleMute}
-          className="p-0 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300 h-7 w-7 flex items-center justify-center"
+          className="p-0 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300 h-6 w-6 flex items-center justify-center"
           aria-label={currentIsMuted ? "Unmute" : "Mute"}
           title={currentIsMuted ? "Unmute" : "Mute"}
           disabled={isVolumeControlDisabled}
         >
-          {currentIsMuted || currentVolume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
+          {currentIsMuted || currentVolume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
         </button>
         <input
           type="range"
@@ -101,27 +101,27 @@ export function PlayerControls({
         {displayMode === 'normal' && (
           <button
             onClick={() => setDisplayMode('maximized')}
-            className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-7 w-7 flex items-center justify-center"
+            className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
             title="Maximize Player"
           >
-            <Maximize size={16} />
+            <Maximize size={14} />
           </button>
         )}
         {displayMode === 'maximized' && (
           <button
             onClick={() => setDisplayMode('normal')}
-            className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-7 w-7 flex items-center justify-center"
+            className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
             title="Shrink Player"
           >
-            <Minimize size={16} />
+            <Minimize size={14} />
           </button>
         )}
         <button
           onClick={() => setDisplayMode('minimized')}
-          className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-7 w-7 flex items-center justify-center"
+          className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
           title="Minimize Player"
         >
-          <ChevronRight size={16} />
+          <ChevronRight size={14} />
         </button>
       </div>
     </div>

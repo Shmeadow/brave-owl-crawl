@@ -233,7 +233,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
       <div className={cn(
         "transition-all duration-300 ease-in-out",
         "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full", // Applied styling here
-        isMobileExpanded ? "h-auto p-4" : "h-16 p-4 items-center justify-between flex-row"
+        isMobileExpanded ? "h-auto p-2" : "h-14 p-2 items-center justify-between flex-row"
       )}>
         {isMobileExpanded ? (
           <>
@@ -321,6 +321,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
               onClick={toggleMobileExpand}
               className="w-full mt-2"
               variant="secondary"
+              size="sm"
             >
               <ChevronDown className="mr-2 h-4 w-4" /> Collapse Player
             </Button>
@@ -347,7 +348,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
 
             <button
               onClick={toggleMobileExpand}
-              className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 ml-1 flex-shrink-0"
+              className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 ml-1 flex-shrink-0 h-8 w-8"
               title="Expand Player"
             >
               <ChevronUp size={16} />

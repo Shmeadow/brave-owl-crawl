@@ -76,7 +76,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
         className={cn(
           "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg",
           "flex flex-col transition-all duration-300 ease-in-out w-full",
-          isMobileExpanded ? "h-auto p-4" : "h-16 p-4 items-center justify-between flex-row"
+          isMobileExpanded ? "h-auto p-2" : "h-14 p-2 items-center justify-between flex-row"
         )}
       >
         {isMobileExpanded ? (
@@ -96,7 +96,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
                 <span className="sr-only">Collapse Pomodoro</span>
               </Button>
             </CardHeader>
-            <CardContent className="flex flex-col items-center gap-4 w-full p-2">
+            <CardContent className="flex flex-col items-center gap-2 w-full p-1">
               {isFocusSessionActive && activeGoalTitle && mode === 'focus' && (
                 <div className="text-center mb-1">
                   <p className="text-xs text-muted-foreground">Focusing on:</p>

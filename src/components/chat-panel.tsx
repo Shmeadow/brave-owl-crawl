@@ -195,10 +195,10 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
           <Button
             variant="default"
             size="icon"
-            className="relative h-14 w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all duration-300 ease-in-out"
+            className="relative h-12 w-12 rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all duration-300 ease-in-out"
             title="Open Chat"
           >
-            <MessageSquare className="h-7 w-7" />
+            <MessageSquare className="h-6 w-6" />
             <span className="sr-only">Open Chat</span>
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
