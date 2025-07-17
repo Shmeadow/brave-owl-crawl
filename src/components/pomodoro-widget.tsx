@@ -75,7 +75,8 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
       <Card
         className={cn(
           "shadow-lg flex flex-col transition-all duration-300 ease-in-out mx-auto", // Added mx-auto for horizontal centering
-          isMobileExpanded ? "h-auto p-2 rounded-3xl bg-card/60 backdrop-blur-lg border-white/20 w-full max-w-xs" : "h-14 p-2 items-center justify-between flex-row rounded-full bg-card/60 backdrop-blur-lg border-white/20 w-48"
+          "bg-card/60 backdrop-blur-lg border-white/20", // Consistent transparency
+          isMobileExpanded ? "h-auto p-2 rounded-3xl w-full max-w-xs" : "h-40 p-1 items-center justify-between flex-col rounded-full w-10" // Changed to flex-col for minimized
         )}
       >
         {isMobileExpanded ? (
@@ -168,7 +169,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
             </CardContent>
           </>
         ) : (
-          // Minimized mobile view
+          // Minimized mobile view (vertical)
           <>
             <span className="text-sm font-semibold capitalize">{mode.replace('-', ' ')}</span>
             <div
@@ -180,7 +181,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
             >
               {formatTime(timeLeft)}
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-3"> {/* Changed to flex-col for vertical buttons */}
               <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-9 w-9" disabled={!isCurrentRoomWritable}>
                 {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               </Button>
