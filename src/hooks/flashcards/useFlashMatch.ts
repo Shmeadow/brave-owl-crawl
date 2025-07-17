@@ -17,6 +17,7 @@ export interface FlashMatch {
   game_mode: string;
   created_at: string;
   updated_at: string;
+  round_duration_seconds: number;
 }
 
 export interface FlashMatchPlayer {
@@ -40,6 +41,7 @@ export interface FlashMatchRound {
   start_time: string;
   end_time: string | null;
   winner_player_id: string | null;
+  round_end_time: string | null;
 }
 
 export interface FlashMatchPlayerAnswer {
@@ -61,6 +63,7 @@ interface FlashMatchState {
   playerAnswers: FlashMatchPlayerAnswer[];
   loading: boolean;
   error: string | null;
+  roundTimeLeft: number | null;
 }
 
 export function useFlashMatch() {
@@ -75,9 +78,11 @@ export function useFlashMatch() {
     playerAnswers: [],
     loading: true,
     error: null,
+    roundTimeLeft: null,
   });
 
   const channelRef = useRef<any>(null);
+  const roundTimerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const invokeEdgeFunction = useCallback(async (action: string, payload: any) => {
     if (!session?.access_token) {
@@ -262,6 +267,40 @@ export function useFlashMatch() {
     };
   }, [supabase, state.currentMatch?.id, fetchMatchData]);
 
+  // Round Timer Logic
+  useEffect(() => {
+    if (roundTimerIntervalRef.current) {
+      clearInterval(roundTimerIntervalRef.current);
+      roundTimerIntervalRef.current = null;
+    }
+
+    if (state.currentMatch?.status === 'in_progress' && state.currentRound?.round_end_time) {
+      const calculateTimeLeft = () => {
+        const now = new Date().getTime();
+        const endTime = new Date(state.currentRound!.round_end_time).getTime();
+        const timeLeft = Math.max(0, Math.floor((endTime - now) / 1000));
+        setState(prev => ({ ...prev, roundTimeLeft: timeLeft }));
+
+        if (timeLeft === 0) {
+          clearInterval(roundTimerIntervalRef.current!);
+          // The Edge Function will handle round advancement, so no client-side action needed here.
+        }
+      };
+
+      calculateTimeLeft(); // Initial calculation
+      roundTimerIntervalRef.current = setInterval(calculateTimeLeft, 1000);
+    } else {
+      setState(prev => ({ ...prev, roundTimeLeft: null }));
+    }
+
+    return () => {
+      if (roundTimerIntervalRef.current) {
+        clearInterval(roundTimerIntervalRef.current);
+      }
+    };
+  }, [state.currentMatch?.status, state.currentRound?.round_end_time]);
+
+
   const joinMatch = useCallback(async (matchId: string) => {
     if (!session?.user?.id) {
       toast.error("You must be logged in to join a match.");
@@ -307,6 +346,17 @@ export function useFlashMatch() {
     }
   }, [session, invokeEdgeFunction]);
 
+  const passRound = useCallback(async (matchId: string, roundNumber: number) => {
+    if (!session?.user?.id) {
+      toast.error("You must be logged in to pass a round.");
+      return;
+    }
+    const { error } = await invokeEdgeFunction('pass_round', { matchId, roundNumber });
+    if (!error) {
+      toast.info("Round passed.");
+    }
+  }, [session, invokeEdgeFunction]);
+
   const stopMatch = useCallback(async (matchId: string) => {
     if (!session?.user?.id) {
       toast.error("You must be logged in to stop a match.");
@@ -325,6 +375,7 @@ export function useFlashMatch() {
     joinMatch,
     startMatch,
     submitAnswer,
+    passRound,
     stopMatch,
   };
 }

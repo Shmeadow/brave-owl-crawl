@@ -4,8 +4,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Play, Users, Trophy, XCircle, CheckCircle, Clock, MessageSquare } from "lucide-react";
-import { useFlashMatch, FlashMatchPlayer } from "@/hooks/flashcards/useFlashMatch";
+import { Loader2, Play, Users, Trophy, XCircle, CheckCircle, Clock, MessageSquare, SkipForward } from "lucide-react";
+import { useFlashMatch, FlashMatchPlayer, FlashMatchPlayerAnswer } from "@/hooks/flashcards/useFlashMatch";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -29,7 +29,9 @@ export function FlashMatchMode({ isCurrentRoomWritable }: FlashMatchModeProps) {
     joinMatch,
     startMatch,
     submitAnswer,
+    passRound,
     stopMatch,
+    roundTimeLeft,
   } = useFlashMatch();
   const { currentRoomId, currentRoomName } = useCurrentRoom();
   const { profile } = useSupabase();
@@ -38,16 +40,16 @@ export function FlashMatchMode({ isCurrentRoomWritable }: FlashMatchModeProps) {
   const [totalRoundsInput, setTotalRoundsInput] = useState(5);
 
   const isCreator = currentMatch?.creator_id === userId;
-  const isPlayerInMatch = players.some(p => p.user_id === userId);
+  const isPlayerInMatch = players.some((p: FlashMatchPlayer) => p.user_id === userId);
   const isMatchActive = currentMatch?.status === 'in_progress';
   const isMatchLobby = currentMatch?.status === 'lobby';
   const isMatchCompleted = currentMatch?.status === 'completed' || currentMatch?.status === 'cancelled';
 
-  const myPlayer = players.find(p => p.user_id === userId);
-  const myAnswerForCurrentRound = playerAnswers.find(a => a.player_id === userId && a.round_id === currentRound?.id);
+  const myPlayer = players.find((p: FlashMatchPlayer) => p.user_id === userId);
+  const myAnswerForCurrentRound = playerAnswers.find((a: FlashMatchPlayerAnswer) => a.player_id === userId && a.round_id === currentRound?.id);
 
   const sortedPlayers = useMemo(() => {
-    return [...players].sort((a, b) => b.score - a.score);
+    return [...players].sort((a: FlashMatchPlayer, b: FlashMatchPlayer) => b.score - a.score);
   }, [players]);
 
   const getPlayerDisplayName = (player: FlashMatchPlayer) => {
@@ -67,6 +69,13 @@ export function FlashMatchMode({ isCurrentRoomWritable }: FlashMatchModeProps) {
   const handleSubmitAnswer = () => {
     if (currentMatch?.id && currentRound?.round_number) {
       submitAnswer(currentMatch.id, currentRound.round_number, answerInput);
+      setAnswerInput("");
+    }
+  };
+
+  const handlePassRound = () => {
+    if (currentMatch?.id && currentRound?.round_number) {
+      passRound(currentMatch.id, currentRound.round_number);
       setAnswerInput("");
     }
   };
@@ -161,6 +170,11 @@ export function FlashMatchMode({ isCurrentRoomWritable }: FlashMatchModeProps) {
           {isMatchActive && (
             <>
               <p className="text-muted-foreground">Round {currentMatch.current_round_number} of {currentMatch.total_rounds}</p>
+              {roundTimeLeft !== null && (
+                <div className="flex items-center justify-center text-lg font-bold text-primary">
+                  <Clock className="h-5 w-5 mr-2" /> Time Left: {roundTimeLeft}s
+                </div>
+              )}
               {isCreator && (
                 <Button onClick={handleStopMatch} variant="destructive" className="w-full">
                   Stop Match
@@ -192,7 +206,7 @@ export function FlashMatchMode({ isCurrentRoomWritable }: FlashMatchModeProps) {
         <CardContent>
           <ScrollArea className="h-32">
             <ul className="space-y-2">
-              {sortedPlayers.map(player => (
+              {sortedPlayers.map((player: FlashMatchPlayer) => (
                 <li key={player.id} className="flex items-center justify-between text-sm">
                   <span className={cn("font-medium", player.user_id === userId && "text-primary")}>
                     {getPlayerDisplayName(player)} {player.user_id === userId && "(You)"}
@@ -226,6 +240,9 @@ export function FlashMatchMode({ isCurrentRoomWritable }: FlashMatchModeProps) {
                   disabled={!isCurrentRoomWritable || !isPlayerInMatch}
                 />
                 <Button onClick={handleSubmitAnswer} disabled={!isCurrentRoomWritable || !isPlayerInMatch}>Submit</Button>
+                <Button onClick={handlePassRound} variant="outline" disabled={!isCurrentRoomWritable || !isPlayerInMatch}>
+                  <SkipForward className="mr-2 h-4 w-4" /> Pass
+                </Button>
               </div>
             ) : (
               <p className="text-center text-muted-foreground">
@@ -239,7 +256,7 @@ export function FlashMatchMode({ isCurrentRoomWritable }: FlashMatchModeProps) {
               <h3 className="font-semibold text-md">Answers this round:</h3>
               <ScrollArea className="h-32">
                 <ul className="space-y-1">
-                  {playerAnswers.map(answer => (
+                  {playerAnswers.map((answer: FlashMatchPlayerAnswer) => (
                     <li key={answer.id} className="flex items-center gap-2 text-sm">
                       {getAnswerStatusIcon(answer.is_correct)}
                       <span className="font-medium">{getPlayerDisplayName(answer as any)}:</span>
@@ -265,7 +282,7 @@ export function FlashMatchMode({ isCurrentRoomWritable }: FlashMatchModeProps) {
           <CardContent>
             <h3 className="text-lg font-semibold mb-2">Final Scores:</h3>
             <ul className="space-y-2">
-              {sortedPlayers.map(player => (
+              {sortedPlayers.map((player: FlashMatchPlayer) => (
                 <li key={player.id} className="flex items-center justify-between text-base">
                   <span className={cn("font-bold", player.user_id === userId && "text-primary")}>
                     {getPlayerDisplayName(player)}

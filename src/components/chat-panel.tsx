@@ -42,7 +42,7 @@ interface ChatPanelProps {
 
 export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnreadMessages, unreadCount, currentRoomId, currentRoomName, isCurrentRoomWritable, isMobile }: ChatPanelProps) {
   const { supabase, session, profile, loading: authLoading } = useSupabase();
-  const { currentMatch, submitAnswer, startMatch, joinMatch, stopMatch, players } = useFlashMatch(); // Use FlashMatch hook
+  const { currentMatch, submitAnswer, startMatch, joinMatch, stopMatch, players, passRound } = useFlashMatch(); // Use FlashMatch hook
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [showSupportContact, setShowSupportContact] = useState(false);
@@ -181,6 +181,13 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
             submitAnswer(currentMatch.id, currentMatch.current_round_number, answerText);
           } else {
             toast.info("No active FlashMatch round to answer.");
+          }
+          break;
+        case 'pass':
+          if (currentMatch?.id && currentMatch.status === 'in_progress' && currentMatch.current_round_number) {
+            passRound(currentMatch.id, currentMatch.current_round_number);
+          } else {
+            toast.info("No active FlashMatch round to pass.");
           }
           break;
         case 'stop':
