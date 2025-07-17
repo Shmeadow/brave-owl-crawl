@@ -71,7 +71,7 @@ export function MinimizedPlayerControls({
           value={currentVolume}
           onChange={handleVolumeChange}
           className={cn(
-            "w-12 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary",
+            "w-10 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary",
             "transform rotate-90 origin-center", // Rotate for vertical slider
             "my-4" // Add vertical margin
           )}
