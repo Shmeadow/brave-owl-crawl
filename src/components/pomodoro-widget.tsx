@@ -74,9 +74,9 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
     return (
       <Card
         className={cn(
-          "shadow-lg flex flex-col transition-all duration-300 ease-in-out mx-auto", // Added mx-auto for horizontal centering
-          "bg-card/60 backdrop-blur-lg border-white/20", // Consistent transparency
-          isMobileExpanded ? "h-auto p-2 rounded-3xl w-full max-w-xs" : "h-40 p-1 items-center justify-between flex-col rounded-full w-10" // Changed to flex-col for minimized
+          "shadow-lg flex flex-col transition-all duration-300 ease-in-out mx-auto",
+          "bg-card/60 backdrop-blur-lg border-white/20",
+          isMobileExpanded ? "h-auto p-2 rounded-3xl w-40" : "h-40 p-1 items-center justify-between flex-col rounded-full w-10" // Adjusted width for expanded mobile
         )}
       >
         {isMobileExpanded ? (
@@ -140,13 +140,13 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
                   onChange={(e) => setEditableTimeString(e.target.value)}
                   onBlur={handleTimeInputBlur}
                   onKeyDown={handleTimeInputKeyDown}
-                  className="text-3xl font-bold font-mono text-center w-full h-10"
+                  className="text-2xl font-bold font-mono text-center w-full h-8"
                   disabled={!isCurrentRoomWritable}
                 />
               ) : (
                 <div
                   className={cn(
-                    "text-3xl font-bold font-mono transition-colors",
+                    "text-2xl font-bold font-mono transition-colors",
                     isCurrentRoomWritable ? "cursor-pointer hover:text-primary" : "cursor-not-allowed opacity-70"
                   )}
                   onClick={isCurrentRoomWritable ? handleTimeDisplayClick : undefined}
@@ -155,14 +155,14 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
                 </div>
               )}
               <div className="flex gap-2">
-                <Button onClick={handleStartPause} size="icon" className="h-9 w-9 rounded-full" disabled={!isCurrentRoomWritable}>
+                <Button onClick={handleStartPause} size="icon" className="h-8 w-8 rounded-full" disabled={!isCurrentRoomWritable}>
                   {isRunning ? (
                     <Pause className="h-4 w-4" />
                   ) : (
                     <Play className="h-4 w-4" />
                   )}
                 </Button>
-                <Button onClick={handleReset} size="icon" variant="secondary" className="h-9 w-9 rounded-full" disabled={!isCurrentRoomWritable}>
+                <Button onClick={handleReset} size="icon" variant="secondary" className="h-8 w-8 rounded-full" disabled={!isCurrentRoomWritable}>
                   <RotateCcw className="h-4 w-4" />
                 </Button>
               </div>
@@ -181,7 +181,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
             >
               {formatTime(timeLeft)}
             </div>
-            <div className="flex flex-col gap-3"> {/* Changed to flex-col for vertical buttons */}
+            <div className="flex flex-col gap-3">
               <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-9 w-9" disabled={!isCurrentRoomWritable}>
                 {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               </Button>
@@ -332,14 +332,14 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
           <span className="text-xs font-semibold capitalize">{mode.replace('-', ' ')}</span>
           <div
             className={cn(
-              "text-3xl font-bold font-mono my-1",
+              "text-xl font-bold font-mono my-1",
               isCurrentRoomWritable ? "cursor-pointer hover:text-primary" : "cursor-not-allowed opacity-70"
             )}
             onClick={isMinimized ? () => setIsMinimized(false) : undefined}
           >
             {formatTime(timeLeft)}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-3">
             <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-7 w-7" disabled={!isCurrentRoomWritable}>
               {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
             </Button>
