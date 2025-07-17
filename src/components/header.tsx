@@ -36,7 +36,7 @@ interface HeaderProps {
 const ClockTrigger = () => {
   const { timeString, dateString, isLoading } = useClock();
   return (
-    <Button variant="secondary" className="font-mono text-sm px-3 hidden md:flex flex-col h-auto py-1">
+    <Button variant="default" className="font-mono text-sm px-3 hidden md:flex flex-col h-auto py-1">
       {isLoading ? (
         <span>--:--:--</span>
       ) : (
@@ -65,22 +65,22 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
 
   return (
     <header className={cn(
-      "sticky top-0 z-[1002] w-full h-14 flex items-center justify-between p-1 gap-2"
+      "sticky top-0 z-[1002] w-full flex items-center justify-between py-2 px-1 gap-2"
     )}>
-      {/* Left Capsule */}
+      {/* Left Group */}
       <div className={cn(
-        "flex items-center min-w-0 gap-1 px-2 py-1"
+        "flex items-center min-w-0 gap-1"
       )}>
         <Link href="/dashboard" className="flex items-center space-x-1">
           <h1 className="text-lg font-bold text-primary hidden sm:block">Cozy Hub</h1>
-          <Button variant="secondary" size="icon" title="Home" className="h-8 w-8">
+          <Button variant="default" size="icon" title="Home" className="h-8 w-8">
             <Home className="h-4 w-4" />
           </Button>
         </Link>
         <div className="flex items-center gap-1 flex-1 min-w-0 overflow-hidden">
           <h1 className="text-base font-semibold truncate">{currentRoomName}</h1>
           <Button
-            variant="secondary"
+            variant="default"
             size="icon"
             title="Spaces"
             className="flex-shrink-0 h-8 w-8"
@@ -91,7 +91,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
           {session && (
             <Popover open={isRoomSettingsOpen} onOpenChange={setIsRoomSettingsOpen}>
               <PopoverTrigger asChild>
-                <Button variant="secondary" size="icon" title="Room Options" className="flex-shrink-0 h-8 w-8">
+                <Button variant="default" size="icon" title="Room Options" className="flex-shrink-0 h-8 w-8">
                   <Settings className="h-4 w-4" />
                 </Button>
               </PopoverTrigger>
@@ -107,17 +107,17 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         </div>
       </div>
 
-      {/* Right Capsule */}
+      {/* Right Group */}
       <div className={cn(
-        "flex items-center gap-1 px-2 py-1",
+        "flex items-center gap-1",
         "justify-end"
       )}>
         <UserNameCapsule />
         <BugReportButton />
         {session && <NotificationsDropdown />}
-        <BackgroundBlurSlider className="hidden md:flex bg-secondary/50 rounded-full" />
+        <BackgroundBlurSlider className="hidden md:flex bg-primary/50 rounded-full" />
         <Button
-          variant="secondary"
+          variant="default"
           size="icon"
           title="Statistics"
           className="h-8 w-8"
