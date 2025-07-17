@@ -66,40 +66,40 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
 
   return (
     <header className={cn(
-      "sticky top-0 z-[1002] w-full h-12 flex items-center justify-between p-2 gap-2"
+      "sticky top-0 z-[1002] w-full h-12 flex items-center justify-between p-1 sm:p-2 gap-1 sm:gap-2" // Reduced padding and gap
     )}>
       {/* Left Capsule */}
       <div className={cn(
-        "flex items-center min-w-0 gap-1 px-2 py-1",
+        "flex items-center min-w-0 gap-1 px-1.5 py-0.5", // Reduced padding and gap
         "bg-card/50 backdrop-blur-xl border border-white/20 rounded-full"
       )}>
         {isMobile && (
-          <Button variant="ghost" size="icon" onClick={onToggleSidebar} title="Open Menu" className="h-7 w-7">
-            <Menu className="h-4 w-4" />
+          <Button variant="ghost" size="icon" onClick={onToggleSidebar} title="Open Menu" className="h-6 w-6"> {/* Reduced size */}
+            <Menu className="h-3.5 w-3.5" /> {/* Reduced icon size */}
           </Button>
         )}
-        <Link href="/dashboard" className="flex items-center space-x-1">
-          <h1 className="text-lg font-bold text-primary hidden sm:block">Cozy Hub</h1>
-          <Button variant="ghost" size="icon" title="Home" className="h-7 w-7">
-            <Home className="h-4 w-4" />
+        <Link href="/dashboard" className="flex items-center space-x-0.5"> {/* Reduced space-x */}
+          <h1 className="text-base font-bold text-primary hidden sm:block">Cozy Hub</h1> {/* Reduced font size */}
+          <Button variant="ghost" size="icon" title="Home" className="h-6 w-6"> {/* Reduced size */}
+            <Home className="h-3.5 w-3.5" /> {/* Reduced icon size */}
           </Button>
         </Link>
-        <div className="flex items-center gap-1 flex-1 min-w-0 overflow-hidden">
-          <h1 className="text-base font-semibold truncate">{currentRoomName}</h1>
+        <div className="flex items-center gap-0.5 flex-1 min-w-0 overflow-hidden"> {/* Reduced gap */}
+          <h1 className="text-sm font-semibold truncate">{currentRoomName}</h1> {/* Reduced font size */}
           <Button
             variant="ghost"
             size="icon"
             title="Spaces"
-            className="flex-shrink-0 h-7 w-7"
+            className="flex-shrink-0 h-6 w-6" // Reduced size
             onClick={() => toggleWidget('spaces', 'Spaces')}
           >
-            <LayoutGrid className="h-4 w-4" />
+            <LayoutGrid className="h-3.5 w-3.5" /> {/* Reduced icon size */}
           </Button>
           {session && (
             <Popover open={isRoomSettingsOpen} onOpenChange={setIsRoomSettingsOpen}>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" title="Room Options" className="flex-shrink-0 h-7 w-7">
-                  <Settings className="h-4 w-4" />
+                <Button variant="ghost" size="icon" title="Room Options" className="flex-shrink-0 h-6 w-6"> {/* Reduced size */}
+                  <Settings className="h-3.5 w-3.5" /> {/* Reduced icon size */}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
@@ -116,7 +116,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
 
       {/* Right Capsule */}
       <div className={cn(
-        "flex items-center gap-1 px-2 py-1",
+        "flex items-center gap-1 px-1.5 py-0.5", // Reduced padding and gap
         "bg-card/50 backdrop-blur-xl border border-white/20 rounded-full"
       )}>
         <UserNameCapsule />
