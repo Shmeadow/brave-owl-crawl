@@ -98,7 +98,7 @@ export function TaskItem({ task, onToggleComplete, onUpdateTask, onDelete, isCur
     <>
       <div
         className={cn(
-          "group flex items-start justify-between p-4 border rounded-md bg-card backdrop-blur-xl text-card-foreground shadow-sm",
+          "group flex flex-col sm:flex-row sm:items-start justify-between p-4 border rounded-md bg-card backdrop-blur-xl text-card-foreground shadow-sm",
           task.completed ? "opacity-60" : ""
         )}
       >
@@ -130,7 +130,7 @@ export function TaskItem({ task, onToggleComplete, onUpdateTask, onDelete, isCur
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 ml-2">
+        <div className="flex items-center gap-2 ml-auto mt-2 sm:mt-0 sm:ml-2">
           <Button
             variant="ghost"
             size="icon"

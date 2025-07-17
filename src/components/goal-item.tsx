@@ -104,11 +104,11 @@ export function GoalItem({ goal, onToggleComplete, onUpdateGoal, onDelete, isCur
     <Collapsible>
       <div
         className={cn(
-          "group flex items-center justify-between p-4 border-b transition-colors hover:bg-muted/50",
+          "group flex flex-col sm:flex-row sm:items-center justify-between p-4 border-b transition-colors hover:bg-muted/50",
           goal.completed ? "opacity-60" : ""
         )}
       >
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 flex-1 min-w-0">
           <Checkbox
             id={`goal-${goal.id}`}
             checked={goal.completed}
@@ -126,7 +126,7 @@ export function GoalItem({ goal, onToggleComplete, onUpdateGoal, onDelete, isCur
             {goal.title}
           </label>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mt-2 sm:mt-0 sm:ml-auto">
           <Button
             variant="ghost"
             size="icon"

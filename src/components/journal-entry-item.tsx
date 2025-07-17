@@ -88,9 +88,9 @@ export function JournalEntryItem({
       "hover:shadow-md hover:border-primary/50"
     )}>
       <Collapsible open={isContentOpen} onOpenChange={setIsContentOpen}>
-        <CardHeader className="flex flex-row items-center justify-between p-4">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 gap-2">
           {isEditingTitle ? (
-            <div className="flex items-center gap-2 flex-1 mr-2">
+            <div className="flex items-center gap-2 flex-1 mr-2 w-full">
               <Input
                 value={editedTitlePrefix}
                 onChange={(e) => setEditedTitlePrefix(e.target.value)}
@@ -111,7 +111,7 @@ export function JournalEntryItem({
               {entry.title || 'Untitled Entry'}
             </CardTitle>
           )}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end sm:self-center">
             <Button
               variant="ghost"
               size="icon"

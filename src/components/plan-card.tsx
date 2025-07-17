@@ -55,8 +55,8 @@ export function PlanCard({ plan, billingCycle, onUpgrade, isDiscountAvailable }:
           </div>
         )}
         <CardHeader className="pb-3"> {/* Reduced pb-4 to pb-3 */}
-          <CardTitle className="text-xl font-bold">{plan.name}</CardTitle> {/* Reduced text-2xl to text-xl */}
-          <p className="text-sm text-muted-foreground">{plan.tagline}</p> {/* Reduced font size */}
+          <CardTitle className="text-lg sm:text-xl font-bold">{plan.name}</CardTitle> {/* Responsive font size */}
+          <p className="text-xs sm:text-sm text-muted-foreground">{plan.tagline}</p> {/* Responsive font size */}
         </CardHeader>
         <CardContent className="flex flex-col flex-grow">
           <div className="mb-4 min-h-[80px]"> {/* Reduced mb-6 to mb-4, min-h from 100px to 80px */}
@@ -68,7 +68,7 @@ export function PlanCard({ plan, billingCycle, onUpgrade, isDiscountAvailable }:
                 </span>
               </div>
             )}
-            <p className="text-4xl font-extrabold">${discountedPrice.toFixed(2)}</p> {/* Reduced text-5xl to text-4xl */}
+            <p className="text-3xl sm:text-4xl font-extrabold">${discountedPrice.toFixed(2)}</p> {/* Responsive font size */}
             <p className="text-xs text-muted-foreground">{getBillingText()}</p> {/* Reduced font size */}
             {hasDiscount && <p className="text-xs text-primary mt-1">First time purchase only</p>}
           </div>
