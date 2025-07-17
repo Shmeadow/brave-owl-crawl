@@ -27,13 +27,16 @@ export function NotificationsDropdown({}: NotificationsDropdownProps) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" title="Notifications" className="relative">
-          <Bell className="h-6 w-6" />
-          <span className="sr-only">Notifications</span>
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-              {unreadCount}
-            </span>
-          )}
+          {/* Wrap children in a single span to satisfy React.Children.only */}
+          <span className="flex items-center justify-center">
+            <Bell className="h-6 w-6" />
+            <span className="sr-only">Notifications</span>
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                {unreadCount}
+              </span>
+            )}
+          </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-72 z-[1003] bg-popover/80 backdrop-blur-lg" align="end" forceMount>

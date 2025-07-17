@@ -29,9 +29,12 @@ export function SidebarItem({ icon: Icon, label, isActive, onClick, isExpanded }
             )}
             onClick={onClick}
           >
-            <Icon className="h-4 w-4 flex-shrink-0" />
-            {isExpanded && <span className="ml-3 text-sm font-medium truncate">{label}</span>}
-            <span className={cn(!isExpanded && "sr-only")}>{label}</span>
+            {/* Wrap children in a single span to satisfy React.Children.only */}
+            <span className="flex items-center justify-center">
+              <Icon className="h-4 w-4 flex-shrink-0" />
+              {isExpanded && <span className="ml-3 text-sm font-medium truncate">{label}</span>}
+              <span className={cn(!isExpanded && "sr-only")}>{label}</span>
+            </span>
           </Button>
         </TooltipTrigger>
         {!isExpanded && (
