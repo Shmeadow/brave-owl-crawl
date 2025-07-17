@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { CardData, Category } from '@/hooks/flashcards/types';
 import { FlashcardListItem } from './FlashcardListItem';
+import { cn } from '@/lib/utils';
 
 interface FlashcardListProps {
   flashcards: CardData[];
@@ -42,8 +43,12 @@ export function FlashcardList({
         ) : (
           <ScrollArea className="flex-1 h-full">
             <ul
-              className="p-2 sm:p-4 grid gap-2 sm:gap-4"
-              style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+              className={cn(
+                "p-2 sm:p-4 grid gap-2 sm:gap-4",
+                columns === 1 && "grid-cols-1",
+                columns === 2 && "grid-cols-1 sm:grid-cols-2",
+                columns === 3 && "grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+              )}
             >
               {flashcards.map((card) => (
                 <FlashcardListItem

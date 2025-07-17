@@ -205,7 +205,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
         "fixed bottom-20 left-1/2 -translate-x-1/2",
         "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg",
         "flex transition-all duration-300 ease-in-out z-[901]",
-        "w-48",
+        "w-48 sm:w-56",
         isMinimized
           ? "flex-col items-center px-2 py-1 h-auto cursor-pointer"
           : "flex-col items-center p-3 gap-3 h-auto"

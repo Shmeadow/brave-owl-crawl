@@ -84,10 +84,10 @@ export function CategorySidebar({
                 placeholder="New category..."
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
-                className="h-8 text-sm sm:h-9 sm:text-base"
+                className="h-9 text-sm"
               />
-              <Button onClick={handleAddCategory} size="icon" className="h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0">
-                <PlusCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+              <Button onClick={handleAddCategory} size="icon" className="h-9 w-9 flex-shrink-0">
+                <PlusCircle className="h-5 w-5" />
               </Button>
             </div>
           </div>
@@ -96,7 +96,7 @@ export function CategorySidebar({
               <Button
                 variant="ghost"
                 className={cn(
-                  'w-full justify-start text-left h-9 px-2 sm:px-4 text-sm sm:text-base',
+                  'w-full justify-start text-left h-9 px-2 sm:px-4 text-sm',
                   selectedCategoryId === 'all' && 'bg-accent text-accent-foreground'
                 )}
                 onClick={() => onSelectCategory('all')}
@@ -107,7 +107,7 @@ export function CategorySidebar({
                 <div
                   key={category.id}
                   className={cn(
-                    'flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-accent h-9 text-sm sm:text-base',
+                    'flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-accent h-9 text-sm',
                     selectedCategoryId === category.id && 'bg-accent text-accent-foreground'
                   )}
                   onClick={() => onSelectCategory(category.id)}
@@ -119,17 +119,17 @@ export function CategorySidebar({
                       onBlur={handleSaveEdit}
                       onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit()}
                       autoFocus
-                      className="h-8 text-sm sm:h-9 sm:text-base"
+                      className="h-8 text-sm"
                     />
                   ) : (
                     <span className="flex-1 truncate">{category.name}</span>
                   )}
-                  <div className="flex gap-1 sm:gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" onClick={(e) => { e.stopPropagation(); handleStartEdit(category); }}>
-                      <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); handleStartEdit(category); }}>
+                      <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 text-destructive" onClick={(e) => { e.stopPropagation(); setDeletingCategory(category); }}>
-                      <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => { e.stopPropagation(); setDeletingCategory(category); }}>
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>

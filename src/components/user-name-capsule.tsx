@@ -48,7 +48,7 @@ export function UserNameCapsule() {
 
   return (
     <div className={cn(
-      "bg-muted/50 backdrop-blur-sm rounded-full px-3 py-1 text-sm font-medium text-foreground",
+      "bg-muted/50 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 text-sm font-medium text-foreground",
       "flex items-center justify-center transition-all duration-300 ease-in-out gap-2"
     )}>
       <span>{displayName}</span>
