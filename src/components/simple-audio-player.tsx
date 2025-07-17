@@ -44,12 +44,10 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   const [isUrlInputOpen, setIsUrlInputOpen] = useState(false); // State for popover/drawer
   const [displayMode, setDisplayMode] = useState<'normal' | 'maximized' | 'minimized'>(() => {
     if (typeof window !== 'undefined') {
-      const savedMode = localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY);
-      // For mobile, always default to minimized if not explicitly set by prop
       if (isMobile) {
-        return initialDisplayMode === 'normal' || initialDisplayMode === 'maximized' ? initialDisplayMode : 'minimized';
+        return 'minimized'; // Always start minimized on mobile
       }
-      // For desktop, use saved mode or initial prop
+      const savedMode = localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY);
       return initialDisplayMode || (savedMode === 'minimized' ? 'minimized' : 'normal');
     }
     return initialDisplayMode;
@@ -234,7 +232,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
       <div className={cn(
         "fixed z-[900] transition-all duration-300 ease-in-out",
         displayMode === 'minimized' ?
-          `top-[${mobileMinimizedPlayerTop}px] right-[${EDGE_OFFSET}px] w-10 h-[100px] rounded-full` : // Minimized mobile: slim capsule
+          `top-[${mobileMinimizedPlayerTop}px] right-[${EDGE_OFFSET}px] w-12 h-[105px] rounded-full` : // Minimized mobile: slim capsule
           "bottom-1 right-1 w-full max-w-[200px] h-auto p-1 rounded-xl flex-col", // Normal/Maximized mobile
         className // Apply external positioning classes
       )}>
