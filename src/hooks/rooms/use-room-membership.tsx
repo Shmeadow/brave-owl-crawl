@@ -72,108 +72,32 @@ export function useRoomMembership({ rooms, setRooms, fetchRooms }: UseRoomMember
       return;
     }
 
-    if (room.creator_id === session.user.id) {
-      toast.info("You are the creator of this room.");
-      // Ensure current room is set if it's their own room
+    try {
+      const response = await invokeEdgeFunction<{ message: string; roomName: string; status: 'already_joined' | 'joined' | 'pending_request' | 'request_sent' }>(
+        'join-room',
+        {
+          method: 'POST',
+          body: { roomId: resolvedRoomId, passwordAttempt },
+          accessToken: session.access_token,
+        }
+      );
+
+      if (response.status === 'already_joined') {
+        toast.info(response.message);
+      } else if (response.status === 'joined') {
+        toast.success(`You successfully joined "${response.roomName}"!`);
+        addNotification(`You joined the room: "${response.roomName}".`);
+      } else if (response.status === 'pending_request') {
+        toast.info(response.message);
+      } else if (response.status === 'request_sent') {
+        toast.info(response.message);
+        addNotification(`New join request for "${response.roomName}" from ${session.user.email}.`, room.creator_id);
+      }
       window.dispatchEvent(new CustomEvent('roomJoined', { detail: { roomId: resolvedRoomId, roomName: room.name } }));
-      return;
-    }
-
-    if (room.is_member) {
-      toast.info("You are already a member of this room.");
-      // Ensure current room is set if they are already a member
-      window.dispatchEvent(new CustomEvent('roomJoined', { detail: { roomId: resolvedRoomId, roomName: room.name } }));
-      return;
-    }
-
-    // If public, join directly
-    if (room.type === 'public') {
-      const { error: memberInsertError } = await supabase
-        .from('room_members')
-        .insert({ room_id: resolvedRoomId, user_id: session.user.id });
-
-      if (memberInsertError) {
-        toast.error("Error joining room: " + memberInsertError.message);
-        return;
-      }
-      toast.success(`You successfully joined "${room.name}"!`);
-      window.dispatchEvent(new CustomEvent('roomJoined', { detail: { roomId: resolvedRoomId, roomName: room.name } }));
-      await fetchRooms();
-      addNotification(`You joined the room: "${room.name}".`);
-      return;
-    }
-
-    // If private, check password if it exists
-    if (room.type === 'private' && room.password_hash) {
-      if (!passwordAttempt) {
-        toast.error("This private room requires a password.");
-        return;
-      }
-      const { data: passwordMatch, error: rpcError } = await supabase.rpc('check_password', {
-        _password_attempt: passwordAttempt,
-        _password_hash: room.password_hash,
-      });
-
-      if (rpcError) {
-        console.error("Error checking password:", rpcError);
-        toast.error("An error occurred while verifying password.");
-        return;
-      }
-
-      if (!passwordMatch) {
-        toast.error("Incorrect password.");
-        return;
-      }
-      
-      const { error: memberInsertError } = await supabase
-        .from('room_members')
-        .insert({ room_id: resolvedRoomId, user_id: session.user.id });
-
-      if (memberInsertError) {
-        toast.error("Error joining room: " + memberInsertError.message);
-        return;
-      }
-      toast.success(`You successfully joined "${room.name}"!`);
-      window.dispatchEvent(new CustomEvent('roomJoined', { detail: { roomId: resolvedRoomId, roomName: room.name } }));
-      await fetchRooms();
-      addNotification(`You joined the room: "${room.name}".`);
-      return;
-    }
-
-    // If private and no password, it's invite-only, so send a join request
-    if (room.type === 'private' && !room.password_hash) {
-      const { data: existingRequest, error: checkError } = await supabase
-        .from('room_join_requests')
-        .select('id')
-        .eq('room_id', resolvedRoomId)
-        .eq('requester_id', session.user.id)
-        .in('status', ['pending', 'accepted']);
-
-      if (checkError) {
-        console.error("Error checking existing join request:", checkError);
-        toast.error("Failed to check for existing join request.");
-        return;
-      }
-
-      if (existingRequest && existingRequest.length > 0) {
-        toast.info("You already have a pending join request for this room.");
-        return;
-      }
-
-      const { error: requestError } = await supabase
-        .from('room_join_requests')
-        .insert({ room_id: resolvedRoomId, requester_id: session.user.id, status: 'pending' });
-
-      if (requestError) {
-        console.error("Error creating join request:", requestError);
-        toast.error("Failed to send join request: " + requestError.message);
-        return;
-      }
-
-      toast.info(`This is a private room. A join request has been sent to the room owner.`);
-      addNotification(`New join request for "${room.name}" from ${session.user.email}.`, room.creator_id);
-      await fetchRooms();
-      return;
+      await fetchRooms(); // Re-fetch rooms to update membership status in UI
+    } catch (error: any) {
+      toast.error(`Failed to join room: ${error.message}`);
+      console.error("Join room error:", error);
     }
   }, [session, supabase, rooms, fetchRooms, addNotification]);
 
