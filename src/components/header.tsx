@@ -10,7 +10,8 @@ import { useCurrentRoom } from "@/hooks/use-current-room";
 import { BackgroundBlurSlider } from "@/components/background-blur-slider";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SpacesWidget } from "@/components/widget-content/spaces-widget";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea }
+ from "@/components/ui/scroll-area";
 import { useRooms, RoomData } from "@/hooks/use-rooms";
 import Link from "next/link";
 import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
@@ -109,9 +110,6 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
         "flex items-center gap-1",
         "justify-end"
       )}>
-        <UserNameCapsule />
-        <BugReportButton />
-        {session && <NotificationsDropdown />}
         {/* Render BackgroundBlurSlider only on desktop */}
         {!isMobile && <BackgroundBlurSlider className="hidden md:flex bg-background/50 rounded-full" />}
         <Button
@@ -125,6 +123,9 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
         </Button>
         {/* Directly render ClockDisplay instead of DropdownMenu */}
         <ClockDisplay />
+        <BugReportButton />
+        <UserNameCapsule />
+        {session && <NotificationsDropdown />}
         {/* Chat button (now always visible) */}
         <Button
           variant="ghost"
