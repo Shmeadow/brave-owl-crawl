@@ -3,7 +3,7 @@ import { BackgroundEffectsMenu } from "@/components/background-effects-menu";
 
 export function BackgroundEffectsWidget() {
   return (
-    <div className="p-0"> {/* Changed p-4 to p-0 */}
+    <div className="p-4"> {/* Changed p-0 back to p-4 */}
       <BackgroundEffectsMenu />
     </div>
   );
