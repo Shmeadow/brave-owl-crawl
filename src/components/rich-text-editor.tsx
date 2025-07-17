@@ -104,9 +104,9 @@ export function RichTextEditor({
         <Separator orientation="vertical" className="h-6 mx-1" />
         {/* Font Size */}
         <Select
-          value={editor.getAttributes('textStyle').fontSize || ''}
+          value={editor.getAttributes('textStyle').fontSize || 'default-size'} // Default to 'default-size'
           onValueChange={(value) => {
-            if (value === '') {
+            if (value === 'default-size') { // Check for 'default-size'
               editor.chain().focus().unsetFontSize().run();
             } else {
               editor.chain().focus().setFontSize(value).run();
@@ -118,7 +118,7 @@ export function RichTextEditor({
             <SelectValue placeholder="Size" />
           </SelectTrigger>
           <SelectContent className="z-[1200]">
-            <SelectItem value="">Default</SelectItem>
+            <SelectItem value="default-size">Default</SelectItem> {/* Changed value to 'default-size' */}
             <SelectItem value="12px">Small</SelectItem>
             <SelectItem value="16px">Normal</SelectItem>
             <SelectItem value="20px">Large</SelectItem>
