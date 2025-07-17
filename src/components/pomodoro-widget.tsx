@@ -76,7 +76,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
         className={cn(
           "shadow-lg flex flex-col transition-all duration-300 ease-in-out mx-auto", // Added mx-auto for horizontal centering
           "bg-card/60 backdrop-blur-lg border-white/20", // Consistent transparency
-          isMobileExpanded ? "h-auto p-1 rounded-xl w-full max-w-[200px]" : "h-20 p-1 items-center justify-between flex-col rounded-full w-20" // Adjusted height to h-20 and width to w-20 for minimized
+          isMobileExpanded ? "h-auto p-1 rounded-xl w-full max-w-[200px]" : "h-24 p-1 items-center justify-between flex-col rounded-full w-24" // Adjusted height to h-24 and width to w-24 for minimized
         )}
       >
         {isMobileExpanded ? (
@@ -174,7 +174,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
             <span className="text-base font-semibold capitalize mt-1">{mode.replace('-', ' ')}</span> {/* Bigger text, moved down */}
             <div
               className={cn(
-                "text-xl font-bold font-mono",
+                "text-lg font-bold font-mono", // Changed to text-lg
                 isCurrentRoomWritable ? "cursor-pointer hover:text-primary" : "cursor-not-allowed opacity-70"
               )}
               onClick={toggleMobileExpand}
@@ -332,7 +332,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
           <span className="text-base font-semibold capitalize mt-1">{mode.replace('-', ' ')}</span>
           <div
             className={cn(
-              "text-xl font-bold font-mono my-1",
+              "text-lg font-bold font-mono my-1",
               isCurrentRoomWritable ? "cursor-pointer hover:text-primary" : "cursor-not-allowed opacity-70"
             )}
             onClick={isMinimized ? () => setIsMinimized(false) : undefined}
