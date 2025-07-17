@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, PlusCircle, Play, Users, BookOpen, Clock, Crown, MessageSquare } from "lucide-react";
+import { Loader2, PlusCircle, Play, Users, BookOpen, Clock, Crown, MessageSquare, CheckCircle, XCircle, Trophy } from "lucide-react";
 import { useFlashAttackGame } from "@/hooks/flash-attack/useFlashAttackGame";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FlashMatchPlayer } from "@/hooks/flash-attack/types"; // Import FlashMatchPlayer type
+import { FlashMatchPlayer, FlashMatchPlayerAnswer } from "@/hooks/flash-attack/types"; // Import FlashMatchPlayer type
 import { Category } from "@/hooks/flashcards/types"; // Import Category type
 
 export function FlashAttackMode() {
@@ -23,10 +23,14 @@ export function FlashAttackMode() {
     currentMatch,
     playersInCurrentMatch,
     currentRound,
+    currentRoundAnswers,
     loading,
+    roundCountdown,
     createMatch,
     joinMatch,
     startMatch,
+    nextRound,
+    submitAnswer,
     categories,
     userId,
   } = useFlashAttackGame();
@@ -37,9 +41,18 @@ export function FlashAttackMode() {
   const [newMatchDuration, setNewMatchDuration] = useState(30);
   const [newMatchCategory, setNewMatchCategory] = useState<string | null>(null);
   const [newMatchGameMode, setNewMatchGameMode] = useState<'free_for_all' | 'team_battle' | '1v1_duel'>('free_for_all');
+  const [playerAnswer, setPlayerAnswer] = useState('');
+  const answerStartTimeRef = useRef<number>(0);
 
   const isRoomOwner = currentMatch ? currentMatch.creator_id === userId : false;
   const isPlayerInCurrentMatch = playersInCurrentMatch.some((p: FlashMatchPlayer) => p.user_id === userId);
+  const hasAnsweredCurrentRound = currentRoundAnswers.some(answer => answer.player_id === userId && answer.round_id === currentRound?.id);
+
+  useEffect(() => {
+    if (currentRound && currentMatch?.status === 'in_progress' && !hasAnsweredCurrentRound) {
+      answerStartTimeRef.current = Date.now();
+    }
+  }, [currentRound, currentMatch?.status, hasAnsweredCurrentRound]);
 
   const handleCreateMatch = async () => {
     if (!isCurrentRoomWritable) {
@@ -72,6 +85,27 @@ export function FlashAttackMode() {
       return;
     }
     await startMatch(currentMatch.id);
+  };
+
+  const handleNextRound = async () => {
+    if (!currentMatch) return;
+    if (!isRoomOwner) {
+      toast.error("Only the match creator can advance rounds.");
+      return;
+    }
+    await nextRound(currentMatch.id);
+    setPlayerAnswer(''); // Clear answer input for next round
+  };
+
+  const handleSubmitAnswer = async () => {
+    if (!currentMatch || !currentRound || !userId) return;
+    if (!playerAnswer.trim()) {
+      toast.error("Please type an answer.");
+      return;
+    }
+    const responseTimeMs = Date.now() - answerStartTimeRef.current;
+    await submitAnswer(currentMatch.id, currentRound.id, playerAnswer.trim(), responseTimeMs);
+    setPlayerAnswer(''); // Clear answer input after submission
   };
 
   if (loading) {
@@ -110,6 +144,9 @@ export function FlashAttackMode() {
     const isInProgress = currentMatch.status === 'in_progress';
     const isCompleted = currentMatch.status === 'completed';
 
+    const sortedPlayers = [...playersInCurrentMatch].sort((a, b) => b.score - a.score);
+    const isCurrentRoundEnded = currentRound && roundCountdown === 0 && currentRound.round_end_time !== null;
+
     return (
       <div className="flex flex-col gap-6 w-full">
         <Card className="bg-card backdrop-blur-xl border-white/20 p-4">
@@ -145,7 +182,7 @@ export function FlashAttackMode() {
                 {playersInCurrentMatch.length === 0 ? (
                   <p className="text-muted-foreground text-sm text-center">No players yet.</p>
                 ) : (
-                  playersInCurrentMatch.map((player: FlashMatchPlayer) => (
+                  sortedPlayers.map((player: FlashMatchPlayer) => (
                     <div key={player.id} className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
                         <span className={cn(
@@ -189,10 +226,53 @@ export function FlashAttackMode() {
                 {currentRound ? (
                   <Card className="bg-muted/50 border-border p-4 text-center">
                     <p className="text-xl font-bold mb-2">{currentRound.question}</p>
-                    <p className="text-sm text-muted-foreground">Time left: {Math.max(0, Math.floor((new Date(currentRound.start_time).getTime() + currentMatch.round_duration_seconds * 1000 - new Date().getTime()) / 1000))}s</p>
-                    {/* Placeholder for answer input and submission */}
-                    <Input placeholder="Type your answer..." className="mt-4" disabled={!isPlayerInCurrentMatch} />
-                    <Button className="mt-2 w-full" disabled={!isPlayerInCurrentMatch}>Submit Answer</Button>
+                    <p className="text-sm text-muted-foreground">Time left: {roundCountdown}s</p>
+                    
+                    {isPlayerInCurrentMatch && !hasAnsweredCurrentRound && roundCountdown > 0 ? (
+                      <>
+                        <Input
+                          placeholder="Type your answer..."
+                          className="mt-4"
+                          value={playerAnswer}
+                          onChange={(e) => setPlayerAnswer(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              handleSubmitAnswer();
+                            }
+                          }}
+                          disabled={!isPlayerInCurrentMatch || hasAnsweredCurrentRound || roundCountdown === 0}
+                        />
+                        <Button className="mt-2 w-full" onClick={handleSubmitAnswer} disabled={!isPlayerInCurrentMatch || hasAnsweredCurrentRound || roundCountdown === 0 || !playerAnswer.trim()}>
+                          Submit Answer
+                        </Button>
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground mt-4">
+                        {hasAnsweredCurrentRound ? "You have submitted your answer." : "Waiting for answers..."}
+                      </p>
+                    )}
+
+                    {isCurrentRoundEnded && (
+                      <div className="mt-4 space-y-2">
+                        <h4 className="text-md font-semibold">Round Results:</h4>
+                        <ul className="space-y-1">
+                          {currentRoundAnswers.map(answer => (
+                            <li key={answer.id} className="flex items-center justify-between text-sm">
+                              <span className="flex items-center gap-1">
+                                {answer.is_correct ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
+                                {answer.profiles?.first_name || 'Unknown'}: {answer.answer_text}
+                              </span>
+                              <span className="font-semibold text-primary">+{answer.score_awarded} pts</span>
+                            </li>
+                          ))}
+                        </ul>
+                        {isRoomOwner && (
+                          <Button onClick={handleNextRound} className="w-full mt-4" disabled={currentMatch.current_round_number >= currentMatch.total_rounds}>
+                            Next Round
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </Card>
                 ) : (
                   <p className="text-muted-foreground text-center">Waiting for the next round to start...</p>
@@ -202,16 +282,18 @@ export function FlashAttackMode() {
 
             {isCompleted && (
               <div className="mt-4 text-center space-y-2">
-                <h3 className="text-xl font-bold text-primary">Game Over!</h3>
+                <h3 className="text-xl font-bold text-primary flex items-center justify-center gap-2">
+                  <Trophy className="h-6 w-6 text-yellow-500 fill-current" /> Game Over!
+                </h3>
                 <p className="text-lg">Final Scores:</p>
                 <ul className="space-y-1">
-                  {playersInCurrentMatch.map((player: FlashMatchPlayer) => (
+                  {sortedPlayers.map((player: FlashMatchPlayer) => (
                     <li key={player.id} className="text-base font-semibold">
                       {player.profiles?.first_name || 'Unknown'}: {player.score} pts
                     </li>
                   ))}
                 </ul>
-                <Button variant="outline" className="mt-4">View Full Summary</Button>
+                {/* <Button variant="outline" className="mt-4">View Full Summary</Button> */}
               </div>
             )}
           </CardContent>

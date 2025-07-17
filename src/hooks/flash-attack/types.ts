@@ -47,4 +47,5 @@ export interface FlashMatchPlayerAnswer {
   score_awarded: number;
   response_time: number; // in milliseconds
   created_at: string;
+  profiles?: { first_name: string | null; last_name: string | null; profile_image_url: string | null } | null; // Added profiles
 }

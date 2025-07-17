@@ -108,9 +108,6 @@ serve(async (req: Request) => {
       }
       flashcards = cards;
     } else {
-      // If no specific category, fetch all flashcards created by the user (or public ones)
-      // For simplicity, let's assume if no category is selected, it means "all cards by creator"
-      // or "all public cards". For now, we'll just return an error if no category is selected.
       return new Response(JSON.stringify({ error: 'A flashcard category must be selected to start the game.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
@@ -128,7 +125,30 @@ serve(async (req: Request) => {
     const shuffledCards = flashcards.sort(() => Math.random() - 0.5);
     const selectedCardsForGame = shuffledCards.slice(0, match.total_rounds);
 
-    // 4. Update match status to 'in_progress' and set current_round_number to 1
+    // 4. Create all rounds for the match
+    const roundsToInsert = selectedCardsForGame.map((card, index) => ({
+      match_id: match.id,
+      round_number: index + 1,
+      card_id: card.id,
+      question: card.front,
+      correct_answer: card.back,
+      start_time: index === 0 ? new Date().toISOString() : null, // Only set start_time for the first round
+    }));
+
+    const { data: insertedRounds, error: insertRoundsError } = await supabase
+      .from('flash_match_rounds')
+      .insert(roundsToInsert)
+      .select();
+
+    if (insertRoundsError || !insertedRounds) {
+      console.error('Error creating all rounds:', insertRoundsError?.message);
+      return new Response(JSON.stringify({ error: 'Failed to create game rounds.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
+    }
+
+    // 5. Update match status to 'in_progress' and set current_round_number to 1
     const { data: updatedMatch, error: updateMatchError } = await supabase
       .from('flash_matches')
       .update({
@@ -148,32 +168,7 @@ serve(async (req: Request) => {
       });
     }
 
-    // 5. Create the first round
-    const firstCard = selectedCardsForGame[0];
-    const { data: newRound, error: roundError } = await supabase
-      .from('flash_match_rounds')
-      .insert({
-        match_id: match.id,
-        round_number: 1,
-        card_id: firstCard.id,
-        question: firstCard.front,
-        correct_answer: firstCard.back,
-        start_time: new Date().toISOString(),
-        // end_time will be set when round ends
-      })
-      .select()
-      .single();
-
-    if (roundError) {
-      console.error('Error creating first round:', roundError?.message);
-      // Consider rolling back match status if round creation fails
-      return new Response(JSON.stringify({ error: 'Failed to create the first round.' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      });
-    }
-
-    return new Response(JSON.stringify({ message: 'Match started successfully', match: updatedMatch, firstRound: newRound }), {
+    return new Response(JSON.stringify({ message: 'Match started successfully', match: updatedMatch, rounds: insertedRounds }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });

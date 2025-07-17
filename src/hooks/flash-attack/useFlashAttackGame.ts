@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
 import { useCurrentRoom } from "@/hooks/use-current-room";
@@ -16,9 +16,37 @@ export function useFlashAttackGame() {
   const [currentMatch, setCurrentMatch] = useState<FlashMatch | null>(null);
   const [playersInCurrentMatch, setPlayersInCurrentMatch] = useState<FlashMatchPlayer[]>([]);
   const [currentRound, setCurrentRound] = useState<FlashMatchRound | null>(null);
+  const [currentRoundAnswers, setCurrentRoundAnswers] = useState<FlashMatchPlayerAnswer[]>([]); // New state for answers
   const [loading, setLoading] = useState(true);
+  const [roundCountdown, setRoundCountdown] = useState(0); // New state for countdown
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const API_BASE_URL = "https://mrdupsekghsnbooyrdmj.supabase.co/functions/v1";
+
+  const clearCountdown = useCallback(() => {
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+  }, []);
+
+  const startCountdown = useCallback((duration: number, startTime: string) => {
+    clearCountdown();
+    const roundStartTime = new Date(startTime).getTime();
+    const endTime = roundStartTime + duration * 1000;
+
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const timeLeft = Math.max(0, Math.floor((endTime - now) / 1000));
+      setRoundCountdown(timeLeft);
+      if (timeLeft === 0) {
+        clearCountdown();
+      }
+    };
+
+    updateCountdown(); // Initial call
+    countdownIntervalRef.current = setInterval(updateCountdown, 1000);
+  }, [clearCountdown]);
 
   const fetchMatches = useCallback(async () => {
     if (authLoading || !supabase || !currentRoomId) {
@@ -59,7 +87,7 @@ export function useFlashAttackGame() {
     setLoading(false);
   }, [authLoading, supabase, currentRoomId]);
 
-  const fetchPlayersAndRounds = useCallback(async (matchId: string) => {
+  const fetchPlayersRoundsAndAnswers = useCallback(async (matchId: string, currentRoundNumber: number | null) => {
     if (!supabase) return;
 
     // Fetch players
@@ -81,26 +109,56 @@ export function useFlashAttackGame() {
     }
 
     // Fetch current round if match is in progress
-    if (currentMatch?.status === 'in_progress') {
+    if (currentMatch?.status === 'in_progress' && currentRoundNumber) {
       const { data: roundsData, error: roundsError } = await supabase
         .from('flash_match_rounds')
         .select('*')
         .eq('match_id', matchId)
-        .eq('round_number', currentMatch.current_round_number)
+        .eq('round_number', currentRoundNumber)
         .single();
 
       if (roundsError && roundsError.code !== 'PGRST116') { // PGRST116 means no rows found
         console.error("Error fetching current round:", roundsError);
         setCurrentRound(null);
+        setCurrentRoundAnswers([]);
+        clearCountdown();
       } else if (roundsData) {
         setCurrentRound(roundsData as FlashMatchRound);
+        if (roundsData.start_time && !roundsData.round_end_time) {
+          startCountdown(currentMatch.round_duration_seconds, roundsData.start_time);
+        } else {
+          clearCountdown();
+        }
+
+        // Fetch answers for the current round
+        const { data: answersData, error: answersError } = await supabase
+          .from('flash_match_player_answers')
+          .select('*, profiles(first_name, last_name, profile_image_url)')
+          .eq('round_id', roundsData.id)
+          .order('created_at', { ascending: true }); // Order by submission time
+
+        if (answersError) {
+          console.error("Error fetching round answers:", answersError);
+          setCurrentRoundAnswers([]);
+        } else {
+          const answers: FlashMatchPlayerAnswer[] = answersData.map(a => ({
+            ...a,
+            profiles: Array.isArray(a.profiles) ? a.profiles[0] : a.profiles,
+          })) as FlashMatchPlayerAnswer[];
+          setCurrentRoundAnswers(answers);
+        }
+
       } else {
         setCurrentRound(null);
+        setCurrentRoundAnswers([]);
+        clearCountdown();
       }
     } else {
       setCurrentRound(null);
+      setCurrentRoundAnswers([]);
+      clearCountdown();
     }
-  }, [supabase, currentMatch?.status]);
+  }, [supabase, currentMatch?.status, currentMatch?.round_duration_seconds, startCountdown, clearCountdown]);
 
   useEffect(() => {
     fetchMatches();
@@ -108,12 +166,14 @@ export function useFlashAttackGame() {
 
   useEffect(() => {
     if (currentMatch?.id) {
-      fetchPlayersAndRounds(currentMatch.id);
+      fetchPlayersRoundsAndAnswers(currentMatch.id, currentMatch.current_round_number);
     } else {
       setPlayersInCurrentMatch([]);
       setCurrentRound(null);
+      setCurrentRoundAnswers([]);
+      clearCountdown();
     }
-  }, [currentMatch, fetchPlayersAndRounds]);
+  }, [currentMatch, fetchPlayersRoundsAndAnswers, clearCountdown]);
 
   // Realtime subscriptions
   useEffect(() => {
@@ -133,7 +193,7 @@ export function useFlashAttackGame() {
       playersChannel = supabase
         .channel(`flash_match_players_match_${currentMatch.id}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'flash_match_players', filter: `match_id=eq.${currentMatch.id}` }, (payload) => {
-          fetchPlayersAndRounds(currentMatch.id); // Re-fetch players and rounds
+          fetchPlayersRoundsAndAnswers(currentMatch.id, currentMatch.current_round_number); // Re-fetch players and rounds
         })
         .subscribe();
     }
@@ -144,7 +204,18 @@ export function useFlashAttackGame() {
       roundsChannel = supabase
         .channel(`flash_match_rounds_match_${currentMatch.id}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'flash_match_rounds', filter: `match_id=eq.${currentMatch.id}` }, (payload) => {
-          fetchPlayersAndRounds(currentMatch.id); // Re-fetch players and rounds
+          fetchPlayersRoundsAndAnswers(currentMatch.id, currentMatch.current_round_number); // Re-fetch players and rounds
+        })
+        .subscribe();
+    }
+
+    // Subscribe to flash_match_player_answers changes for the current match
+    let answersChannel: any;
+    if (currentMatch?.id && currentRound?.id) {
+      answersChannel = supabase
+        .channel(`flash_match_player_answers_round_${currentRound.id}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'flash_match_player_answers', filter: `round_id=eq.${currentRound.id}` }, (payload) => {
+          fetchPlayersRoundsAndAnswers(currentMatch.id, currentMatch.current_round_number); // Re-fetch answers
         })
         .subscribe();
     }
@@ -153,8 +224,9 @@ export function useFlashAttackGame() {
       supabase.removeChannel(matchesChannel);
       if (playersChannel) supabase.removeChannel(playersChannel);
       if (roundsChannel) supabase.removeChannel(roundsChannel);
+      if (answersChannel) supabase.removeChannel(answersChannel);
     };
-  }, [supabase, currentRoomId, currentMatch?.id, fetchMatches, fetchPlayersAndRounds]);
+  }, [supabase, currentRoomId, currentMatch?.id, currentRound?.id, fetchMatches, fetchPlayersRoundsAndAnswers]);
 
   const createMatch = useCallback(async (
     total_rounds: number,
@@ -273,15 +345,94 @@ export function useFlashAttackGame() {
     }
   }, [session, supabase, fetchMatches]);
 
+  const nextRound = useCallback(async (matchId: string) => {
+    if (!session?.access_token) {
+      toast.error("You must be logged in to advance rounds.");
+      return;
+    }
+    if (!supabase) {
+      toast.error("Supabase client not available.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/next-flash-round`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ match_id: matchId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(`Failed to advance round: ${data.error || 'Unknown error'}`);
+        console.error("Next round error:", data);
+      } else {
+        toast.success("Round advanced!");
+        fetchMatches(); // Re-fetch to update UI
+      }
+    } catch (error: any) {
+      toast.error(`Network error advancing round: ${error.message}`);
+      console.error("Network error advancing round:", error);
+    }
+  }, [session, supabase, fetchMatches]);
+
+  const submitAnswer = useCallback(async (matchId: string, roundId: string, answerText: string, responseTimeMs: number) => {
+    if (!session?.access_token) {
+      toast.error("You must be logged in to submit an answer.");
+      return;
+    }
+    if (!supabase) {
+      toast.error("Supabase client not available.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/submit-flash-answer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          match_id: matchId,
+          round_id: roundId,
+          answer_text: answerText,
+          response_time_ms: responseTimeMs,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(`Failed to submit answer: ${data.error || 'Unknown error'}`);
+        console.error("Submit answer error:", data);
+      } else {
+        toast.success(data.is_correct ? "Correct answer!" : "Incorrect answer.");
+        fetchPlayersRoundsAndAnswers(matchId, currentMatch?.current_round_number || null); // Re-fetch to update scores and answers
+      }
+    } catch (error: any) {
+      toast.error(`Network error submitting answer: ${error.message}`);
+      console.error("Network error submitting answer:", error);
+    }
+  }, [session, supabase, fetchPlayersRoundsAndAnswers, currentMatch?.current_round_number]);
+
   return {
     activeMatches,
     currentMatch,
     playersInCurrentMatch,
     currentRound,
+    currentRoundAnswers, // Expose answers
     loading: loading || categoriesLoading,
+    roundCountdown, // Expose countdown
     createMatch,
     joinMatch,
     startMatch,
+    nextRound, // Expose nextRound
+    submitAnswer, // Expose submitAnswer
     categories, // Expose categories for deck selection
     userId: session?.user?.id,
   };
