@@ -66,7 +66,7 @@ export function Widget({
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ // Destructure isDragging
     id: `widget-${id}`,
     data: { id, type: "widget", initialPosition: position },
-    disabled: isPinned || isMaximized || isMobile || isInsideDock || isClosed, // Disable dragging if closed
+    disabled: isPinned || isMaximized || isInsideDock || isClosed,
   });
 
   const currentTransformStyle = transform ? {
@@ -74,8 +74,8 @@ export function Widget({
   } : {};
 
   const isVisuallyMinimized = isMinimized || isPinned;
-  const isResizable = !isMaximized && !isVisuallyMinimized && !isMobile && !isInsideDock && !isClosed; // Disable resizing if closed
-  const isDraggable = !isMaximized && !isPinned && !isMobile && !isInsideDock && !isClosed; // Disable dragging if closed
+  const isResizable = !isMaximized && !isVisuallyMinimized && !isMobile && !isInsideDock && !isClosed;
+  const isDraggable = !isMaximized && !isPinned && !isInsideDock && !isClosed;
 
   // Determine actual width/height for ResizableBox based on state
   let actualWidth = size.width;
@@ -153,47 +153,43 @@ export function Widget({
   // For floating widgets (normal, minimized, maximized, or closed)
   return (
     <div
-      ref={setNodeRef} // Apply draggable ref here to the outer div
-      style={isMobile ? {} : { // No fixed positioning on mobile, let flexbox handle it
+      ref={setNodeRef}
+      style={{
         left: position.x,
         top: position.y,
         zIndex: zIndex,
         ...currentTransformStyle,
-        width: actualWidth, // Explicitly set width/height on the outer div
+        width: actualWidth,
         height: actualHeight,
-        position: 'absolute', // Ensure positioning
+        position: 'absolute',
       }}
       className={cn(
         "bg-card/40 border-white/20 shadow-lg rounded-lg flex flex-col",
         "transition-all duration-300 ease-in-out",
-        isDragging && "transition-none", // Disable transitions during drag
+        isDragging && "transition-none",
         isTopmost ? "backdrop-blur-2xl" : "backdrop-blur-xl",
         isResizable ? "resize" : "",
         isMinimized && !isPinned ? "cursor-pointer" : "",
-        isMobile ? "relative w-full h-auto pointer-events-auto" : "pointer-events-auto", // Mobile styling: relative, full width, auto height, margin
-        isClosed && "hidden" // Hide if closed
+        "pointer-events-auto",
+        isClosed && "hidden"
       )}
       onMouseDown={onBringToFront}
     >
-      {isMobile ? (
-        renderWidgetContent
-      ) : (
-        <ResizableBox
-          width={actualWidth}
-          height={actualHeight}
-          onResizeStop={(e: React.SyntheticEvent, data: ResizeCallbackData) => {
-            if (isResizable) {
-              onSizeChange({ width: data.size.width, height: data.size.height });
-            }
-          }}
-          minConstraints={[200, 150]}
-          maxConstraints={[mainContentArea.width, mainContentArea.height]}
-          className="w-full h-full"
-          resizeHandles={isResizable ? ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'] : []}
-        >
-          {renderWidgetContent}
-        </ResizableBox>
-      )}
+      <ResizableBox
+        width={actualWidth}
+        height={actualHeight}
+        onResizeStop={(e: React.SyntheticEvent, data: ResizeCallbackData) => {
+          if (isResizable) {
+            onSizeChange({ width: data.size.width, height: data.size.height });
+          }
+        }}
+        minConstraints={[200, 150]}
+        maxConstraints={[mainContentArea.width, mainContentArea.height]}
+        className="w-full h-full"
+        resizeHandles={isResizable ? ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'] : []}
+      >
+        {renderWidgetContent}
+      </ResizableBox>
     </div>
   );
 }

@@ -1,38 +1,21 @@
 "use client";
 
-import React, { useEffect } from 'react';
-import { Tldraw, useEditor } from '@tldraw/tldraw';
-import '@tldraw/tldraw/tldraw.css';
+import React from 'react';
 
 interface DrawingBoardWidgetProps {
   isCurrentRoomWritable: boolean;
-  isMobile: boolean; // Add isMobile prop
-}
-
-// This inner component is necessary to access the editor instance via the useEditor hook,
-// as it must be a child of the <Tldraw /> component.
-// Moved to top level for stable component identity.
-function TldrawReadOnlyController({ isReadOnly }: { isReadOnly: boolean }) {
-  const editor = useEditor();
-
-  useEffect(() => {
-    // We use an effect to update the editor's read-only state whenever the prop changes.
-    // The correct property on the instance state is `isReadonly` (lowercase 'o').
-    editor.updateInstanceState({ isReadonly: isReadOnly });
-  }, [editor, isReadOnly]);
-
-  return null; // This component does not render anything itself.
+  isMobile: boolean;
 }
 
 export function DrawingBoardWidget({ isCurrentRoomWritable, isMobile }: DrawingBoardWidgetProps) {
   return (
-    <div className="h-full w-full min-h-full">
-      <Tldraw
-        persistenceKey="cozyhub_drawing_board"
-        forceMobile={isMobile} // Use isMobile prop here
-      >
-        <TldrawReadOnlyController isReadOnly={!isCurrentRoomWritable} />
-      </Tldraw>
+    <div className="h-full w-full">
+      <iframe
+        src="https://sketch.io/sketchpad/"
+        className="w-full h-full border-0"
+        title="Sketch.io Drawing Board"
+        allow="fullscreen"
+      ></iframe>
     </div>
   );
 }

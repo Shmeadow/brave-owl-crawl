@@ -83,8 +83,8 @@ export function WidgetContainer({ isCurrentRoomWritable, mainContentArea, isMobi
   return (
     <DndContext onDragEnd={handleDragEnd}>
       <div className={cn(
-        "w-full h-full", // Base styling for the container
-        isMobile ? "flex flex-col items-center gap-4 pointer-events-auto" : "fixed inset-0 z-[903] pointer-events-none"
+        "w-full h-full",
+        "fixed inset-0 z-[903] pointer-events-none"
       )}>
         {floatingWidgets.map((widget: WidgetState) => {
           const WidgetIcon = WIDGET_COMPONENTS[widget.id as keyof typeof WIDGET_COMPONENTS]?.icon;
