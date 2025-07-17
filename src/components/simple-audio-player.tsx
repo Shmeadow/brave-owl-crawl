@@ -233,8 +233,8 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
       <div className={cn(
         "fixed top-[72px] right-4 z-[901]", // Position at top right for mobile
         "transition-all duration-300 ease-in-out",
-        "bg-card/40 backdrop-blur-xl border-white/20 shadow-sm flex w-full", // Applied styling here
-        isMobileExpanded ? "h-auto p-1 rounded-xl max-w-[224px] flex-col" : "h-10 p-1 items-center justify-between flex-row rounded-full w-32" // Adjusted max-width, height, padding, and rounded-full
+        "bg-card/40 backdrop-blur-xl border-white/20 shadow-sm flex flex-col w-full", // Applied styling here
+        isMobileExpanded ? "h-auto p-1 rounded-xl max-w-[224px]" : "h-10 p-1 items-center justify-between flex-row rounded-full w-40" // Adjusted max-width, height, padding, and rounded-full
       )}>
         {isMobileExpanded ? (
           <>
@@ -364,9 +364,9 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   return (
     <div className={cn(
       "fixed z-[900] transition-all duration-300 ease-in-out",
-      displayMode === 'normal' && `top-[120px] right-4 w-56 rounded-xl`, // Adjusted width to w-56
-      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-10 h-48 rounded-full', // Adjusted width, height, added rounded-full for vertical
-      displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-96 flex flex-col items-center justify-center' // Adjusted width to w-96
+      displayMode === 'normal' && `top-[120px] right-4 w-64 rounded-xl`, // Adjusted width to w-64
+      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-10 h-40 rounded-full', // Adjusted height to h-40
+      displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-96 flex flex-col items-center justify-center'
     )}>
       <div className={cn(
         "bg-card/40 backdrop-blur-xl border-white/20 shadow-sm flex flex-col w-full", // Applied styling here
