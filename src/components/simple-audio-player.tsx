@@ -233,7 +233,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
       <div className={cn(
         "transition-all duration-300 ease-in-out",
         "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full", // Applied styling here
-        isMobileExpanded ? "h-auto p-2" : "h-16 p-2 items-center justify-between flex-row"
+        isMobileExpanded ? "h-auto p-4" : "h-16 p-4 items-center justify-between flex-row"
       )}>
         {isMobileExpanded ? (
           <>
@@ -260,7 +260,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
             )}
 
             {/* Main Player Row: URL Input Toggle and Controls */}
-            <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
+            <div className="flex items-center justify-between space-x-2 mb-1 flex-shrink-0 w-full">
               {/* URL Input Toggle (Drawer for mobile) */}
               <Drawer open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
                 <DrawerTrigger asChild>

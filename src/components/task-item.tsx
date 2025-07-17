@@ -98,11 +98,11 @@ export function TaskItem({ task, onToggleComplete, onUpdateTask, onDelete, isCur
     <>
       <div
         className={cn(
-          "group flex items-start justify-between p-3 border rounded-md bg-card backdrop-blur-xl text-card-foreground shadow-sm",
+          "group flex items-start justify-between p-4 border rounded-md bg-card backdrop-blur-xl text-card-foreground shadow-sm",
           task.completed ? "opacity-60" : ""
         )}
       >
-        <div className="flex items-start space-x-3 flex-1 min-w-0">
+        <div className="flex items-start space-x-4 flex-1 min-w-0">
           <Checkbox
             id={`task-${task.id}`}
             checked={task.completed}
@@ -130,27 +130,27 @@ export function TaskItem({ task, onToggleComplete, onUpdateTask, onDelete, isCur
             )}
           </div>
         </div>
-        <div className="flex items-center gap-1 ml-2">
+        <div className="flex items-center gap-2 ml-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={handleEdit}
-            className="text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
+            className="text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
             title="Edit task"
             disabled={!isCurrentRoomWritable}
           >
-            <Edit className="h-4 w-4" />
+            <Edit className="h-5 w-5" />
             <span className="sr-only">Edit task</span>
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={handleDelete}
-            className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
+            className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
             title="Delete task"
             disabled={!isCurrentRoomWritable}
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-5 w-5" />
             <span className="sr-only">Delete task</span>
           </Button>
         </div>

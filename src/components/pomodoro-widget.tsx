@@ -76,7 +76,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
         className={cn(
           "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg",
           "flex flex-col transition-all duration-300 ease-in-out w-full",
-          isMobileExpanded ? "h-auto p-2" : "h-16 p-2 items-center justify-between flex-row"
+          isMobileExpanded ? "h-auto p-4" : "h-16 p-4 items-center justify-between flex-row"
         )}
       >
         {isMobileExpanded ? (
@@ -103,12 +103,12 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
                   <p className="text-sm font-semibold text-primary truncate max-w-[200px]">{activeGoalTitle}</p>
                 </div>
               )}
-              <div className="flex gap-0.5 justify-center w-full">
+              <div className="flex gap-2 justify-center w-full">
                 <Button
                   variant={mode === 'focus' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => handleSwitchMode('focus')}
-                  className={cn("text-xs px-1 h-7", mode === 'focus' ? "bg-primary text-primary-foreground" : "")}
+                  className={cn("text-sm px-2 h-8", mode === 'focus' ? "bg-primary text-primary-foreground" : "")}
                   disabled={!isCurrentRoomWritable}
                 >
                   <Brain className="h-3 w-3" /> Focus
@@ -117,7 +117,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
                   variant={mode === 'short-break' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => handleSwitchMode('short-break')}
-                  className={cn("text-xs px-1 h-7", mode === 'short-break' ? "bg-secondary text-secondary-foreground" : "")}
+                  className={cn("text-sm px-2 h-8", mode === 'short-break' ? "bg-secondary text-secondary-foreground" : "")}
                   disabled={!isCurrentRoomWritable}
                 >
                   <Coffee className="h-3 w-3" /> Short
@@ -126,7 +126,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
                   variant={mode === 'long-break' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => handleSwitchMode('long-break')}
-                  className={cn("text-xs px-1 h-7", mode === 'long-break' ? "bg-accent text-accent-foreground" : "")}
+                  className={cn("text-sm px-2 h-8", mode === 'long-break' ? "bg-accent text-accent-foreground" : "")}
                   disabled={!isCurrentRoomWritable}
                 >
                   <Home className="h-3 w-3" /> Long
@@ -185,10 +185,10 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
               {formatTime(timeLeft)}
             </div>
             <div className="flex gap-2">
-              <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-7 w-7" disabled={!isCurrentRoomWritable}>
+              <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-9 w-9" disabled={!isCurrentRoomWritable}>
                 {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               </Button>
-              <Button onClick={(e) => { e.stopPropagation(); handleReset(); }} size="icon" variant="secondary" className="h-7 w-7" disabled={!isCurrentRoomWritable}>
+              <Button onClick={(e) => { e.stopPropagation(); handleReset(); }} size="icon" variant="secondary" className="h-9 w-9" disabled={!isCurrentRoomWritable}>
                 <RotateCcw className="h-4 w-4" />
               </Button>
             </div>

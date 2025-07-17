@@ -104,11 +104,11 @@ export function GoalItem({ goal, onToggleComplete, onUpdateGoal, onDelete, isCur
     <Collapsible>
       <div
         className={cn(
-          "group flex items-center justify-between p-3 border-b transition-colors hover:bg-muted/50",
+          "group flex items-center justify-between p-4 border-b transition-colors hover:bg-muted/50",
           goal.completed ? "opacity-60" : ""
         )}
       >
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-4">
           <Checkbox
             id={`goal-${goal.id}`}
             checked={goal.completed}
@@ -126,27 +126,27 @@ export function GoalItem({ goal, onToggleComplete, onUpdateGoal, onDelete, isCur
             {goal.title}
           </label>
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={handleEdit}
-            className="text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
+            className="text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
             title="Edit goal"
             disabled={!isCurrentRoomWritable}
           >
-            <Edit className="h-4 w-4" />
+            <Edit className="h-5 w-5" />
             <span className="sr-only">Edit goal</span>
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={handleDelete}
-            className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
+            className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
             title="Delete goal"
             disabled={!isCurrentRoomWritable}
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-5 w-5" />
             <span className="sr-only">Delete goal</span>
           </Button>
           <CollapsibleTrigger asChild>

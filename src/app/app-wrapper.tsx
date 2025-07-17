@@ -221,7 +221,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               style={{ left: `${mainContentArea.left}px`, top: `${TOTAL_HEADER_AREA_HEIGHT}px`, width: `${mainContentArea.width}px`, height: `${mainContentArea.height}px` }}
             >
               <main className="flex-1 relative overflow-y-auto bg-transparent">
-                <div className={cn("h-full", isMobile ? "p-2" : "p-4 sm:p-6 lg:p-8")}> {/* Adjusted padding for mobile */}
+                <div className={cn("h-full", isMobile ? "p-4" : "p-4 sm:p-6 lg:p-8")}> {/* Adjusted padding for mobile */}
                   {children}
                   {isDashboard && (
                     // WidgetContainer now renders ALL widgets, managing their visibility internally

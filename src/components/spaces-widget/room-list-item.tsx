@@ -59,7 +59,7 @@ export function RoomListItem({ room }: RoomListItemProps) {
   return (
     <div
       className={cn(
-        "flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 border rounded-md bg-muted backdrop-blur-xl",
+        "flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-md bg-muted backdrop-blur-xl",
         currentRoomId === room.id && "ring-2 ring-primary"
       )}
     >
@@ -97,18 +97,18 @@ export function RoomListItem({ room }: RoomListItemProps) {
           </div>
         </div>
       </div>
-      <div className="flex flex-wrap gap-1 sm:ml-auto">
+      <div className="flex flex-wrap gap-2 sm:ml-auto">
         <Button variant="ghost" size="icon" onClick={handleEnterRoom} title="Enter Room" disabled={currentRoomId === room.id}>
-          <LogIn className="h-4 w-4" />
+          <LogIn className="h-5 w-5" />
         </Button>
         {isOwner && (
           <Button variant="ghost" size="icon" className="text-red-500 hover:bg-red-100 hover:text-red-600" onClick={onDeleteClick} title="Close Room">
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-5 w-5" />
           </Button>
         )}
         {isJoined && !isOwner && (
           <Button variant="ghost" size="icon" className="text-red-500 hover:bg-red-100 hover:text-red-600" onClick={onLeaveClick} title="Leave Room">
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-5 w-5" />
           </Button>
         )}
       </div>

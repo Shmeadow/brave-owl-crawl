@@ -88,7 +88,7 @@ export function JournalEntryItem({
       "hover:shadow-md hover:border-primary/50"
     )}>
       <Collapsible open={isContentOpen} onOpenChange={setIsContentOpen}>
-        <CardHeader className="flex flex-row items-center justify-between p-4 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between p-5 pb-3">
           {isEditingTitle ? (
             <div className="flex items-center gap-2 flex-1 mr-2">
               <Input
@@ -111,7 +111,7 @@ export function JournalEntryItem({
               {entry.title || 'Untitled Entry'}
             </CardTitle>
           )}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"

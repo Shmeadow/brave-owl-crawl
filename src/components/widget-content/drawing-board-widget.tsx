@@ -26,7 +26,7 @@ function TldrawReadOnlyController({ isReadOnly }: { isReadOnly: boolean }) {
 
 export function DrawingBoardWidget({ isCurrentRoomWritable, isMobile }: DrawingBoardWidgetProps) {
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full min-h-full">
       <Tldraw
         persistenceKey="cozyhub_drawing_board"
         forceMobile={isMobile} // Use isMobile prop here

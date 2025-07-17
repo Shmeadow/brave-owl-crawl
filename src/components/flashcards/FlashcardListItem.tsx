@@ -47,7 +47,7 @@ export function FlashcardListItem({
   return (
     <li
       className={cn(
-        "flex flex-col justify-between bg-muted backdrop-blur-xl p-4 rounded-lg shadow-sm border border-border transition-all duration-200",
+        "flex flex-col justify-between bg-muted backdrop-blur-xl p-5 rounded-lg shadow-sm border border-border transition-all duration-200",
         selectionMode ? "cursor-pointer" : "hover:shadow-lg hover:border-primary/50",
         isSelected && "ring-2 ring-primary border-primary"
       )}
@@ -62,16 +62,16 @@ export function FlashcardListItem({
         <p className="text-xs text-muted-foreground">
           Created: {new Date(card.created_at).toLocaleDateString()}
         </p>
-        <div className="flex gap-1"> {/* Changed to flex for horizontal arrangement */}
+        <div className="flex gap-2"> {/* Increased to gap-2 */}
           <Button
             variant="ghost"
             size="icon"
             onClick={(e) => { e.stopPropagation(); onOrganize(card); }}
-            className="h-7 w-7 text-muted-foreground hover:text-primary"
+            className="h-8 w-8 text-muted-foreground hover:text-primary"
             title="Organize flashcard"
             disabled={selectionMode}
           >
-            <FolderCog className="h-4 w-4" />
+            <FolderCog className="h-5 w-5" />
           </Button>
           <Popover open={isEditingPopoverOpen} onOpenChange={setIsEditingPopoverOpen}>
             <PopoverTrigger asChild>
@@ -79,11 +79,11 @@ export function FlashcardListItem({
                 variant="ghost"
                 size="icon"
                 onClick={(e) => e.stopPropagation()}
-                className="h-7 w-7 text-muted-foreground hover:text-primary"
+                className="h-8 w-8 text-muted-foreground hover:text-primary"
                 title="Edit flashcard"
                 disabled={selectionMode}
               >
-                <Edit className="h-4 w-4" />
+                <Edit className="h-5 w-5" />
               </Button>
             </PopoverTrigger>
             <PopoverContent
@@ -106,11 +106,11 @@ export function FlashcardListItem({
             variant="ghost"
             size="icon"
             onClick={(e) => { e.stopPropagation(); onDelete(card.id); }}
-            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+            className="h-8 w-8 text-muted-foreground hover:text-destructive"
             title="Delete flashcard"
             disabled={selectionMode}
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-5 w-5" />
           </Button>
         </div>
       </div>

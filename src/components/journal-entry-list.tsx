@@ -28,7 +28,7 @@ export function JournalEntryList({
         <p className="p-4 text-muted-foreground text-sm text-center">No journal entries added yet. Start by adding one above!</p>
       ) : (
         <ScrollArea className="flex-1 h-full">
-          <div className="p-2 space-y-3">
+          <div className="p-4 space-y-4">
             {entries.map((entry) => (
               <JournalEntryItem
                 key={entry.id}

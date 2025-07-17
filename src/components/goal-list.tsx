@@ -23,7 +23,7 @@ export function GoalList({ goals, onToggleComplete, onUpdateGoal, onDelete, isCu
         </div>
       ) : (
         <ScrollArea className="flex-1 h-full">
-          <div className="p-2">
+          <div className="p-4">
             {goals.map((goal) => (
               <GoalItem
                 key={goal.id}
