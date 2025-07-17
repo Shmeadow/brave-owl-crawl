@@ -26,7 +26,7 @@ import { useRooms } from "@/hooks/use-rooms";
 import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification";
 import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar";
 import { CookieConsentBar } from "@/components/cookie-consent-bar";
-import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT, MOBILE_HEADER_EFFECTIVE_HEIGHT, MOBILE_HEADER_SIDEBAR_GAP, MOBILE_SIDEBAR_CONTENT_GAP } from "@/lib/constants"; // Removed MOBILE_SIDEBAR_TOP_OFFSET
+import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT, MOBILE_HEADER_EFFECTIVE_HEIGHT, MOBILE_HEADER_SIDEBAR_GAP, MOBILE_SIDEBAR_CONTENT_GAP } from "@/lib/constants";
 
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
@@ -40,10 +40,13 @@ const DynamicMobileControls = dynamic(() => import("@/components/mobile-controls
 const DynamicWelcomeBackModal = dynamic(() => import("@/components/welcome-back-modal").then(mod => mod.WelcomeBackModal), { ssr: false });
 
 // Constants for layout dimensions
-const HEADER_HEIGHT_DESKTOP = 64; // px
-const SIDEBAR_WIDTH_DESKTOP = 48; // px (from sidebar.tsx)
-const SIDEBAR_LEFT_OFFSET = 8; // px (from sidebar.tsx)
-const SIDEBAR_CONTENT_GAP = 16; // px (gap between sidebar and main content)
+const HEADER_HEIGHT_DESKTOP = 64;
+const SIDEBAR_WIDTH_DESKTOP = 48;
+const SIDEBAR_LEFT_OFFSET = 8;
+const SIDEBAR_CONTENT_GAP = 16;
+
+// Hardcoded top for mobile sidebar for debugging
+const DEBUG_MOBILE_SIDEBAR_TOP = 80;
 
 export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
   const { loading, session, profile } = useSupabase();
@@ -100,8 +103,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
         contentWidth = windowWidth - contentLeft;
         contentHeight = windowHeight - HEADER_HEIGHT_DESKTOP;
       } else {
-        // Mobile layout: account for horizontal sidebar and bottom controls
-        contentTop = MOBILE_HEADER_EFFECTIVE_HEIGHT + MOBILE_HEADER_SIDEBAR_GAP + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_SIDEBAR_CONTENT_GAP; // Corrected calculation
+        // Mobile layout: account for hardcoded sidebar top and its height
+        contentTop = DEBUG_MOBILE_SIDEBAR_TOP + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_SIDEBAR_CONTENT_GAP;
         contentHeight = windowHeight - (contentTop + MOBILE_CONTROLS_HEIGHT);
       }
 

@@ -6,10 +6,10 @@ import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
 import { useWidget } from "@/components/widget/widget-provider";
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, Palette, Image, BarChart2, BookOpen, Goal, WandSparkles, BookText } from "lucide-react";
-import { MOBILE_HORIZONTAL_SIDEBAR_HEIGHT, MOBILE_HEADER_EFFECTIVE_HEIGHT, MOBILE_HEADER_SIDEBAR_GAP } from "@/lib/constants"; // Removed MOBILE_SIDEBAR_TOP_OFFSET
+import { MOBILE_HORIZONTAL_SIDEBAR_HEIGHT, MOBILE_HEADER_EFFECTIVE_HEIGHT, MOBILE_HEADER_SIDEBAR_GAP } from "@/lib/constants";
 
-const SIDEBAR_WIDTH_DESKTOP = 48; // Reduced from 60px
-const HEADER_HEIGHT_REM = 4; // 4rem = 64px
+const SIDEBAR_WIDTH_DESKTOP = 48;
+const HEADER_HEIGHT_REM = 4;
 
 interface SidebarProps {
   isMobile: boolean;
@@ -20,7 +20,6 @@ export function Sidebar({ isMobile }: SidebarProps) {
   const { toggleWidget } = useWidget();
   const sidebarRef = useRef<HTMLDivElement>(null);
 
-  // Set sidebar to always be open
   useEffect(() => {
     setIsSidebarOpen(true);
   }, [setIsSidebarOpen]);
@@ -43,19 +42,18 @@ export function Sidebar({ isMobile }: SidebarProps) {
     toggleWidget(id, label);
   };
 
-  // Sidebar is always compact, so isExpanded is always false
   const isExpanded = false;
 
   return (
     <div
       ref={sidebarRef}
       className={cn(
-        "fixed z-[1001] flex",
-        "bg-card/60 backdrop-blur-xl border border-white/40 shadow-xl",
+        "fixed z-[9999] flex", // Increased z-index for debugging
+        "bg-red-500 border border-white/40 shadow-xl", // Added red background for visibility
         "transition-all duration-300 ease-in-out",
         isMobile ?
-          `top-[${MOBILE_HEADER_EFFECTIVE_HEIGHT + MOBILE_HEADER_SIDEBAR_GAP}px] left-0 right-0 flex-row justify-around p-0.5 gap-0.5 rounded-none overflow-x-auto` : // Mobile: dynamically calculated top
-          "top-1/2 -translate-y-1/2 left-2 rounded-full p-1 gap-1 flex-col" // Desktop: vertical, left side
+          `top-[80px] left-0 right-0 flex-row justify-around p-0.5 gap-0.5 rounded-none overflow-x-auto` : // Hardcoded top for debugging
+          "top-1/2 -translate-y-1/2 left-2 rounded-full p-1 gap-1 flex-col"
       )}
       style={isMobile ? { height: `${MOBILE_HORIZONTAL_SIDEBAR_HEIGHT}px`, width: '100%' } : { width: `${SIDEBAR_WIDTH_DESKTOP}px` }}
     >
@@ -67,7 +65,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
             label={item.label}
             isActive={activePanel === item.id}
             onClick={() => handleSidebarItemClick(item.id, item.label)}
-            isExpanded={isExpanded} // Always pass false
+            isExpanded={isExpanded}
           />
         ))}
       </div>

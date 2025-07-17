@@ -8,7 +8,7 @@ import { useSpotifyPlayer } from '@/hooks/use-spotify-player';
 import { cn, getYouTubeEmbedUrl } from '@/lib/utils';
 import { useSupabase } from '@/integrations/supabase/auth';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Import Popover components
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Drawer,
   DrawerContent,
@@ -16,24 +16,26 @@ import {
   DrawerTitle,
   DrawerDescription,
   DrawerTrigger,
-} from "@/components/ui/drawer"; // Import Drawer components
-import { MOBILE_HORIZONTAL_SIDEBAR_HEIGHT, MOBILE_HEADER_EFFECTIVE_HEIGHT, MOBILE_HEADER_SIDEBAR_GAP, MOBILE_SIDEBAR_CONTENT_GAP } from '@/lib/constants'; // Removed MOBILE_SIDEBAR_TOP_OFFSET
+} from "@/components/ui/drawer";
+import { MOBILE_HORIZONTAL_SIDEBAR_HEIGHT, MOBILE_HEADER_EFFECTIVE_HEIGHT, MOBILE_HEADER_SIDEBAR_GAP, MOBILE_SIDEBAR_CONTENT_GAP } from '@/lib/constants';
 
 // Import new modular components
 import { PlayerDisplay } from './audio-player/player-display';
 import { MediaInput } from './audio-player/media-input';
 import { PlayerControls } from './audio-player/player-controls';
 import { ProgressBar } from './audio-player/progress-bar';
-import { MinimizedPlayerControls } from './audio-player/minimized-player-controls'; // New import
+import { MinimizedPlayerControls } from './audio-player/minimized-player-controls';
 
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
-const HEADER_HEIGHT = 64; // px
-// const TIME_PROGRESS_BAR_HEIGHT = 64; // px - Removed as it's now fixed
-const TOTAL_HEADER_AREA_HEIGHT = HEADER_HEIGHT; // Adjusted to only include header height
+const HEADER_HEIGHT = 64;
+const TOTAL_HEADER_AREA_HEIGHT = HEADER_HEIGHT;
+
+// Hardcoded top for mobile sidebar for debugging
+const DEBUG_MOBILE_SIDEBAR_TOP = 80;
 
 interface SimpleAudioPlayerProps {
   isMobile: boolean;
-  displayMode?: 'normal' | 'maximized' | 'minimized'; // Optional prop for initial display mode
+  displayMode?: 'normal' | 'maximized' | 'minimized';
 }
 
 const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal' }: SimpleAudioPlayerProps) => {
@@ -41,11 +43,10 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   const [stagedInputUrl, setStagedInputUrl] = useState('');
   const [committedMediaUrl, setCommittedMediaUrl] = useState('');
   const [playerType, setPlayerType] = useState<'audio' | 'youtube' | 'spotify' | null>(null);
-  const [isUrlInputOpen, setIsUrlInputOpen] = useState(false); // State for popover/drawer
+  const [isUrlInputOpen, setIsUrlInputOpen] = useState(false);
   const [displayMode, setDisplayMode] = useState<'normal' | 'maximized' | 'minimized'>(() => {
     if (typeof window !== 'undefined') {
       const savedMode = localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY);
-      // Prioritize initialDisplayMode prop if provided, otherwise use saved mode or default to 'normal'
       return initialDisplayMode || (savedMode === 'minimized' ? 'minimized' : 'normal');
     }
     return initialDisplayMode;
@@ -98,7 +99,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     toggleMute: spotifyToggleMute,
     seekTo: spotifySeekTo,
     connectToSpotify,
-    disconnectFromSpotify, // Added disconnect
+    disconnectFromSpotify,
     transferPlayback,
     playTrack: spotifyPlayTrack,
   } = useSpotifyPlayer(session?.access_token || null);
@@ -114,10 +115,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
       setPlayerType('youtube');
     } else if (committedMediaUrl.includes('open.spotify.com')) {
       setPlayerType('spotify');
-      // If Spotify URL is set and user is logged in, try to connect/play via SDK
       if (session?.access_token) {
-        // connectToSpotify is called by the hook itself when accessToken is provided.
-        // We only need to explicitly play the track if it's a new track and player is ready.
         if (spotifyPlayerReady && spotifyCurrentTrack?.uri !== committedMediaUrl) {
           spotifyPlayTrack(committedMediaUrl);
         }
@@ -198,9 +196,9 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   };
 
   const loadNewMedia = () => {
-    setStagedInputUrl(stagedInputUrl.trim()); // Trim whitespace
+    setStagedInputUrl(stagedInputUrl.trim());
     setCommittedMediaUrl(stagedInputUrl.trim());
-    setIsUrlInputOpen(false); // Close popover/drawer after loading
+    setIsUrlInputOpen(false);
   };
 
   const currentPlaybackTime = playerType === 'youtube' ? youtubeCurrentTime : (playerType === 'spotify' ? spotifyCurrentTime : audioCurrentTime);
@@ -226,7 +224,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     return (
       <div className={cn(
         "fixed right-1 z-[901]",
-        `top-[${MOBILE_HEADER_EFFECTIVE_HEIGHT + MOBILE_HEADER_SIDEBAR_GAP + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_SIDEBAR_CONTENT_GAP}px]`, // Corrected top position
+        `top-[${DEBUG_MOBILE_SIDEBAR_TOP + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_SIDEBAR_CONTENT_GAP}px]`, // Adjusted top position
         "transition-all duration-300 ease-in-out",
         "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex w-full",
         displayMode === 'normal' || displayMode === 'maximized' ? "h-auto p-1 rounded-xl max-w-[224px] flex-col" : "h-40 p-1 items-center justify-between flex-col rounded-full w-10"
