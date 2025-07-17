@@ -36,7 +36,7 @@ interface HeaderProps {
 const ClockTrigger = () => {
   const { timeString, dateString, isLoading } = useClock();
   return (
-    <Button className="bg-header-button-dark text-header-button-dark-foreground font-mono text-sm px-3 hidden md:flex flex-col h-auto py-1 hover:bg-header-button-dark/80">
+    <Button className="bg-background/50 backdrop-blur-xl text-header-button-dark-foreground font-mono text-sm px-3 hidden md:flex flex-col h-auto py-1 hover:bg-header-button-dark/80">
       {isLoading ? (
         <span>--:--:--</span>
       ) : (
