@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Play, Pause, Volume2, VolumeX, ChevronLeft } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, ChevronLeft, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils'; // Import cn for conditional styling
 
 interface MinimizedPlayerControlsProps {
@@ -32,24 +32,15 @@ export function MinimizedPlayerControls({
 
   return (
     <div className="flex flex-col items-center justify-between w-full h-full py-1 gap-1"> {/* Changed to flex-col, added py-1, reduced gap */}
-      {/* Undock Button (now at the top) */}
-      <button
-        onClick={() => setDisplayMode('normal')}
-        className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 flex-shrink-0 h-7 w-7 flex items-center justify-center" // Smaller button
-        title="Expand Player"
-      >
-        <ChevronLeft size={16} /> {/* Smaller icon */}
-      </button>
-
       {/* Play/Pause Button */}
       <button
         onClick={togglePlayPause}
-        className="p-0.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105 h-8 w-8 flex-shrink-0 flex items-center justify-center"
+        className="p-0.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105 h-7 w-7 flex-shrink-0 flex items-center justify-center" // Smaller button
         aria-label={currentIsPlaying ? "Pause" : "Play"}
         title={currentIsPlaying ? "Pause" : "Play"}
         disabled={!playerIsReady}
       >
-        {currentIsPlaying ? <Pause size={18} /> : <Play size={18} />}
+        {currentIsPlaying ? <Pause size={16} /> : <Play size={16} />} {/* Smaller icon */}
       </button>
 
       {/* Volume Control */}
@@ -73,11 +64,20 @@ export function MinimizedPlayerControls({
           className={cn(
             "w-10 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary",
             "transform rotate-90 origin-center", // Rotate for vertical slider
-            "my-4" // Add vertical margin
+            "my-2" // Adjusted vertical margin
           )}
           disabled={isVolumeControlDisabled}
         />
       </div>
+
+      {/* Undock Button (now at the bottom) */}
+      <button
+        onClick={() => setDisplayMode('normal')}
+        className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 flex-shrink-0 h-7 w-7 flex items-center justify-center" // Smaller button
+        title="Expand Player"
+      >
+        <ChevronUp size={16} /> {/* Changed to ChevronUp, smaller icon */}
+      </button>
     </div>
   );
 }

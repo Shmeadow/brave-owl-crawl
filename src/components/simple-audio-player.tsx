@@ -233,8 +233,8 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
       <div className={cn(
         "fixed top-[72px] right-4 z-[901]", // Position at top right for mobile
         "transition-all duration-300 ease-in-out",
-        "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex flex-col w-full", // Applied styling here
-        isMobileExpanded ? "h-auto p-1 rounded-xl max-w-[224px]" : "h-10 p-1 items-center justify-between flex-row rounded-full w-40" // Adjusted max-width, height, padding, and rounded-full
+        "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex w-full", // Applied styling here
+        isMobileExpanded ? "h-auto p-1 rounded-xl max-w-[224px] flex-col" : "h-40 p-1 items-center justify-between flex-col rounded-full w-10" // Adjusted max-width, height, padding, and rounded-full
       )}>
         {isMobileExpanded ? (
           <>
