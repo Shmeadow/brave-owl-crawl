@@ -22,6 +22,7 @@ import { RoomSettingsContent } from "@/components/spaces-widget/RoomSettingsCont
 import { CreatePersonalRoomForm } from "./create-personal-room-form";
 import { BugReportButton } from "./bug-report-button";
 import { TimeAndProgressDisplay, useClock } from "@/components/time-and-progress-display";
+import { HEADER_HEIGHT_MOBILE } from "@/lib/constants"; // Import new constant
 
 interface HeaderProps {
   onToggleChat: () => void;
@@ -65,7 +66,8 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
 
   return (
     <header className={cn(
-      "fixed top-0 z-[1002] w-full flex items-center justify-between py-2 px-1 gap-2 h-16", // Added h-16 here
+      "fixed top-0 z-[1002] w-full flex items-center justify-between py-2 px-1 gap-2",
+      isMobile ? `h-[${HEADER_HEIGHT_MOBILE}px]` : "h-16", // Apply mobile height here
       "bg-background/60 backdrop-blur-xl border-b border-white/20 shadow-lg" // Applied transparent background and blur here
     )}>
       {/* Left Group */}

@@ -26,7 +26,7 @@ import { useRooms } from "@/hooks/use-rooms";
 import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification";
 import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar";
 import { CookieConsentBar } from "@/components/cookie-consent-bar";
-import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT } from "@/lib/constants"; // Import new constant
+import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT, HEADER_HEIGHT_MOBILE } from "@/lib/constants"; // Import new constant
 
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
@@ -40,7 +40,7 @@ const DynamicMobileControls = dynamic(() => import("@/components/mobile-controls
 const DynamicWelcomeBackModal = dynamic(() => import("@/components/welcome-back-modal").then(mod => mod.WelcomeBackModal), { ssr: false });
 
 // Constants for layout dimensions
-const HEADER_HEIGHT = 64; // px
+const HEADER_HEIGHT_DESKTOP = 64; // px
 const SIDEBAR_WIDTH_DESKTOP = 48; // px (from sidebar.tsx)
 const SIDEBAR_LEFT_OFFSET = 8; // px (from sidebar.tsx)
 const SIDEBAR_CONTENT_GAP = 16; // px (gap between sidebar and main content)
@@ -89,18 +89,20 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
       const windowHeight = window.innerHeight;
       
       let contentLeft = 0;
-      let contentTop = HEADER_HEIGHT;
+      let contentTop = 0; // Start from 0, then add header height
       let contentWidth = windowWidth;
-      let contentHeight = windowHeight - HEADER_HEIGHT;
+      let contentHeight = windowHeight;
 
       if (!isMobile) {
         // Desktop layout
+        contentTop = HEADER_HEIGHT_DESKTOP;
         contentLeft = SIDEBAR_WIDTH_DESKTOP + SIDEBAR_LEFT_OFFSET + SIDEBAR_CONTENT_GAP;
         contentWidth = windowWidth - contentLeft;
+        contentHeight = windowHeight - HEADER_HEIGHT_DESKTOP;
       } else {
         // Mobile layout: account for horizontal sidebar and bottom controls
-        contentTop += MOBILE_HORIZONTAL_SIDEBAR_HEIGHT;
-        contentHeight -= (MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_CONTROLS_HEIGHT);
+        contentTop = HEADER_HEIGHT_MOBILE + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT;
+        contentHeight = windowHeight - (HEADER_HEIGHT_MOBILE + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_CONTROLS_HEIGHT);
       }
 
       setMainContentArea({
