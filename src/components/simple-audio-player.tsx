@@ -228,7 +228,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
       <div className={cn(
         "fixed z-[900] transition-all duration-300 ease-in-out",
         displayMode === 'normal' && `bottom-4 right-4 w-64 rounded-3xl`,
-        displayMode === 'minimized' && 'bottom-4 right-4 w-10 h-[100px] rounded-full', // Adjusted height to h-[100px]
+        displayMode === 'minimized' && 'bottom-4 right-4 w-10 h-[120px] rounded-full', // Adjusted height to h-[120px]
         displayMode === 'maximized' && 'inset-0 w-full h-full flex flex-col items-center justify-center rounded-none', // Maximize to full screen
         className // Apply external positioning classes
       )}>
@@ -350,7 +350,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     <div className={cn(
       "fixed z-[900] transition-all duration-300 ease-in-out",
       displayMode === 'normal' && `top-[120px] right-4 w-64 rounded-3xl`,
-      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-10 h-40 rounded-full',
+      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-10 h-[120px] rounded-full', // Adjusted height to h-[120px]
       displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-96 flex flex-col items-center justify-center rounded-3xl'
     )}>
       <div className={cn(
