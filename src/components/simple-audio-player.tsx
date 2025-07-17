@@ -295,7 +295,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
               </PopoverTrigger>
               <PopoverContent
                 className="w-56 z-[1100] p-2"
-                onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
                 side="top"
                 align="start"
                 onOpenAutoFocus={(e) => e.preventDefault()}

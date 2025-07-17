@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useForm, ControllerRenderProps } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -63,7 +63,7 @@ export function PomodoroSettingsModal({ initialTimes, onSave }: PomodoroSettings
           <FormField
             control={form.control}
             name="focusMinutes"
-            render={({ field }: { field: ControllerRenderProps<z.infer<typeof formSchema>, "focusMinutes"> }) => (
+            render={({ field }) => (
               <FormItem>
                 <FormLabel>Focus Time (minutes)</FormLabel>
                 <FormControl>
@@ -76,7 +76,7 @@ export function PomodoroSettingsModal({ initialTimes, onSave }: PomodoroSettings
           <FormField
             control={form.control}
             name="shortBreakMinutes"
-            render={({ field }: { field: ControllerRenderProps<z.infer<typeof formSchema>, "shortBreakMinutes"> }) => (
+            render={({ field }) => (
               <FormItem>
                 <FormLabel>Short Break (minutes)</FormLabel>
                 <FormControl>
@@ -89,7 +89,7 @@ export function PomodoroSettingsModal({ initialTimes, onSave }: PomodoroSettings
           <FormField
             control={form.control}
             name="longBreakMinutes"
-            render={({ field }: { field: ControllerRenderProps<z.infer<typeof formSchema>, "longBreakMinutes"> }) => (
+            render={({ field }) => (
               <FormItem>
                 <FormLabel>Long Break (minutes)</FormLabel>
                 <FormControl>

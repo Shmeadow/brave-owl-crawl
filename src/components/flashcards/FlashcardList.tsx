@@ -15,7 +15,7 @@ interface FlashcardListProps {
   columns: number;
   rowHeight: number;
   selectionMode: boolean;
-  isSelected: (cardId: string) => boolean; // Added this prop
+  selectedCardIds: Set<string>;
   onToggleSelection: (id: string) => void;
   categories: Category[];
 }
@@ -28,7 +28,7 @@ export function FlashcardList({
   columns,
   rowHeight,
   selectionMode,
-  isSelected, // Destructure new prop
+  selectedCardIds,
   onToggleSelection,
   categories,
 }: FlashcardListProps) {
@@ -58,7 +58,7 @@ export function FlashcardList({
                   onDelete={onDelete}
                   onOrganize={onOrganize}
                   rowHeight={rowHeight}
-                  isSelected={isSelected(card.id)} // Pass the result of the function
+                  isSelected={selectedCardIds.has(card.id)}
                   selectionMode={selectionMode}
                   onToggleSelection={onToggleSelection}
                   categories={categories}

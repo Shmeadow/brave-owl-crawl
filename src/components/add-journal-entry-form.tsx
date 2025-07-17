@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useForm, ControllerRenderProps } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -66,7 +66,7 @@ export function AddJournalEntryForm({ onAddEntry, isCurrentRoomWritable }: AddJo
             <FormField
               control={form.control}
               name="prefix"
-              render={({ field }: { field: ControllerRenderProps<z.infer<typeof formSchema>, "prefix"> }) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Title</FormLabel>
                   <div className="flex items-center gap-2">
@@ -82,7 +82,7 @@ export function AddJournalEntryForm({ onAddEntry, isCurrentRoomWritable }: AddJo
             <FormField
               control={form.control}
               name="content"
-              render={({ field }: { field: ControllerRenderProps<z.infer<typeof formSchema>, "content"> }) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Content</FormLabel>
                   <FormControl>

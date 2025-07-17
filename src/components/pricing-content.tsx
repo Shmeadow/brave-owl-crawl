@@ -80,7 +80,7 @@ export function PricingContent({ onUpgrade }: { onUpgrade: () => void }) {
         <ToggleGroup
           type="single"
           value={billingCycle}
-          onValueChange={(value: string) => {
+          onValueChange={(value) => {
             if (value) setBillingCycle(value as BillingCycle);
           }}
           className="bg-background p-1 rounded-full border"

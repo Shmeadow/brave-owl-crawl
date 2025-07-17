@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useForm, ControllerRenderProps } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -63,7 +63,7 @@ export function AddTaskForm({ onAddTask, isCurrentRoomWritable }: AddTaskFormPro
         <FormField
           control={form.control}
           name="title"
-          render={({ field }: { field: ControllerRenderProps<z.infer<typeof formSchema>, "title"> }) => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Task Title</FormLabel>
               <FormControl>
@@ -76,7 +76,7 @@ export function AddTaskForm({ onAddTask, isCurrentRoomWritable }: AddTaskFormPro
         <FormField
           control={form.control}
           name="description"
-          render={({ field }: { field: ControllerRenderProps<z.infer<typeof formSchema>, "description"> }) => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Description (Optional)</FormLabel>
               <FormControl>
@@ -89,7 +89,7 @@ export function AddTaskForm({ onAddTask, isCurrentRoomWritable }: AddTaskFormPro
         <FormField
           control={form.control}
           name="dueDate"
-          render={({ field }: { field: ControllerRenderProps<z.infer<typeof formSchema>, "dueDate"> }) => (
+          render={({ field }) => (
             <FormItem className="flex flex-col">
               <FormLabel>Due Date (Optional)</FormLabel>
               <Popover>

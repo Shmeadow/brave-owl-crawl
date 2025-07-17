@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LayoutGrid, FolderInput, Trash, X } from 'lucide-react';
 import { CardData, Category } from '@/hooks/flashcards/types';
-import { MoveCardModal } from './MoveCardModal'; // Updated import
+import { OrganizeCardModal } from './OrganizeCardModal';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { useFlashcards } from '@/hooks/use-flashcards';
@@ -51,7 +51,7 @@ export function ManageMode({
   const [organizingCard, setOrganizingCard] = useState<CardData | null>(null);
   const [columns, setColumns] = useState(3);
   const [selectionMode, setSelectionMode] = useState(false);
-  const [selectedCardIds, setSelectedCardIds] = useState<Set<string>>(new Set()); // Explicitly type as Set<string>
+  const [selectedCardIds, setSelectedCardIds] = useState<Set<string>>(new Set());
   const [isBulkMoveOpen, setIsBulkMoveOpen] = useState(false);
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   const [bulkMoveCategoryId, setBulkMoveCategoryId] = useState<string | null>(null);
@@ -77,7 +77,7 @@ export function ManageMode({
 
   const handleToggleSelectionMode = () => {
     setSelectionMode(!selectionMode);
-    setSelectedCardIds(new Set<string>()); // Ensure it's a new empty Set<string>
+    setSelectedCardIds(new Set());
   };
 
   const handleConfirmBulkDelete = async () => {
@@ -110,7 +110,7 @@ export function ManageMode({
               <Label htmlFor="columns-slider">Columns: {columns}</Label>
               <div className="flex items-center gap-4">
                 <LayoutGrid className="h-5 w-5 text-muted-foreground" />
-                <Slider id="columns-slider" value={[columns]} onValueChange={(v: number[]) => setColumns(v[0])} min={1} max={3} step={1} />
+                <Slider id="columns-slider" value={[columns]} onValueChange={(v) => setColumns(v[0])} min={1} max={3} step={1} />
               </div>
             </div>
           </CardContent>
@@ -151,18 +151,18 @@ export function ManageMode({
           columns={columns}
           rowHeight={120}
           selectionMode={selectionMode}
-          isSelected={(cardId) => selectedCardIds.has(cardId)} // Pass a function for isSelected
+          selectedCardIds={selectedCardIds}
           onToggleSelection={toggleSelection}
           categories={categories}
         />
       </div>
-      <MoveCardModal card={organizingCard} categories={categories} isOpen={!!organizingCard} onClose={() => setOrganizingCard(null)} onUpdateCardCategory={onUpdateCardCategory} />
+      <OrganizeCardModal card={organizingCard} categories={categories} isOpen={!!organizingCard} onClose={() => setOrganizingCard(null)} onUpdateCategory={onUpdateCardCategory} />
       <Dialog open={isBulkMoveOpen} onOpenChange={setIsBulkMoveOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>Move {selectedCardIds.size} Cards</DialogTitle></DialogHeader>
           <div className="py-4">
             <Label>Move to Category</Label>
-            <Select onValueChange={(value: string) => setBulkMoveCategoryId(value === 'null' ? null : value)} defaultValue="null">
+            <Select onValueChange={(value) => setBulkMoveCategoryId(value === 'null' ? null : value)} defaultValue="null">
               <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="null">Uncategorized</SelectItem>

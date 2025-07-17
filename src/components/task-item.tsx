@@ -26,7 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useForm, ControllerRenderProps } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Calendar } from "@/components/ui/calendar";
@@ -166,7 +166,7 @@ export function TaskItem({ task, onToggleComplete, onUpdateTask, onDelete, isCur
               <FormField
                 control={form.control}
                 name="title"
-                render={({ field }: { field: ControllerRenderProps<z.infer<typeof editFormSchema>, "title"> }) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
@@ -179,7 +179,7 @@ export function TaskItem({ task, onToggleComplete, onUpdateTask, onDelete, isCur
               <FormField
                 control={form.control}
                 name="description"
-                render={({ field }: { field: ControllerRenderProps<z.infer<typeof editFormSchema>, "description"> }) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
@@ -192,7 +192,7 @@ export function TaskItem({ task, onToggleComplete, onUpdateTask, onDelete, isCur
               <FormField
                 control={form.control}
                 name="dueDate"
-                render={({ field }: { field: ControllerRenderProps<z.infer<typeof editFormSchema>, "dueDate"> }) => (
+                render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Due Date</FormLabel>
                     <Popover>

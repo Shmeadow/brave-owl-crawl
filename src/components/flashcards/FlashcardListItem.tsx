@@ -66,7 +66,7 @@ export function FlashcardListItem({
           <Button
             variant="ghost"
             size="icon"
-            onClick={(e: React.MouseEvent) => { e.stopPropagation(); onOrganize(card); }}
+            onClick={(e) => { e.stopPropagation(); onOrganize(card); }}
             className="h-8 w-8 text-muted-foreground hover:text-primary"
             title="Organize flashcard"
             disabled={selectionMode}
@@ -78,7 +78,7 @@ export function FlashcardListItem({
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
                 className="h-8 w-8 text-muted-foreground hover:text-primary"
                 title="Edit flashcard"
                 disabled={selectionMode}
@@ -88,7 +88,7 @@ export function FlashcardListItem({
             </PopoverTrigger>
             <PopoverContent
               className="w-80 z-[1100]"
-              onClick={(e: React.MouseEvent) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
               side="bottom"
               align="end"
               onOpenAutoFocus={(e) => e.preventDefault()}
@@ -105,7 +105,7 @@ export function FlashcardListItem({
           <Button
             variant="ghost"
             size="icon"
-            onClick={(e: React.MouseEvent) => { e.stopPropagation(); onDelete(card.id); }}
+            onClick={(e) => { e.stopPropagation(); onDelete(card.id); }}
             className="h-8 w-8 text-muted-foreground hover:text-destructive"
             title="Delete flashcard"
             disabled={selectionMode}

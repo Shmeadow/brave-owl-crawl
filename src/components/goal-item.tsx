@@ -33,7 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { useForm, ControllerRenderProps } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
@@ -171,7 +171,7 @@ export function GoalItem({ goal, onToggleComplete, onUpdateGoal, onDelete, isCur
               <FormField
                 control={form.control}
                 name="title"
-                render={({ field }: { field: ControllerRenderProps<z.infer<typeof editGoalFormSchema>, "title"> }) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Goal Title</FormLabel>
                     <FormControl>
@@ -184,7 +184,7 @@ export function GoalItem({ goal, onToggleComplete, onUpdateGoal, onDelete, isCur
               <FormField
                 control={form.control}
                 name="description"
-                render={({ field }: { field: ControllerRenderProps<z.infer<typeof editGoalFormSchema>, "description"> }) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Description (Optional)</FormLabel>
                     <FormControl>
@@ -197,7 +197,7 @@ export function GoalItem({ goal, onToggleComplete, onUpdateGoal, onDelete, isCur
               <FormField
                 control={form.control}
                 name="targetCompletionDate"
-                render={({ field }: { field: ControllerRenderProps<z.infer<typeof editGoalFormSchema>, "targetCompletionDate"> }) => (
+                render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Target Completion Date (Optional)</FormLabel>
                     <Popover>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useForm, ControllerRenderProps } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -73,7 +73,7 @@ export function FlashcardForm({ onSave, editingCard, onCancel, categories, selec
             <FormField
               control={form.control}
               name="front"
-              render={({ field }: { field: ControllerRenderProps<z.infer<typeof formSchema>, "front"> }) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Card Front (Question)</FormLabel>
                   <FormControl>
@@ -86,7 +86,7 @@ export function FlashcardForm({ onSave, editingCard, onCancel, categories, selec
             <FormField
               control={form.control}
               name="back"
-              render={({ field }: { field: ControllerRenderProps<z.infer<typeof formSchema>, "back"> }) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Card Back (Answer)</FormLabel>
                   <FormControl>
@@ -99,11 +99,11 @@ export function FlashcardForm({ onSave, editingCard, onCancel, categories, selec
             <FormField
               control={form.control}
               name="category_id"
-              render={({ field }: { field: ControllerRenderProps<z.infer<typeof formSchema>, "category_id"> }) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
                   <Select
-                    onValueChange={(value: string) => field.onChange(value === 'null' ? null : value)}
+                    onValueChange={(value) => field.onChange(value === 'null' ? null : value)}
                     defaultValue={field.value || 'null'}
                   >
                     <FormControl>
