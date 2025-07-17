@@ -58,9 +58,9 @@ export function GuestModeWarningBar() {
         className={cn(
           "fixed bottom-4 left-4 z-[905]",
           "bg-yellow-100/80 backdrop-blur-xl border-yellow-300 text-yellow-800 shadow-lg rounded-full", // Apply rounded-full here
-          "flex items-center gap-2 cursor-pointer",
+          "flex items-center cursor-pointer", // Removed gap-2 here
           "animate-in slide-in-from-left-full duration-500 ease-out",
-          isMobile ? "px-2 py-1" : "p-2" // Conditional padding
+          isMobile ? "px-2 py-1 gap-1 w-fit" : "p-2 gap-2" // Added gap-1 and w-fit for mobile, kept p-2 and gap-2 for desktop
         )}
         onClick={handleExpand}
         title="Expand Guest Mode Warning"
