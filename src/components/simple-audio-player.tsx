@@ -231,7 +231,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   if (isMobile) {
     return (
       <div className={cn(
-        "fixed top-[72px] left-1/2 -translate-x-1/2 z-[901]", // Position at top for mobile
+        "fixed top-[72px] right-4 z-[901]", // Position at top right for mobile
         "transition-all duration-300 ease-in-out",
         "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full", // Applied styling here
         isMobileExpanded ? "h-auto p-2 max-w-xs" : "h-14 p-2 items-center justify-between flex-row max-w-[192px]" // Adjusted max-width for minimized
