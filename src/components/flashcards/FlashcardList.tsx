@@ -33,7 +33,7 @@ export function FlashcardList({
 }: FlashcardListProps) {
   return (
     <Card className="w-full flex flex-col flex-1 bg-card backdrop-blur-xl border-white/20">
-      <CardHeader>
+      <CardHeader className="p-2 sm:p-4">
         <CardTitle>Your Flashcards ({flashcards.length})</CardTitle>
       </CardHeader>
       <CardContent className="flex-1 p-0 flex flex-col">
@@ -42,7 +42,7 @@ export function FlashcardList({
         ) : (
           <ScrollArea className="flex-1 h-full">
             <ul
-              className="p-4 grid gap-4"
+              className="p-2 sm:p-4 grid gap-2 sm:gap-4"
               style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
             >
               {flashcards.map((card) => (

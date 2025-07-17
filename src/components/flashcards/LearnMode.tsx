@@ -79,9 +79,9 @@ export function LearnMode({ flashcards, onGradeCard, goToSummary, flashcardSize,
   }
 
   return (
-    <div className="flex flex-col md:flex-row gap-6 w-full">
+    <div className="flex flex-col md:flex-row gap-4 sm:gap-6 w-full">
       <Card className="w-full md:w-1/4">
-        <CardContent className="p-4 space-y-4">
+        <CardContent className="p-2 sm:p-4 space-y-4">
           <div>
             <Label>Category</Label>
             <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
