@@ -26,7 +26,7 @@ import { useRooms } from "@/hooks/use-rooms";
 import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification";
 import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar";
 import { CookieConsentBar } from "@/components/cookie-consent-bar";
-import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT, HEADER_HEIGHT_MOBILE } from "@/lib/constants"; // Import new constant
+import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT, MOBILE_HEADER_EFFECTIVE_HEIGHT } from "@/lib/constants"; // Import new constant
 
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
@@ -101,8 +101,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
         contentHeight = windowHeight - HEADER_HEIGHT_DESKTOP;
       } else {
         // Mobile layout: account for horizontal sidebar and bottom controls
-        contentTop = HEADER_HEIGHT_MOBILE + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT;
-        contentHeight = windowHeight - (HEADER_HEIGHT_MOBILE + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_CONTROLS_HEIGHT);
+        contentTop = MOBILE_HEADER_EFFECTIVE_HEIGHT + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT;
+        contentHeight = windowHeight - (MOBILE_HEADER_EFFECTIVE_HEIGHT + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_CONTROLS_HEIGHT);
       }
 
       setMainContentArea({
