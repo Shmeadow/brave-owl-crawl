@@ -121,13 +121,17 @@ export function useWidgetActions({
       const effectiveInitialWidth = isMobile ? DEFAULT_WIDGET_WIDTH_MOBILE : config.initialWidth;
       const effectiveInitialHeight = isMobile ? DEFAULT_WIDGET_HEIGHT_MOBILE : config.initialHeight;
 
+      // Determine effective initial position based on mobile status
+      const effectiveInitialX = isMobile ? mainContentArea.left + 5 : mainContentArea.left + SIDEBAR_OPEN_OFFSET_X;
+      const effectiveInitialY = isMobile ? mainContentArea.top : mainContentArea.top + SIDEBAR_OPEN_OFFSET_Y;
+
       if (existingWidget) {
         // If widget exists, just make it visible and bring to front
         const restoredPosition = existingWidget.normalPosition || clampPosition(
-          mainContentArea.left + SIDEBAR_OPEN_OFFSET_X, // Default to near sidebar if no normalPosition
-          mainContentArea.top + SIDEBAR_OPEN_OFFSET_Y,
-          effectiveInitialWidth, // Use effective width for clamping
-          effectiveInitialHeight, // Use effective height for clamping
+          effectiveInitialX, // Use effective X for clamping
+          effectiveInitialY, // Use effective Y for clamping
+          effectiveInitialWidth,
+          effectiveInitialHeight,
           mainContentArea
         );
         const restoredSize = existingWidget.normalSize || { width: effectiveInitialWidth, height: effectiveInitialHeight };
@@ -149,12 +153,9 @@ export function useWidgetActions({
         return updatedWidgets; // Recalculation happens in updateAndRecalculate
       } else {
         // If widget does not exist (shouldn't happen with new persistence model, but as fallback)
-        const initialX = mainContentArea.left + SIDEBAR_OPEN_OFFSET_X;
-        const initialY = mainContentArea.top + SIDEBAR_OPEN_OFFSET_Y;
-
         const clampedInitialPos = clampPosition(
-          initialX,
-          initialY,
+          effectiveInitialX,
+          effectiveInitialY,
           effectiveInitialWidth,
           effectiveInitialHeight,
           mainContentArea
@@ -340,6 +341,10 @@ export function useWidgetActions({
       const effectiveInitialWidth = isMobile ? DEFAULT_WIDGET_WIDTH_MOBILE : config.initialWidth;
       const effectiveInitialHeight = isMobile ? DEFAULT_WIDGET_HEIGHT_MOBILE : config.initialHeight;
 
+      // Determine effective initial position based on mobile status
+      const effectiveInitialX = isMobile ? mainContentArea.left + 5 : mainContentArea.left + SIDEBAR_OPEN_OFFSET_X;
+      const effectiveInitialY = isMobile ? mainContentArea.top : mainContentArea.top + SIDEBAR_OPEN_OFFSET_Y;
+
       if (existingWidget) {
         // Toggle visibility
         const updatedWidgets = prev.map((widget: WidgetState) => {
@@ -347,10 +352,10 @@ export function useWidgetActions({
             if (widget.isClosed) {
               // Open it
               const restoredPosition = widget.normalPosition || clampPosition(
-                mainContentArea.left + SIDEBAR_OPEN_OFFSET_X, // Default to near sidebar if no normalPosition
-                mainContentArea.top + SIDEBAR_OPEN_OFFSET_Y,
-                effectiveInitialWidth, // Use effective width for clamping
-                effectiveInitialHeight, // Use effective height for clamping
+                effectiveInitialX, // Use effective X for clamping
+                effectiveInitialY, // Use effective Y for clamping
+                effectiveInitialWidth,
+                effectiveInitialHeight,
                 mainContentArea
               );
               const restoredSize = widget.normalSize || { width: effectiveInitialWidth, height: effectiveInitialHeight };
@@ -381,12 +386,9 @@ export function useWidgetActions({
       } else {
         // This case should ideally not happen if all widgets are pre-initialized in persistence.
         // But as a fallback, add it as a new, open widget.
-        const initialX = mainContentArea.left + SIDEBAR_OPEN_OFFSET_X;
-        const initialY = mainContentArea.top + SIDEBAR_OPEN_OFFSET_Y;
-
         const clampedInitialPos = clampPosition(
-          initialX,
-          initialY,
+          effectiveInitialX,
+          effectiveInitialY,
           effectiveInitialWidth,
           effectiveInitialHeight,
           mainContentArea
