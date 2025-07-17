@@ -100,7 +100,7 @@ export function TimeAndProgressDisplay({ className, isMobile }: TimeAndProgressD
       className={cn(
         "fixed z-[902] bg-card/50 backdrop-blur-xl border border-white/20 rounded-lg p-2",
         "flex flex-col items-center text-sm font-mono text-muted-foreground",
-        isMobile ? "top-16 right-2 w-[100px]" : "top-16 right-4 w-[160px]", // Responsive positioning and width
+        isMobile ? "top-16 right-4 w-[120px]" : "top-16 right-4 w-[160px]", // Responsive positioning and width
         className
       )}
     >

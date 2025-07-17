@@ -9,9 +9,9 @@ import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, Palette, Image, BarChart2, BookOpen, Goal, ChevronLeft, ChevronRight, WandSparkles, BookText } from "lucide-react"; // Changed NotebookPen to Palette
 
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
-const SIDEBAR_WIDTH_EXPANDED = 60; // px - Set to 60px to match docked width
+const SIDEBAR_WIDTH_EXPANDED = 250; // px - Set to 250px for expanded desktop view
 const HOT_ZONE_WIDTH = 20; // px (includes the 4px visible strip)
-const SIDEBAR_WIDTH_MOBILE = 60; // px - Define a width for mobile sidebar (changed from 250px)
+const SIDEBAR_WIDTH_MOBILE = 250; // px - Define a width for mobile sidebar
 const UNDOCK_DELAY = 500; // ms
 const HEADER_HEIGHT_REM = 4; // 4rem = 64px
 
@@ -57,7 +57,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
     if (e.clientX < HOT_ZONE_WIDTH && !isSidebarOpenRef.current) {
       handleMouseEnter();
     } 
-    else if (e.clientX >= SIDEBAR_WIDTH_DESKTOP && isSidebarOpenRef.current && !sidebarRef.current?.contains(e.target as Node)) {
+    else if (e.clientX >= SIDEBAR_WIDTH_EXPANDED && isSidebarOpenRef.current && !sidebarRef.current?.contains(e.target as Node)) {
       handleMouseLeave();
     }
   }, [isMobile, isAlwaysOpen, handleMouseEnter, handleMouseLeave]);

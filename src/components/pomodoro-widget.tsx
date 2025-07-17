@@ -96,7 +96,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
                 <span className="sr-only">Collapse Pomodoro</span>
               </Button>
             </CardHeader>
-            <CardContent className="flex flex-col items-center gap-3 w-full p-2">
+            <CardContent className="flex flex-col items-center gap-4 w-full p-2">
               {isFocusSessionActive && activeGoalTitle && mode === 'focus' && (
                 <div className="text-center mb-1">
                   <p className="text-xs text-muted-foreground">Focusing on:</p>
@@ -173,6 +173,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
             </CardContent>
           </>
         ) : (
+          // Minimized mobile view
           <>
             <span className="text-sm font-semibold capitalize">{mode.replace('-', ' ')}</span>
             <div
@@ -184,7 +185,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
             >
               {formatTime(timeLeft)}
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-9 w-9" disabled={!isCurrentRoomWritable}>
                 {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               </Button>

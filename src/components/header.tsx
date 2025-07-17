@@ -70,15 +70,15 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
             size="icon"
             onClick={onToggleSidebar}
             title="Open Menu"
-            className="ml-2" // Add margin for mobile
+            className="ml-4" // Add margin for mobile
           >
             <Menu className="h-5 w-5" />
             <span className="sr-only">Open Menu</span>
           </Button>
         )}
         <div className={cn(
-          "flex items-center gap-2",
-          isMobile ? "px-2" : "px-4 py-2 rounded-full border border-white/20" // Adjust padding/border for mobile
+          "flex items-center gap-2 px-4 py-2",
+          !isMobile && "rounded-full border border-white/20" // Only apply border on desktop
         )}>
           <Link href="/dashboard" className="flex items-center space-x-2">
             <h1 className="text-2xl font-bold text-primary">Cozy Hub</h1>
@@ -125,8 +125,8 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
       </div>
 
       <div className={cn(
-        "flex items-center gap-2 ml-auto",
-        isMobile ? "pr-2" : "px-4 py-2 rounded-full border border-white/20" // Adjust padding/border for mobile
+        "flex items-center gap-2 ml-auto px-4 py-2",
+        !isMobile && "rounded-full border border-white/20" // Only apply border on desktop
       )}>
         {/* Always visible on mobile */}
         <BugReportButton />

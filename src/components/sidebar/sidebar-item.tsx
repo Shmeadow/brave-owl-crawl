@@ -17,24 +17,28 @@ interface SidebarItemProps {
 export function SidebarItem({ icon: Icon, label, isActive, onClick, isExpanded }: SidebarItemProps) {
   return (
     <TooltipProvider>
-      <Tooltip delayDuration={100}>
+      <Tooltip delayDuration={isExpanded ? 100000 : 100}>
         <TooltipTrigger asChild>
           <Button
             variant="ghost"
             className={cn(
-              "relative h-8 w-8 rounded-full transition-all duration-200 flex items-center justify-center px-4", // Increased width to w-12, added px-4
+              "relative transition-all duration-200 flex items-center",
+              isExpanded ? "w-full justify-start px-4 h-10" : "h-12 w-12 justify-center rounded-full",
               "bg-transparent text-white/70 hover:bg-white/10 hover:text-white",
               isActive && "bg-white/20 text-white ring-inset ring-2 ring-white/50 box-border"
             )}
             onClick={onClick}
           >
-            <Icon className="h-4 w-4" /> {/* Reverted icon size to h-4 w-4 */}
-            <span className="sr-only">{label}</span>
+            <Icon className="h-5 w-5 flex-shrink-0" />
+            {isExpanded && <span className="ml-4 text-sm font-medium truncate">{label}</span>}
+            <span className={cn(!isExpanded && "sr-only")}>{label}</span>
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="right" className="ml-2">
-          {label}
-        </TooltipContent>
+        {!isExpanded && (
+          <TooltipContent side="right" className="ml-2">
+            {label}
+          </TooltipContent>
+        )}
       </Tooltip>
     </TooltipProvider>
   );
