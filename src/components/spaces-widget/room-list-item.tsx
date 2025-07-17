@@ -97,7 +97,7 @@ export function RoomListItem({ room }: RoomListItemProps) {
           </div>
         </div>
       </div>
-      <div className="flex flex-wrap gap-2 sm:ml-auto">
+      <div className="flex w-full justify-end sm:w-auto flex-wrap gap-2 sm:ml-auto">
         <Button variant="ghost" size="icon" onClick={handleEnterRoom} title="Enter Room" disabled={currentRoomId === room.id}>
           <LogIn className="h-5 w-5" />
         </Button>

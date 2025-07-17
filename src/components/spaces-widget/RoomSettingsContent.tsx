@@ -169,7 +169,7 @@ export function RoomSettingsContent({ room }: RoomSettingsContentProps) {
     <div className="p-4">
       <h3 className="text-lg font-semibold mb-4">Room Options</h3>
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="access">Access</TabsTrigger>
           <TabsTrigger value="members">Members</TabsTrigger>

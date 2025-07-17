@@ -31,7 +31,7 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
 
   return (
     <div className="h-full w-full overflow-y-auto p-2 sm:p-4">
-      <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto py-2 sm:py-4">
+      <div className="flex flex-col items-center gap-4 sm:gap-8 w-full max-w-4xl mx-auto py-2 sm:py-4">
         <h1 className="text-3xl font-bold text-foreground text-center">Spaces</h1>
 
         <RoomActions />
