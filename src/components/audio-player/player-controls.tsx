@@ -50,8 +50,7 @@ export function PlayerControls({
             title="Skip Backward"
             disabled={!canSeek}
           >
-            {/* Wrap children in a single span */}
-            <span><Rewind size={14} /></span>
+            <Rewind size={14} />
           </button>
           <button
             onClick={togglePlayPause}
@@ -60,8 +59,7 @@ export function PlayerControls({
             title={currentIsPlaying ? "Pause" : "Play"}
             disabled={!canPlayPause}
           >
-            {/* Wrap children in a single span */}
-            <span>{currentIsPlaying ? <Pause size={18} /> : <Play size={18} />}</span>
+            {currentIsPlaying ? <Pause size={18} /> : <Play size={18} />}
           </button>
           <button
             onClick={skipForward}
@@ -70,8 +68,7 @@ export function PlayerControls({
             title="Skip Forward"
             disabled={!canSeek}
           >
-            {/* Wrap children in a single span */}
-            <span><FastForward size={14} /></span>
+            <FastForward size={14} />
           </button>
         </div>
       )}
@@ -85,8 +82,7 @@ export function PlayerControls({
           title={currentIsMuted ? "Unmute" : "Mute"}
           disabled={isVolumeControlDisabled}
         >
-          {/* Wrap children in a single span */}
-          <span>{currentIsMuted || currentVolume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}</span>
+          {currentIsMuted || currentVolume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
         </button>
         <input
           type="range"
@@ -108,8 +104,7 @@ export function PlayerControls({
             className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
             title="Maximize Player"
           >
-            {/* Wrap children in a single span */}
-            <span><Maximize size={14} /></span>
+            <Maximize size={14} />
           </button>
         )}
         {displayMode === 'maximized' && (
@@ -118,8 +113,7 @@ export function PlayerControls({
             className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
             title="Shrink Player"
           >
-            {/* Wrap children in a single span */}
-            <span><Minimize size={14} /></span>
+            <Minimize size={14} />
           </button>
         )}
         <button
@@ -127,8 +121,7 @@ export function PlayerControls({
           className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
           title="Minimize Player"
         >
-          {/* Wrap children in a single span */}
-          <span><ChevronRight size={14} /></span>
+          <ChevronRight size={14} />
         </button>
       </div>
     </div>

@@ -38,17 +38,14 @@ const ClockTrigger = () => {
   const { timeString, dateString, isLoading } = useClock();
   return (
     <Button variant="ghost" className="font-mono text-sm px-3 hidden md:flex flex-col h-auto py-1">
-      {/* Wrap children in a single span to satisfy React.Children.only */}
-      <span className="flex flex-col items-center">
-        {isLoading ? (
-          <span>--:--:--</span>
-        ) : (
-          <>
-            <span>{timeString}</span>
-            <span className="text-xs opacity-70">{dateString}</span>
-          </>
-        )}
-      </span>
+      {isLoading ? (
+        <span>--:--:--</span>
+      ) : (
+        <>
+          <span>{timeString}</span>
+          <span className="text-xs opacity-70">{dateString}</span>
+        </>
+      )}
     </Button>
   );
 };

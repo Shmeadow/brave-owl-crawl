@@ -48,7 +48,7 @@ export function UserNameCapsule() {
 
   return (
     <div className={cn(
-      "bg-muted/50 backdrop-blur-xl rounded-full px-2 sm:px-3 py-1 text-sm font-medium text-foreground",
+      "bg-muted/50 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 text-sm font-medium text-foreground",
       "flex items-center justify-center transition-all duration-300 ease-in-out gap-2"
     )}>
       <span>{displayName}</span>
@@ -60,11 +60,8 @@ export function UserNameCapsule() {
           onClick={handleCopy}
           title="Copy ID"
         >
-          {/* Wrap children in a single span to satisfy React.Children.only */}
-          <span className="flex items-center justify-center">
-            <Copy className="h-3 w-3" />
-            <span className="sr-only">Copy ID</span>
-          </span>
+          <Copy className="h-3 w-3" />
+          <span className="sr-only">Copy ID</span>
         </Button>
       )}
     </div>

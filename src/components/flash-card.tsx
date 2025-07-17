@@ -101,13 +101,13 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
           <Label htmlFor="flashcard-size" className="sr-only">Flashcard Size</Label>
           <ToggleGroup type="single" value={size} onValueChange={(value: FlashcardSize) => onSetSize(value)} className="h-auto">
             <ToggleGroupItem value="sm" aria-label="Small" className="h-8 px-3 text-sm">
-              <span>S</span>
+              S
             </ToggleGroupItem>
             <ToggleGroupItem value="md" aria-label="Medium" className="h-8 px-3 text-sm">
-              <span>M</span>
+              M
             </ToggleGroupItem>
             <ToggleGroupItem value="lg" aria-label="Large" className="h-8 px-3 text-sm">
-              <span>L</span>
+              L
             </ToggleGroupItem>
           </ToggleGroup>
         </div>

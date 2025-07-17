@@ -20,11 +20,11 @@ export function WelcomeBackModal({ isOpen, onClose, profile, firstGoal, currentR
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[400px] p-4"> {/* Reduced max-width and padding for mobile */}
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader className="text-center">
-          <Target className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-primary mb-3 sm:mb-4" /> {/* Reduced icon size and margin for mobile */}
-          <DialogTitle className="text-xl sm:text-2xl">Welcome Back, {userName}!</DialogTitle> {/* Reduced font size for mobile */}
-          <DialogDescription className="pt-1 sm:pt-2 text-sm sm:text-base"> {/* Reduced padding and font size for mobile */}
+          <Target className="h-12 w-12 mx-auto text-primary mb-4" />
+          <DialogTitle className="text-2xl">Welcome Back, {userName}!</DialogTitle>
+          <DialogDescription className="pt-2">
             {firstGoal
               ? `Your current focus is on: "${firstGoal.title}".`
               : "You're all caught up on your goals."}
@@ -34,8 +34,8 @@ export function WelcomeBackModal({ isOpen, onClose, profile, firstGoal, currentR
             Let's get to it!
           </DialogDescription>
         </DialogHeader>
-        <div className="pt-3 sm:pt-4"> {/* Reduced padding for mobile */}
-          <Button onClick={onClose} className="w-full h-9 sm:h-10 text-sm sm:text-base">Let's Go</Button> {/* Reduced height and font size for mobile */}
+        <div className="pt-4">
+          <Button onClick={onClose} className="w-full">Let's Go</Button>
         </div>
       </DialogContent>
     </Dialog>

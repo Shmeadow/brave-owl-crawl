@@ -48,11 +48,8 @@ export function BugReportButton() {
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" title="Submit a Bug">
-          {/* Wrap children in a single span */}
-          <span>
-            <Bug className="h-5 w-5" />
-            <span className="sr-only">Submit a Bug</span>
-          </span>
+          <Bug className="h-5 w-5" />
+          <span className="sr-only">Submit a Bug</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 z-[1100]" align="end">
