@@ -56,7 +56,7 @@ export interface WidgetConfig {
   initialHeight: number;
 }
 
-export const EDGE_PADDING = 8; // Reduced from 16px
+export const EDGE_PADDING = 4; // Reduced from 8px
 
 export const DOCKED_WIDGET_WIDTH = 40; // Reduced from 48px
 export const DOCKED_WIDGET_HEIGHT = 40; // Reduced from 48px
@@ -66,8 +66,8 @@ export const BOTTOM_DOCK_OFFSET = 8; // Reduced from 16px
 export const MINIMIZED_WIDGET_WIDTH = 200; // Slightly reduced
 export const MINIMIZED_WIDGET_HEIGHT = 40; // Reduced
 
-export const SIDEBAR_OPEN_OFFSET_X = 10; // Reduced
-export const SIDEBAR_OPEN_OFFSET_Y = 10; // Reduced
+export const SIDEBAR_OPEN_OFFSET_X = 5; // Reduced from 10px
+export const SIDEBAR_OPEN_OFFSET_Y = 5; // Reduced from 10px
 
 export const LOCAL_STORAGE_WIDGET_STATE_KEY = 'active_widget_states';
 

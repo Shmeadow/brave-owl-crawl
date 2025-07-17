@@ -93,8 +93,8 @@ export function Widget({
   }
 
   // Ensure minimum dimensions for ResizableBox, matching minConstraints
-  actualWidth = Math.max(actualWidth, 150); // Reduced min width
-  actualHeight = Math.max(actualHeight, 100); // Reduced min height
+  actualWidth = Math.max(actualWidth, 100); // Reduced from 150px
+  actualHeight = Math.max(actualHeight, 80); // Reduced from 100px
 
   const renderWidgetContent = (
     <Card className={cn(
@@ -183,8 +183,8 @@ export function Widget({
             onSizeChange({ width: data.size.width, height: data.size.height });
           }
         }}
-        minConstraints={[150, 100]} // Reduced minConstraints
-        maxConstraints={[mainContentArea.width, mainContentArea.height]}
+        minConstraints={[100, 80]} // Reduced from [150, 100]
+        maxConstraints={[mainContentArea.width, mainContentArea.height]} // Ensure max constraints are respected
         className="w-full h-full"
         resizeHandles={isResizable ? ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'] : []}
       >
