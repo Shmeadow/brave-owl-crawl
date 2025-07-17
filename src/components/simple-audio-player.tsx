@@ -30,7 +30,7 @@ const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode'
 const HEADER_HEIGHT = 64;
 const TOTAL_HEADER_AREA_HEIGHT = HEADER_HEIGHT;
 
-// Hardcoded top for mobile sidebar for debugging
+// Hardcoded top for mobile sidebar for debugging (still needed here for calculation)
 const DEBUG_MOBILE_SIDEBAR_TOP = 80;
 
 interface SimpleAudioPlayerProps {
@@ -224,7 +224,8 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     return (
       <div className={cn(
         "fixed right-1 z-[901]",
-        `top-[${DEBUG_MOBILE_SIDEBAR_TOP + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_SIDEBAR_CONTENT_GAP}px]`, // Adjusted top position
+        // Calculate top based on header, header-sidebar gap, sidebar height, and sidebar-content gap
+        `top-[${MOBILE_HEADER_EFFECTIVE_HEIGHT + MOBILE_HEADER_SIDEBAR_GAP + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_SIDEBAR_CONTENT_GAP}px]`,
         "transition-all duration-300 ease-in-out",
         "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex w-full",
         displayMode === 'normal' || displayMode === 'maximized' ? "h-auto p-1 rounded-xl max-w-[224px] flex-col" : "h-40 p-1 items-center justify-between flex-col rounded-full w-10"

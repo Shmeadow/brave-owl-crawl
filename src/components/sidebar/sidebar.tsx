@@ -48,11 +48,11 @@ export function Sidebar({ isMobile }: SidebarProps) {
     <div
       ref={sidebarRef}
       className={cn(
-        "fixed z-[9999] flex", // Increased z-index for debugging
-        "bg-red-500 border border-white/40 shadow-xl", // Added red background for visibility
+        "fixed z-[1001] flex", // Reverted z-index
+        "bg-card/60 backdrop-blur-xl border border-white/40 shadow-lg", // Reverted styling
         "transition-all duration-300 ease-in-out",
         isMobile ?
-          `top-[80px] left-0 right-0 flex-row justify-around p-0.5 gap-0.5 rounded-none overflow-x-auto` : // Hardcoded top for debugging
+          `top-[${MOBILE_HEADER_EFFECTIVE_HEIGHT + MOBILE_HEADER_SIDEBAR_GAP}px] left-0 right-0 flex-row justify-around p-0.5 gap-0.5 rounded-none overflow-x-auto` :
           "top-1/2 -translate-y-1/2 left-2 rounded-full p-1 gap-1 flex-col"
       )}
       style={isMobile ? { height: `${MOBILE_HORIZONTAL_SIDEBAR_HEIGHT}px`, width: '100%' } : { width: `${SIDEBAR_WIDTH_DESKTOP}px` }}

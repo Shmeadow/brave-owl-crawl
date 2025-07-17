@@ -46,7 +46,7 @@ const SIDEBAR_LEFT_OFFSET = 8;
 const SIDEBAR_CONTENT_GAP = 16;
 
 // Hardcoded top for mobile sidebar for debugging
-const DEBUG_MOBILE_SIDEBAR_TOP = 80;
+const DEBUG_MOBILE_SIDEBAR_TOP = 80; // This constant is still used in simple-audio-player.tsx
 
 export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
   const { loading, session, profile } = useSupabase();
@@ -103,8 +103,10 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
         contentWidth = windowWidth - contentLeft;
         contentHeight = windowHeight - HEADER_HEIGHT_DESKTOP;
       } else {
-        // Mobile layout: account for hardcoded sidebar top and its height
-        contentTop = DEBUG_MOBILE_SIDEBAR_TOP + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_SIDEBAR_CONTENT_GAP;
+        // Mobile layout: account for horizontal sidebar and bottom controls
+        // The sidebar's top is MOBILE_HEADER_EFFECTIVE_HEIGHT + MOBILE_HEADER_SIDEBAR_GAP
+        // So, content starts after the sidebar's height plus MOBILE_SIDEBAR_CONTENT_GAP
+        contentTop = (MOBILE_HEADER_EFFECTIVE_HEIGHT + MOBILE_HEADER_SIDEBAR_GAP) + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_SIDEBAR_CONTENT_GAP;
         contentHeight = windowHeight - (contentTop + MOBILE_CONTROLS_HEIGHT);
       }
 
