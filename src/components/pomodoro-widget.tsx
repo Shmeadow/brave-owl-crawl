@@ -76,7 +76,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
         className={cn(
           "shadow-lg flex flex-col transition-all duration-300 ease-in-out mx-auto", // Added mx-auto for horizontal centering
           "bg-card/60 backdrop-blur-lg border-white/20", // Consistent transparency
-          isMobileExpanded ? "h-auto p-2 rounded-3xl w-full max-w-xs" : "h-40 p-1 items-center justify-between flex-col rounded-full w-10" // Changed to flex-col for minimized
+          isMobileExpanded ? "h-auto p-1 rounded-3xl w-full max-w-xs" : "h-28 p-1 items-center justify-between flex-col rounded-full w-28" // Adjusted height to h-28 and width to w-28, reduced padding
         )}
       >
         {isMobileExpanded ? (
@@ -96,7 +96,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
                 <span className="sr-only">Collapse Pomodoro</span>
               </Button>
             </CardHeader>
-            <CardContent className="flex flex-col items-center gap-3 w-full p-1"> {/* Increased gap for spacing */}
+            <CardContent className="flex flex-col items-center gap-2 w-full p-0.5"> {/* Reduced gap and padding */}
               {isFocusSessionActive && activeGoalTitle && mode === 'focus' && (
                 <div className="text-center mb-1">
                   <p className="text-xs text-muted-foreground">Focusing on:</p>
@@ -155,14 +155,14 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
                 </div>
               )}
               <div className="flex gap-2 mt-2"> {/* Added mt-2 to push buttons below timer */}
-                <Button onClick={handleStartPause} size="icon" className="h-9 w-9 rounded-full" disabled={!isCurrentRoomWritable}>
+                <Button onClick={handleStartPause} size="icon" className="h-7 w-7 rounded-full" disabled={!isCurrentRoomWritable}> {/* Smaller buttons */}
                   {isRunning ? (
                     <Pause className="h-4 w-4" />
                   ) : (
                     <Play className="h-4 w-4" />
                   )}
                 </Button>
-                <Button onClick={handleReset} size="icon" variant="secondary" className="h-9 w-9 rounded-full" disabled={!isCurrentRoomWritable}>
+                <Button onClick={handleReset} size="icon" variant="secondary" className="h-7 w-7 rounded-full" disabled={!isCurrentRoomWritable}> {/* Smaller buttons */}
                   <RotateCcw className="h-4 w-4" />
                 </Button>
               </div>
