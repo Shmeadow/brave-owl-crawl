@@ -65,11 +65,15 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
 
   return (
     <header className={cn(
-      "sticky top-0 z-[1002] w-full h-14 flex items-center justify-between p-1 gap-2",
-      "bg-background/60 backdrop-blur-xl" // Apply transparent background here
+      "sticky top-0 z-[1002] w-full h-14 flex items-center justify-between p-1 gap-2" // Increased height, adjusted padding
     )}>
-      {/* Left Group of Buttons */}
-      <div className="flex items-center min-w-0 gap-1 px-2 py-1">
+      {/* Left Capsule */}
+      <div className={cn(
+        "flex items-center min-w-0 gap-1 px-2 py-1",
+        "bg-card/50 backdrop-blur-xl border border-white/20 rounded-full"
+        // Removed flex-1 and h-full to make it fit content
+      )}>
+        {/* Removed mobile sidebar toggle button */}
         <Link href="/dashboard" className="flex items-center space-x-1">
           <h1 className="text-lg font-bold text-primary hidden sm:block">Cozy Hub</h1>
           <Button variant="ghost" size="icon" title="Home" className="h-7 w-7">
@@ -106,8 +110,12 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         </div>
       </div>
 
-      {/* Right Group of Buttons */}
-      <div className="flex items-center gap-1 px-2 py-1 justify-end">
+      {/* Right Capsule */}
+      <div className={cn(
+        "flex items-center gap-1 px-2 py-1",
+        "bg-card/50 backdrop-blur-xl border border-white/20 rounded-full",
+        "justify-end" // Removed flex-1 and h-full to make it fit content
+      )}>
         <UserNameCapsule />
         <BugReportButton />
         {session && <NotificationsDropdown />}
