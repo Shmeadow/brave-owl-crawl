@@ -9,7 +9,8 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PomodoroSettingsModal } from "@/components/pomodoro-settings-modal";
-import { useCurrentRoom } from "@/hooks/use-current-room";
+import { useCurrentRoom }
+ from "@/hooks/use-current-room";
 import { useFocusSession } from "@/context/focus-session-provider";
 
 interface PomodoroWidgetProps {
@@ -198,7 +199,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
   return (
     <Card
       className={cn(
-        "fixed bottom-4 left-1/2 -translate-x-1/2", // Changed bottom-20 to bottom-4
+        "fixed bottom-4 left-1/2 -translate-x-1/2",
         "flex transition-all duration-300 ease-in-out z-[901]",
         // Styles for normal (expanded) state
         !isMinimized && "w-52 flex-col items-center p-3 gap-3 h-auto bg-card/60 backdrop-blur-lg border-white/20 shadow-lg rounded-3xl",
@@ -211,7 +212,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
         "flex flex-row items-center justify-between w-full px-3 pb-2",
         isMinimized ? "hidden" : ""
       )}>
-        <CardTitle className="text-xl font-bold text-left"> {/* Increased title text size */}
+        <CardTitle className="text-lg font-bold text-left">
           Pomodoro
         </CardTitle>
         <div className="flex gap-1">
@@ -259,10 +260,10 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
               variant={mode === 'focus' ? 'default' : 'outline'}
               size="icon"
               onClick={() => handleSwitchMode('focus')}
-              className={cn("h-6 w-6 rounded-md", mode === 'focus' && "bg-primary text-primary-foreground")}
+              className={cn("h-5 w-5 rounded-md", mode === 'focus' && "bg-primary text-primary-foreground")}
               disabled={!isCurrentRoomWritable}
             >
-              <Brain className="h-3 w-3" />
+              <Brain className="h-2.5 w-2.5" />
             </Button>
             {/* Removed text label for desktop mode buttons */}
           </div>
@@ -271,10 +272,10 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
               variant={mode === 'short-break' ? 'default' : 'outline'}
               size="icon"
               onClick={() => handleSwitchMode('short-break')}
-              className={cn("h-6 w-6 rounded-md", mode === 'short-break' && "bg-secondary text-secondary-foreground")}
+              className={cn("h-5 w-5 rounded-md", mode === 'short-break' && "bg-secondary text-secondary-foreground")}
               disabled={!isCurrentRoomWritable}
             >
-              <Coffee className="h-3 w-3" />
+              <Coffee className="h-2.5 w-2.5" />
             </Button>
             {/* Removed text label for desktop mode buttons */}
           </div>
@@ -283,10 +284,10 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
               variant={mode === 'long-break' ? 'default' : 'outline'}
               size="icon"
               onClick={() => handleSwitchMode('long-break')}
-              className={cn("h-6 w-6 rounded-md", mode === 'long-break' && "bg-accent text-accent-foreground")}
+              className={cn("h-5 w-5 rounded-md", mode === 'long-break' && "bg-accent text-accent-foreground")}
               disabled={!isCurrentRoomWritable}
             >
-              <Home className="h-3 w-3" />
+              <Home className="h-2.5 w-2.5" />
             </Button>
             {/* Removed text label for desktop mode buttons */}
           </div>
@@ -299,13 +300,13 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
             onChange={(e) => setEditableTimeString(e.target.value)}
             onBlur={handleTimeInputBlur}
             onKeyDown={handleTimeInputKeyDown}
-            className="text-5xl font-bold font-mono text-center w-full h-10 bg-transparent border-none focus-visible:ring-0"
+            className="text-4xl font-bold font-mono text-center w-full h-10 bg-transparent border-none focus-visible:ring-0"
             disabled={!isCurrentRoomWritable}
           />
         ) : (
           <div
             className={cn(
-              "text-5xl font-bold font-mono transition-colors", // Increased timer text size
+              "text-4xl font-bold font-mono transition-colors",
               isCurrentRoomWritable ? "cursor-pointer hover:text-primary" : "cursor-not-allowed opacity-70"
             )}
             onClick={isCurrentRoomWritable ? handleTimeDisplayClick : undefined}
@@ -314,37 +315,37 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
           </div>
         )}
         <div className="flex gap-3 justify-center">
-          <Button onClick={handleStartPause} size="icon" className="h-9 w-9 rounded-full" disabled={!isCurrentRoomWritable}>
+          <Button onClick={handleStartPause} size="icon" className="h-7 w-7 rounded-full" disabled={!isCurrentRoomWritable}>
             {isRunning ? (
-              <Pause className="h-5 w-5" />
+              <Pause className="h-4 w-4" />
             ) : (
-              <Play className="h-5 w-5" />
+              <Play className="h-4 w-4" />
             )}
           </Button>
-          <Button onClick={handleReset} size="icon" variant="secondary" className="h-9 w-9 rounded-full" disabled={!isCurrentRoomWritable}>
-            <RotateCcw className="h-5 w-5" />
+          <Button onClick={handleReset} size="icon" variant="secondary" className="h-7 w-7 rounded-full" disabled={!isCurrentRoomWritable}>
+            <RotateCcw className="h-4 w-4" />
           </Button>
         </div>
       </CardContent>
 
       {isMinimized && (
         <div className="flex flex-col items-center justify-center w-full h-full py-2">
-          <span className="text-base font-semibold capitalize">{mode.replace('-', ' ')}</span>
+          <span className="text-lg font-semibold capitalize">{mode.replace('-', ' ')}</span>
           <div
             className={cn(
-              "text-lg font-bold font-mono",
+              "text-2xl font-bold font-mono my-1",
               isCurrentRoomWritable ? "cursor-pointer hover:text-primary" : "cursor-not-allowed opacity-70"
             )}
             onClick={isMinimized ? () => setIsMinimized(false) : undefined}
           >
             {formatTime(timeLeft)}
           </div>
-          <div className="flex flex-row gap-1">
-            <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-5 w-5" disabled={!isCurrentRoomWritable}>
-              {isRunning ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+          <div className="flex gap-1">
+            <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-8 w-8" disabled={!isCurrentRoomWritable}>
+              {isRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
             </Button>
-            <Button onClick={(e) => { e.stopPropagation(); handleReset(); }} size="icon" variant="secondary" className="h-5 w-5" disabled={!isCurrentRoomWritable}>
-              <RotateCcw className="h-3 w-3" />
+            <Button onClick={(e) => { e.stopPropagation(); handleReset(); }} size="icon" variant="secondary" className="h-8 w-8" disabled={!isCurrentRoomWritable}>
+              <RotateCcw className="h-5 w-5" />
             </Button>
           </div>
         </div>
