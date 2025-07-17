@@ -80,7 +80,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
       >
         {isMobileExpanded ? (
           <>
-            <CardHeader className="flex flex-row items-center justify-between w-full p-1 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between w-full px-3 pb-2">
               <CardTitle className="text-lg font-bold flex-1 text-left">
                 Pomodoro
               </CardTitle>
@@ -200,20 +200,20 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
         "fixed bottom-20 left-1/2 -translate-x-1/2",
         "flex transition-all duration-300 ease-in-out z-[901]",
         // Styles for normal (expanded) state
-        !isMinimized && "w-52 flex-col items-center p-3 gap-3 h-auto bg-card/60 backdrop-blur-lg border-white/20 shadow-lg rounded-3xl", // Changed w-48 to w-52, rounded-full to rounded-3xl
+        !isMinimized && "w-52 flex-col items-center p-3 gap-3 h-auto bg-card/60 backdrop-blur-lg border-white/20 shadow-lg rounded-3xl",
         // Styles for minimized (docked) state
         isMinimized && "w-48 flex-col items-center px-2 py-1 h-auto cursor-pointer bg-card/60 backdrop-blur-lg border-white/20 shadow-lg rounded-full"
       )}
       onClick={isMinimized ? () => setIsMinimized(false) : undefined}
     >
       <CardHeader className={cn(
-        "flex flex-row items-center justify-center w-full p-0", // Changed justify-between to justify-center
-        isMinimized ? "hidden" : "pb-2"
+        "flex flex-row items-center justify-between w-full px-3 pb-2", // Changed justify-center to justify-between, added px-3
+        isMinimized ? "hidden" : ""
       )}>
-        <CardTitle className="text-lg font-bold text-center"> {/* Changed flex-1 text-left to text-center */}
+        <CardTitle className="text-lg font-bold text-left"> {/* Changed text-center to text-left */}
           Pomodoro
         </CardTitle>
-        <div className="flex gap-1 absolute right-0 pr-3"> {/* Added absolute positioning and padding */}
+        <div className="flex gap-1"> {/* Removed absolute positioning and padding as it's now handled by parent flex */}
           <Dialog>
             <DialogTrigger asChild>
               <Button
@@ -304,7 +304,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
         ) : (
           <div
             className={cn(
-              "text-3xl font-bold font-mono transition-colors", // Reduced font size
+              "text-3xl font-bold font-mono transition-colors",
               isCurrentRoomWritable ? "cursor-pointer hover:text-primary" : "cursor-not-allowed opacity-70"
             )}
             onClick={isCurrentRoomWritable ? handleTimeDisplayClick : undefined}
