@@ -63,7 +63,7 @@ export const DOCKED_WIDGET_HEIGHT = 40; // Reduced from 48px
 export const DOCKED_WIDGET_HORIZONTAL_GAP = 4;
 export const BOTTOM_DOCK_OFFSET = 8; // Reduced from 16px
 
-export const MINIMIZED_WIDGET_WIDTH = 192; // Slightly reduced
+export const MINIMIZED_WIDGET_WIDTH = 160; // Slightly reduced for a more compact look
 export const MINIMIZED_WIDGET_HEIGHT = 40; // Reduced
 
 export const SIDEBAR_OPEN_OFFSET_X = 5; // Reduced from 10px

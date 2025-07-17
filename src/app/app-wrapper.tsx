@@ -178,15 +178,17 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             </div>
             {isDashboard && !isMobile && <IndependentPinnedWidgetsDock isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />}
             {isDashboard && isMobile && (
-              <DynamicMobileControls>
-                <DynamicPomodoroWidget 
-                  isMinimized={isPomodoroMinimized}
-                  setIsMinimized={setIsPomodoroMinimized}
-                  chatPanelWidth={0}
-                  isMobile={isMobile}
-                />
+              <>
                 <DynamicSimpleAudioPlayer isMobile={isMobile} displayMode="minimized" />
-              </DynamicMobileControls>
+                <DynamicMobileControls>
+                  <DynamicPomodoroWidget 
+                    isMinimized={isPomodoroMinimized}
+                    setIsMinimized={setIsPomodoroMinimized}
+                    chatPanelWidth={0}
+                    isMobile={isMobile}
+                  />
+                </DynamicMobileControls>
+              </>
             )}
             {isDashboard && !isMobile && (
               <>

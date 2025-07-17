@@ -74,9 +74,8 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
     return (
       <Card
         className={cn(
-          "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg",
-          "flex flex-col transition-all duration-300 ease-in-out w-full",
-          isMobileExpanded ? "h-auto p-2" : "h-14 p-2 items-center justify-between flex-row"
+          "shadow-lg flex flex-col transition-all duration-300 ease-in-out",
+          isMobileExpanded ? "h-auto p-2 rounded-3xl bg-card/60 backdrop-blur-lg border-white/20" : "h-14 p-2 items-center justify-between flex-row rounded-full bg-card/60 backdrop-blur-lg border-white/20 w-48"
         )}
       >
         {isMobileExpanded ? (
@@ -205,7 +204,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
         "fixed bottom-20 left-1/2 -translate-x-1/2",
         "flex transition-all duration-300 ease-in-out z-[901]",
         // Styles for normal (expanded) state
-        !isMinimized && "w-64 flex-col items-center p-4 gap-4 h-auto bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-3xl", // Changed rounded-lg to rounded-3xl
+        !isMinimized && "w-64 flex-col items-center p-4 gap-4 h-auto bg-card/60 backdrop-blur-lg border-white/20 shadow-lg rounded-full",
         // Styles for minimized (docked) state
         isMinimized && "w-48 flex-col items-center px-2 py-1 h-auto cursor-pointer bg-card/60 backdrop-blur-lg border-white/20 shadow-lg rounded-full"
       )}
