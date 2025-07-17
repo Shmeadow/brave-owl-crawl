@@ -13,7 +13,7 @@ interface FlashcardListItemProps {
   onUpdate: (cardData: { id?: string; front: string; back: string; category_id?: string | null }) => void;
   onDelete: (id: string) => void;
   onOrganize: (card: CardData) => void;
-  rowHeight: number;
+  // Removed rowHeight prop
   selectionMode: boolean;
   isSelected: boolean;
   onToggleSelection: (id: string) => void;
@@ -25,7 +25,7 @@ export function FlashcardListItem({
   onUpdate,
   onDelete,
   onOrganize,
-  rowHeight,
+  // Removed rowHeight from destructuring
   selectionMode,
   isSelected,
   onToggleSelection,
@@ -51,12 +51,11 @@ export function FlashcardListItem({
         selectionMode ? "cursor-pointer" : "hover:shadow-lg hover:border-primary/50",
         isSelected && "ring-2 ring-primary border-primary"
       )}
-      style={{ minHeight: `${rowHeight}px` }}
-      onClick={handleClick}
+      // Removed style={{ minHeight: `${rowHeight}px` }}
     >
       <div className="flex-grow overflow-hidden mb-2 sm:mb-3">
-        <p className="font-semibold text-foreground text-sm sm:text-base mb-2 truncate" title={card.front}>{card.front}</p>
-        <p className="text-muted-foreground text-xs sm:text-sm line-clamp-3">{card.back}</p>
+        <p className="font-semibold text-foreground text-sm sm:text-base mb-2 break-words" title={card.front}>{card.front}</p>
+        <p className="text-muted-foreground text-xs sm:text-sm line-clamp-3 break-words">{card.back}</p>
       </div>
       <div className="flex items-center justify-between mt-auto pt-2 sm:pt-3 border-t border-border/50">
         <p className="text-xs text-muted-foreground">

@@ -13,7 +13,7 @@ interface FlashcardListProps {
   onDelete: (id: string) => void;
   onOrganize: (card: CardData) => void;
   columns: number;
-  rowHeight: number;
+  // Removed rowHeight prop
   selectionMode: boolean;
   selectedCardIds: Set<string>;
   onToggleSelection: (id: string) => void;
@@ -26,7 +26,7 @@ export function FlashcardList({
   onDelete,
   onOrganize,
   columns,
-  rowHeight,
+  // Removed rowHeight from destructuring
   selectionMode,
   selectedCardIds,
   onToggleSelection,
@@ -57,7 +57,7 @@ export function FlashcardList({
                   onUpdate={onUpdate}
                   onDelete={onDelete}
                   onOrganize={onOrganize}
-                  rowHeight={rowHeight}
+                  // Removed rowHeight prop
                   isSelected={selectedCardIds.has(card.id)}
                   selectionMode={selectionMode}
                   onToggleSelection={onToggleSelection}

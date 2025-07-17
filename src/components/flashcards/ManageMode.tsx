@@ -149,7 +149,6 @@ export function ManageMode({
           onDelete={onDeleteCard}
           onOrganize={setOrganizingCard}
           columns={columns}
-          rowHeight={120}
           selectionMode={selectionMode}
           selectedCardIds={selectedCardIds}
           onToggleSelection={toggleSelection}

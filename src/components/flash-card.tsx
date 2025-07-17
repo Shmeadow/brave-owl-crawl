@@ -65,7 +65,7 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
           style={{ backfaceVisibility: 'hidden' }}
         >
           <div className="flex flex-col items-center justify-center h-full w-full p-0">
-            <p className={cn("font-semibold", textSizeClasses)}>{front}</p>
+            <p className={cn("font-semibold break-words", textSizeClasses)}>{front}</p>
             {status && (
               <span className={statusIndicatorClasses}>{status}</span>
             )}
@@ -83,7 +83,7 @@ export function FlashCard({ front, back, isFlipped, onClick, status, seen_count,
           style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
         >
           <div className="flex flex-col items-center justify-center h-full w-full p-0">
-            <p className={cn("font-medium", textSizeClasses)}>{back}</p>
+            <p className={cn("font-medium break-words", textSizeClasses)}>{back}</p>
             {status && (
               <span className={statusIndicatorClasses}>{status}</span>
             )}
