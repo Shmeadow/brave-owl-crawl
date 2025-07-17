@@ -36,7 +36,7 @@ interface HeaderProps {
 const ClockTrigger = () => {
   const { timeString, dateString, isLoading } = useClock();
   return (
-    <Button variant="ghost" className="font-mono text-sm px-3 hidden md:flex flex-col h-auto py-1">
+    <Button variant="secondary" className="font-mono text-sm px-3 hidden md:flex flex-col h-auto py-1">
       {isLoading ? (
         <span>--:--:--</span>
       ) : (
@@ -65,28 +65,25 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
 
   return (
     <header className={cn(
-      "sticky top-0 z-[1002] w-full h-14 flex items-center justify-between p-1 gap-2" // Increased height, adjusted padding
+      "sticky top-0 z-[1002] w-full h-14 flex items-center justify-between p-1 gap-2"
     )}>
       {/* Left Capsule */}
       <div className={cn(
-        "flex items-center min-w-0 gap-1 px-2 py-1",
-        "bg-card/50 backdrop-blur-xl border border-white/20 rounded-full"
-        // Removed flex-1 and h-full to make it fit content
+        "flex items-center min-w-0 gap-1 px-2 py-1"
       )}>
-        {/* Removed mobile sidebar toggle button */}
         <Link href="/dashboard" className="flex items-center space-x-1">
           <h1 className="text-lg font-bold text-primary hidden sm:block">Cozy Hub</h1>
-          <Button variant="ghost" size="icon" title="Home" className="h-7 w-7">
+          <Button variant="secondary" size="icon" title="Home" className="h-8 w-8">
             <Home className="h-4 w-4" />
           </Button>
         </Link>
         <div className="flex items-center gap-1 flex-1 min-w-0 overflow-hidden">
           <h1 className="text-base font-semibold truncate">{currentRoomName}</h1>
           <Button
-            variant="ghost"
+            variant="secondary"
             size="icon"
             title="Spaces"
-            className="flex-shrink-0 h-7 w-7"
+            className="flex-shrink-0 h-8 w-8"
             onClick={() => toggleWidget('spaces', 'Spaces')}
           >
             <LayoutGrid className="h-4 w-4" />
@@ -94,7 +91,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
           {session && (
             <Popover open={isRoomSettingsOpen} onOpenChange={setIsRoomSettingsOpen}>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" title="Room Options" className="flex-shrink-0 h-7 w-7">
+                <Button variant="secondary" size="icon" title="Room Options" className="flex-shrink-0 h-8 w-8">
                   <Settings className="h-4 w-4" />
                 </Button>
               </PopoverTrigger>
@@ -113,18 +110,17 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
       {/* Right Capsule */}
       <div className={cn(
         "flex items-center gap-1 px-2 py-1",
-        "bg-card/50 backdrop-blur-xl border border-white/20 rounded-full",
-        "justify-end" // Removed flex-1 and h-full to make it fit content
+        "justify-end"
       )}>
         <UserNameCapsule />
         <BugReportButton />
         {session && <NotificationsDropdown />}
-        <BackgroundBlurSlider className="hidden md:flex" />
+        <BackgroundBlurSlider className="hidden md:flex bg-secondary/50 rounded-full" />
         <Button
-          variant="ghost"
+          variant="secondary"
           size="icon"
           title="Statistics"
-          className="h-7 w-7"
+          className="h-8 w-8"
           onClick={() => toggleWidget('stats-progress', 'Statistics')}
         >
           <BarChart2 className="h-4 w-4" />
