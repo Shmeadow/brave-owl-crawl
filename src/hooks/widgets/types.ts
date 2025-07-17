@@ -69,6 +69,10 @@ export const MINIMIZED_WIDGET_HEIGHT = 40; // Reduced
 export const SIDEBAR_OPEN_OFFSET_X = 5; // Reduced from 10px
 export const SIDEBAR_OPEN_OFFSET_Y = 5; // Reduced from 10px
 
+// New constants for default mobile widget sizes
+export const DEFAULT_WIDGET_WIDTH_MOBILE = 280;
+export const DEFAULT_WIDGET_HEIGHT_MOBILE = 350;
+
 export const LOCAL_STORAGE_WIDGET_STATE_KEY = 'active_widget_states';
 
 export const clampPosition = (x: number, y: number, width: number, height: number, bounds: MainContentArea) => {

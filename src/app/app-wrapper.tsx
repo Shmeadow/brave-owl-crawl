@@ -131,7 +131,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   return (
     <AmbientSoundProvider>
       <FocusSessionProvider>
-        <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea}>
+        <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea} isMobile={isMobile}>
           <div className="relative h-screen bg-transparent">
             {/* New shadow element */}
             <div className="fixed top-0 left-0 right-0 h-[64px] z-[1001] pointer-events-none"

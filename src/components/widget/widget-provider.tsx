@@ -28,10 +28,11 @@ interface WidgetProviderProps {
   children: React.ReactNode;
   initialWidgetConfigs: { [key: string]: WidgetConfig };
   mainContentArea: MainContentArea;
+  isMobile: boolean; // Added isMobile prop
 }
 
-export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea }: WidgetProviderProps) {
-  const { activeWidgets, setActiveWidgets, loading: persistenceLoading, isLoggedInMode } = useWidgetPersistence({ initialWidgetConfigs, mainContentArea });
+export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea, isMobile }: WidgetProviderProps) {
+  const { activeWidgets, setActiveWidgets, loading: persistenceLoading, isLoggedInMode } = useWidgetPersistence({ initialWidgetConfigs, mainContentArea, isMobile });
 
   const {
     addWidget,
@@ -46,7 +47,7 @@ export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea
     topmostZIndex,
     maxZIndex,
     setMaxZIndex,
-  } = useWidgetActions({ activeWidgets, setActiveWidgets, initialWidgetConfigs, mainContentArea });
+  } = useWidgetActions({ activeWidgets, setActiveWidgets, initialWidgetConfigs, mainContentArea, isMobile });
 
   // Sync maxZIndex from persistence to actions
   useEffect(() => {

@@ -74,7 +74,8 @@ export function Widget({
   } : {};
 
   const isVisuallyMinimized = isMinimized || isPinned;
-  const isResizable = !isMaximized && !isVisuallyMinimized && !isMobile && !isInsideDock && !isClosed;
+  // isResizable and isDraggable now allow mobile users to interact
+  const isResizable = !isMaximized && !isVisuallyMinimized && !isInsideDock && !isClosed;
   const isDraggable = !isMaximized && !isPinned && !isInsideDock && !isClosed;
 
   // Determine actual width/height for ResizableBox based on state

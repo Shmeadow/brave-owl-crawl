@@ -14,6 +14,8 @@ import {
   MINIMIZED_WIDGET_HEIGHT,
   SIDEBAR_OPEN_OFFSET_X,
   SIDEBAR_OPEN_OFFSET_Y,
+  DEFAULT_WIDGET_WIDTH_MOBILE, // Import new constants
+  DEFAULT_WIDGET_HEIGHT_MOBILE, // Import new constants
 } from './types';
 import { useSidebar } from "@/components/sidebar/sidebar-context";
 
@@ -22,6 +24,7 @@ interface UseWidgetActionsProps {
   setActiveWidgets: React.Dispatch<React.SetStateAction<WidgetState[]>>;
   initialWidgetConfigs: { [key: string]: WidgetConfig };
   mainContentArea: MainContentArea;
+  isMobile: boolean; // New prop
 }
 
 export function useWidgetActions({
@@ -29,6 +32,7 @@ export function useWidgetActions({
   setActiveWidgets,
   initialWidgetConfigs,
   mainContentArea,
+  isMobile, // Destructure new prop
 }: UseWidgetActionsProps) {
   const [maxZIndex, setMaxZIndex] = useState(903); // Initial z-index for new widgets
   const { activePanel, setActivePanel } = useSidebar();
@@ -113,16 +117,20 @@ export function useWidgetActions({
       const newMaxZIndex = maxZIndex + 1;
       setMaxZIndex(newMaxZIndex);
 
+      // Determine effective initial size based on mobile status
+      const effectiveInitialWidth = isMobile ? DEFAULT_WIDGET_WIDTH_MOBILE : config.initialWidth;
+      const effectiveInitialHeight = isMobile ? DEFAULT_WIDGET_HEIGHT_MOBILE : config.initialHeight;
+
       if (existingWidget) {
         // If widget exists, just make it visible and bring to front
         const restoredPosition = existingWidget.normalPosition || clampPosition(
           mainContentArea.left + SIDEBAR_OPEN_OFFSET_X, // Default to near sidebar if no normalPosition
           mainContentArea.top + SIDEBAR_OPEN_OFFSET_Y,
-          config.initialWidth,
-          config.initialHeight,
+          effectiveInitialWidth, // Use effective width for clamping
+          effectiveInitialHeight, // Use effective height for clamping
           mainContentArea
         );
-        const restoredSize = existingWidget.normalSize || { width: config.initialWidth, height: config.initialHeight };
+        const restoredSize = existingWidget.normalSize || { width: effectiveInitialWidth, height: effectiveInitialHeight };
 
         const updatedWidgets = prev.map((widget: WidgetState) =>
           widget.id === id
@@ -147,8 +155,8 @@ export function useWidgetActions({
         const clampedInitialPos = clampPosition(
           initialX,
           initialY,
-          config.initialWidth,
-          config.initialHeight,
+          effectiveInitialWidth,
+          effectiveInitialHeight,
           mainContentArea
         );
 
@@ -158,20 +166,20 @@ export function useWidgetActions({
             id,
             title,
             position: clampedInitialPos,
-            size: { width: config.initialWidth, height: config.initialHeight },
+            size: { width: effectiveInitialWidth, height: effectiveInitialHeight },
             zIndex: newMaxZIndex,
             isMinimized: false,
             isMaximized: false,
             isPinned: false,
             isClosed: false, // New widgets are open by default
-            normalSize: { width: config.initialWidth, height: config.initialHeight },
+            normalSize: { width: effectiveInitialWidth, height: effectiveInitialHeight },
             normalPosition: clampedInitialPos,
           },
         ];
         return newWidgets; // Recalculation happens in updateAndRecalculate
       }
     });
-  }, [initialWidgetConfigs, maxZIndex, mainContentArea, updateAndRecalculate]);
+  }, [initialWidgetConfigs, maxZIndex, mainContentArea, updateAndRecalculate, isMobile]);
 
   const removeWidget = useCallback((id: string) => {
     // "Remove" now means setting isClosed to true
@@ -328,6 +336,10 @@ export function useWidgetActions({
       const newMaxZIndex = maxZIndex + 1;
       setMaxZIndex(newMaxZIndex);
 
+      // Determine effective initial size based on mobile status
+      const effectiveInitialWidth = isMobile ? DEFAULT_WIDGET_WIDTH_MOBILE : config.initialWidth;
+      const effectiveInitialHeight = isMobile ? DEFAULT_WIDGET_HEIGHT_MOBILE : config.initialHeight;
+
       if (existingWidget) {
         // Toggle visibility
         const updatedWidgets = prev.map((widget: WidgetState) => {
@@ -337,11 +349,11 @@ export function useWidgetActions({
               const restoredPosition = widget.normalPosition || clampPosition(
                 mainContentArea.left + SIDEBAR_OPEN_OFFSET_X, // Default to near sidebar if no normalPosition
                 mainContentArea.top + SIDEBAR_OPEN_OFFSET_Y,
-                config.initialWidth,
-                config.initialHeight,
+                effectiveInitialWidth, // Use effective width for clamping
+                effectiveInitialHeight, // Use effective height for clamping
                 mainContentArea
               );
-              const restoredSize = widget.normalSize || { width: config.initialWidth, height: config.initialHeight };
+              const restoredSize = widget.normalSize || { width: effectiveInitialWidth, height: effectiveInitialHeight };
               return {
                 ...widget,
                 isClosed: false,
@@ -375,8 +387,8 @@ export function useWidgetActions({
         const clampedInitialPos = clampPosition(
           initialX,
           initialY,
-          config.initialWidth,
-          config.initialHeight,
+          effectiveInitialWidth,
+          effectiveInitialHeight,
           mainContentArea
         );
 
@@ -384,19 +396,19 @@ export function useWidgetActions({
           id,
           title,
           position: clampedInitialPos,
-          size: { width: config.initialWidth, height: config.initialHeight },
+          size: { width: effectiveInitialWidth, height: effectiveInitialHeight },
           zIndex: newMaxZIndex,
           isMinimized: false,
           isMaximized: false,
           isPinned: false,
           isClosed: false,
-          normalSize: { width: config.initialWidth, height: config.initialHeight },
+          normalSize: { width: effectiveInitialWidth, height: effectiveInitialHeight },
           normalPosition: clampedInitialPos,
         };
         return [...prev, newWidget]; // Recalculation happens in updateAndRecalculate
       }
     });
-  }, [activeWidgets, initialWidgetConfigs, maxZIndex, mainContentArea, updateAndRecalculate]);
+  }, [activeWidgets, initialWidgetConfigs, maxZIndex, mainContentArea, updateAndRecalculate, isMobile]);
 
 
   const topmostZIndex = useMemo(() => {

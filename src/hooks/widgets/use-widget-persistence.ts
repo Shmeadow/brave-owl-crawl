@@ -16,15 +16,18 @@ import {
   DOCKED_WIDGET_HEIGHT,
   DOCKED_WIDGET_HORIZONTAL_GAP,
   BOTTOM_DOCK_OFFSET,
+  DEFAULT_WIDGET_WIDTH_MOBILE, // Import new constants
+  DEFAULT_WIDGET_HEIGHT_MOBILE, // Import new constants
 } from './types';
 import { useCurrentRoom } from "../use-current-room";
 
 interface UseWidgetPersistenceProps {
   initialWidgetConfigs: { [key: string]: WidgetConfig };
   mainContentArea: MainContentArea;
+  isMobile: boolean; // New prop
 }
 
-export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: UseWidgetPersistenceProps) {
+export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea, isMobile }: UseWidgetPersistenceProps) {
   const { supabase, session, loading: authLoading } = useSupabase();
   const { currentRoomId } = useCurrentRoom();
   const [activeWidgets, setActiveWidgets] = useState<WidgetState[]>([]);
@@ -95,17 +98,21 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
       const allWidgets: WidgetState[] = Object.keys(initialWidgetConfigs).map(id => {
         const config = initialWidgetConfigs[id];
         const existingState = loadedWidgetStates.find(w => w.id === id);
+
+        const effectiveInitialWidth = isMobile ? DEFAULT_WIDGET_WIDTH_MOBILE : config.initialWidth;
+        const effectiveInitialHeight = isMobile ? DEFAULT_WIDGET_HEIGHT_MOBILE : config.initialHeight;
+
         if (existingState) {
           const clampedPos = clampPosition(existingState.position.x, existingState.position.y, existingState.size.width, existingState.size.height, mainContentArea);
           return { ...existingState, position: clampedPos, normalPosition: existingState.normalPosition || clampedPos };
         }
         return {
           id, title: id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-          position: clampPosition(config.initialPosition.x, config.initialPosition.y, config.initialWidth, config.initialHeight, mainContentArea),
-          size: { width: config.initialWidth, height: config.initialHeight },
+          position: clampPosition(config.initialPosition.x, config.initialPosition.y, effectiveInitialWidth, effectiveInitialHeight, mainContentArea),
+          size: { width: effectiveInitialWidth, height: effectiveInitialHeight },
           zIndex: 903, isMinimized: false, isMaximized: false, isPinned: false, isClosed: true,
-          normalPosition: clampPosition(config.initialPosition.x, config.initialPosition.y, config.initialWidth, config.initialHeight, mainContentArea),
-          normalSize: { width: config.initialWidth, height: config.initialHeight },
+          normalPosition: clampPosition(config.initialPosition.x, config.initialPosition.y, effectiveInitialWidth, effectiveInitialHeight, mainContentArea),
+          normalSize: { width: effectiveInitialWidth, height: effectiveInitialHeight },
         };
       });
       
@@ -114,7 +121,7 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea }: 
     };
 
     loadWidgetStates();
-  }, [session, supabase, authLoading, initialWidgetConfigs, mainContentArea, recalculatePinnedWidgets, currentRoomId]);
+  }, [session, supabase, authLoading, initialWidgetConfigs, mainContentArea, recalculatePinnedWidgets, currentRoomId, isMobile]);
 
   useEffect(() => {
     if (!mounted.current || loading) return;
