@@ -76,7 +76,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
         className={cn(
           "shadow-lg flex flex-col transition-all duration-300 ease-in-out mx-auto", // Added mx-auto for horizontal centering
           "bg-card/60 backdrop-blur-lg border-white/20", // Consistent transparency
-          isMobileExpanded ? "h-auto p-2 rounded-3xl w-full max-w-xs" : "h-40 p-1 items-center justify-between flex-col rounded-full w-24" // Changed to flex-col for minimized, and increased width to w-24
+          isMobileExpanded ? "h-auto p-2 rounded-3xl w-full max-w-xs" : "h-40 p-1 items-center justify-between flex-col rounded-full w-10" // Changed to flex-col for minimized
         )}
       >
         {isMobileExpanded ? (
@@ -181,12 +181,12 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
             >
               {formatTime(timeLeft)}
             </div>
-            <div className="flex flex-col gap-3"> {/* Changed to flex-col for vertical buttons */}
-              <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-9 w-9" disabled={!isCurrentRoomWritable}>
-                {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            <div className="flex flex-row gap-2"> {/* Changed to flex-row for horizontal buttons */}
+              <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-7 w-7" disabled={!isCurrentRoomWritable}> {/* Smaller buttons */}
+                {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />} {/* Smaller icons */}
               </Button>
-              <Button onClick={(e) => { e.stopPropagation(); handleReset(); }} size="icon" variant="secondary" className="h-9 w-9" disabled={!isCurrentRoomWritable}>
-                <RotateCcw className="h-4 w-4" />
+              <Button onClick={(e) => { e.stopPropagation(); handleReset(); }} size="icon" variant="secondary" className="h-7 w-7" disabled={!isCurrentRoomWritable}> {/* Smaller buttons */}
+                <RotateCcw className="h-4 w-4" /> {/* Smaller icons */}
               </Button>
             </div>
           </>

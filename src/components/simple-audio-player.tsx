@@ -227,7 +227,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
         "fixed top-[72px] right-4 z-[901]", // Position at top right for mobile
         "transition-all duration-300 ease-in-out",
         "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex w-full", // Applied styling here
-        displayMode === 'normal' || displayMode === 'maximized' ? "h-auto p-1 rounded-xl max-w-[224px] flex-col" : "h-40 p-1 items-center justify-between flex-col rounded-full w-24" // Use displayMode directly, and increased width to w-24
+        displayMode === 'normal' || displayMode === 'maximized' ? "h-auto p-1 rounded-xl max-w-[224px] flex-col" : "h-40 p-1 items-center justify-between flex-col rounded-full w-10" // Use displayMode directly, and reverted width to w-10
       )}>
         {displayMode === 'normal' || displayMode === 'maximized' ? (
           <>
