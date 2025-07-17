@@ -226,9 +226,9 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <Label htmlFor="flashcard-size-test">Card Size:</Label>
               <ToggleGroup type="single" value={flashcardSize} onValueChange={(value: FlashcardSize) => setFlashcardSize(value)} className="h-auto">
-                <ToggleGroupItem value="sm" aria-label="Small" className="h-8 px-3 text-sm">S</ToggleGroupItem>
-                <ToggleGroupItem value="md" aria-label="Medium" className="h-8 px-3 text-sm">M</ToggleGroupItem>
-                <ToggleGroupItem value="lg" aria-label="Large" className="h-8 px-3 text-sm">L</ToggleGroupItem>
+                <ToggleGroupItem value="sm" aria-label="Small" className="h-8 px-3 text-sm"><span>S</span></ToggleGroupItem>
+                <ToggleGroupItem value="md" aria-label="Medium" className="h-8 px-3 text-sm"><span>M</span></ToggleGroupItem>
+                <ToggleGroupItem value="lg" aria-label="Large" className="h-8 px-3 text-sm"><span>L</span></ToggleGroupItem>
               </ToggleGroup>
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">

@@ -87,13 +87,13 @@ export function PricingContent({ onUpgrade }: { onUpgrade: () => void }) {
           className="bg-background p-0.5 sm:p-1 rounded-full border" // Reduced padding
         >
           <ToggleGroupItem value="weekly" aria-label="Pay Weekly" className="rounded-full px-4 sm:px-6 text-sm data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"> {/* Reduced px and font size */}
-            Weekly
+            <span>Weekly</span>
           </ToggleGroupItem>
           <ToggleGroupItem value="monthly" aria-label="Pay Monthly" className="rounded-full px-4 sm:px-6 text-sm data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"> {/* Reduced px and font size */}
-            Monthly
+            <span>Monthly</span>
           </ToggleGroupItem>
           <ToggleGroupItem value="annually" aria-label="Pay Annually" className="rounded-full px-4 sm:px-6 text-sm data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"> {/* Reduced px and font size */}
-            Annually
+            <span>Annually</span>
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
