@@ -83,9 +83,7 @@ export function useFlashcardData() {
         console.error("Error parsing local storage cards:", e);
       }
       setCards(loadedCards);
-      if (loadedCards.length === 0 && !currentRoomId) {
-        toast.info("You are browsing flashcards as a guest. Your cards will be saved locally.");
-      }
+      // Removed: if (loadedCards.length === 0 && !currentRoomId) { toast.info("You are browsing flashcards as a guest. Your cards will be saved locally."); }
     }
     setLoading(false);
   }, [session, supabase, authLoading, currentRoomId]);
