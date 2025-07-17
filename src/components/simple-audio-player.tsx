@@ -28,8 +28,7 @@ import { MinimizedPlayerControls } from './audio-player/minimized-player-control
 
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 const HEADER_HEIGHT = 64; // px
-// const TIME_PROGRESS_BAR_HEIGHT = 64; // px - Removed as it's now fixed
-const TOTAL_HEADER_AREA_HEIGHT = HEADER_HEIGHT; // Adjusted to only include header height
+const EDGE_OFFSET = 4; // px, for padding from the edge
 
 interface SimpleAudioPlayerProps {
   isMobile: boolean;
@@ -223,11 +222,16 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     />
   );
 
+  // Calculate dynamic top position for mobile minimized player
+  const mobileMinimizedPlayerTop = HEADER_HEIGHT + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + EDGE_OFFSET;
+
   if (isMobile) {
     return (
       <div className={cn(
-        "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex w-24", // Applied styling here, fixed width
-        displayMode === 'normal' || displayMode === 'maximized' ? "h-auto p-1 rounded-xl flex-col" : "h-40 p-1 items-center justify-between flex-col rounded-full", // Use displayMode directly, and reverted width to w-10
+        "fixed z-[900] transition-all duration-300 ease-in-out",
+        displayMode === 'minimized' ?
+          `top-[${mobileMinimizedPlayerTop}px] right-[${EDGE_OFFSET}px] w-12 h-[100px] rounded-full` : // Minimized mobile
+          "bottom-1 right-1 w-full max-w-[200px] h-auto p-1 rounded-xl flex-col", // Normal/Maximized mobile
         className // Apply external positioning classes
       )}>
         {displayMode === 'normal' || displayMode === 'maximized' ? (
