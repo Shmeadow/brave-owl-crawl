@@ -50,7 +50,7 @@ export function BackgroundEffectsMenu() {
                       alt={`Background ${imageUrl.split("/").pop()}`}
                       fill
                       className="object-cover"
-                      sizes="100px" // Adjusted sizes prop for better rendering in small previews
+                      // Removed the 'sizes' prop to simplify image loading
                     />
                     {isActive && (
                       <div className="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 text-white text-sm font-bold">
