@@ -15,10 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import dynamic from 'next/dynamic'; // Import dynamic
-
-// Dynamically import TrixEditor with SSR disabled
-const DynamicTrixEditor = dynamic(() => import("./trix-editor").then(mod => mod.TrixEditor), { ssr: false });
+import { TrixEditor } from "./trix-editor"; // Revert to standard import
 
 const today = new Date();
 const dateString = today.toLocaleDateString('en-US', {
@@ -83,7 +80,7 @@ export function AddJournalEntryForm({ onAddEntry, isCurrentRoomWritable }: AddJo
               <FormItem>
                 <FormLabel>Content</FormLabel>
                 <FormControl>
-                  <DynamicTrixEditor
+                  <TrixEditor // Use standard TrixEditor
                     content={field.value}
                     onChange={field.onChange}
                     disabled={!isCurrentRoomWritable}
