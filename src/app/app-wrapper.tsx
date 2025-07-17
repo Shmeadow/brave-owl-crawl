@@ -182,7 +182,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             {isDashboard && isMobile && (
               <>
                 {/* Mobile-specific SimpleAudioPlayer positioned at middle-right */}
-                <DynamicSimpleAudioPlayer isMobile={isMobile} />
+                <DynamicSimpleAudioPlayer isMobile={isMobile} className="z-[906]" />
                 <DynamicMobileControls>
                   <DynamicPomodoroWidget 
                     isMinimized={isPomodoroMinimized}
@@ -201,7 +201,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
                   chatPanelWidth={0}
                   isMobile={isMobile}
                 />
-                <DynamicSimpleAudioPlayer isMobile={isMobile} />
+                <DynamicSimpleAudioPlayer isMobile={isMobile} className="z-[906]" />
               </>
             )}
             <DynamicChatPanel
@@ -209,7 +209,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               onToggleOpen={() => setIsChatOpen(!isChatOpen)}
               onNewUnreadMessage={handleNewUnreadMessage}
               onClearUnreadMessages={handleClearUnreadMessages}
-              unreadCount={unreadChatCount} /* Corrected prop name here */
+              unreadCount={unreadChatCount}
               currentRoomId={currentRoomId}
               currentRoomName={currentRoomName}
               isCurrentRoomWritable={isCurrentRoomWritable}
