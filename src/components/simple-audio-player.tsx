@@ -318,43 +318,20 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
                 </Button>
               </div>
             )}
-            <Button
-              onClick={toggleMobileExpand}
-              className="w-full mt-1" // Reduced margin
-              variant="secondary"
-              size="sm"
-            >
-              <ChevronDown className="mr-1 h-3 w-3" /> Collapse Player {/* Smaller icon */}
-            </Button>
           </>
         ) : (
           // Minimized mobile view
-          <>
-            <PlayerControls
-              playerType={playerType}
-              playerIsReady={playerIsReady}
-              currentIsPlaying={currentIsPlaying}
-              togglePlayPause={togglePlayPause}
-              skipBackward={skipBackward}
-              skipForward={skipForward}
-              currentVolume={currentVolume}
-              currentIsMuted={currentIsMuted}
-              toggleMute={toggleMute}
-              handleVolumeChange={handleVolumeChange}
-              canPlayPause={canPlayPause}
-              canSeek={canSeek}
-              displayMode={displayMode} // Pass displayMode
-              setDisplayMode={setDisplayMode} // Pass setDisplayMode
-            />
-
-            <button
-              onClick={toggleMobileExpand}
-              className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 ml-0.5 flex-shrink-0 h-7 w-7" // Smaller button
-              title="Expand Player"
-            >
-              <ChevronUp size={14} /> {/* Smaller icon */}
-            </button>
-          </>
+          <MinimizedPlayerControls
+            playerType={playerType}
+            playerIsReady={playerIsReady}
+            currentIsPlaying={currentIsPlaying}
+            togglePlayPause={togglePlayPause}
+            currentVolume={currentVolume}
+            currentIsMuted={currentIsMuted}
+            toggleMute={toggleMute}
+            handleVolumeChange={handleVolumeChange}
+            setDisplayMode={setDisplayMode}
+          />
         )}
       </div>
     );
