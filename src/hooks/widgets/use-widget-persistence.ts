@@ -143,6 +143,7 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea, is
     if (!mounted.current || loading) return;
     const saveWidgetStates = async () => {
       // Only save if the current room is writable OR if it's the personal dashboard (currentRoomId is null)
+      // And only if there's a session (logged-in mode)
       if (isLoggedInMode && session && supabase && (isCurrentRoomWritable || currentRoomId === null)) {
         const statesToSave = activeWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id, currentRoomId));
         if (statesToSave.length > 0) {
