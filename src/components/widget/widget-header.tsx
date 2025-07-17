@@ -40,7 +40,7 @@ export function WidgetHeader({
   return (
     <div
       className={cn(
-        "flex items-center justify-between p-2 border-b border-border/50 bg-background/80 backdrop-blur-md",
+        "flex items-center justify-between p-1.5 border-b border-border/50 bg-background/80 backdrop-blur-md",
         isDraggable ? "cursor-grab" : "cursor-default",
         isInsideDock && "hidden" // Hide header if inside dock
       )}
@@ -48,8 +48,8 @@ export function WidgetHeader({
       {...attributes}
     >
       <div className="flex items-center flex-grow min-w-0">
-        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary mr-2">
-          {Icon && <Icon className="h-5 w-5" />}
+        <div className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary mr-2">
+          {Icon && <Icon className="h-4 w-4" />}
         </div>
         <h4 className="text-sm font-semibold truncate">{title}</h4>
       </div>
@@ -59,31 +59,31 @@ export function WidgetHeader({
           variant="ghost"
           size="icon"
           onMouseDown={(e) => { e.stopPropagation(); onTogglePin(); }}
-          className="h-7 w-7 hidden" // Added 'hidden' class to visually hide
+          className="h-6 w-6 hidden" // Added 'hidden' class to visually hide
           title={isPinned ? "Unpin Widget" : "Pin Widget"}
           disabled={true} // Explicitly disable functionality
         >
-          {isPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+          {isPinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
           <span className="sr-only">{isPinned ? "Unpin Widget" : "Pin Widget"}</span>
         </Button>
         <Button
           variant="ghost"
           size="icon"
           onMouseDown={(e) => { e.stopPropagation(); onMaximize(); }}
-          className="h-7 w-7"
+          className="h-6 w-6"
           title={isMaximized ? "Restore Widget" : "Maximize Widget"}
         >
-          <Maximize2 className="h-4 w-4" />
+          <Maximize2 className="h-3.5 w-3.5" />
           <span className="sr-only">{isMaximized ? "Restore Widget" : "Maximize Widget"}</span>
         </Button>
         <Button
           variant="ghost"
           size="icon"
           onMouseDown={(e) => { e.stopPropagation(); onClose(); }}
-          className="h-7 w-7"
+          className="h-6 w-6"
           title="Close Widget"
         >
-          <X className="h-4 w-4" />
+          <X className="h-3.5 w-3.5" />
           <span className="sr-only">Close Widget</span>
         </Button>
       </div>

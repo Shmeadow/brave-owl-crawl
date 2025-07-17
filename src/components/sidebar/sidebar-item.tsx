@@ -23,14 +23,14 @@ export function SidebarItem({ icon: Icon, label, isActive, onClick, isExpanded }
             variant="ghost"
             className={cn(
               "relative transition-all duration-200 flex items-center",
-              isExpanded ? "w-full justify-start px-4 h-10" : "h-12 w-12 justify-center rounded-full",
+              isExpanded ? "w-full justify-start px-3 h-9" : "h-10 w-10 justify-center rounded-full",
               "bg-transparent text-white/70 hover:bg-white/10 hover:text-white",
               isActive && "bg-white/20 text-white ring-inset ring-2 ring-white/50 box-border"
             )}
             onClick={onClick}
           >
-            <Icon className="h-5 w-5 flex-shrink-0" />
-            {isExpanded && <span className="ml-4 text-sm font-medium truncate">{label}</span>}
+            <Icon className="h-4 w-4 flex-shrink-0" />
+            {isExpanded && <span className="ml-3 text-sm font-medium truncate">{label}</span>}
             <span className={cn(!isExpanded && "sr-only")}>{label}</span>
           </Button>
         </TooltipTrigger>

@@ -46,44 +46,44 @@ export function PlanCard({ plan, billingCycle, onUpgrade, isDiscountAvailable }:
       className="" // Removed h-full
     >
       <Card className={cn(
-        "relative flex flex-col text-center p-4 transition-shadow duration-300 shadow-md hover:shadow-xl bg-card", // Reduced p-6 to p-4
+        "relative flex flex-col text-center p-3 transition-shadow duration-300 shadow-md hover:shadow-xl bg-card",
         plan.isMostPopular && "border-primary ring-2 ring-primary shadow-primary/20"
       )}>
         {plan.isMostPopular && (
-          <div className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-2 py-0.5 text-xs font-semibold rounded-full"> {/* Reduced padding and font size */}
+          <div className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-2 py-0.5 text-xs font-semibold rounded-full">
             Most Popular
           </div>
         )}
-        <CardHeader className="pb-3"> {/* Reduced pb-4 to pb-3 */}
-          <CardTitle className="text-lg sm:text-xl font-bold">{plan.name}</CardTitle> {/* Responsive font size */}
-          <p className="text-xs sm:text-sm text-muted-foreground">{plan.tagline}</p> {/* Responsive font size */}
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base sm:text-lg font-bold">{plan.name}</CardTitle>
+          <p className="text-xs text-muted-foreground">{plan.tagline}</p>
         </CardHeader>
         <CardContent className="flex flex-col flex-grow">
-          <div className="mb-4 min-h-[80px]"> {/* Reduced mb-6 to mb-4, min-h from 100px to 80px */}
+          <div className="mb-3 min-h-[70px]">
             {hasDiscount && (
-              <div className="mb-1"> {/* Reduced mb-2 to mb-1 */}
-                <span className="text-base line-through text-muted-foreground">${originalPrice.toFixed(2)}</span> {/* Reduced text-lg to text-base */}
-                <span className="ml-1 bg-destructive text-destructive-foreground text-xs font-bold px-1.5 py-0.5 rounded-full"> {/* Reduced padding */}
+              <div className="mb-1">
+                <span className="text-sm line-through text-muted-foreground">${originalPrice.toFixed(2)}</span>
+                <span className="ml-1 bg-destructive text-destructive-foreground text-xs font-bold px-1.5 py-0.5 rounded-full">
                   {discountInfo.percent}% OFF
                 </span>
               </div>
             )}
-            <p className="text-3xl sm:text-4xl font-extrabold">${discountedPrice.toFixed(2)}</p> {/* Responsive font size */}
-            <p className="text-xs text-muted-foreground">{getBillingText()}</p> {/* Reduced font size */}
+            <p className="text-2xl sm:text-3xl font-extrabold">${discountedPrice.toFixed(2)}</p>
+            <p className="text-xs text-muted-foreground">{getBillingText()}</p>
             {hasDiscount && <p className="text-xs text-primary mt-1">First time purchase only</p>}
           </div>
           <Button
             onClick={onUpgrade}
             variant={plan.buttonVariant}
-            className="w-full font-bold text-base py-4 mb-6 transition-transform hover:scale-105" // Reduced text-lg to text-base, py-6 to py-4, mb-8 to mb-6
+            className="w-full font-bold text-base py-3 mb-4 transition-transform hover:scale-105"
             disabled={plan.name === 'Free'}
           >
             {plan.name === 'Free' ? 'Current Plan' : 'Upgrade'}
           </Button>
-          <ul className="space-y-2 text-left flex-grow text-sm"> {/* Reduced space-y-3 to space-y-2, added text-sm */}
+          <ul className="space-y-1.5 text-left flex-grow text-sm">
             {plan.features.map((feature, index) => (
-              <li key={index} className={cn("flex items-center gap-2", !feature.included && "text-muted-foreground")}> {/* Reduced gap-3 to gap-2 */}
-                {feature.included ? <Check className="h-4 w-4 text-green-500 flex-shrink-0" /> : <Minus className="h-4 w-4 text-muted-foreground flex-shrink-0" />} {/* Reduced icon size */}
+              <li key={index} className={cn("flex items-center gap-1.5", !feature.included && "text-muted-foreground")}>
+                {feature.included ? <Check className="h-3.5 w-3.5 text-green-500 flex-shrink-0" /> : <Minus className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />}
                 <span>{feature.text}</span>
               </li>
             ))}

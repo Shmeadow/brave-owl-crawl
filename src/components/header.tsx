@@ -66,7 +66,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
 
   return (
     <header className={cn(
-      "sticky top-0 z-[1002] w-full h-14 flex items-center justify-between p-2 gap-2"
+      "sticky top-0 z-[1002] w-full h-12 flex items-center justify-between p-2 gap-2"
     )}>
       {/* Left Capsule */}
       <div className={cn(
@@ -74,32 +74,32 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         "bg-card/50 backdrop-blur-xl border border-white/20 rounded-full"
       )}>
         {isMobile && (
-          <Button variant="ghost" size="icon" onClick={onToggleSidebar} title="Open Menu" className="h-8 w-8">
-            <Menu className="h-5 w-5" />
+          <Button variant="ghost" size="icon" onClick={onToggleSidebar} title="Open Menu" className="h-7 w-7">
+            <Menu className="h-4 w-4" />
           </Button>
         )}
         <Link href="/dashboard" className="flex items-center space-x-1">
-          <h1 className="text-xl font-bold text-primary hidden sm:block">Cozy Hub</h1>
-          <Button variant="ghost" size="icon" title="Home" className="h-8 w-8">
-            <Home className="h-5 w-5" />
+          <h1 className="text-lg font-bold text-primary hidden sm:block">Cozy Hub</h1>
+          <Button variant="ghost" size="icon" title="Home" className="h-7 w-7">
+            <Home className="h-4 w-4" />
           </Button>
         </Link>
         <div className="flex items-center gap-1 flex-1 min-w-0 overflow-hidden">
-          <h1 className="text-lg font-semibold truncate">{currentRoomName}</h1>
+          <h1 className="text-base font-semibold truncate">{currentRoomName}</h1>
           <Button
             variant="ghost"
             size="icon"
             title="Spaces"
-            className="flex-shrink-0 h-8 w-8"
+            className="flex-shrink-0 h-7 w-7"
             onClick={() => toggleWidget('spaces', 'Spaces')}
           >
-            <LayoutGrid className="h-5 w-5" />
+            <LayoutGrid className="h-4 w-4" />
           </Button>
           {session && (
             <Popover open={isRoomSettingsOpen} onOpenChange={setIsRoomSettingsOpen}>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" title="Room Options" className="flex-shrink-0 h-8 w-8">
-                  <Settings className="h-5 w-5" />
+                <Button variant="ghost" size="icon" title="Room Options" className="flex-shrink-0 h-7 w-7">
+                  <Settings className="h-4 w-4" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
