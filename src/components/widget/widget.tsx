@@ -187,7 +187,7 @@ export function Widget({
         minConstraints={[100, 80]} // Reduced from [150, 100]
         maxConstraints={[mainContentArea.width, mainContentArea.height]} // Ensure max constraints are respected
         className="w-full h-full"
-        resizeHandles={isResizable ? ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'] : []}
+        resizeHandles={isResizable ? ['s', 'e', 'w', 'se', 'sw'] : []}
       >
         {renderWidgetContent}
       </ResizableBox>

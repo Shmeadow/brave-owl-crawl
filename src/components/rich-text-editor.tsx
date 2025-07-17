@@ -10,8 +10,10 @@ import ListItem from '@tiptap/extension-list-item';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Button } from '@/components/ui/button';
 import { Important } from '@/lib/tiptap-extensions';
-import { Star, Undo, Redo, Bold, Italic, Strikethrough, Pilcrow, Heading1, Heading2, List, ListOrdered, Highlighter, X } from 'lucide-react';
+import { Star, Undo, Redo, Bold, Italic, Strikethrough, Pilcrow, Heading1, Heading2, List, ListOrdered, Highlighter, X, Quote, Code, Minus } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { FontSize } from '@tiptap/extension-font-size'; // New import
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // New import for Select
 
 interface RichTextEditorProps {
   content: string;
@@ -40,12 +42,16 @@ export function RichTextEditor({
       StarterKit.configure({
         bulletList: { keepMarks: true, keepAttributes: false },
         orderedList: { keepMarks: true, keepAttributes: false },
+        blockquote: { HTMLAttributes: { class: 'prose-blockquote' } },
+        codeBlock: { HTMLAttributes: { class: 'prose-code-block' } },
+        horizontalRule: { HTMLAttributes: { class: 'prose-hr' } },
       }),
       ListItem.configure({ HTMLAttributes: { class: 'list-item' } }),
       TextStyle,
       Color,
       Highlight.configure({ multicolor: true }),
       Important,
+      FontSize, // Add FontSize extension
     ],
     content: '',
     editorProps: {
@@ -92,21 +98,48 @@ export function RichTextEditor({
     <div className={cn("rounded-md border border-input bg-transparent", disabled && "cursor-not-allowed opacity-50")}>
       <div className="flex flex-wrap items-center gap-1 p-2 border-b border-input">
         {/* Style Group */}
-        <Button type="button" onClick={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('bold') && 'bg-accent')} title="Bold"><Bold className="h-4 w-4" /></Button>
-        <Button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('italic') && 'bg-accent')} title="Italic"><Italic className="h-4 w-4" /></Button>
-        <Button type="button" onClick={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('strike') && 'bg-accent')} title="Strikethrough"><Strikethrough className="h-4 w-4" /></Button>
+        <Button type="button" onClick={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('bold') && 'ring-2 ring-primary')} title="Bold"><Bold className="h-4 w-4" /></Button>
+        <Button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('italic') && 'ring-2 ring-primary')} title="Italic"><Italic className="h-4 w-4" /></Button>
+        <Button type="button" onClick={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('strike') && 'ring-2 ring-primary')} title="Strikethrough"><Strikethrough className="h-4 w-4" /></Button>
+        <Separator orientation="vertical" className="h-6 mx-1" />
+        {/* Font Size */}
+        <Select
+          value={editor.getAttributes('textStyle').fontSize || ''}
+          onValueChange={(value) => {
+            if (value === '') {
+              editor.chain().focus().unsetFontSize().run();
+            } else {
+              editor.chain().focus().setFontSize(value).run();
+            }
+          }}
+          disabled={disabled}
+        >
+          <SelectTrigger className="w-[80px] h-8 text-xs">
+            <SelectValue placeholder="Size" />
+          </SelectTrigger>
+          <SelectContent className="z-[1200]">
+            <SelectItem value="">Default</SelectItem>
+            <SelectItem value="12px">Small</SelectItem>
+            <SelectItem value="16px">Normal</SelectItem>
+            <SelectItem value="20px">Large</SelectItem>
+            <SelectItem value="24px">X-Large</SelectItem>
+          </SelectContent>
+        </Select>
         <Separator orientation="vertical" className="h-6 mx-1" />
         {/* Block Type Group */}
-        <Button type="button" onClick={() => editor.chain().focus().setParagraph().run()} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('paragraph') && 'bg-accent')} title="Paragraph"><Pilcrow className="h-4 w-4" /></Button>
-        <Button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} disabled={!editor.can().chain().focus().toggleHeading({ level: 1 }).run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('heading', { level: 1 }) && 'bg-accent')} title="Heading 1"><Heading1 className="h-4 w-4" /></Button>
-        <Button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} disabled={!editor.can().chain().focus().toggleHeading({ level: 2 }).run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('heading', { level: 2 }) && 'bg-accent')} title="Heading 2"><Heading2 className="h-4 w-4" /></Button>
+        <Button type="button" onClick={() => editor.chain().focus().setParagraph().run()} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('paragraph') && 'ring-2 ring-primary')} title="Paragraph"><Pilcrow className="h-4 w-4" /></Button>
+        <Button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} disabled={!editor.can().chain().focus().toggleHeading({ level: 1 }).run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('heading', { level: 1 }) && 'ring-2 ring-primary')} title="Heading 1"><Heading1 className="h-4 w-4" /></Button>
+        <Button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} disabled={!editor.can().chain().focus().toggleHeading({ level: 2 }).run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('heading', { level: 2 }) && 'ring-2 ring-primary')} title="Heading 2"><Heading2 className="h-4 w-4" /></Button>
+        <Button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()} disabled={!editor.can().chain().focus().toggleBlockquote().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('blockquote') && 'ring-2 ring-primary')} title="Blockquote"><Quote className="h-4 w-4" /></Button>
+        <Button type="button" onClick={() => editor.chain().focus().toggleCodeBlock().run()} disabled={!editor.can().chain().focus().toggleCodeBlock().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('codeBlock') && 'ring-2 ring-primary')} title="Code Block"><Code className="h-4 w-4" /></Button>
+        <Button type="button" onClick={() => editor.chain().focus().setHorizontalRule().run()} disabled={!editor.can().chain().focus().setHorizontalRule().run() || disabled} variant="ghost" size="icon" className="h-8 w-8" title="Horizontal Rule"><Minus className="h-4 w-4" /></Button>
         <Separator orientation="vertical" className="h-6 mx-1" />
         {/* List Group */}
-        <Button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} disabled={!editor.can().chain().focus().toggleBulletList().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('bulletList') && 'bg-accent')} title="Bullet List"><List className="h-4 w-4" /></Button>
-        <Button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} disabled={!editor.can().chain().focus().toggleOrderedList().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('orderedList') && 'bg-accent')} title="Ordered List"><ListOrdered className="h-4 w-4" /></Button>
+        <Button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} disabled={!editor.can().chain().focus().toggleBulletList().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('bulletList') && 'ring-2 ring-primary')} title="Bullet List"><List className="h-4 w-4" /></Button>
+        <Button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} disabled={!editor.can().chain().focus().toggleOrderedList().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('orderedList') && 'ring-2 ring-primary')} title="Ordered List"><ListOrdered className="h-4 w-4" /></Button>
         <Separator orientation="vertical" className="h-6 mx-1" />
         {/* Highlight Group */}
-        <Button type="button" onClick={() => editor.chain().focus().setHighlight({ color: '#fff59d' }).run()} disabled={disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('highlight', { color: '#fff59d' }) && 'ring-2 ring-yellow-500')} title="Highlight"><Highlighter className="h-4 w-4" /></Button>
+        <Button type="button" onClick={() => editor.chain().focus().setHighlight({ color: '#fff59d' }).run()} disabled={disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('highlight', { color: '#fff59d' }) && 'ring-2 ring-primary')} title="Highlight"><Highlighter className="h-4 w-4" /></Button>
         <Button type="button" onClick={() => editor.chain().focus().unsetHighlight().run()} disabled={!editor.isActive('highlight') || disabled} variant="ghost" size="icon" className="h-8 w-8" title="Remove Highlight"><X className="h-4 w-4" /></Button>
         <Separator orientation="vertical" className="h-6 mx-1" />
         {/* Important/Star Group */}
@@ -114,17 +147,22 @@ export function RichTextEditor({
           <Button
             key={color.value}
             type="button"
-            onClick={() => editor.chain().focus().toggleImportant({ color: color.value }).run()}
+            onClick={() => {
+              if (editor.isActive('important', { color: color.value })) {
+                editor.chain().focus().unsetImportant().run();
+              } else {
+                editor.chain().focus().toggleImportant({ color: color.value }).run();
+              }
+            }}
             disabled={editor.state.selection.empty || disabled}
             variant="ghost"
             size="icon"
-            className={cn("h-8 w-8", editor.isActive('important', { color: color.value }) && 'bg-accent')}
+            className={cn("h-8 w-8", editor.isActive('important', { color: color.value }) && 'ring-2 ring-primary')}
             title={`Mark as ${color.name} Important`}
           >
             <Star className="h-4 w-4" style={{ color: color.value, fill: editor.isActive('important', { color: color.value }) ? color.value : 'transparent' }} />
           </Button>
         ))}
-        <Button type="button" onClick={() => editor.chain().focus().unsetImportant().run()} disabled={!editor.isActive('important') || disabled} variant="ghost" size="icon" className="h-8 w-8" title="Remove Importance"><X className="h-4 w-4" /></Button>
         <div className="flex-grow" />
         {/* History Group */}
         <Button type="button" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo() || disabled} variant="ghost" size="icon" className="h-8 w-8" title="Undo"><Undo className="h-4 w-4" /></Button>

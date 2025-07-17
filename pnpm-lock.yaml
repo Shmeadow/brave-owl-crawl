@@ -116,6 +116,9 @@ importers:
       '@tiptap/extension-color':
         specifier: ^2.5.5
         version: 2.26.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))(@tiptap/extension-text-style@2.26.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1)))
+      '@tiptap/extension-font-size':
+        specifier: 3.0.0-next.3
+        version: 3.0.0-next.3(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))(@tiptap/extension-text-style@2.26.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1)))
       '@tiptap/extension-highlight':
         specifier: ^2.5.5
         version: 2.26.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))
@@ -1475,6 +1478,12 @@ packages:
       '@floating-ui/dom': ^1.0.0
       '@tiptap/core': ^3.0.1
       '@tiptap/pm': ^3.0.1
+
+  '@tiptap/extension-font-size@3.0.0-next.3':
+    resolution: {integrity: sha512-JmmrCboLvDH4HG1nOAMkiwmeFluliXaeEh5+RDxOofuzxsHjSYVJpNP846eLtMnjkUAxjvh7tBz7GTjATm3OuQ==}
+    peerDependencies:
+      '@tiptap/core': ^3.0.0-next.3
+      '@tiptap/extension-text-style': ^3.0.0-next.3
 
   '@tiptap/extension-gapcursor@2.26.1':
     resolution: {integrity: sha512-KOiMZc3PwJS3hR0nSq5d0TJi2jkNZkLZElcT6pCEnhRHzPH6dRMu9GM5Jj798ZRUy0T9UFcKJalFZaDxnmRnpg==}
@@ -5307,6 +5316,11 @@ snapshots:
       '@tiptap/core': 3.0.1(@tiptap/pm@3.0.1)
       '@tiptap/pm': 3.0.1
     optional: true
+
+  '@tiptap/extension-font-size@3.0.0-next.3(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))(@tiptap/extension-text-style@2.26.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1)))':
+    dependencies:
+      '@tiptap/core': 3.0.1(@tiptap/pm@3.0.1)
+      '@tiptap/extension-text-style': 2.26.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))
 
   '@tiptap/extension-gapcursor@2.26.1(@tiptap/core@2.26.1(@tiptap/pm@2.26.1))(@tiptap/pm@2.26.1)':
     dependencies:
