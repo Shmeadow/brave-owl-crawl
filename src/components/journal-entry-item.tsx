@@ -2,10 +2,11 @@
 
 import React, { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Star, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Star, Trash2, ChevronDown, ChevronUp, Lightbulb } from "lucide-react"; // Import Lightbulb
 import { cn } from "@/lib/utils";
 import { JournalEntryData } from "@/hooks/use-journal";
 import { toast } from "sonner";
+import { RichTextEditor } from "./rich-text-editor";
 import { Input } from "@/components/ui/input";
 import {
   Collapsible,
@@ -13,10 +14,6 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import dynamic from 'next/dynamic'; // Import dynamic
-
-// Dynamically import TrixEditor with SSR disabled
-const DynamicTrixEditor = dynamic(() => import("./trix-editor").then(mod => mod.TrixEditor), { ssr: false });
 
 interface JournalEntryItemProps {
   entry: JournalEntryData;
@@ -25,6 +22,8 @@ interface JournalEntryItemProps {
   isCurrentRoomWritable: boolean;
   onUpdateEntryContent: (entryId: string, newContent: string) => void;
   onUpdateEntryTitle: (entryId: string, newTitle: string) => void;
+  isInitiallyOpen?: boolean; // New prop
+  onOpenChange?: (isOpen: boolean) => void; // New prop
 }
 
 export function JournalEntryItem({
@@ -34,11 +33,20 @@ export function JournalEntryItem({
   isCurrentRoomWritable,
   onUpdateEntryContent,
   onUpdateEntryTitle,
+  isInitiallyOpen = false, // Default to false
+  onOpenChange, // Destructure new prop
 }: JournalEntryItemProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitlePrefix, setEditedTitlePrefix] = useState('');
   const [datePart, setDatePart] = useState('');
-  const [isContentOpen, setIsContentOpen] = useState(false);
+  const [isContentOpen, setIsContentOpen] = useState(isInitiallyOpen); // Initialize with isInitiallyOpen
+
+  // Effect to open the collapsible if isInitiallyOpen changes to true
+  useEffect(() => {
+    if (isInitiallyOpen && !isContentOpen) {
+      setIsContentOpen(true);
+    }
+  }, [isInitiallyOpen, isContentOpen]);
 
   const handleToggleStarClick = () => {
     if (!isCurrentRoomWritable) {
@@ -87,6 +95,9 @@ export function JournalEntryItem({
 
   const handleCollapsibleOpenChange = (open: boolean) => {
     setIsContentOpen(open);
+    if (onOpenChange) {
+      onOpenChange(open);
+    }
   };
 
   return (
@@ -158,7 +169,7 @@ export function JournalEntryItem({
           </p>
           <CollapsibleContent>
             <div className="pt-2 border-t border-border/50">
-              <DynamicTrixEditor
+              <RichTextEditor
                 content={entry.content}
                 onChange={handleContentChange}
                 disabled={!isCurrentRoomWritable}

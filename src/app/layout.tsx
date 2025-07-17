@@ -135,8 +135,6 @@ export default async function RootLayout({
             }
           }
         `}} />
-        {/* Trix Editor JavaScript */}
-        <script src="https://unpkg.com/trix@2.1.1/dist/trix.umd.min.js" async></script>
       </body>
     </html>
   );

@@ -3,12 +3,19 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
+import { generateHTML } from '@tiptap/html';
+import StarterKit from '@tiptap/starter-kit';
+import Highlight from '@tiptap/extension-highlight';
+import { Important, Callout } from '@/lib/tiptap-extensions'; // Import Callout
+import TaskList from '@tiptap/extension-task-list'; // Import TaskList
+import TaskItem from '@tiptap/extension-task-item'; // Import TaskItem
+import { JSONContent } from '@tiptap/react'; // Import JSONContent type
 
 export interface JournalEntryData {
   id: string;
   user_id?: string; // Optional for local storage entries
   title: string | null;
-  content: string; // Now stores HTML string
+  content: string; // Can be HTML or JSON string
   starred: boolean;
   created_at: string;
   type: 'note' | 'journal'; // Will always be 'journal' for this hook
@@ -31,32 +38,41 @@ export function useJournal() {
   const [isLoggedInMode, setIsLoggedInMode] = useState(false);
 
   // Function to extract important reminders from journal entries
-  // This is a simplified version that looks for a specific pattern or tag if Trix supports it,
-  // or can be removed if the feature is no longer desired.
-  // For now, I'll keep a placeholder that would need a Trix-specific implementation
-  // or a simpler text-based extraction. Given the prompt, I'll remove the complex parsing
-  // and simplify the reminder extraction to just look for "Important:" in plain text.
   const extractImportantReminders = useCallback((entries: JournalEntryData[]): ImportantReminder[] => {
     const reminders: ImportantReminder[] = [];
+    const extensions = [
+      StarterKit,
+      Highlight,
+      Important,
+      TaskList,
+      TaskItem,
+      Callout,
+    ];
+
     entries.forEach(entry => {
       if (entry.type === 'journal' && entry.content) {
-        // Create a temporary div to parse HTML and get text content
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = entry.content;
-        const plainTextContent = tempDiv.textContent || '';
-
-        // Simple text-based extraction for "Important:"
-        const lines = plainTextContent.split('\n');
-        lines.forEach(line => {
-          if (line.trim().toLowerCase().startsWith('important:')) {
+        try {
+          let htmlContent = entry.content;
+          // Check if content is JSON and convert to HTML for parsing
+          if (entry.content.trim().startsWith('{')) {
+            const jsonContent = JSON.parse(entry.content);
+            htmlContent = generateHTML(jsonContent, extensions);
+          }
+          
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(htmlContent, 'text/html');
+          const importantSpans = doc.querySelectorAll('.important-journal-item');
+          importantSpans.forEach(span => {
             reminders.push({
-              entryId: entry.id,
+              entryId: entry.id, // Include entryId
               entryTitle: entry.title,
-              text: line.trim(),
+              text: span.textContent,
               timestamp: entry.created_at,
             });
-          }
-        });
+          });
+        } catch (e) {
+          console.error("Error parsing entry content for reminders:", e);
+        }
       }
     });
     // Sort reminders by timestamp, newest first
@@ -144,6 +160,7 @@ export function useJournal() {
         // Ensure all loaded entries have a 'type' property, default to 'journal' if missing
         loadedEntries = loadedEntries.map(entry => ({ ...entry, type: entry.type || 'journal' }));
         setJournalEntries(loadedEntries);
+        // Removed: if (loadedEntries.length === 0) { toast.info("You are browsing journal entries as a guest. Your entries will be saved locally."); }
       }
       setLoading(false);
     };
@@ -270,11 +287,13 @@ export function useJournal() {
         console.error("Error updating journal entry content (Supabase):", error);
       } else if (data) {
         setJournalEntries(prevEntries => prevEntries.map(entry => entry.id === entryId ? data as JournalEntryData : entry));
+        // toast.success("Journal entry content updated!"); // Too frequent, removed
       }
     } else {
       setJournalEntries(prevEntries => prevEntries.map(entry =>
         entry.id === entryId ? { ...entry, content: newContent } : entry
       ));
+      // toast.success("Journal entry content updated (locally)!"); // Too frequent, removed
     }
   }, [journalEntries, isLoggedInMode, session, supabase]);
 
@@ -346,6 +365,39 @@ export function useJournal() {
     return 0;
   }, [journalEntries, isLoggedInMode, session, supabase, setJournalEntries]);
 
+  const generateJournalExportText = useCallback((entries: JournalEntryData[], colSep: string, rowSep: string, format: 'csv' | 'json' | 'text'): string => {
+    if (entries.length === 0) return "";
+
+    if (format === 'json') {
+      return JSON.stringify(entries.map(entry => ({
+        id: entry.id,
+        title: entry.title,
+        content: entry.content,
+        starred: entry.starred,
+        created_at: entry.created_at,
+      })), null, 2);
+    }
+
+    const header = `"title"${colSep}"content"`;
+    const rows = entries.map(entry => {
+      const title = `"${(entry.title || '').replace(/"/g, '""')}"`;
+      let contentText = entry.content;
+      // If content is JSON, try to convert to plain text for CSV/text export
+      if (contentText.trim().startsWith('{')) {
+        try {
+          const jsonContent = JSON.parse(contentText);
+          // A very basic conversion for display, might lose rich formatting
+          contentText = jsonContent.content?.map((node: any) => node.text || '').join(' ') || '';
+        } catch (e) {
+          console.error("Error parsing JSON content for export:", e);
+        }
+      }
+      const content = `"${contentText.replace(/"/g, '""')}"`;
+      return `${title}${colSep}${content}`;
+    });
+    return header + rowSep + rows.join(rowSep);
+  }, []);
+
   return {
     journalEntries,
     importantReminders,
@@ -357,5 +409,6 @@ export function useJournal() {
     handleUpdateJournalEntryContent,
     handleUpdateJournalEntryTitle,
     handleBulkImportJournalEntries,
+    generateJournalExportText,
   };
 }

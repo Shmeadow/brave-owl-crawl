@@ -12,8 +12,8 @@ interface JournalEntryListProps {
   isCurrentRoomWritable: boolean;
   onUpdateEntryContent: (entryId: string, newContent: string) => void;
   onUpdateEntryTitle: (entryId: string, newTitle: string) => void;
-  // Removed activeReminderEntryId: string | null;
-  // Removed onEntryOpenChange: (entryId: string, isOpen: boolean) => void;
+  activeReminderEntryId: string | null; // New prop
+  onEntryOpenChange: (entryId: string, isOpen: boolean) => void; // New prop
 }
 
 export function JournalEntryList({
@@ -23,8 +23,8 @@ export function JournalEntryList({
   isCurrentRoomWritable,
   onUpdateEntryContent,
   onUpdateEntryTitle,
-  // Removed activeReminderEntryId,
-  // Removed onEntryOpenChange,
+  activeReminderEntryId, // Destructure new prop
+  onEntryOpenChange, // Destructure new prop
 }: JournalEntryListProps) {
   return (
     <>
@@ -42,8 +42,8 @@ export function JournalEntryList({
                 isCurrentRoomWritable={isCurrentRoomWritable}
                 onUpdateEntryContent={onUpdateEntryContent}
                 onUpdateEntryTitle={onUpdateEntryTitle}
-                // Removed isInitiallyOpen={entry.id === activeReminderEntryId}
-                // Removed onOpenChange={(isOpen) => onEntryOpenChange(entry.id, isOpen)}
+                isInitiallyOpen={entry.id === activeReminderEntryId} // Pass initial open state
+                onOpenChange={(isOpen) => onEntryOpenChange(entry.id, isOpen)} // Pass open change handler
               />
             ))}
           </div>

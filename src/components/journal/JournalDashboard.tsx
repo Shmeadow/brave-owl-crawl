@@ -4,21 +4,27 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, BookText, Star, History, Loader2 } from 'lucide-react';
-import { useJournal } from '@/hooks/use-journal'; // Removed ImportantReminder import
+import { useJournal, ImportantReminder } from '@/hooks/use-journal';
 import { useSupabase } from '@/integrations/supabase/auth';
 import { format } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AddJournalEntryForm } from '@/components/add-journal-entry-form';
 import { cn } from '@/lib/utils';
+import { generateHTML } from '@tiptap/html';
+import StarterKit from '@tiptap/starter-kit';
+import Highlight from '@tiptap/extension-highlight';
+import { Important, Callout } from '@/lib/tiptap-extensions';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
 
 interface JournalDashboardProps {
   isCurrentRoomWritable: boolean;
   onViewAllEntries: () => void;
-  // Removed onReminderClick: (reminder: ImportantReminder) => void;
+  onReminderClick: (reminder: ImportantReminder) => void;
 }
 
-export function JournalDashboard({ isCurrentRoomWritable, onViewAllEntries }: JournalDashboardProps) {
+export function JournalDashboard({ isCurrentRoomWritable, onViewAllEntries, onReminderClick }: JournalDashboardProps) {
   const { journalEntries, importantReminders, loading, isLoggedInMode, handleAddJournalEntry } = useJournal();
   const { session } = useSupabase();
   const [isAddEntryDialogOpen, setIsAddEntryDialogOpen] = useState(false);
@@ -26,11 +32,27 @@ export function JournalDashboard({ isCurrentRoomWritable, onViewAllEntries }: Jo
   const recentEntries = journalEntries.slice(0, 5); // Show up to 5 most recent entries
 
   const renderContentPreview = (content: string) => {
-    // Create a temporary div to parse HTML and get text content
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = content;
-    const plainTextContent = tempDiv.textContent || '';
-    return plainTextContent.substring(0, 100) + (plainTextContent.length > 100 ? '...' : '');
+    try {
+      let htmlContent = content;
+      if (content.trim().startsWith('{')) {
+        const extensions = [
+          StarterKit,
+          Highlight,
+          Important,
+          TaskList,
+          TaskItem,
+          Callout,
+        ];
+        htmlContent = generateHTML(JSON.parse(content), extensions);
+      }
+      // Create a temporary div to parse HTML and get text content
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlContent;
+      return tempDiv.textContent?.substring(0, 100) + (tempDiv.textContent && tempDiv.textContent.length > 100 ? '...' : '');
+    } catch (e) {
+      console.error("Error parsing journal entry content for preview:", e);
+      return content.substring(0, 100) + (content.length > 100 ? '...' : '');
+    }
   };
 
   if (loading) {
@@ -91,18 +113,19 @@ export function JournalDashboard({ isCurrentRoomWritable, onViewAllEntries }: Jo
           </CardHeader>
           <CardContent className="flex-1 p-4 pt-0">
             <ScrollArea className="h-[200px] pr-4">
-              <div>
+              <div> {/* Added this div to wrap conditional content */}
                 {importantReminders.length === 0 ? (
-                  <p className="text-muted-foreground text-sm text-center py-4">No important reminders yet. Type "Important:" in your journal entries!</p>
+                  <p className="text-muted-foreground text-sm text-center py-4">No important reminders yet. Mark text with the ⭐ button in your journal entries!</p>
                 ) : (
                   <ul className="space-y-3">
                     {importantReminders.slice(0, 5).map((reminder, index) => (
                       <li
                         key={`${reminder.entryId}-${index}`}
-                        className="text-sm border-b border-border/50 pb-2 last:border-b-0 p-2 rounded-md"
+                        className="text-sm border-b border-border/50 pb-2 last:border-b-0 cursor-pointer hover:bg-muted/50 p-2 rounded-md"
+                        onClick={() => onReminderClick(reminder)}
                       >
                         <p className="font-semibold text-foreground flex items-center gap-2">
-                          <Star className="h-4 w-4 text-yellow-500 fill-current mr-2 inline-block" />
+                          <Star className="h-4 w-4 text-yellow-500 fill-current mr-2 inline-block" /> {/* Added inline-block and mr-2 */}
                           From: "{reminder.entryTitle || 'Untitled Entry'}"
                         </p>
                         <p className="text-muted-foreground ml-6">"{reminder.text}"</p>
@@ -113,7 +136,7 @@ export function JournalDashboard({ isCurrentRoomWritable, onViewAllEntries }: Jo
                     ))}
                   </ul>
                 )}
-              </div>
+              </div> {/* Closed this div */}
             </ScrollArea>
           </CardContent>
         </Card>
@@ -138,7 +161,9 @@ export function JournalDashboard({ isCurrentRoomWritable, onViewAllEntries }: Jo
                     <p className="text-muted-foreground text-xs mt-1">
                       {format(new Date(entry.created_at), 'MMM d, yyyy, hh:mm a')}
                     </p>
-                    <p className="text-muted-foreground mt-1 line-clamp-2" dangerouslySetInnerHTML={{ __html: renderContentPreview(entry.content) }} />
+                    <p className="text-muted-foreground mt-1 line-clamp-2">
+                      {renderContentPreview(entry.content)}
+                    </p>
                   </li>
                 ))}
               </ul>

@@ -40,8 +40,17 @@ export function ExportJournalContent({
     const header = `"title"${actualColSep}"content"`;
     const rows = entries.map(entry => {
       const title = `"${(entry.title || '').replace(/"/g, '""')}"`;
-      // Use the raw HTML content from Trix
-      const content = `"${entry.content.replace(/"/g, '""')}"`;
+      let contentText = entry.content;
+      // If content is JSON, try to convert to plain text for CSV export
+      if (contentText.trim().startsWith('{')) {
+        try {
+          const jsonContent = JSON.parse(contentText);
+          contentText = jsonContent.content?.map((node: any) => node.text || '').join(' ') || '';
+        } catch (e) {
+          console.error("Error parsing JSON content for export:", e);
+        }
+      }
+      const content = `"${contentText.replace(/"/g, '""')}"`;
       return `${title}${actualColSep}${content}`;
     });
     return header + actualRowSep + rows.join(actualRowSep);
@@ -83,7 +92,7 @@ export function ExportJournalContent({
         <RadioGroup value={rowSep} onValueChange={setRowSep} className="flex space-x-4">
           <div className="flex items-center space-x-2"><RadioGroupItem value="\n" id="row-newline-export-journal" /><Label htmlFor="row-newline-export-journal">New Line</Label></div>
           <div className="flex items-center space-x-2"><RadioGroupItem value=";" id="row-semi-export-journal" /><Label htmlFor="row-semi-export-journal">Semicolon (;)</Label></div>
-          <div className="flex items-center space-x-2"><RadioGroupItem value="custom" id="row-custom-export-journal" /><Label htmlFor="col-custom-export-journal">Custom</Label></div>
+          <div className="flex items-center space-x-2"><RadioGroupItem value="custom" id="row-custom-export-journal" /><Label htmlFor="row-custom-export-journal">Custom</Label></div>
         </RadioGroup>
         {rowSep === 'custom' && <Input placeholder="Custom separator" value={customRowSep} onChange={(e) => setCustomRowSep(e.target.value)} />}
       </div>
