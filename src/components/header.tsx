@@ -67,49 +67,39 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
     <header className={cn(
       "sticky top-0 z-[1002] w-full flex items-center justify-between py-2 px-1 gap-2 h-auto"
     )}>
-      {/* Left Group - Stacked */}
-      <div className={cn(
-        "flex flex-col items-start gap-1 min-w-0"
-      )}>
-        <div className="flex items-center gap-1"> {/* Top row: Cozy Hub + Home */}
-          <Link href="/dashboard" className="flex items-center space-x-1">
-            <h1 className="text-lg font-bold text-primary hidden sm:block">Cozy Hub</h1>
-            <Button className="bg-header-button-dark text-header-button-dark-foreground h-8 w-8 hover:bg-header-button-dark/80" size="icon" title="Home">
-              <Home className="h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
-        <div className="flex items-center gap-1"> {/* Middle row: Room Name + Spaces + Room Options */}
-          <h1 className="text-base font-semibold truncate">{currentRoomName}</h1>
-          <Button
-            className="bg-header-button-dark text-header-button-dark-foreground flex-shrink-0 h-8 w-8 hover:bg-header-button-dark/80"
-            size="icon"
-            title="Spaces"
-            onClick={() => toggleWidget('spaces', 'Spaces')}
-          >
-            <LayoutGrid className="h-4 w-4" />
+      {/* Left Group */}
+      <div className="flex items-center gap-1 min-w-0">
+        <Link href="/dashboard" className="flex items-center space-x-1">
+          <h1 className="text-lg font-bold text-primary hidden sm:block">Cozy Hub</h1>
+          <Button className="bg-header-button-dark text-header-button-dark-foreground h-8 w-8 hover:bg-header-button-dark/80" size="icon" title="Home">
+            <Home className="h-4 w-4" />
           </Button>
-          {session && (
-            <Popover open={isRoomSettingsOpen} onOpenChange={setIsRoomSettingsOpen}>
-              <PopoverTrigger asChild>
-                <Button className="bg-header-button-dark text-header-button-dark-foreground flex-shrink-0 h-8 w-8 hover:bg-header-button-dark/80" size="icon" title="Room Options">
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
-                {userOwnsPersonalRoom && usersPersonalRoom ? (
-                  <RoomSettingsContent room={usersPersonalRoom} />
-                ) : (
-                  <CreatePersonalRoomForm onRoomCreated={handleRoomCreated} onClose={() => setIsRoomSettingsOpen(false)} />
-                )}
-              </PopoverContent>
-            </Popover>
-          )}
-        </div>
-        <div className="flex items-center gap-1"> {/* Bottom row: Notifications + UserNav */}
-          {session && <NotificationsDropdown />}
-          <UserNav />
-        </div>
+        </Link>
+        <h1 className="text-base font-semibold truncate max-w-[120px] sm:max-w-[200px]">{currentRoomName}</h1>
+        <Button
+          className="bg-header-button-dark text-header-button-dark-foreground flex-shrink-0 h-8 w-8 hover:bg-header-button-dark/80"
+          size="icon"
+          title="Spaces"
+          onClick={() => toggleWidget('spaces', 'Spaces')}
+        >
+          <LayoutGrid className="h-4 w-4" />
+        </Button>
+        {session && (
+          <Popover open={isRoomSettingsOpen} onOpenChange={setIsRoomSettingsOpen}>
+            <PopoverTrigger asChild>
+              <Button className="bg-header-button-dark text-header-button-dark-foreground flex-shrink-0 h-8 w-8 hover:bg-header-button-dark/80" size="icon" title="Room Options">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+              {userOwnsPersonalRoom && usersPersonalRoom ? (
+                <RoomSettingsContent room={usersPersonalRoom} />
+              ) : (
+                <CreatePersonalRoomForm onRoomCreated={handleRoomCreated} onClose={() => setIsRoomSettingsOpen(false)} />
+              )}
+            </PopoverContent>
+          </Popover>
+        )}
       </div>
 
       {/* Right Group */}
@@ -119,6 +109,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
       )}>
         <UserNameCapsule />
         <BugReportButton />
+        {session && <NotificationsDropdown />}
         <BackgroundBlurSlider className="hidden md:flex bg-header-button-dark/50 rounded-full" />
         <Button
           className="bg-header-button-dark text-header-button-dark-foreground h-8 w-8 hover:bg-header-button-dark/80"
@@ -136,6 +127,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
             <TimeAndProgressDisplay />
           </DropdownMenuContent>
         </DropdownMenu>
+        <UserNav />
       </div>
     </header>
   );
