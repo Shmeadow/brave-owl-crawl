@@ -15,8 +15,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { RichTextEditor } from "./rich-text-editor";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Keep Card for consistency if used directly
+import { TrixEditor } from "./trix-editor"; // Import TrixEditor
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const today = new Date();
 const dateString = today.toLocaleDateString('en-US', {
@@ -51,12 +51,11 @@ export function AddJournalEntryForm({ onAddEntry, isCurrentRoomWritable }: AddJo
     }
     const title = values.prefix ? `${values.prefix} - ${dateString}` : dateString;
     onAddEntry({ title, content: values.content });
-    form.reset(); // Reset form after submission
-    // toast.success("Journal entry added successfully!"); // Removed as parent handles toast
+    form.reset();
   }
 
   return (
-    <div className="p-6 pt-0"> {/* Removed Card wrapper, added padding */}
+    <div className="p-6 pt-0">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
           <FormField
@@ -82,7 +81,7 @@ export function AddJournalEntryForm({ onAddEntry, isCurrentRoomWritable }: AddJo
               <FormItem>
                 <FormLabel>Content</FormLabel>
                 <FormControl>
-                  <RichTextEditor
+                  <TrixEditor
                     content={field.value}
                     onChange={field.onChange}
                     disabled={!isCurrentRoomWritable}

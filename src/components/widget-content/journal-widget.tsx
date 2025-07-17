@@ -4,16 +4,16 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddJournalEntryForm } from "@/components/add-journal-entry-form";
 import { JournalEntryList } from "@/components/journal-entry-list";
-import { useJournal, ImportantReminder } from "@/hooks/use-journal";
-import { Loader2, Star, Upload, Download, Copy } from "lucide-react"; // Import Upload, Download, Copy
+import { useJournal } from "@/hooks/use-journal"; // Removed ImportantReminder import
+import { Loader2, Upload, Download, Copy } from "lucide-react"; // Removed Star import
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // Import Popover
-import { ImportJournalContent } from "@/components/journal/ImportJournalContent"; // Import new components
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ImportJournalContent } from "@/components/journal/ImportJournalContent";
 import { ExportJournalContent } from "@/components/journal/ExportJournalContent";
 import { CopyJournalContent } from "@/components/journal/CopyJournalContent";
-import { Button } from "@/components/ui/button"; // Import Button
-import { JournalDashboard } from "@/components/journal/JournalDashboard"; // Import new Dashboard
+import { Button } from "@/components/ui/button";
+import { JournalDashboard } from "@/components/journal/JournalDashboard";
 
 interface JournalWidgetProps {
   isCurrentRoomWritable: boolean;
@@ -22,7 +22,7 @@ interface JournalWidgetProps {
 export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
   const {
     journalEntries,
-    importantReminders,
+    importantReminders, // Keep for now, but will be empty
     loading,
     isLoggedInMode,
     handleAddJournalEntry,
@@ -30,15 +30,14 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
     handleToggleStarJournalEntry,
     handleUpdateJournalEntryContent,
     handleUpdateJournalEntryTitle,
-    handleBulkImportJournalEntries, // New import function
-    generateJournalExportText, // New export function
+    handleBulkImportJournalEntries,
   } = useJournal();
 
   const [activeReminderEntryId, setActiveReminderEntryId] = useState<string | null>(null);
   const [isImportPopoverOpen, setIsImportPopoverOpen] = useState(false);
   const [isExportPopoverOpen, setIsExportPopoverOpen] = useState(false);
   const [isCopyPopoverOpen, setIsCopyPopoverOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('dashboard'); // New state for active tab
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   // State for import/export/copy options
   const [colSep, setColSep] = useState(',');
@@ -46,16 +45,7 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
   const [customColSep, setCustomColSep] = useState('');
   const [customRowSep, setCustomRowSep] = useState('');
 
-  const handleReminderClick = (reminder: ImportantReminder) => {
-    setActiveReminderEntryId(reminder.entryId);
-    setActiveTab('entries'); // Switch to entries tab
-  };
-
-  const handleEntryOpenChange = (entryId: string, isOpen: boolean) => {
-    if (!isOpen && activeReminderEntryId === entryId) {
-      setActiveReminderEntryId(null); // Clear active reminder if entry is closed
-    }
-  };
+  // Removed handleReminderClick and handleEntryOpenChange as the reminder feature is simplified.
 
   if (loading) {
     return (
@@ -95,13 +85,15 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
                 <JournalDashboard
                   isCurrentRoomWritable={isCurrentRoomWritable}
                   onViewAllEntries={() => setActiveTab('entries')}
-                  onReminderClick={handleReminderClick}
+                  // Removed onReminderClick prop
                 />
               </TabsContent>
 
               <TabsContent value="entries" className="mt-0">
                 <AddJournalEntryForm
-                  onAddEntry={handleAddJournalEntry}
+                  onAddEntry={(entry) => {
+                    handleAddJournalEntry(entry);
+                  }}
                   isCurrentRoomWritable={isCurrentRoomWritable}
                 />
                 <JournalEntryList
@@ -111,25 +103,23 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
                   isCurrentRoomWritable={isCurrentRoomWritable}
                   onUpdateEntryContent={handleUpdateJournalEntryContent}
                   onUpdateEntryTitle={handleUpdateJournalEntryTitle}
-                  activeReminderEntryId={activeReminderEntryId}
-                  onEntryOpenChange={handleEntryOpenChange}
+                  // Removed activeReminderEntryId and onEntryOpenChange
                 />
               </TabsContent>
 
               <TabsContent value="reminders" className="mt-0">
                 <ScrollArea className="h-[400px] pr-4">
                   {importantReminders.length === 0 ? (
-                    <p className="text-muted-foreground text-sm text-center py-8">No important reminders yet. Mark text with the ⭐ button in your journal entries!</p>
+                    <p className="text-muted-foreground text-sm text-center py-8">No important reminders yet. Type "Important:" in your journal entries to create one!</p>
                   ) : (
                     <ul className="space-y-4">
                       {importantReminders.map((reminder, index) => (
-                        <li key={`${reminder.entryId}-${index}`} className="text-sm border-b border-border/50 pb-3 last:border-b-0 cursor-pointer hover:bg-muted/50 p-2 rounded-md" onClick={() => handleReminderClick(reminder)}>
-                          <p className="font-semibold text-foreground flex items-center gap-2">
-                            <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                        <li key={`${reminder.entryId}-${index}`} className="text-sm border-b border-border/50 pb-3 last:border-b-0 p-2 rounded-md">
+                          <p className="font-semibold text-foreground">
                             From: "{reminder.entryTitle || 'Untitled Entry'}"
                           </p>
-                          <p className="text-muted-foreground ml-6">"{reminder.text}"</p>
-                          <p className="text-xs text-muted-foreground ml-6 mt-1">
+                          <p className="text-muted-foreground ml-0">"{reminder.text}"</p>
+                          <p className="text-xs text-muted-foreground mt-1">
                             {new Date(reminder.timestamp).toLocaleString()}
                           </p>
                         </li>
