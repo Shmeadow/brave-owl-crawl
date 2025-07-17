@@ -13,8 +13,8 @@ interface UpgradeButtonProps {
 export function UpgradeButton({ className }: UpgradeButtonProps) {
   return (
     <Link href="/pricing" passHref>
-      <Button variant="ghost" size="icon" title="Learn More About Premium" className={cn("group", className)}>
-        <Crown className="h-6 w-6 text-gold transition-transform duration-300 ease-in-out group-hover:-translate-y-1" />
+      <Button variant="ghost" size="icon" title="Learn More About Premium" className={cn("group h-8 w-8", className)}>
+        <Crown className="h-4 w-4 text-gold transition-transform duration-300 ease-in-out group-hover:-translate-y-1" />
         <span className="sr-only">Learn More About Premium</span>
       </Button>
     </Link>
