@@ -205,10 +205,10 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
         "fixed bottom-20 left-1/2 -translate-x-1/2",
         "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg",
         "flex transition-all duration-300 ease-in-out z-[901]",
-        "w-48 sm:w-56",
+        "w-64", // Changed from w-56 to w-64 for desktop
         isMinimized
           ? "flex-col items-center px-2 py-1 h-auto cursor-pointer"
-          : "flex-col items-center p-3 gap-3 h-auto"
+          : "flex-col items-center p-4 gap-4 h-auto" // Changed p-3 gap-3 to p-4 gap-4
       )}
       onClick={isMinimized ? () => setIsMinimized(false) : undefined}
     >
@@ -220,6 +220,21 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
           Pomodoro
         </CardTitle>
         <div className="flex gap-1">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                title="Pomodoro Settings"
+                disabled={!isCurrentRoomWritable}
+              >
+                <Settings className="h-4 w-4" />
+                <span className="sr-only">Pomodoro Settings</span>
+              </Button>
+            </DialogTrigger>
+            <PomodoroSettingsModal initialTimes={customTimes} onSave={setCustomTime} />
+          </Dialog>
           <Button
             variant="ghost"
             size="icon"
@@ -236,7 +251,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
         </div>
       </CardHeader>
 
-      <CardContent className={cn("flex flex-col items-center gap-3 w-full p-0", isMinimized ? "hidden" : "flex")}>
+      <CardContent className={cn("flex flex-col items-center gap-4 w-full p-0", isMinimized ? "hidden" : "flex")}> {/* Changed gap-3 to gap-4 */}
         {isFocusSessionActive && activeGoalTitle && mode === 'focus' && (
           <div className="text-center mb-2">
             <p className="text-xs text-muted-foreground">Focusing on:</p>
@@ -289,13 +304,13 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
             onChange={(e) => setEditableTimeString(e.target.value)}
             onBlur={handleTimeInputBlur}
             onKeyDown={handleTimeInputKeyDown}
-            className="text-4xl font-bold font-mono text-center w-full h-12 bg-transparent border-none focus-visible:ring-0"
+            className="text-5xl font-bold font-mono text-center w-full h-14 bg-transparent border-none focus-visible:ring-0" // Changed text-4xl to text-5xl, h-12 to h-14
             disabled={!isCurrentRoomWritable}
           />
         ) : (
           <div
             className={cn(
-              "text-4xl font-bold font-mono transition-colors",
+              "text-5xl font-bold font-mono transition-colors", // Changed text-4xl to text-5xl
               isCurrentRoomWritable ? "cursor-pointer hover:text-primary" : "cursor-not-allowed opacity-70"
             )}
             onClick={isCurrentRoomWritable ? handleTimeDisplayClick : undefined}
