@@ -43,11 +43,15 @@ export function CopyJournalContent({
     const rows = entries.map(entry => {
       const title = `"${(entry.title || '').replace(/"/g, '""')}"`;
       let contentText = entry.content;
-      // For copy, convert HTML content to plain text
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = contentText;
-      contentText = tempDiv.textContent || '';
-      
+      // If content is JSON, try to convert to plain text for copy
+      if (contentText.trim().startsWith('{')) {
+        try {
+          const jsonContent = JSON.parse(contentText);
+          contentText = jsonContent.content?.map((node: any) => node.text || '').join(' ') || '';
+        } catch (e) {
+          console.error("Error parsing JSON content for copy:", e);
+        }
+      }
       const content = `"${contentText.replace(/"/g, '""')}"`;
       return `${title}${actualColSep}${content}`;
     });
@@ -84,7 +88,7 @@ export function CopyJournalContent({
         <RadioGroup value={rowSep} onValueChange={setRowSep} className="flex space-x-4">
           <div className="flex items-center space-x-2"><RadioGroupItem value="\n" id="row-newline-copy-journal" /><Label htmlFor="row-newline-copy-journal">New Line</Label></div>
           <div className="flex items-center space-x-2"><RadioGroupItem value=";" id="row-semi-copy-journal" /><Label htmlFor="row-semi-copy-journal">Semicolon (;)</Label></div>
-          <div className="flex items-center space-x-2"><RadioGroupItem value="custom" id="row-custom-copy-journal" /><Label htmlFor="col-custom-copy-journal">Custom</Label></div>
+          <div className="flex items-center space-x-2"><RadioGroupItem value="custom" id="row-custom-copy-journal" /><Label htmlFor="row-custom-copy-journal">Custom</Label></div>
         </RadioGroup>
         {rowSep === 'custom' && <Input placeholder="Custom separator" value={customRowSep} onChange={(e) => setCustomRowSep(e.target.value)} />}
       </div>

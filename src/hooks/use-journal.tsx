@@ -3,12 +3,19 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { toast } from "sonner";
+import { generateHTML } from '@tiptap/html';
+import StarterKit from '@tiptap/starter-kit';
+import Highlight from '@tiptap/extension-highlight';
+import { Important, Callout } from '@/lib/tiptap-extensions'; // Import Callout
+import TaskList from '@tiptap/extension-task-list'; // Import TaskList
+import TaskItem from '@tiptap/extension-task-item'; // Import TaskItem
+import { JSONContent } from '@tiptap/react'; // Import JSONContent type
 
 export interface JournalEntryData {
   id: string;
   user_id?: string; // Optional for local storage entries
   title: string | null;
-  content: string; // Now stores HTML content
+  content: string; // Can be HTML or JSON string
   created_at: string;
   type: 'note' | 'journal'; // Will always be 'journal' for this hook
 }
@@ -32,14 +39,28 @@ export function useJournal() {
   // Function to extract important reminders from journal entries
   const extractImportantReminders = useCallback((entries: JournalEntryData[]): ImportantReminder[] => {
     const reminders: ImportantReminder[] = [];
+    const extensions = [
+      StarterKit,
+      Highlight,
+      Important,
+      TaskList,
+      TaskItem,
+      Callout,
+    ];
 
     entries.forEach(entry => {
       if (entry.type === 'journal' && entry.content) {
         try {
+          let htmlContent = entry.content;
+          // Check if content is JSON and convert to HTML for parsing
+          if (entry.content.trim().startsWith('{')) {
+            const jsonContent = JSON.parse(entry.content);
+            htmlContent = generateHTML(jsonContent, extensions);
+          }
+          
           const parser = new DOMParser();
-          const doc = parser.parseFromString(entry.content, 'text/html');
-          // Look for elements with the 'fr-important-yellow' class (or other important classes)
-          const importantSpans = doc.querySelectorAll('[class*="fr-important-"]');
+          const doc = parser.parseFromString(htmlContent, 'text/html');
+          const importantSpans = doc.querySelectorAll('.important-journal-item');
           importantSpans.forEach(span => {
             reminders.push({
               entryId: entry.id, // Include entryId
@@ -80,7 +101,7 @@ export function useJournal() {
 
         const { data: supabaseEntries, error: fetchError } = await supabase
           .from('notes') // Still using the 'notes' table
-          .select('id, user_id, title, content, created_at, type') // Select specific columns
+          .select('id, user_id, title, content, created_at, type') // Select specific columns, exclude 'starred'
           .eq('user_id', session.user.id)
           .eq('type', 'journal') // Filter by type 'journal'
           .order('created_at', { ascending: false }); // Newest first for journal
@@ -105,6 +126,7 @@ export function useJournal() {
                     user_id: session.user.id,
                     title: localEntry.title,
                     content: localEntry.content,
+                    // starred: localEntry.starred, // Removed starred
                     created_at: localEntry.created_at || new Date().toISOString(),
                     type: 'journal', // Ensure type is 'journal' during migration
                   })
@@ -163,6 +185,7 @@ export function useJournal() {
 
     const channel = supabase.channel('journal_entries_changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'notes', filter: `user_id=eq.${session.user.id}` }, (payload) => {
+        // Assert payload.new and payload.old to JournalEntryData for type safety
         const newEntry = payload.new as JournalEntryData;
         const oldEntry = payload.old as JournalEntryData;
 
@@ -349,11 +372,16 @@ export function useJournal() {
     const rows = entries.map(entry => {
       const title = `"${(entry.title || '').replace(/"/g, '""')}"`;
       let contentText = entry.content;
-      // For CSV/text export, convert HTML content to plain text
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = contentText;
-      contentText = tempDiv.textContent || '';
-      
+      // If content is JSON, try to convert to plain text for CSV/text export
+      if (contentText.trim().startsWith('{')) {
+        try {
+          const jsonContent = JSON.parse(contentText);
+          // A very basic conversion for display, might lose rich formatting
+          contentText = jsonContent.content?.map((node: any) => node.text || '').join(' ') || '';
+        } catch (e) {
+          console.error("Error parsing JSON content for export:", e);
+        }
+      }
       const content = `"${contentText.replace(/"/g, '""')}"`;
       return `${title}${colSep}${content}`;
     });

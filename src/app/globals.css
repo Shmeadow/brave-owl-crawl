@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Froala Editor CSS */
-@import 'froala-editor/css/froala_editor.pkgd.min.css';
-@import 'froala-editor/css/froala_style.min.css';
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -114,170 +110,233 @@
     @apply text-foreground;
     background-color: transparent; /* Ensure body is transparent */
   }
+}
 
-  /* Froala Editor specific overrides */
-  .fr-box.fr-basic .fr-wrapper {
-    background-color: transparent !important; /* Make editor background transparent */
-    border: none !important; /* Remove default border */
-    padding: 1rem; /* Add some padding inside the editor */
-    min-height: 150px; /* Ensure minimum height */
-    overflow-y: auto; /* Allow scrolling for content */
+@layer utilities {
+  .backface-hidden {
+    backface-visibility: hidden;
   }
 
-  .fr-toolbar {
-    background-color: hsl(var(--background)) !important; /* Toolbar background */
-    border-bottom: 1px solid hsl(var(--border)) !important; /* Toolbar border */
-    padding: 0.5rem !important; /* Reduced padding */
-    flex-wrap: wrap; /* Allow toolbar buttons to wrap */
+  .transform-style-preserve-3d {
+    transform-style: preserve-3d;
   }
 
-  .fr-toolbar .fr-command.fr-btn {
-    color: hsl(var(--foreground)) !important; /* Button icon color */
-    background-color: transparent !important;
-    border-radius: 0.25rem !important; /* Slightly rounded buttons */
-    padding: 0.3rem !important; /* Smaller padding for buttons */
-    height: 2rem !important; /* Fixed height for buttons */
-    width: 2rem !important; /* Fixed width for buttons */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    50% { /* Adjusted midpoint for smoother transition */
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
   }
 
-  .fr-toolbar .fr-command.fr-btn:hover {
-    background-color: hsl(var(--muted)) !important; /* Hover background */
+  .shimmer-effect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 30%; /* Increased width of the shimmer for more prominence */
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0) 100%); /* Adjusted opacity */
+    animation: shimmer 3s infinite linear; /* Adjusted speed for a more noticeable effect */
   }
 
-  .fr-toolbar .fr-command.fr-btn.fr-active {
-    background-color: hsl(var(--primary)) !important; /* Active button background */
-    color: hsl(var(--primary-foreground)) !important; /* Active button icon color */
-  }
-
-  .fr-toolbar .fr-separator {
-    background-color: hsl(var(--border)) !important; /* Separator color */
-    margin: 0 0.25rem !important; /* Reduced margin */
-  }
-
-  .fr-view {
-    color: hsl(var(--foreground)) !important; /* Ensure text color matches theme */
-    font-family: var(--font-geist-sans); /* Apply Geist Sans font */
-  }
-
-  /* Adjusting default Froala spacing for paragraphs and headings */
-  .fr-view p {
-    margin-top: 0.25em !important;
-    margin-bottom: 0.25em !important;
-  }
-
-  .fr-view h1, .fr-view h2, .fr-view h3, .fr-view h4, .fr-view h5, .fr-view h6 {
-    margin-top: 0.75em !important;
-    margin-bottom: 0.25em !important;
-  }
-
-  .fr-view ul, .fr-view ol {
-    margin-top: 0.25em !important;
-    margin-bottom: 0.25em !important;
-    padding-left: 1.5em !important;
-  }
-
-  .fr-view li {
-    margin-top: 0.15em !important;
-    margin-bottom: 0.15em !important;
-  }
-
-  /* Custom Highlight styles for Froala */
-  .fr-view .fr-highlight-yellow { background-color: #fff59d; color: inherit; opacity: 0.7; }
-  .dark .fr-view .fr-highlight-yellow { background-color: #b45309; color: inherit; opacity: 0.7; } /* Darker yellow for dark mode */
-  .fr-view .fr-highlight-blue { background-color: #bfdbfe; color: inherit; opacity: 0.7; }
-  .dark .fr-view .fr-highlight-blue { background-color: #1d4ed8; color: inherit; opacity: 0.7; } /* Darker blue for dark mode */
-  .fr-view .fr-highlight-green { background-color: #dcfce7; color: inherit; opacity: 0.7; }
-  .dark .fr-view .fr-highlight-green { background-color: #166534; color: inherit; opacity: 0.7; } /* Darker green for dark mode */
-  .fr-view .fr-highlight-red { background-color: #fee2e2; color: inherit; opacity: 0.7; }
-  .dark .fr-view .fr-highlight-red { background-color: #991b1b; color: inherit; opacity: 0.7; } /* Darker red for dark mode */
-
-  /* Custom Important styles for Froala */
-  .fr-view .fr-important-yellow { background-color: #fbbf24; color: hsl(var(--foreground)); font-weight: 600; padding: 0.1em 0.3em; border-radius: 0.3em; }
-  .dark .fr-view .fr-important-yellow { background-color: #d97706; color: hsl(var(--foreground)); }
-  .fr-view .fr-important-blue { background-color: #60a5fa; color: hsl(var(--foreground)); font-weight: 600; padding: 0.1em 0.3em; border-radius: 0.3em; }
-  .dark .fr-view .fr-important-blue { background-color: #2563eb; color: hsl(var(--foreground)); }
-  .fr-view .fr-important-green { background-color: #4ade80; color: hsl(var(--foreground)); font-weight: 600; padding: 0.1em 0.3em; border-radius: 0.3em; }
-  .dark .fr-view .fr-important-green { background-color: #16a34a; color: hsl(var(--foreground)); }
-  .fr-view .fr-important-red { background-color: #f87171; color: hsl(var(--foreground)); font-weight: 600; padding: 0.1em 0.3em; border-radius: 0.3em; }
-  .dark .fr-view .fr-important-red { background-color: #dc2626; color: hsl(var(--foreground)); }
-
-  /* Custom Callout styles for Froala */
-  .fr-view .fr-callout {
-    padding: 0.5rem 0.75rem;
+  /* Custom styles for rich text editor content */
+  .prose .code-block {
+    background-color: hsl(var(--muted));
+    padding: 0.75rem;
     border-radius: 0.5rem;
-    margin: 0.5rem 0;
-    display: block; /* Changed to block for better layout */
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
+    display: block;
+    margin-top: 0.75em; /* Adjusted */
+    margin-bottom: 0.75em; /* Adjusted */
+    color: hsl(var(--foreground));
+  }
+
+  .prose .container-box {
+    border: 1px solid hsl(var(--border));
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: hsl(var(--card));
+    margin-top: 0.75em; /* Adjusted */
+    margin-bottom: 0.75em; /* Adjusted */
+    box-shadow: inset 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  /* Adjusting default ProseMirror/Tiptap spacing */
+  .prose p {
+    margin-top: 0.25em; /* Further reduced */
+    margin-bottom: 0.25em; /* Further reduced */
+  }
+
+  .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+    margin-top: 0.75em; /* Reduced */
+    margin-bottom: 0.25em; /* Reduced */
+  }
+
+  .prose ul, .prose ol {
+    margin-top: 0.25em; /* Reduced */
+    margin-bottom: 0.25em; /* Reduced */
+    padding-left: 1.5em; /* Ensure indentation */
+  }
+
+  .prose li {
+    margin-top: 0.15em; /* Reduced */
+    margin-bottom: 0.15em; /* Reduced */
+  }
+
+  /* Important Marker */
+  .prose .important-journal-item {
+    position: relative;
+    padding: 0.1em 0.3em;
+    border-radius: 0.3em;
+    font-weight: 600;
+    /* Ensure text is always readable */
+    color: hsl(var(--foreground)); /* Default to foreground color */
+  }
+
+  /* Light Mode - Improved Contrast for Important Mark */
+  .prose .important-journal-item[data-color="#fbbf24"] { @apply bg-yellow-300 text-gray-900; }
+  .prose .important-journal-item[data-color="#60a5fa"] { @apply bg-blue-300 text-blue-900; }
+  .prose .important-journal-item[data-color="#4ade80"] { @apply bg-green-300 text-green-900; }
+  .prose .important-journal-item[data-color="#f87171"] { @apply bg-red-300 text-red-900; }
+
+  /* Dark Mode - Improved Contrast for Important Mark */
+  .dark .prose .important-journal-item[data-color="#fbbf24"] { @apply bg-yellow-500 text-gray-900; }
+  .dark .prose .important-journal-item[data-color="#60a5fa"] { @apply bg-blue-500 text-blue-950; }
+  .dark .prose .important-journal-item[data-color="#4ade80"] { @apply bg-green-500 text-green-950; }
+  .dark .prose .important-journal-item[data-color="#f87171"] { @apply bg-red-500 text-red-950; }
+
+  /* Highlight styles for better contrast and persistence */
+  .prose mark {
+    background-color: hsl(var(--accent)); /* Default, but overridden by data-color */
+    color: inherit; /* Ensure text color is not affected by highlight */
+    border-radius: 0.125rem;
+    padding: 0.05em 0.2em;
+    box-decoration-break: clone;
+    opacity: 0.7; /* Faded highlight */
+  }
+
+  /* Specific highlight colors - made more vibrant */
+  .prose mark[data-color="#fff59d"] { @apply bg-yellow-300; }
+  .dark .prose mark[data-color="#fff59d"] { @apply bg-yellow-800; }
+  .prose mark[data-color="#bfdbfe"] { @apply bg-blue-300; }
+  .dark .prose mark[data-color="#bfdbfe"] { @apply bg-blue-800; }
+  .prose mark[data-color="#dcfce7"] { @apply bg-green-300; }
+  .dark .prose mark[data-color="#dcfce7"] { @apply bg-green-800; }
+  .prose mark[data-color="#fee2e2"] { @apply bg-red-300; }
+  .dark .prose mark[data-color="#fee2e2"] { @apply bg-red-800; }
+
+  /* Horizontal Rule (Divider) */
+  .prose hr.prose-hr {
+    border: none;
+    border-top: 1px solid hsl(var(--border));
+    margin: 0.25em 0; /* Reduced vertical margin */
+  }
+
+  /* Tiptap Task List styles */
+  .prose ul[data-type="taskList"] {
+    list-style: none;
+    padding: 0;
+  }
+
+  .prose ul[data-type="taskList"] li {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 0.25em; /* Keep it tight */
+  }
+
+  .prose ul[data-type="taskList"] li > label {
+    flex-shrink: 0;
+    margin-right: 0.5em;
+    cursor: pointer;
+  }
+
+  .prose ul[data-type="taskList"] li > div {
+    flex-grow: 1;
+  }
+
+  /* Tiptap Callout styles */
+  .prose .prose-callout {
+    padding: 0.5rem 0.75rem; /* Reduced padding */
+    border-radius: 0.5rem;
+    margin: 0.5rem 0; /* Reduced vertical margin */
+    display: inline-flex; /* Changed to inline-flex */
     align-items: flex-start;
-    gap: 0.5rem;
+    gap: 0.5rem; /* Reduced gap */
     font-size: 0.95rem;
     line-height: 1.5;
-    max-width: 100%;
+    vertical-align: middle; /* Align with text baseline */
+    max-width: 100%; /* Ensure it doesn't overflow */
   }
 
-  .fr-view .fr-callout::before {
-    font-size: 1.1rem;
+  .prose .prose-callout::before {
+    content: '💡'; /* Default icon */
+    font-size: 1.1rem; /* Slightly smaller icon */
     line-height: 1;
     flex-shrink: 0;
-    margin-right: 0.5rem; /* Added margin-right */
-    display: inline-block; /* Ensure icon is inline with text */
+    margin-top: 0.1rem; /* Adjust vertical alignment */
   }
 
-  .fr-view .fr-callout.fr-callout-info {
+  .prose .prose-callout[data-type="info"] {
     background-color: hsl(210 40% 96.1%); /* muted */
     color: hsl(222.2 47.4% 11.2%); /* foreground */
     border-left: 4px solid hsl(210 40% 96.1%); /* primary */
   }
-  .dark .fr-view .fr-callout.fr-callout-info {
+  .dark .prose .prose-callout[data-type="info"] {
     background-color: hsl(217.2 32.6% 17.5%); /* muted */
     color: hsl(210 40% 98%); /* foreground */
     border-left: 4px solid hsl(210 40% 98%); /* primary */
   }
-  .fr-view .fr-callout.fr-callout-info::before { content: '💡'; }
 
-  .fr-view .fr-callout.fr-callout-warning {
+  .prose .prose-callout[data-type="warning"] {
     background-color: hsl(40 80% 90%); /* light yellow */
     color: hsl(40 80% 20%); /* dark yellow */
     border-left: 4px solid hsl(40 80% 50%);
   }
-  .dark .fr-view .fr-callout.fr-callout-warning {
+  .dark .prose .prose-callout[data-type="warning"] {
     background-color: hsl(40 80% 20%);
     color: hsl(40 80% 90%);
     border-left: 4px solid hsl(40 80% 50%);
   }
-  .fr-view .fr-callout.fr-callout-warning::before { content: '⚠️'; }
+  .prose .prose-callout[data-type="warning"]::before { content: '⚠️'; }
 
-  .fr-view .fr-callout.fr-callout-success {
+  .prose .prose-callout[data-type="success"] {
     background-color: hsl(140 80% 90%); /* light green */
     color: hsl(140 80% 20%); /* dark green */
     border-left: 4px solid hsl(140 80% 50%);
   }
-  .dark .fr-view .fr-callout.fr-callout-success {
+  .dark .prose .prose-callout[data-type="success"] {
     background-color: hsl(140 80% 20%);
     color: hsl(140 80% 90%);
     border-left: 4px solid hsl(140 80% 50%);
   }
-  .fr-view .fr-callout.fr-callout-success::before { content: '✅'; }
+  .prose .prose-callout[data-type="success"]::before { content: '✅'; }
 
-  .fr-view .fr-callout.fr-callout-danger {
+  .prose .prose-callout[data-type="danger"] {
     background-color: hsl(0 80% 90%); /* light red */
     color: hsl(0 80% 20%); /* dark red */
     border-left: 4px solid hsl(0 80% 50%);
   }
-  .dark .fr-view .fr-callout.fr-callout-danger {
+  .dark .prose .prose-callout[data-type="danger"] {
     background-color: hsl(0 80% 20%);
     color: hsl(0 80% 90%);
     border-left: 4px solid hsl(0 80% 50%);
   }
-  .fr-view .fr-callout.fr-callout-danger::before { content: '🚨'; }
+  .prose .prose-callout[data-type="danger"]::before { content: '🚨'; }
 
-  /* Froala Image styles */
-  .fr-view img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 1em auto;
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  /* Tiptap Image styles */
+  .prose img {
+    max-width: 100%; /* Ensure images don't overflow */
+    height: auto; /* Maintain aspect ratio */
+    display: block; /* Ensure it behaves as a block element */
+    margin: 1em auto; /* Center images and add some vertical spacing */
+    border-radius: 0.5rem; /* Slightly rounded corners */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Subtle shadow */
   }
 
   /* Hide tldraw branding */
