@@ -257,25 +257,43 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
 
       <div className="flex items-center justify-between space-x-1 mb-0.5 flex-shrink-0 w-full">
         <div className="flex-grow min-w-0">
-          <Drawer open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
-            <DrawerTrigger asChild>
-              <button
-                className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
-                title="Change Media URL"
-              >
-                <Link size={10} className="mr-0.5" />
-                {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
-              </button>
-            </DrawerTrigger>
-            <DrawerContent className="h-auto max-h-[90vh] flex flex-col z-[1100]"> {/* Increased z-index */}
-              <DrawerHeader>
-                <DrawerTitle>Embed Media URL</DrawerTitle>
-              </DrawerHeader>
-              <div className="p-4">
+          {isMobile ? (
+            <Drawer open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
+              <DrawerTrigger asChild>
+                <button
+                  className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
+                  title="Change Media URL"
+                >
+                  <Link size={10} className="mr-0.5" />
+                  {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
+                </button>
+              </DrawerTrigger>
+              <DrawerContent className="h-auto max-h-[150px] flex flex-col z-[1100] p-4"> {/* Reduced max-h, added p-4 */}
                 {renderMediaInput}
-              </div>
-            </DrawerContent>
-          </Drawer>
+              </DrawerContent>
+            </Drawer>
+          ) : (
+            <Popover open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
+                  title="Change Media URL"
+                >
+                  <Link size={10} className="mr-0.5" />
+                  {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-56 z-[1100] p-2" // Reduced width and padding
+                onClick={(e) => e.stopPropagation()}
+                side="top" // Changed side to top for a "hoverbar" feel
+                align="start" // Align to start of trigger
+                onOpenAutoFocus={(e) => e.preventDefault()}
+              >
+                {renderMediaInput}
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
 
         <PlayerControls
