@@ -17,7 +17,7 @@ import {
   DrawerDescription,
   DrawerTrigger,
 } from "@/components/ui/drawer"; // Import Drawer components
-import { MOBILE_HORIZONTAL_SIDEBAR_HEIGHT, MOBILE_HEADER_EFFECTIVE_HEIGHT, MOBILE_HEADER_SIDEBAR_GAP, MOBILE_SIDEBAR_CONTENT_GAP } from '@/lib/constants'; // Import new constant
+import { MOBILE_MEDIA_PLAYER_TOP_OFFSET, MOBILE_MEDIA_PLAYER_RIGHT_OFFSET } from '@/lib/constants'; // Import new constant
 
 // Import new modular components
 import { PlayerDisplay } from './audio-player/player-display';
@@ -225,8 +225,9 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   if (isMobile) {
     return (
       <div className={cn(
-        "fixed right-1 z-[901]", // Position at top right for mobile, changed right-4 to right-1
-        `top-[${MOBILE_HEADER_EFFECTIVE_HEIGHT + MOBILE_HEADER_SIDEBAR_GAP + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_SIDEBAR_CONTENT_GAP}px]`, // Adjusted top position with new gaps
+        "fixed z-[901]",
+        `top-[${MOBILE_MEDIA_PLAYER_TOP_OFFSET}px]`,
+        `right-[${MOBILE_MEDIA_PLAYER_RIGHT_OFFSET}px]`,
         "transition-all duration-300 ease-in-out",
         "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex w-full", // Applied styling here
         displayMode === 'normal' || displayMode === 'maximized' ? "h-auto p-1 rounded-xl max-w-[224px] flex-col" : "h-40 p-1 items-center justify-between flex-col rounded-full w-10" // Use displayMode directly, and reverted width to w-10

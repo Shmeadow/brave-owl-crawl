@@ -26,7 +26,7 @@ import { useRooms } from "@/hooks/use-rooms";
 import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification";
 import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar";
 import { CookieConsentBar } from "@/components/cookie-consent-bar";
-import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT, MOBILE_HEADER_EFFECTIVE_HEIGHT, MOBILE_HEADER_SIDEBAR_GAP, MOBILE_SIDEBAR_CONTENT_GAP } from "@/lib/constants"; // Import new constant
+import { MOBILE_CONTROLS_BOTTOM_OFFSET, MOBILE_CONTROLS_GAP_VERTICAL, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT, MOBILE_HEADER_EFFECTIVE_HEIGHT, MOBILE_POMODORO_HEIGHT_EXPANDED, MOBILE_POMODORO_HEIGHT_MINIMIZED } from "@/lib/constants"; // Import new constant
 
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
@@ -59,7 +59,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
 
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
-  const [isPomodoroMinimized, setIsPomodoroMinimized] = useState(true);
+  const [isPomodoroMinimized, setIsPomodoroMinimized] = useState(true); // State for Pomodoro's minimized/expanded
   const [showWelcomeBack, setShowWelcomeBack] = useState(false);
 
   const isDashboard = pathname === '/dashboard';
@@ -100,9 +100,14 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
         contentWidth = windowWidth - contentLeft;
         contentHeight = windowHeight - HEADER_HEIGHT_DESKTOP;
       } else {
-        // Mobile layout: account for horizontal sidebar and bottom controls
-        contentTop = MOBILE_HEADER_EFFECTIVE_HEIGHT + MOBILE_HEADER_SIDEBAR_GAP + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_SIDEBAR_CONTENT_GAP; // Header + gap + Sidebar + gap
-        contentHeight = windowHeight - (contentTop + MOBILE_CONTROLS_HEIGHT); // Adjusted contentHeight
+        // Mobile layout:
+        contentTop = MOBILE_HEADER_EFFECTIVE_HEIGHT; // Content starts directly below the header
+        
+        // Calculate total height of bottom controls dynamically
+        const pomodoroHeight = isPomodoroMinimized ? MOBILE_POMODORO_HEIGHT_MINIMIZED : MOBILE_POMODORO_HEIGHT_EXPANDED;
+        const bottomControlsTotalHeight = pomodoroHeight + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_CONTROLS_GAP_VERTICAL + MOBILE_CONTROLS_BOTTOM_OFFSET;
+
+        contentHeight = windowHeight - contentTop - bottomControlsTotalHeight;
       }
 
       setMainContentArea({
@@ -116,7 +121,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     calculateArea();
     window.addEventListener('resize', calculateArea);
     return () => window.removeEventListener('resize', calculateArea);
-  }, [isMobile]); // Added isMobile to dependencies
+  }, [isMobile, isPomodoroMinimized]); // Added isPomodoroMinimized to dependencies
 
   if (loading) {
     return <LoadingScreen />;
@@ -158,7 +163,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               currentRoomName={currentRoomName}
             />
             <DynamicPlayingSoundsBar isMobile={isMobile} />
-            <Sidebar isMobile={isMobile} /> {/* Sidebar is always rendered */}
             <GuestModeWarningBar />
             {pendingRequests.length > 0 && (
               <RoomJoinRequestNotification
@@ -191,6 +195,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
                     chatPanelWidth={0}
                     isMobile={isMobile}
                   />
+                  <Sidebar isMobile={isMobile} /> {/* Sidebar is now inside MobileControls */}
                 </DynamicMobileControls>
               </>
             )}
