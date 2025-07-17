@@ -365,7 +365,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     <div className={cn(
       "fixed z-[900] transition-all duration-300 ease-in-out",
       displayMode === 'normal' && `top-[120px] right-4 w-64 rounded-xl`, // Adjusted width, added rounded-xl
-      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-40 h-10 rounded-full', // Adjusted width, height, added rounded-full
+      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-10 h-48 rounded-full', // Adjusted width, height, added rounded-full for vertical
       displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-[500px] flex flex-col items-center justify-center'
     )}>
       <div className={cn(
