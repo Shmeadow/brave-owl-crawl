@@ -80,7 +80,6 @@ serve(async (req: Request) => {
         console.error('Password hashing error:', hashError);
         return new Response(JSON.stringify({ error: 'Failed to hash password' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500,
         });
       }
       passwordHash = hashData;
