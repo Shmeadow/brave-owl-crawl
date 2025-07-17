@@ -211,7 +211,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
         "flex flex-row items-center justify-between w-full px-3 pb-2",
         isMinimized ? "hidden" : ""
       )}>
-        <CardTitle className="text-lg font-bold text-left">
+        <CardTitle className="text-xl font-bold text-left"> {/* Increased title text size */}
           Pomodoro
         </CardTitle>
         <div className="flex gap-1">
@@ -264,7 +264,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
             >
               <Brain className="h-3 w-3" />
             </Button>
-            <span className="text-xs text-muted-foreground">Focus</span>
+            {/* Removed text label for desktop mode buttons */}
           </div>
           <div className="flex flex-col items-center gap-1">
             <Button
@@ -276,7 +276,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
             >
               <Coffee className="h-3 w-3" />
             </Button>
-            <span className="text-xs text-muted-foreground">Short</span>
+            {/* Removed text label for desktop mode buttons */}
           </div>
           <div className="flex flex-col items-center gap-1">
             <Button
@@ -288,7 +288,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
             >
               <Home className="h-3 w-3" />
             </Button>
-            <span className="text-xs text-muted-foreground">Long</span>
+            {/* Removed text label for desktop mode buttons */}
           </div>
         </div>
         {isEditingTime ? (
@@ -299,13 +299,13 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
             onChange={(e) => setEditableTimeString(e.target.value)}
             onBlur={handleTimeInputBlur}
             onKeyDown={handleTimeInputKeyDown}
-            className="text-3xl font-bold font-mono text-center w-full h-10 bg-transparent border-none focus-visible:ring-0"
+            className="text-5xl font-bold font-mono text-center w-full h-10 bg-transparent border-none focus-visible:ring-0"
             disabled={!isCurrentRoomWritable}
           />
         ) : (
           <div
             className={cn(
-              "text-3xl font-bold font-mono transition-colors",
+              "text-5xl font-bold font-mono transition-colors", // Increased timer text size
               isCurrentRoomWritable ? "cursor-pointer hover:text-primary" : "cursor-not-allowed opacity-70"
             )}
             onClick={isCurrentRoomWritable ? handleTimeDisplayClick : undefined}
