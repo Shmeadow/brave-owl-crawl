@@ -13,7 +13,10 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrixEditor } from "./trix-editor"; // Revert to standard import
+import dynamic from 'next/dynamic'; // Import dynamic
+
+// Dynamically import TrixEditor with SSR disabled
+const DynamicTrixEditor = dynamic(() => import("./trix-editor").then(mod => mod.TrixEditor), { ssr: false });
 
 interface JournalEntryItemProps {
   entry: JournalEntryData;
@@ -155,7 +158,7 @@ export function JournalEntryItem({
           </p>
           <CollapsibleContent>
             <div className="pt-2 border-t border-border/50">
-              <TrixEditor // Use standard TrixEditor
+              <DynamicTrixEditor
                 content={entry.content}
                 onChange={handleContentChange}
                 disabled={!isCurrentRoomWritable}
