@@ -93,8 +93,8 @@ export function Widget({
   }
 
   // Ensure minimum dimensions for ResizableBox, matching minConstraints
-  actualWidth = Math.max(actualWidth, 200); 
-  actualHeight = Math.max(actualHeight, 150);
+  actualWidth = Math.max(actualWidth, 150); // Reduced min width
+  actualHeight = Math.max(actualHeight, 100); // Reduced min height
 
   const renderWidgetContent = (
     <Card className={cn(
@@ -135,7 +135,7 @@ export function Widget({
         className={cn(
           "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-full flex flex-col",
           "transition-all duration-300 ease-in-out",
-          "w-12 h-12", // Fixed size for the button in the dock
+          "w-10 h-10", // Fixed size for the button in the dock (reduced)
           "pointer-events-auto",
           "cursor-pointer" // Indicate clickable to unpin
         )}
@@ -143,7 +143,7 @@ export function Widget({
         onMouseDown={onBringToFront}
       >
         <div className="flex items-center justify-center flex-1 min-w-0 h-full">
-          <Icon className="h-6 w-6 text-primary" />
+          <Icon className="h-5 w-5 text-primary" /> {/* Reduced icon size */}
           <span className="sr-only">{title}</span>
         </div>
       </div>
@@ -183,7 +183,7 @@ export function Widget({
             onSizeChange({ width: data.size.width, height: data.size.height });
           }
         }}
-        minConstraints={[200, 150]}
+        minConstraints={[150, 100]} // Reduced minConstraints
         maxConstraints={[mainContentArea.width, mainContentArea.height]}
         className="w-full h-full"
         resizeHandles={isResizable ? ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'] : []}

@@ -31,18 +31,18 @@ export const metadata: Metadata = {
 
 // Define initial configurations for all widgets here to pass to WidgetProvider
 const WIDGET_CONFIGS = {
-  "spaces": { initialPosition: { x: 150, y: 100 }, initialWidth: 600, initialHeight: 600 },
-  "sounds": { initialPosition: { x: 800, y: 150 }, initialWidth: 400, initialHeight: 500 },
-  "calendar": { initialPosition: { x: 200, y: 200 }, initialWidth: 750, initialHeight: 650 },
-  "timer": { initialPosition: { x: 900, y: 250 }, initialWidth: 350, initialHeight: 200 },
-  "tasks": { initialPosition: { x: 250, y: 300 }, initialWidth: 450, initialHeight: 550 },
-  "drawing-board": { initialPosition: { x: 150, y: 150 }, initialWidth: 700, initialHeight: 550 },
-  "journal": { initialPosition: { x: 700, y: 100 }, initialWidth: 800, initialHeight: 700 }, // New Journal widget
-  "media": { initialPosition: { x: 300, y: 400 }, initialWidth: 550, initialHeight: 450 },
-  "stats-progress": { initialPosition: { x: 850, y: 100 }, initialWidth: 600, initialHeight: 650 }, // Renamed from games
-  "flash-cards": { initialPosition: { x: 500, y: 100 }, initialWidth: 800, initialHeight: 650 },
-  "goal-focus": { initialPosition: { x: 400, y: 550 }, initialWidth: 500, initialHeight: 550 },
-  "background-effects": { initialPosition: { x: 900, y: 100 }, initialWidth: 400, initialHeight: 500 },
+  "spaces": { initialPosition: { x: 100, y: 80 }, initialWidth: 350, initialHeight: 500 }, // Adjusted for mobile
+  "sounds": { initialPosition: { x: 100, y: 80 }, initialWidth: 300, initialHeight: 450 }, // Adjusted for mobile
+  "calendar": { initialPosition: { x: 100, y: 80 }, initialWidth: 350, initialHeight: 600 }, // Adjusted for mobile
+  "timer": { initialPosition: { x: 100, y: 80 }, initialWidth: 280, initialHeight: 200 }, // Adjusted for mobile
+  "tasks": { initialPosition: { x: 100, y: 80 }, initialWidth: 350, initialHeight: 500 }, // Adjusted for mobile
+  "drawing-board": { initialPosition: { x: 100, y: 80 }, initialWidth: 350, initialHeight: 500 }, // Adjusted for mobile
+  "journal": { initialPosition: { x: 100, y: 80 }, initialWidth: 350, initialHeight: 550 }, // Adjusted for mobile
+  "media": { initialPosition: { x: 100, y: 80 }, initialWidth: 320, initialHeight: 400 }, // Adjusted for mobile
+  "stats-progress": { initialPosition: { x: 100, y: 80 }, initialWidth: 350, initialHeight: 550 }, // Adjusted for mobile
+  "flash-cards": { initialPosition: { x: 100, y: 80 }, initialWidth: 350, initialHeight: 550 }, // Adjusted for mobile
+  "goal-focus": { initialPosition: { x: 100, y: 80 }, initialWidth: 350, initialHeight: 500 }, // Adjusted for mobile
+  "background-effects": { initialPosition: { x: 100, y: 80 }, initialWidth: 300, initialHeight: 450 }, // Adjusted for mobile
 };
 
 // Constants for layout dimensions (needed for mainContentArea calculation)

@@ -56,18 +56,18 @@ export interface WidgetConfig {
   initialHeight: number;
 }
 
-export const EDGE_PADDING = 16; // Padding from the edge of the main content area
+export const EDGE_PADDING = 8; // Reduced from 16px
 
-export const DOCKED_WIDGET_WIDTH = 48; // Changed to match h-12 w-12
-export const DOCKED_WIDGET_HEIGHT = 48; // Changed to match h-12 w-12
+export const DOCKED_WIDGET_WIDTH = 40; // Reduced from 48px
+export const DOCKED_WIDGET_HEIGHT = 40; // Reduced from 48px
 export const DOCKED_WIDGET_HORIZONTAL_GAP = 4;
-export const BOTTOM_DOCK_OFFSET = 16;
+export const BOTTOM_DOCK_OFFSET = 8; // Reduced from 16px
 
-export const MINIMIZED_WIDGET_WIDTH = 224;
-export const MINIMIZED_WIDGET_HEIGHT = 48;
+export const MINIMIZED_WIDGET_WIDTH = 200; // Slightly reduced
+export const MINIMIZED_WIDGET_HEIGHT = 40; // Reduced
 
-export const SIDEBAR_OPEN_OFFSET_X = 20;
-export const SIDEBAR_OPEN_OFFSET_Y = 20;
+export const SIDEBAR_OPEN_OFFSET_X = 10; // Reduced
+export const SIDEBAR_OPEN_OFFSET_Y = 10; // Reduced
 
 export const LOCAL_STORAGE_WIDGET_STATE_KEY = 'active_widget_states';
 
