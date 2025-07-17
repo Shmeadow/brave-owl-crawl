@@ -8,7 +8,6 @@ import { useWidget } from "@/components/widget/widget-provider";
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, Palette, Image, BarChart2, BookOpen, Goal, WandSparkles, BookText } from "lucide-react";
 
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
-const SIDEBAR_WIDTH_MOBILE = 250; // px
 const HEADER_HEIGHT_REM = 4; // 4rem = 64px
 
 interface SidebarProps {
@@ -16,17 +15,14 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isMobile }: SidebarProps) {
-  const { activePanel, setActivePanel, isSidebarOpen, setIsSidebarOpen } = useSidebar();
+  const { activePanel, setActivePanel, setIsSidebarOpen } = useSidebar(); // Removed isSidebarOpen from destructuring as it's always true
   const { toggleWidget } = useWidget();
   const sidebarRef = useRef<HTMLDivElement>(null);
 
+  // Set sidebar to always be open
   useEffect(() => {
-    // On desktop, the sidebar is always visually collapsed.
-    // On mobile, the state is controlled by the hamburger menu.
-    if (!isMobile) {
-      setIsSidebarOpen(false);
-    }
-  }, [isMobile, setIsSidebarOpen]);
+    setIsSidebarOpen(true);
+  }, [setIsSidebarOpen]);
 
   const navItems = [
     { id: "background-effects", label: "Backgrounds", icon: WandSparkles },
@@ -44,17 +40,10 @@ export function Sidebar({ isMobile }: SidebarProps) {
   const handleSidebarItemClick = (id: string, label: string) => {
     setActivePanel(id as any);
     toggleWidget(id, label);
-    if (isMobile) {
-      setIsSidebarOpen(false);
-    }
   };
 
-  const sidebarWidth = isMobile
-    ? (isSidebarOpen ? SIDEBAR_WIDTH_MOBILE : 0)
-    : SIDEBAR_WIDTH_DESKTOP;
-
-  // The sidebar is only visually "expanded" with text on mobile when it's open
-  const isExpanded = isMobile && isSidebarOpen;
+  // Sidebar is always compact, so isExpanded is always false
+  const isExpanded = false;
 
   return (
     <div
@@ -63,12 +52,9 @@ export function Sidebar({ isMobile }: SidebarProps) {
         "fixed z-[1001] flex flex-col",
         "bg-card/60 backdrop-blur-xl border border-white/40 shadow-xl",
         "transition-all duration-300 ease-in-out",
-        // Mobile-specific styles
-        isMobile && `top-16 h-[calc(100vh-${HEADER_HEIGHT_REM}rem)] rounded-r-lg py-4 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`,
-        // Desktop-specific styles
-        !isMobile && "top-1/2 -translate-y-1/2 left-4 rounded-full p-2 gap-2"
+        "top-1/2 -translate-y-1/2 left-4 rounded-full p-2 gap-2" // Always use desktop positioning
       )}
-      style={isMobile ? { width: `${sidebarWidth}px` } : {}}
+      style={{ width: `${SIDEBAR_WIDTH_DESKTOP}px` }} // Always use desktop width
     >
       <div className="flex flex-col gap-2 overflow-y-auto">
         {navItems.map((item) => (
@@ -78,7 +64,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
             label={item.label}
             isActive={activePanel === item.id}
             onClick={() => handleSidebarItemClick(item.id, item.label)}
-            isExpanded={isExpanded}
+            isExpanded={isExpanded} // Always pass false
           />
         ))}
       </div>

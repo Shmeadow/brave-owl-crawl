@@ -41,12 +41,13 @@ const DynamicWelcomeBackModal = dynamic(() => import("@/components/welcome-back-
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
-const SIDEBAR_WIDTH_MOBILE = 250; // px
+const SIDEBAR_LEFT_OFFSET = 16; // px (from left edge of screen)
+const SIDEBAR_CONTENT_GAP = 16; // px (gap between sidebar and main content)
 
 export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
   const { loading, session, profile } = useSupabase();
   const pathname = usePathname();
-  const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
+  const { isSidebarOpen, setIsSidebarOpen } = useSidebar(); // isSidebarOpen will now always be true
   const { currentRoomId, currentRoomName, isCurrentRoomWritable } = useCurrentRoom();
   const { rooms, pendingRequests, dismissRequest } = useRooms();
   const { activeEffect } = useEffects();
@@ -86,13 +87,9 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
       
-      // On mobile, the sidebar overlays content, so the main area starts at left: 0.
-      // On desktop, the main content area starts to the right of the static floating sidebar.
-      // Sidebar is 60px wide + 16px left offset + 16px gap = 92px.
-      const desktopContentLeft = SIDEBAR_WIDTH_DESKTOP + 16 + 16;
-      
-      const contentLeft = isMobile ? 0 : desktopContentLeft;
-      const contentWidth = isMobile ? windowWidth : windowWidth - contentLeft;
+      // Main content area always starts to the right of the fixed sidebar
+      const contentLeft = SIDEBAR_WIDTH_DESKTOP + SIDEBAR_LEFT_OFFSET + SIDEBAR_CONTENT_GAP;
+      const contentWidth = windowWidth - contentLeft;
 
       setMainContentArea({
         left: contentLeft,
@@ -105,7 +102,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     calculateArea();
     window.addEventListener('resize', calculateArea);
     return () => window.removeEventListener('resize', calculateArea);
-  }, [isMobile]);
+  }, []); // Removed isMobile from dependencies as sidebar is now fixed
 
   if (loading) {
     return <LoadingScreen />;
@@ -136,7 +133,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               onClearUnreadMessages={handleClearUnreadMessages}
               unreadChatCount={unreadChatCount}
               isMobile={isMobile}
-              onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+              onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} // This prop is now effectively a no-op
             />
             <DynamicWelcomeBackModal
               isOpen={showWelcomeBack}
@@ -146,7 +143,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               currentRoomName={currentRoomName}
             />
             <DynamicPlayingSoundsBar isMobile={isMobile} />
-            <Sidebar isMobile={isMobile} />
+            <Sidebar isMobile={isMobile} /> {/* Sidebar is always rendered */}
             <GuestModeWarningBar />
             {pendingRequests.length > 0 && (
               <RoomJoinRequestNotification

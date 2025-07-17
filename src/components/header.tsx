@@ -30,7 +30,7 @@ interface HeaderProps {
   onClearUnreadMessages: () => void;
   unreadChatCount: number;
   isMobile: boolean;
-  onToggleSidebar: () => void;
+  onToggleSidebar: () => void; // This prop will now be unused but kept for interface compatibility
   isChatOpen: boolean;
 }
 
@@ -73,11 +73,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         "flex items-center min-w-0 gap-1 px-2 py-1",
         "bg-card/50 backdrop-blur-xl border border-white/20 rounded-full"
       )}>
-        {isMobile && (
-          <Button variant="ghost" size="icon" onClick={onToggleSidebar} title="Open Menu" className="h-7 w-7">
-            <Menu className="h-4 w-4" />
-          </Button>
-        )}
+        {/* Removed mobile sidebar toggle button */}
         <Link href="/dashboard" className="flex items-center space-x-1">
           <h1 className="text-lg font-bold text-primary hidden sm:block">Cozy Hub</h1>
           <Button variant="ghost" size="icon" title="Home" className="h-7 w-7">

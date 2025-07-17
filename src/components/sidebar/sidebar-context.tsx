@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useIsMobile } from '@/hooks/use-mobile'; // Import useIsMobile
+// Removed import for useIsMobile as it's no longer needed for sidebar open state
 
 type ActivePanel = 'spaces' | 'sounds' | 'calendar' | 'timer' | 'tasks' | 'notes' | 'media' | 'games' | 'flash-cards' | 'goal-focus';
 
@@ -16,8 +16,7 @@ const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [activePanel, setActivePanel] = useState<ActivePanel>('spaces');
-  const isMobile = useIsMobile(); // Get mobile status
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default to false on mobile
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Always true now
 
   // Load active panel from local storage on mount
   useEffect(() => {

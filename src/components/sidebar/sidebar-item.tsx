@@ -11,34 +11,32 @@ interface SidebarItemProps {
   label: string;
   isActive: boolean;
   onClick: () => void;
-  isExpanded: boolean; // New prop
+  isExpanded: boolean; // This prop will now always be false
 }
 
 export function SidebarItem({ icon: Icon, label, isActive, onClick, isExpanded }: SidebarItemProps) {
+  // Since isExpanded will always be false, we can simplify the classNames
   return (
     <TooltipProvider>
-      <Tooltip delayDuration={isExpanded ? 100000 : 100}>
+      <Tooltip delayDuration={100}> {/* Always use a short delay for tooltips */}
         <TooltipTrigger asChild>
           <Button
             variant="ghost"
             className={cn(
               "relative transition-all duration-200 flex items-center",
-              isExpanded ? "w-full justify-start px-3 h-9" : "h-10 w-10 justify-center rounded-full",
+              "h-10 w-10 justify-center rounded-full", // Always compact size
               "bg-transparent text-white/70 hover:bg-white/10 hover:text-white",
               isActive && "bg-white/20 text-white ring-inset ring-2 ring-white/50 box-border"
             )}
             onClick={onClick}
           >
             <Icon className="h-4 w-4 flex-shrink-0" />
-            {isExpanded && <span className="ml-3 text-sm font-medium truncate">{label}</span>}
-            <span className={cn(!isExpanded && "sr-only")}>{label}</span>
+            <span className="sr-only">{label}</span> {/* Label is always screen-reader only */}
           </Button>
         </TooltipTrigger>
-        {!isExpanded && (
-          <TooltipContent side="right" className="ml-2">
-            {label}
-          </TooltipContent>
-        )}
+        <TooltipContent side="right" className="ml-2">
+          {label}
+        </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
