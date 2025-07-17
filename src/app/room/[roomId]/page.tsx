@@ -14,7 +14,7 @@ export default function JoinRoomPage() {
   const roomId = params.roomId as string;
 
   const { session, loading: authLoading } = useSupabase();
-  const { rooms, loading: roomsLoading, handleJoinRoomByRoomId, handleJoinRoomByPassword } = useRooms();
+  const { rooms, loading: roomsLoading, handleJoinRoomByRoomId } = useRooms();
   const { setCurrentRoom } = useCurrentRoom();
 
   useEffect(() => {
@@ -31,43 +31,20 @@ export default function JoinRoomPage() {
         return;
       }
 
-      // If already a member or creator, just set as current room and redirect
-      if (roomToJoin.is_member || roomToJoin.creator_id === session?.user?.id) {
-        setCurrentRoom(roomToJoin.id, roomToJoin.name);
-        router.replace('/dashboard');
-        return;
-      }
+      // Attempt to join the room. The handleJoinRoomByRoomId function
+      // already contains logic to check if the user is the creator,
+      // already a member, or if a password/invitation is required.
+      // It will also dispatch a 'roomJoined' event on successful join.
+      await handleJoinRoomByRoomId(roomId);
 
-      // If public, attempt to join directly
-      if (roomToJoin.type === 'public') {
-        await handleJoinRoomByRoomId(roomId);
-        setCurrentRoom(roomToJoin.id, roomToJoin.name);
-        router.replace('/dashboard');
-        return;
-      }
-
-      // If private and has password, prompt for password (for now, we'll just redirect)
-      // A more advanced implementation would show a password input modal here.
-      if (roomToJoin.type === 'private' && roomToJoin.password_hash) {
-        toast.info("This is a private room. Please join via the 'Spaces' widget with the room ID and password.");
-        router.replace('/dashboard');
-        return;
-      }
-
-      // If private and no password, it means it's invite-only
-      if (roomToJoin.type === 'private' && !roomToJoin.password_hash) {
-        toast.info("This is a private room and requires an invitation to join.");
-        router.replace('/dashboard');
-        return;
-      }
-
-      // Fallback for any unhandled cases
-      toast.error("Could not join room. Please check room details.");
+      // After the join attempt (successful or not, handled by toasts in the hook),
+      // always redirect to the dashboard. The useCurrentRoom hook will
+      // ensure the correct room is set based on the 'roomJoined' event.
       router.replace('/dashboard');
     };
 
     attemptJoinRoom();
-  }, [roomId, authLoading, roomsLoading, rooms, session, router, handleJoinRoomByRoomId, handleJoinRoomByPassword, setCurrentRoom]);
+  }, [roomId, authLoading, roomsLoading, rooms, session, router, handleJoinRoomByRoomId, setCurrentRoom]);
 
   return (
     <div className="flex items-center justify-center h-screen bg-background">
