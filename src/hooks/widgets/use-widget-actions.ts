@@ -122,8 +122,8 @@ export function useWidgetActions({
       const effectiveInitialHeight = isMobile ? DEFAULT_WIDGET_HEIGHT_MOBILE : config.initialHeight;
 
       // Determine effective initial position based on mobile status
-      const effectiveInitialX = isMobile ? mainContentArea.left + 5 : mainContentArea.left + SIDEBAR_OPEN_OFFSET_X;
-      const effectiveInitialY = isMobile ? mainContentArea.top : mainContentArea.top + SIDEBAR_OPEN_OFFSET_Y;
+      const effectiveInitialX = isMobile ? mainContentArea.left + (mainContentArea.width - effectiveInitialWidth) / 2 : mainContentArea.left + SIDEBAR_OPEN_OFFSET_X;
+      const effectiveInitialY = isMobile ? mainContentArea.top + 20 : mainContentArea.top + SIDEBAR_OPEN_OFFSET_Y;
 
       if (existingWidget) {
         // If widget exists, just make it visible and bring to front
@@ -342,8 +342,8 @@ export function useWidgetActions({
       const effectiveInitialHeight = isMobile ? DEFAULT_WIDGET_HEIGHT_MOBILE : config.initialHeight;
 
       // Determine effective initial position based on mobile status
-      const effectiveInitialX = isMobile ? mainContentArea.left + 5 : mainContentArea.left + SIDEBAR_OPEN_OFFSET_X;
-      const effectiveInitialY = isMobile ? mainContentArea.top : mainContentArea.top + SIDEBAR_OPEN_OFFSET_Y;
+      const effectiveInitialX = isMobile ? mainContentArea.left + (mainContentArea.width - effectiveInitialWidth) / 2 : mainContentArea.left + SIDEBAR_OPEN_OFFSET_X;
+      const effectiveInitialY = isMobile ? mainContentArea.top + 20 : mainContentArea.top + SIDEBAR_OPEN_OFFSET_Y;
 
       if (existingWidget) {
         // Toggle visibility

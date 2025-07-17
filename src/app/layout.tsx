@@ -31,18 +31,18 @@ export const metadata: Metadata = {
 
 // Define initial configurations for all widgets here to pass to WidgetProvider
 const WIDGET_CONFIGS = {
-  "spaces": { initialPosition: { x: 80, y: 70 }, initialWidth: 280, initialHeight: 400 },
-  "sounds": { initialPosition: { x: 80, y: 70 }, initialWidth: 260, initialHeight: 350 },
-  "calendar": { initialPosition: { x: 80, y: 70 }, initialWidth: 280, initialHeight: 500 },
-  "timer": { initialPosition: { x: 80, y: 70 }, initialWidth: 220, initialHeight: 160 },
-  "tasks": { initialPosition: { x: 80, y: 70 }, initialWidth: 280, initialHeight: 400 },
-  "drawing-board": { initialPosition: { x: 80, y: 70 }, initialWidth: 280, initialHeight: 400 },
-  "journal": { initialPosition: { x: 80, y: 70 }, initialWidth: 280, initialHeight: 450 },
-  "media": { initialPosition: { x: 80, y: 70 }, initialWidth: 260, initialHeight: 300 },
-  "stats-progress": { initialPosition: { x: 80, y: 70 }, initialWidth: 280, initialHeight: 450 },
-  "flash-cards": { initialPosition: { x: 80, y: 70 }, initialWidth: 280, initialHeight: 450 },
-  "goal-focus": { initialPosition: { x: 80, y: 70 }, initialWidth: 280, initialHeight: 400 },
-  "background-effects": { initialPosition: { x: 80, y: 70 }, initialWidth: 260, initialHeight: 350 },
+  "spaces": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
+  "sounds": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
+  "calendar": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
+  "timer": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
+  "tasks": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
+  "drawing-board": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
+  "journal": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
+  "media": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
+  "stats-progress": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
+  "flash-cards": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
+  "goal-focus": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
+  "background-effects": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
 };
 
 // Constants for layout dimensions (needed for mainContentArea calculation)
@@ -119,13 +119,11 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: `
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-
+          gtag('config', 'G-W3N6THX1KY');
           // Define a global function to initialize GA
           window.initializeGoogleAnalytics = function() {
             gtag('config', 'G-W3N6THX1KY');
           };
-
           // Check local storage for existing consent on page load
           if (typeof window !== 'undefined') {
             const consent = localStorage.getItem('cookie_consent');
