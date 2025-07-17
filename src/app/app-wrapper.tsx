@@ -46,7 +46,7 @@ const SIDEBAR_LEFT_OFFSET = 8;
 const SIDEBAR_CONTENT_GAP = 16;
 
 // Hardcoded top for mobile sidebar for debugging
-const DEBUG_MOBILE_SIDEBAR_TOP = 80; // This constant is still used in simple-audio-player.tsx
+// const DEBUG_MOBILE_SIDEBAR_TOP = 80; // This constant is no longer needed here
 
 export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
   const { loading, session, profile } = useSupabase();

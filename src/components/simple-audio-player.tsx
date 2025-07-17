@@ -30,8 +30,8 @@ const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode'
 const HEADER_HEIGHT = 64;
 const TOTAL_HEADER_AREA_HEIGHT = HEADER_HEIGHT;
 
-// Hardcoded top for mobile sidebar for debugging (still needed here for calculation)
-const DEBUG_MOBILE_SIDEBAR_TOP = 80;
+// Hardcoded top for mobile sidebar for debugging
+// const DEBUG_MOBILE_SIDEBAR_TOP = 80; // This constant is no longer needed here
 
 interface SimpleAudioPlayerProps {
   isMobile: boolean;
