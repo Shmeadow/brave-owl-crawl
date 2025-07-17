@@ -18,10 +18,10 @@ import { useWidget } from "@/components/widget/widget-provider";
 import { UserNameCapsule } from "./user-name-capsule";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { RoomSettingsContent } from "@/components/spaces-widget/RoomSettingsContent";
+import { RoomSettingsContent } from "./spaces-widget/RoomSettingsContent";
 import { CreatePersonalRoomForm } from "./create-personal-room-form";
 import { BugReportButton } from "./bug-report-button";
-import { TimeAndProgressDisplay, useClock } from "@/components/time-and-progress-display";
+import { TimeAndProgressDisplay, useClock } from "./time-and-progress-display";
 import { HEADER_HEIGHT_MOBILE } from "@/lib/constants"; // Import new constant
 
 interface HeaderProps {
@@ -67,8 +67,9 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
   return (
     <header className={cn(
       "fixed top-0 z-[1002] w-full flex items-center justify-between py-2 px-1 gap-2",
-      isMobile ? `h-[${HEADER_HEIGHT_MOBILE}px]` : "h-16", // Apply mobile height here
-      "bg-background/60 backdrop-blur-xl border-b border-white/20 shadow-lg" // Applied transparent background and blur here
+      isMobile ? `h-[64px]` : "h-16", // Explicitly set height to 64px for mobile (48px + 2*8px padding)
+      isMobile ? "bg-background" : "bg-background/60 backdrop-blur-xl", // Make opaque on mobile
+      "border-b border-white/20 shadow-lg"
     )}>
       {/* Left Group */}
       <div className="flex items-center gap-1 min-w-0">
