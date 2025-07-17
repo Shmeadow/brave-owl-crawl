@@ -24,7 +24,8 @@ import { PlayerDisplay } from './audio-player/player-display';
 import { MediaInput } from './audio-player/media-input';
 import { PlayerControls } from './audio-player/player-controls';
 import { ProgressBar } from './audio-player/progress-bar';
-import { MinimizedPlayerControls } from './audio-player/minimized-player-controls'; // New import
+import { MinimizedPlayerControls } from './audio-player/minimized-player-controls'; // This might become redundant
+import { MobileDockedPlayer } from './audio-player/mobile-docked-player'; // NEW IMPORT
 
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 const HEADER_HEIGHT = 64; // px
@@ -224,115 +225,35 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     />
   );
 
-  // Calculate dynamic top position for mobile minimized player
-  const mobileMinimizedPlayerTop = HEADER_HEIGHT + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + EDGE_OFFSET;
-
   if (isMobile) {
     return (
-      <div className={cn(
-        "fixed z-[900] transition-all duration-300 ease-in-out",
-        displayMode === 'minimized' ?
-          `top-[${mobileMinimizedPlayerTop}px] right-[${EDGE_OFFSET}px] w-12 h-[105px] rounded-full` : // Minimized mobile: slim capsule
-          "bottom-1 right-1 w-full max-w-[200px] h-auto p-1 rounded-xl flex-col", // Normal/Maximized mobile
-        className // Apply external positioning classes
-      )}>
-        {displayMode === 'normal' || displayMode === 'maximized' ? (
-          <>
-            {/* PlayerDisplay is now inside and will fill available space */}
-            <PlayerDisplay
-              playerType={playerType}
-              inputUrl={committedMediaUrl}
-              audioRef={audioRef}
-              youtubeIframeRef={youtubeIframeRef}
-              spotifyCurrentTrack={spotifyCurrentTrack}
-              onLoadedMetadata={htmlAudioOnLoadedMetadata}
-              onTimeUpdate={htmlAudioOnTimeUpdate}
-              onEnded={htmlAudioOnEnded}
-              isMaximized={false} // Not maximized in mobile expanded view
-              className="w-full"
-            />
-
-            {/* Spotify Track Info */}
-            {playerType === 'spotify' && spotifyCurrentTrack && (
-              <div className="text-center p-0.5 flex-shrink-0"> {/* Reduced padding */}
-                <p className="text-xs font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p> {/* Smaller text */}
-                <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map(a => a.name).join(', ')}</p>
-              </div>
-            )}
-
-            {/* Main Player Row: URL Input Toggle and Controls */}
-            <div className="flex items-center justify-between space-x-1 mb-0.5 flex-shrink-0 w-full"> {/* Reduced space-x and mb */}
-              {/* URL Input Toggle (Drawer for mobile) */}
-              <Drawer open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
-                <DrawerTrigger asChild>
-                  <button
-                    className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
-                    title="Change Media URL"
-                  >
-                    <Link size={10} className="mr-0.5" /> {/* Smaller icon */}
-                    {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
-                  </button>
-                </DrawerTrigger>
-                <DrawerContent className="h-auto max-h-[90vh] flex flex-col">
-                  <DrawerHeader>
-                    <DrawerTitle>Embed Media URL</DrawerTitle>
-                  </DrawerHeader>
-                  <div className="p-4">
-                    {renderMediaInput}
-                  </div>
-                </DrawerContent>
-              </Drawer>
-
-              <PlayerControls
-                playerType={playerType}
-                playerIsReady={playerIsReady}
-                currentIsPlaying={currentIsPlaying}
-                togglePlayPause={togglePlayPause}
-                skipBackward={skipBackward}
-                skipForward={skipForward}
-                currentVolume={currentVolume}
-                currentIsMuted={currentIsMuted}
-                toggleMute={toggleMute}
-                handleVolumeChange={handleVolumeChange}
-                canPlayPause={canPlayPause}
-                canSeek={canSeek}
-                displayMode={displayMode} // Pass displayMode
-                setDisplayMode={setDisplayMode} // Pass setDisplayMode
-              />
-            </div>
-
-            <ProgressBar
-              playerType={playerType}
-              playerIsReady={playerIsReady}
-              currentPlaybackTime={currentPlaybackTime}
-              totalDuration={totalDuration}
-              handleProgressBarChange={handleProgressBarChange}
-              formatTime={formatTime}
-            />
-
-            {playerType === 'spotify' && session && !spotifyPlayerReady && (
-              <div className="text-center text-xs text-muted-foreground mt-1"> {/* Smaller text and margin */}
-                <p>Log in to Spotify for full playback control.</p>
-                <Button onClick={connectToSpotify} className="text-primary hover:underline mt-0.5" size="sm"> {/* Smaller button */}
-                  Connect to Spotify
-                </Button>
-              </div>
-            )}
-          </>
-        ) : (
-          // Minimized mobile view
-          <MinimizedPlayerControls
-            playerType={playerType}
-            playerIsReady={playerIsReady}
-            currentIsPlaying={currentIsPlaying}
-            togglePlayPause={togglePlayPause}
-            currentVolume={currentVolume}
-            currentIsMuted={currentIsMuted}
-            toggleMute={toggleMute}
-            setDisplayMode={setDisplayMode}
-          />
-        )}
-      </div>
+      <MobileDockedPlayer
+        playerType={playerType}
+        committedMediaUrl={committedMediaUrl}
+        audioRef={audioRef}
+        youtubeIframeRef={youtubeIframeRef}
+        spotifyCurrentTrack={spotifyCurrentTrack}
+        onLoadedMetadata={htmlAudioOnLoadedMetadata}
+        onTimeUpdate={htmlAudioOnTimeUpdate}
+        onEnded={htmlAudioOnEnded}
+        playerIsReady={playerIsReady}
+        currentIsPlaying={currentIsPlaying}
+        togglePlayPause={togglePlayPause}
+        currentVolume={currentVolume}
+        currentIsMuted={currentIsMuted}
+        toggleMute={toggleMute}
+        handleVolumeChange={handleVolumeChange}
+        currentPlaybackTime={currentPlaybackTime}
+        totalDuration={totalDuration}
+        handleProgressBarChange={handleProgressBarChange}
+        formatTime={formatTime}
+        stagedInputUrl={stagedInputUrl}
+        setStagedInputUrl={setStagedInputUrl}
+        loadNewMedia={loadNewMedia}
+        connectToSpotify={connectToSpotify}
+        session={session}
+        spotifyPlayerReady={spotifyPlayerReady}
+      />
     );
   }
 
