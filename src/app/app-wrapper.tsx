@@ -31,7 +31,7 @@ import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT } from "@/lib/
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
 const DynamicPomodoroWidget = dynamic(() => import("@/components/pomodoro-widget").then(mod => mod.PomodoroWidget), { ssr: false });
-const DynamicSimpleAudioPlayer = dynamic(() => import("@/components/simple-audio-player").then(mod => mod.SimpleAudioPlayer), { ssr: false });
+// Removed DynamicSimpleAudioPlayer as it's now integrated into MediaWidget
 const DynamicRainEffect = dynamic(() => import("@/components/effects/rain-effect").then(mod => mod.RainEffect), { ssr: false });
 const DynamicSnowEffect = dynamic(() => import("@/components/effects/snow-effect").then(mod => mod.SnowEffect), { ssr: false });
 const DynamicRaindropsEffect = dynamic(() => import("@/components/effects/raindrops-effect").then(mod => mod.RaindropsEffect), { ssr: false });
@@ -181,8 +181,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             {isDashboard && !isMobile && <IndependentPinnedWidgetsDock isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />}
             {isDashboard && isMobile && (
               <>
-                {/* Mobile-specific SimpleAudioPlayer positioned at bottom-right */}
-                <DynamicSimpleAudioPlayer isMobile={isMobile} displayMode="minimized" />
                 <DynamicMobileControls>
                   <DynamicPomodoroWidget 
                     isMinimized={isPomodoroMinimized}
@@ -201,7 +199,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
                   chatPanelWidth={0}
                   isMobile={isMobile}
                 />
-                <DynamicSimpleAudioPlayer isMobile={isMobile} />
               </>
             )}
             <DynamicChatPanel
