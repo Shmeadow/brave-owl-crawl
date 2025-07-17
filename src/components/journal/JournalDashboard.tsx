@@ -11,12 +11,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AddJournalEntryForm } from '@/components/add-journal-entry-form';
 import { cn } from '@/lib/utils';
-import { generateHTML } from '@tiptap/html';
-import StarterKit from '@tiptap/starter-kit';
-import Highlight from '@tiptap/extension-highlight';
-import { Important, Callout } from '@/lib/tiptap-extensions';
-import TaskList from '@tiptap/extension-task-list';
-import TaskItem from '@tiptap/extension-task-item';
 
 interface JournalDashboardProps {
   isCurrentRoomWritable: boolean;
@@ -33,21 +27,9 @@ export function JournalDashboard({ isCurrentRoomWritable, onViewAllEntries, onRe
 
   const renderContentPreview = (content: string) => {
     try {
-      let htmlContent = content;
-      if (content.trim().startsWith('{')) {
-        const extensions = [
-          StarterKit,
-          Highlight,
-          Important,
-          TaskList,
-          TaskItem,
-          Callout,
-        ];
-        htmlContent = generateHTML(JSON.parse(content), extensions);
-      }
       // Create a temporary div to parse HTML and get text content
       const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = htmlContent;
+      tempDiv.innerHTML = content; // Froala outputs HTML directly
       return tempDiv.textContent?.substring(0, 100) + (tempDiv.textContent && tempDiv.textContent.length > 100 ? '...' : '');
     } catch (e) {
       console.error("Error parsing journal entry content for preview:", e);
