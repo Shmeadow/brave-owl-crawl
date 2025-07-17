@@ -57,16 +57,17 @@ export function GuestModeWarningBar() {
       <Card
         className={cn(
           "fixed bottom-4 left-4 z-[905]",
-          "bg-yellow-100/80 backdrop-blur-xl border-yellow-300 text-yellow-800 shadow-lg rounded-full p-2",
+          "bg-yellow-100/80 backdrop-blur-xl border-yellow-300 text-yellow-800 shadow-lg rounded-full", // Apply rounded-full here
           "flex items-center gap-2 cursor-pointer",
-          "animate-in slide-in-from-left-full duration-500 ease-out"
+          "animate-in slide-in-from-left-full duration-500 ease-out",
+          isMobile ? "px-2 py-1" : "p-2" // Conditional padding
         )}
         onClick={handleExpand}
         title="Expand Guest Mode Warning"
       >
-        <Info className="h-5 w-5 flex-shrink-0" />
-        <span className="text-sm font-semibold whitespace-nowrap">Guest Mode</span>
-        <ChevronUp className="h-4 w-4" />
+        <Info className={cn(isMobile ? "h-4 w-4" : "h-5 w-5", "flex-shrink-0")} /> {/* Conditional icon size */}
+        <span className={cn(isMobile ? "text-xs" : "text-sm", "font-semibold whitespace-nowrap")}>Guest Mode</span> {/* Conditional text size */}
+        <ChevronUp className={cn(isMobile ? "h-3 w-3" : "h-4 w-4")} /> {/* Conditional icon size */}
       </Card>
     );
   }
