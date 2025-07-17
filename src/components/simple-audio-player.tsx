@@ -330,7 +330,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
         {/* Always render mainPlayerContent, but hide it with CSS if minimized */}
         <div className={cn(
           "w-full h-full",
-          displayMode === 'minimized' && 'hidden'
+          displayMode === 'minimized' && 'opacity-0 pointer-events-none absolute' // Keep it mounted but invisible and non-interactive
         )}>
           {mainPlayerContent}
         </div>
@@ -370,7 +370,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
       {/* Always render mainPlayerContent, but hide it with CSS if minimized */}
       <div className={cn(
         "w-full h-full",
-        displayMode === 'minimized' && 'hidden'
+        displayMode === 'minimized' && 'opacity-0 pointer-events-none absolute' // Keep it mounted but invisible and non-interactive
       )}>
         {mainPlayerContent}
       </div>
