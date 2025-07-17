@@ -7,7 +7,6 @@ import { useSupabase } from "@/integrations/supabase/auth";
 import { UserNav } from "@/components/user-nav";
 import { UpgradeButton } from "@/components/upgrade-button";
 import { useCurrentRoom } from "@/hooks/use-current-room";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { BackgroundBlurSlider } from "@/components/background-blur-slider";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SpacesWidget } from "@/components/widget-content/spaces-widget";
@@ -66,13 +65,13 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
 
   return (
     <header className={cn(
-      "sticky top-0 z-[1002] w-full h-12 flex items-center justify-between p-2 gap-2"
+      "sticky top-0 z-[1002] w-full h-14 flex items-center justify-between p-1 gap-2" // Increased height, adjusted padding
     )}>
       {/* Left Capsule */}
       <div className={cn(
         "flex items-center min-w-0 gap-1 px-2 py-1",
-        "bg-card/50 backdrop-blur-xl border border-white/20 rounded-full",
-        "flex-1 h-full" // Make left capsule take equal space and full height
+        "bg-card/50 backdrop-blur-xl border border-white/20 rounded-full"
+        // Removed flex-1 and h-full to make it fit content
       )}>
         {/* Removed mobile sidebar toggle button */}
         <Link href="/dashboard" className="flex items-center space-x-1">
@@ -115,13 +114,21 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
       <div className={cn(
         "flex items-center gap-1 px-2 py-1",
         "bg-card/50 backdrop-blur-xl border border-white/20 rounded-full",
-        "flex-1 justify-end h-full" // Make right capsule take equal space and align content to end, and full height
+        "justify-end" // Removed flex-1 and h-full to make it fit content
       )}>
         <UserNameCapsule />
         <BugReportButton />
         {session && <NotificationsDropdown />}
         <BackgroundBlurSlider className="hidden md:flex" />
-        <ThemeToggle />
+        <Button
+          variant="ghost"
+          size="icon"
+          title="Statistics"
+          className="h-7 w-7"
+          onClick={() => toggleWidget('stats-progress', 'Statistics')}
+        >
+          <BarChart2 className="h-4 w-4" />
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <ClockTrigger />
