@@ -65,7 +65,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
 
   return (
     <header className={cn(
-      "fixed top-0 z-[1002] w-full flex items-center justify-between py-2 px-1 gap-2 h-16", // Added h-16 here
+      "fixed top-0 z-[1002] w-full flex items-center justify-between py-2 px-1 gap-2 h-14", // Changed h-16 to h-14
       "bg-background/60 backdrop-blur-xl border-b border-white/20 shadow-lg" // Applied transparent background and blur here
     )}>
       {/* Left Group */}

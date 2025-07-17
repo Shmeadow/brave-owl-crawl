@@ -40,7 +40,7 @@ const DynamicMobileControls = dynamic(() => import("@/components/mobile-controls
 const DynamicWelcomeBackModal = dynamic(() => import("@/components/welcome-back-modal").then(mod => mod.WelcomeBackModal), { ssr: false });
 
 // Constants for layout dimensions
-const HEADER_HEIGHT = 64; // px
+const HEADER_HEIGHT = 56; // px - Changed from 64 to 56
 const SIDEBAR_WIDTH_DESKTOP = 48; // px (from sidebar.tsx)
 const SIDEBAR_LEFT_OFFSET = 8; // px (from sidebar.tsx)
 const SIDEBAR_CONTENT_GAP = 16; // px (gap between sidebar and main content)

@@ -46,7 +46,7 @@ const WIDGET_CONFIGS = {
 };
 
 // Constants for layout dimensions (needed for mainContentArea calculation)
-const HEADER_HEIGHT = 64; // px
+const HEADER_HEIGHT = 56; // px - Changed from 64 to 56
 const SIDEBAR_WIDTH = 60; // px
 const CHAT_PANEL_WIDTH_OPEN = 320; // px
 const CHAT_PANEL_WIDTH_CLOSED = 56; // px

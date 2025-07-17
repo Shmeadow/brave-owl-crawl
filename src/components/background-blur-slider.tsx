@@ -26,7 +26,7 @@ export function BackgroundBlurSlider({ className, isMobile }: BackgroundBlurSlid
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Sun className="h-4 w-4 text-muted-foreground" />
+            <Sun className={cn("h-4 w-4 text-muted-foreground", !isMobile && "md:h-5 md:w-5")} />
           </TooltipTrigger>
           <TooltipContent>
             Clear
@@ -44,7 +44,7 @@ export function BackgroundBlurSlider({ className, isMobile }: BackgroundBlurSlid
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Wind className="h-4 w-4 text-muted-foreground" />
+            <Wind className={cn("h-4 w-4 text-muted-foreground", !isMobile && "md:h-5 md:w-5")} />
           </TooltipTrigger>
           <TooltipContent>
             Blurry
