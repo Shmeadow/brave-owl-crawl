@@ -13,15 +13,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSupabase, UserProfile } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
-import { useTheme } from "next-themes"; // Import useTheme
+import { useTheme } from "next-themes";
 
 export function UserNav() {
   const { supabase, session, profile, loading: authLoading } = useSupabase();
-  const { isAlwaysOpen, toggleAlwaysOpen } = useSidebarPreference();
-  const { theme, setTheme, themes } = useTheme(); // Removed 'mounted'
+  const { theme, setTheme, themes } = useTheme();
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -75,7 +71,6 @@ export function UserNav() {
           Account
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        {/* Removed "Always Open Sidebar" toggle from here */}
         {session && (
           <DropdownMenuItem onClick={handleSignOut}>
             Log out
