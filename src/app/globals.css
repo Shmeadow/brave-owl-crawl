@@ -34,6 +34,8 @@
     --background-blur-px: 0px; /* New blur variable */
     --faded-purple: 270 30% 80%; /* Light faded purple for light theme */
     --cozy-hub-color: 280 60% 60%; /* Vibrant purple, always available */
+    --header-button-dark: 222.2 47.4% 11.2%; /* Consistent dark blue-gray for header buttons */
+    --header-button-dark-foreground: 210 40% 98%; /* Light text for header buttons */
   }
 
   .dark {
@@ -66,6 +68,8 @@
     --gold: 45 90% 55%;
     --faded-purple: 270 30% 60%; /* Darker faded purple for dark theme */
     --cozy-hub-color: 280 60% 60%; /* Vibrant purple, always available */
+    --header-button-dark: 222.2 47.4% 11.2%; /* Consistent dark blue-gray for header buttons */
+    --header-button-dark-foreground: 210 40% 98%; /* Light text for header buttons */
   }
 
   [data-theme="cozy"] {
@@ -92,6 +96,8 @@
     --sidebar-foreground: 270 30% 90%;
     --faded-purple: 270 30% 70%; /* Faded purple for cozy theme */
     --cozy-hub-color: 280 60% 60%; /* Vibrant purple, always available */
+    --header-button-dark: 280 60% 40%; /* A darker purple for cozy theme buttons */
+    --header-button-dark-foreground: 260 20% 5%; /* Dark text for cozy theme buttons */
   }
 }
 

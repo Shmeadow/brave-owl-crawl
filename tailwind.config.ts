@@ -63,6 +63,10 @@ export default {
             gold: 'hsl(var(--gold))',
             'faded-purple': 'hsl(var(--faded-purple))',
             'cozy-hub-color': 'hsl(var(--cozy-hub-color))',
+            'header-button-dark': {
+                DEFAULT: 'hsl(var(--header-button-dark))',
+                foreground: 'hsl(var(--header-button-dark-foreground))',
+            },
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
