@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef } from 'react';
-import { Excalidraw, ExcalidrawAPIRef } from '@excalidraw/excalidraw';
+import { Excalidraw, ExcalidrawImperativeAPI } from '@excalidraw/excalidraw';
 import '@excalidraw/excalidraw/index.css'; // Excalidraw's CSS
 
 interface DrawingBoardWidgetProps {
@@ -10,7 +10,7 @@ interface DrawingBoardWidgetProps {
 }
 
 export function DrawingBoardWidget({ isCurrentRoomWritable, isMobile }: DrawingBoardWidgetProps) {
-  const excalidrawRef = useRef<ExcalidrawAPIRef | null>(null);
+  const excalidrawRef = useRef<ExcalidrawImperativeAPI | null>(null);
 
   return (
     <div className="h-full w-full flex flex-col">
