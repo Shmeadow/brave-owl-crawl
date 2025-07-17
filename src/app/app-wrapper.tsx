@@ -133,10 +133,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
       <FocusSessionProvider>
         <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea} isMobile={isMobile}>
           <div className="relative h-screen bg-transparent">
-            {/* New shadow element */}
-            <div className="fixed top-0 left-0 right-0 h-[64px] z-[1001] pointer-events-none"
-                 style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)' }}>
-            </div>
+            {/* Removed the old shadow element */}
             {activeEffect === 'rain' && <DynamicRainEffect />}
             {activeEffect === 'snow' && <DynamicSnowEffect />}
             {activeEffect === 'raindrops' && <DynamicRaindropsEffect />}
