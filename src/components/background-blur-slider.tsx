@@ -9,10 +9,17 @@ import { cn } from '@/lib/utils'; // Import cn
 
 interface BackgroundBlurSliderProps {
   className?: string; // Add className prop
+  isMobile?: boolean; // New prop
 }
 
-export function BackgroundBlurSlider({ className }: BackgroundBlurSliderProps) {
+export function BackgroundBlurSlider({ className, isMobile }: BackgroundBlurSliderProps) {
   const { blur, setBlur } = useBackgroundBlur();
+
+  // Only render the slider if it's not for mobile (i.e., desktop)
+  // or if it's explicitly meant to be rendered on mobile (e.g., inside a dropdown)
+  if (isMobile && !className?.includes('mobile-only')) {
+    return null; // Don't render if it's the desktop version on mobile
+  }
 
   return (
     <div className={cn("flex items-center gap-2 w-32", className)}> {/* Apply className here */}

@@ -18,10 +18,10 @@ import { useWidget } from "@/components/widget/widget-provider";
 import { UserNameCapsule } from "./user-name-capsule";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { RoomSettingsContent } from "@/components/spaces-widget/RoomSettingsContent";
+import { RoomSettingsContent } from "./spaces-widget/RoomSettingsContent";
 import { CreatePersonalRoomForm } from "./create-personal-room-form";
 import { BugReportButton } from "./bug-report-button";
-import { TimeAndProgressDisplay, useClock } from "@/components/time-and-progress-display";
+import { TimeAndProgressDisplay, useClock } from "./time-and-progress-display";
 
 interface HeaderProps {
   onToggleChat: () => void;
@@ -112,7 +112,8 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
         <UserNameCapsule />
         <BugReportButton />
         {session && <NotificationsDropdown />}
-        <BackgroundBlurSlider className="hidden md:flex bg-background/50 rounded-full" />
+        {/* Render BackgroundBlurSlider only on desktop */}
+        {!isMobile && <BackgroundBlurSlider className="hidden md:flex bg-background/50 rounded-full" />}
         <Button
           className="h-8 w-8 hover:bg-header-button-dark/20"
           variant="ghost"
@@ -147,7 +148,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
             )}
           </Button>
         )}
-        <UserNav />
+        <UserNav isMobile={isMobile} />
       </div>
     </header>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Play, Pause, Volume2, VolumeX, ChevronLeft, ChevronUp } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils'; // Import cn for conditional styling
 
 interface MinimizedPlayerControlsProps {
@@ -9,10 +9,9 @@ interface MinimizedPlayerControlsProps {
   playerIsReady: boolean;
   currentIsPlaying: boolean;
   togglePlayPause: () => void;
-  currentVolume: number;
+  currentVolume: number; // Still needed for mute logic
   currentIsMuted: boolean;
   toggleMute: () => void;
-  handleVolumeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   setDisplayMode: (mode: 'normal' | 'maximized' | 'minimized') => void;
 }
 
@@ -24,10 +23,10 @@ export function MinimizedPlayerControls({
   currentVolume,
   currentIsMuted,
   toggleMute,
-  handleVolumeChange,
   setDisplayMode,
 }: MinimizedPlayerControlsProps) {
 
+  // Volume control is now only mute/unmute button
   const isVolumeControlDisabled = !playerIsReady || playerType === 'spotify';
 
   return (
@@ -43,32 +42,16 @@ export function MinimizedPlayerControls({
         {currentIsPlaying ? <Pause size={16} /> : <Play size={16} />} {/* Smaller icon */}
       </button>
 
-      {/* Volume Control */}
-      <div className="flex flex-col items-center gap-1 flex-grow justify-center"> {/* Changed to flex-col, reduced gap */}
-        <button
-          onClick={toggleMute}
-          className="p-0 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300 h-7 w-7 flex-shrink-0 flex items-center justify-center"
-          aria-label={currentIsMuted ? "Unmute" : "Mute"}
-          title={currentIsMuted ? "Unmute" : "Mute"}
-          disabled={isVolumeControlDisabled}
-        >
-          {currentIsMuted || currentVolume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
-        </button>
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.01"
-          value={currentVolume}
-          onChange={handleVolumeChange}
-          className={cn(
-            "w-10 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary",
-            "transform rotate-90 origin-center", // Rotate for vertical slider
-            "my-2" // Adjusted vertical margin
-          )}
-          disabled={isVolumeControlDisabled}
-        />
-      </div>
+      {/* Mute/Unmute Button (replaces slider) */}
+      <button
+        onClick={toggleMute}
+        className="p-0 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition duration-300 h-7 w-7 flex-shrink-0 flex items-center justify-center"
+        aria-label={currentIsMuted ? "Unmute" : "Mute"}
+        title={currentIsMuted ? "Unmute" : "Mute"}
+        disabled={isVolumeControlDisabled}
+      >
+        {currentIsMuted || currentVolume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
+      </button>
 
       {/* Undock Button (now at the bottom) */}
       <button

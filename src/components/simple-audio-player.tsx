@@ -34,9 +34,10 @@ const TOTAL_HEADER_AREA_HEIGHT = HEADER_HEIGHT; // Adjusted to only include head
 interface SimpleAudioPlayerProps {
   isMobile: boolean;
   displayMode?: 'normal' | 'maximized' | 'minimized'; // Optional prop for initial display mode
+  className?: string; // Allow external classes for positioning
 }
 
-const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal' }: SimpleAudioPlayerProps) => {
+const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal', className }: SimpleAudioPlayerProps) => {
   const { session } = useSupabase();
   const [stagedInputUrl, setStagedInputUrl] = useState('');
   const [committedMediaUrl, setCommittedMediaUrl] = useState('');
@@ -225,11 +226,9 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   if (isMobile) {
     return (
       <div className={cn(
-        "fixed right-1 z-[901]", // Position at top right for mobile, changed right-4 to right-1
-        `top-[${HEADER_HEIGHT + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT}px]`, // Removed +8px offset
-        "transition-all duration-300 ease-in-out",
-        "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex w-full", // Applied styling here
-        displayMode === 'normal' || displayMode === 'maximized' ? "h-auto p-1 rounded-xl max-w-[224px] flex-col" : "h-40 p-1 items-center justify-between flex-col rounded-full w-10" // Use displayMode directly, and reverted width to w-10
+        "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex w-24", // Applied styling here, fixed width
+        displayMode === 'normal' || displayMode === 'maximized' ? "h-auto p-1 rounded-xl flex-col" : "h-40 p-1 items-center justify-between flex-col rounded-full", // Use displayMode directly, and reverted width to w-10
+        className // Apply external positioning classes
       )}>
         {displayMode === 'normal' || displayMode === 'maximized' ? (
           <>
@@ -324,7 +323,6 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
             currentVolume={currentVolume}
             currentIsMuted={currentIsMuted}
             toggleMute={toggleMute}
-            handleVolumeChange={handleVolumeChange}
             setDisplayMode={setDisplayMode}
           />
         )}
@@ -439,7 +437,6 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
             currentVolume={currentVolume}
             currentIsMuted={currentIsMuted}
             toggleMute={toggleMute}
-            handleVolumeChange={handleVolumeChange}
             setDisplayMode={setDisplayMode}
           />
         </div>
