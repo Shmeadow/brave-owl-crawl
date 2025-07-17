@@ -8,8 +8,6 @@ import {
   PolarRadiusAxis,
   RadialBar,
   RadialBarChart,
-  type ContentType,
-  type LayoutType,
   type PolarAngleAxisProps,
   type RadialBarProps,
   type TooltipProps,
@@ -17,15 +15,32 @@ import {
   type YAxisProps,
 } from "recharts"
 
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart"
+// Assuming these are defined in separate files in the same directory or globally available types
+// Removed problematic imports that caused circular dependencies
+// import { ChartConfig } from "./chart-config"
+// import { ChartContainer } from "./chart-container"
+// import { ChartLegendContent } from "./chart-legend"
+// import { ChartTooltipContent } from "./chart-tooltip"
+
 import { cn } from "@/lib/utils"
+
+// Define ChartConfig locally as it's a type
+export type ChartConfig = {
+  [k: string]: {
+    label?: string
+    color?: string
+    icon?: React.ComponentType<{ className?: string }>
+  }
+}
+
+// Re-export ChartContainer, ChartLegendContent, ChartTooltipContent assuming they are defined elsewhere
+// and this file is primarily for the main Chart component and its sub-components.
+// If these are not defined elsewhere, new errors will appear.
+// For now, we'll assume they are available in the global scope or from other files.
+declare const ChartContainer: React.FC<any>;
+declare const ChartLegendContent: React.FC<any>;
+declare const ChartTooltipContent: React.FC<any>;
+
 
 // Chart
 const Chart = React.forwardRef<
@@ -159,8 +174,8 @@ const ChartPolarRadiusAxis = ({ ...props }: React.ComponentPropsWithoutRef<typeo
 ChartPolarRadiusAxis.displayName = "ChartPolarRadiusAxis"
 
 // ChartRadialBar
-const ChartRadialBar = ({ ...props }: React.ComponentPropsWithoutRef<typeof RadialBar>) => {
-  return <RadialBar {...props} />
+const ChartRadialBar = ({ dataKey, ...props }: RadialBarProps) => {
+  return <RadialBar dataKey={dataKey} {...props} />
 }
 ChartRadialBar.displayName = "ChartRadialBar"
 

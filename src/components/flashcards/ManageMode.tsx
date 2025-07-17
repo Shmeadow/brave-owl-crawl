@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LayoutGrid, FolderInput, Trash, X } from 'lucide-react';
 import { CardData, Category } from '@/hooks/flashcards/types';
-import { OrganizeCardModal } from './OrganizeCardModal';
+import { MoveCardModal } from './MoveCardModal'; // Updated import
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { useFlashcards } from '@/hooks/use-flashcards';
@@ -51,7 +51,7 @@ export function ManageMode({
   const [organizingCard, setOrganizingCard] = useState<CardData | null>(null);
   const [columns, setColumns] = useState(3);
   const [selectionMode, setSelectionMode] = useState(false);
-  const [selectedCardIds, setSelectedCardIds] = new Set<string>();
+  const [selectedCardIds, setSelectedCardIds] = useState<Set<string>>(new Set()); // Explicitly type as Set<string>
   const [isBulkMoveOpen, setIsBulkMoveOpen] = useState(false);
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   const [bulkMoveCategoryId, setBulkMoveCategoryId] = useState<string | null>(null);
@@ -77,7 +77,7 @@ export function ManageMode({
 
   const handleToggleSelectionMode = () => {
     setSelectionMode(!selectionMode);
-    setSelectedCardIds(new Set());
+    setSelectedCardIds(new Set<string>()); // Ensure it's a new empty Set<string>
   };
 
   const handleConfirmBulkDelete = async () => {
@@ -151,12 +151,12 @@ export function ManageMode({
           columns={columns}
           rowHeight={120}
           selectionMode={selectionMode}
-          selectedCardIds={selectedCardIds}
+          isSelected={(cardId) => selectedCardIds.has(cardId)} // Pass a function for isSelected
           onToggleSelection={toggleSelection}
           categories={categories}
         />
       </div>
-      <OrganizeCardModal card={organizingCard} categories={categories} isOpen={!!organizingCard} onClose={() => setOrganizingCard(null)} onUpdateCategory={onUpdateCardCategory} />
+      <MoveCardModal card={organizingCard} categories={categories} isOpen={!!organizingCard} onClose={() => setOrganizingCard(null)} onUpdateCardCategory={onUpdateCardCategory} />
       <Dialog open={isBulkMoveOpen} onOpenChange={setIsBulkMoveOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>Move {selectedCardIds.size} Cards</DialogTitle></DialogHeader>
