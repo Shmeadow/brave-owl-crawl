@@ -13,7 +13,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils'; // Import cn
 
 export default function PricingPage() {
   const { session } = useSupabase();
@@ -49,24 +48,20 @@ export default function PricingPage() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleDialogStateChange}>
-      <DialogContent className={cn(
-        "max-w-4xl h-[90vh] flex flex-col p-0",
-        "sm:max-w-3xl md:max-w-4xl lg:max-w-5xl", // Adjust max-width for larger screens
-        "w-[calc(100vw-1rem)] h-[95vh] sm:w-[calc(100vw-2rem)] sm:h-[90vh]" // Make it fill more of the screen on mobile
-      )}>
-        <DialogHeader className="p-3 sm:p-4 border-b flex flex-row items-center justify-between"> {/* Reduced padding */}
-          <DialogTitle className="text-xl sm:text-2xl font-bold">Upgrade Your Plan</DialogTitle> {/* Reduced font size */}
+      <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
+        <DialogHeader className="p-4 border-b flex flex-row items-center justify-between">
+          <DialogTitle className="text-2xl font-bold">Upgrade Your Plan</DialogTitle>
           <Button variant="ghost" size="icon" onClick={handleClose}>
-            <X className="h-5 w-5 sm:h-6 sm:w-6" /> {/* Reduced icon size */}
+            <X className="h-6 w-6" />
             <span className="sr-only">Close</span>
           </Button>
         </DialogHeader>
-        <ScrollArea className="flex-1 p-4 sm:p-6"> {/* Reduced padding */}
-          <div className="text-center mb-6 sm:mb-8"> {/* Reduced margin-bottom */}
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight"> {/* Reduced font size */}
+        <ScrollArea className="flex-1 p-6">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-extrabold tracking-tight">
               Build your cozy workspace for less than a coffee.
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">Choose the plan that's right for you.</p> {/* Reduced font size and margin-top */}
+            <p className="text-muted-foreground mt-2">Choose the plan that's right for you.</p>
           </div>
           <PricingContent onUpgrade={handleUpgrade} />
         </ScrollArea>

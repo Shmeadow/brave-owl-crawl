@@ -132,33 +132,33 @@ export default function LandingPage() {
         "relative z-10 flex flex-col items-center justify-center h-full text-white w-full max-w-5xl mx-auto"
       )}>
         <motion.h1
-          className="text-3xl md:text-5xl lg:text-6xl font-extrabold mb-2 text-center drop-shadow-lg text-white leading-tight" // Adjusted font size and margin
+          className="text-4xl md:text-6xl font-extrabold mb-3 text-center drop-shadow-lg text-white leading-tight" // Adjusted font size and margin
           variants={itemVariants}
         >
           Your Ultimate <span className="text-faded-blue-dark animate-golden-aura">Productivity Sanctuary</span> with <span className="text-cozy-hub-color animate-cozy-hub-pulse">Cozy Hub</span>
         </motion.h1>
         <motion.p
-          className="text-base md:text-lg lg:text-xl mb-4 max-w-3xl text-center drop-shadow-md text-white/90" // Adjusted font size and margin
+          className="text-lg md:text-xl mb-6 max-w-3xl text-center drop-shadow-md text-white/90" // Adjusted font size and margin
           variants={itemVariants}
         >
           CozyHub is your all-in-one workspace designed to boost focus, track goals, and foster collaboration.
           Transform your digital environment into a haven of productivity.
         </motion.p>
         <motion.div
-          className="flex flex-col sm:flex-row gap-2 justify-center mb-6" // Adjusted gap and margin
+          className="flex flex-col sm:flex-row gap-3 justify-center mb-8" // Adjusted gap and margin
           variants={itemVariants}
         >
-          <Button asChild size="default" className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 text-base"> {/* Adjusted button size and padding */}
+          <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Link href="/login">Get Started Today</Link>
           </Button>
-          <Button asChild variant="outline" size="default" className="border-white text-white hover:bg-white/20 px-4 py-2 text-base"> {/* Adjusted button size and padding */}
+          <Button asChild variant="outline" size="lg" className="border-white text-white hover:bg-white/20">
             <Link href="/dashboard">Explore as Guest</Link>
           </Button>
         </motion.div>
 
         {/* All Features Grid */}
         <motion.div
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 w-full max-w-4xl px-3 py-3 bg-black/30 backdrop-blur-md rounded-lg border border-white/20" // Adjusted grid, padding
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 w-full max-w-4xl px-4 py-4 bg-black/30 backdrop-blur-md rounded-lg border border-white/20" // Adjusted grid, padding
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -170,9 +170,9 @@ export default function LandingPage() {
               variants={featureIconVariants}
               custom={index}
             >
-              <feature.icon className={cn("h-7 w-7 mb-0.5", feature.color)} /> {/* Adjusted icon size and added color */}
-              <p className="text-xs font-semibold">{feature.title}</p> {/* Adjusted font size */}
-              <p className="text-[0.6rem] text-white/70 mt-0.5 leading-tight">{feature.description}</p> {/* Tiny description */}
+              <feature.icon className={cn("h-9 w-9 mb-1", feature.color)} /> {/* Adjusted icon size and added color */}
+              <p className="text-sm font-semibold">{feature.title}</p> {/* Adjusted font size */}
+              <p className="text-xs text-white/70 mt-0.5 leading-tight">{feature.description}</p> {/* Tiny description */}
             </motion.div>
           ))}
         </motion.div>
