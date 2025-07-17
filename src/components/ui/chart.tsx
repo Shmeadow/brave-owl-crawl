@@ -175,7 +175,7 @@ ChartPolarRadiusAxis.displayName = "ChartPolarRadiusAxis"
 
 // ChartRadialBar
 const ChartRadialBar = ({ dataKey, ...props }: RadialBarProps) => {
-  return <RadialBar dataKey={dataKey} {...props} />
+  return <RadialBar dataKey={dataKey} {...(props as any)} />
 }
 ChartRadialBar.displayName = "ChartRadialBar"
 
