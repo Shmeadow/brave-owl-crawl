@@ -197,7 +197,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
   return (
     <Card
       className={cn(
-        "fixed bottom-20 left-1/2 -translate-x-1/2",
+        "fixed bottom-4 left-1/2 -translate-x-1/2", // Changed bottom-20 to bottom-4
         "flex transition-all duration-300 ease-in-out z-[901]",
         // Styles for normal (expanded) state
         !isMinimized && "w-52 flex-col items-center p-3 gap-3 h-auto bg-card/60 backdrop-blur-lg border-white/20 shadow-lg rounded-3xl",
@@ -207,13 +207,13 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
       onClick={isMinimized ? () => setIsMinimized(false) : undefined}
     >
       <CardHeader className={cn(
-        "flex flex-row items-center justify-between w-full px-3 pb-2", // Changed justify-center to justify-between, added px-3
+        "flex flex-row items-center justify-between w-full px-3 pb-2",
         isMinimized ? "hidden" : ""
       )}>
-        <CardTitle className="text-lg font-bold text-left"> {/* Changed text-center to text-left */}
+        <CardTitle className="text-lg font-bold text-left">
           Pomodoro
         </CardTitle>
-        <div className="flex gap-1"> {/* Removed absolute positioning and padding as it's now handled by parent flex */}
+        <div className="flex gap-1">
           <Dialog>
             <DialogTrigger asChild>
               <Button

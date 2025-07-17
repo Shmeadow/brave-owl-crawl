@@ -130,6 +130,23 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
             <TimeAndProgressDisplay />
           </DropdownMenuContent>
         </DropdownMenu>
+        {/* Mobile-only chat button */}
+        {isMobile && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative h-8 w-8 hover:bg-header-button-dark/20"
+            title="Open Chat"
+            onClick={onToggleChat}
+          >
+            <MessageSquare className="h-4 w-4" />
+            {unreadChatCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                {unreadChatCount}
+              </span>
+            )}
+          </Button>
+        )}
         <UserNav />
       </div>
     </header>

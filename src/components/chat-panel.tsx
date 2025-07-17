@@ -191,22 +191,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onToggleOpen}>
-        <DrawerTrigger asChild>
-          <Button
-            variant="default"
-            size="icon"
-            className="relative h-12 w-12 rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all duration-300 ease-in-out"
-            title="Open Chat"
-          >
-            <MessageSquare className="h-6 w-6" />
-            <span className="sr-only">Open Chat</span>
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-                {unreadCount}
-              </span>
-            )}
-          </Button>
-        </DrawerTrigger>
+        {/* The DrawerTrigger (button) is now in the Header component */}
         <DrawerContent className="h-[80vh] flex flex-col">
           <DrawerHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
             <DrawerTitle className="text-lg">
