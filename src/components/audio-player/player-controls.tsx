@@ -79,8 +79,7 @@ export function PlayerControls({
 
       {/* Player Mode Buttons */}
       <div className="flex justify-end gap-1 ml-2">
-        {isMobile ? (
-          // Mobile: Maximize and Minimize buttons
+        {!isMobile && ( // Only render maximize/minimize on desktop
           <>
             {displayMode === 'normal' && (
               <button
@@ -100,44 +99,16 @@ export function PlayerControls({
                 <Minimize size={14} />
               </button>
             )}
-            <button
-              onClick={() => setDisplayMode('minimized')}
-              className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
-              title="Minimize Player"
-            >
-              <ChevronRight size={14} /> {/* Using ChevronRight for minimize to a side */}
-            </button>
-          </>
-        ) : (
-          // Desktop: Maximize/Minimize and Dock buttons
-          <>
-            {displayMode === 'normal' && (
-              <button
-                onClick={() => setDisplayMode('maximized')}
-                className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
-                title="Maximize Player"
-              >
-                <Maximize size={14} />
-              </button>
-            )}
-            {displayMode === 'maximized' && (
-              <button
-                onClick={() => setDisplayMode('normal')}
-                className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
-                title="Shrink Player"
-              >
-                <Minimize size={14} />
-              </button>
-            )}
-            <button
-              onClick={() => setDisplayMode('minimized')}
-              className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
-              title="Minimize Player"
-            >
-              <ChevronRight size={14} />
-            </button>
           </>
         )}
+        {/* Minimize to side button (always available) */}
+        <button
+          onClick={() => setDisplayMode('minimized')}
+          className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
+          title="Minimize Player"
+        >
+          <ChevronRight size={14} /> {/* Using ChevronRight for minimize to a side */}
+        </button>
       </div>
     </div>
   );
