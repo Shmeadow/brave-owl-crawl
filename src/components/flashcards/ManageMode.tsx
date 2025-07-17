@@ -137,7 +137,7 @@ export function ManageMode({
                   <Upload className="mr-2 h-4 w-4" /> Import
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80 z-[1100] p-0" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+              <PopoverContent className="w-80 z-[1100] p-0 max-w-[calc(100vw-2rem)]" align="end" onOpenAutoFocus={(e) => e.preventDefault()}>
                 <ImportFlashcardsContent
                   onBulkImport={onBulkImport}
                   categories={categories}
@@ -153,7 +153,7 @@ export function ManageMode({
                   <Download className="mr-2 h-4 w-4" /> Export File
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80 z-[1100] p-0" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+              <PopoverContent className="w-80 z-[1100] p-0 max-w-[calc(100vw-2rem)]" align="end" onOpenAutoFocus={(e) => e.preventDefault()}>
                 <ExportFlashcardsContent
                   cards={cards}
                   colSep={colSep} setColSep={setColSep} customColSep={customColSep} setCustomColSep={setCustomColSep}
@@ -169,7 +169,7 @@ export function ManageMode({
                   <Copy className="mr-2 h-4 w-4" /> Copy Text
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80 z-[1100] p-0" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+              <PopoverContent className="w-80 z-[1100] p-0 max-w-[calc(100vw-2rem)]" align="end" onOpenAutoFocus={(e) => e.preventDefault()}>
                 <CopyFlashcardsContent
                   cards={cards}
                   colSep={colSep} setColSep={setColSep} customColSep={customColSep} setCustomColSep={setCustomColSep}

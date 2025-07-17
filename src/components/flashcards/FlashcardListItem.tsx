@@ -61,7 +61,7 @@ export function FlashcardListItem({
         <p className="text-xs text-muted-foreground">
           Created: {new Date(card.created_at).toLocaleDateString()}
         </p>
-        <div className="flex gap-1">
+        <div className="flex flex-col gap-1"> {/* Changed to flex-col for vertical arrangement */}
           <Button
             variant="ghost"
             size="icon"
