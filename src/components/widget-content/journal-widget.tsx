@@ -13,6 +13,7 @@ import { ImportJournalContent } from "@/components/journal/ImportJournalContent"
 import { ExportJournalContent } from "@/components/journal/ExportJournalContent";
 import { CopyJournalContent } from "@/components/journal/CopyJournalContent";
 import { Button } from "@/components/ui/button"; // Import Button
+import { JournalDashboard } from "@/components/journal/JournalDashboard"; // Import new Dashboard
 
 interface JournalWidgetProps {
   isCurrentRoomWritable: boolean;
@@ -37,6 +38,7 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
   const [isImportPopoverOpen, setIsImportPopoverOpen] = useState(false);
   const [isExportPopoverOpen, setIsExportPopoverOpen] = useState(false);
   const [isCopyPopoverOpen, setIsCopyPopoverOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard'); // New state for active tab
 
   // State for import/export/copy options
   const [colSep, setColSep] = useState(',');
@@ -46,14 +48,7 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
 
   const handleReminderClick = (reminder: ImportantReminder) => {
     setActiveReminderEntryId(reminder.entryId);
-    // Switch to entries tab if not already there
-    const tabsList = document.querySelector('[role="tablist"]');
-    if (tabsList) {
-      const entriesTab = tabsList.querySelector('[data-state="inactive"][value="entries"]');
-      if (entriesTab instanceof HTMLElement) {
-        entriesTab.click();
-      }
-    }
+    setActiveTab('entries'); // Switch to entries tab
   };
 
   const handleEntryOpenChange = (entryId: string, isOpen: boolean) => {
@@ -84,23 +79,31 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
       )}
 
       <div className="w-full max-w-4xl mx-auto flex flex-col gap-6">
-        <AddJournalEntryForm
-          onAddEntry={handleAddJournalEntry}
-          isCurrentRoomWritable={isCurrentRoomWritable}
-        />
-
         <Card className="w-full flex-1 bg-card backdrop-blur-xl border-white/20">
           <CardHeader className="pb-2">
             <CardTitle>Journal Content</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <Tabs defaultValue="entries" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-4">
+                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 <TabsTrigger value="entries">Entries ({journalEntries.length})</TabsTrigger>
                 <TabsTrigger value="reminders">Reminders ({importantReminders.length})</TabsTrigger>
               </TabsList>
 
+              <TabsContent value="dashboard" className="mt-0">
+                <JournalDashboard
+                  isCurrentRoomWritable={isCurrentRoomWritable}
+                  onViewAllEntries={() => setActiveTab('entries')}
+                  onReminderClick={handleReminderClick}
+                />
+              </TabsContent>
+
               <TabsContent value="entries" className="mt-0">
+                <AddJournalEntryForm
+                  onAddEntry={handleAddJournalEntry}
+                  isCurrentRoomWritable={isCurrentRoomWritable}
+                />
                 <JournalEntryList
                   entries={journalEntries}
                   onToggleStar={handleToggleStarJournalEntry}
