@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { FlashMatch, FlashMatchPlayer, FlashMatchRound, FlashMatchPlayerAnswer } from "./types";
 import { useFlashcardCategories } from "../flashcards/useFlashcardCategories"; // Import categories hook
+import { invokeEdgeFunction } from "@/lib/supabase-edge-functions"; // Import the new utility
 
 export function useFlashAttackGame() {
   const { supabase, session, loading: authLoading } = useSupabase();
@@ -20,8 +21,6 @@ export function useFlashAttackGame() {
   const [loading, setLoading] = useState(true);
   const [roundCountdown, setRoundCountdown] = useState(0); // New state for countdown
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const API_BASE_URL = "https://mrdupsekghsnbooyrdmj.supabase.co/functions/v1";
 
   const clearCountdown = useCallback(() => {
     if (countdownIntervalRef.current) {
@@ -244,33 +243,22 @@ export function useFlashAttackGame() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/create-flash-match`, {
+      await invokeEdgeFunction('create-flash-match', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
+        body: {
           room_id: currentRoomId,
           total_rounds,
           game_mode,
           round_duration_seconds,
           deck_category_id,
-        }),
+        },
+        accessToken: session.access_token,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error(`Failed to create match: ${data.error || 'Unknown error'}`);
-        console.error("Create match error:", data);
-      } else {
-        toast.success("Flash Attack match created!");
-        fetchMatches(); // Re-fetch to update UI with new match
-      }
+      toast.success("Flash Attack match created!");
+      fetchMatches(); // Re-fetch to update UI with new match
     } catch (error: any) {
-      toast.error(`Network error creating match: ${error.message}`);
-      console.error("Network error creating match:", error);
+      toast.error(`Failed to create match: ${error.message}`);
+      console.error("Create match error:", error);
     }
   }, [session, currentRoomId, supabase, fetchMatches]);
 
@@ -285,28 +273,17 @@ export function useFlashAttackGame() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/join-flash-match`, {
+      await invokeEdgeFunction('join-flash-match', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ match_id: matchId }),
+        body: { match_id: matchId },
+        accessToken: session.access_token,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error(`Failed to join match: ${data.error || 'Unknown error'}`);
-        console.error("Join match error:", data);
-      } else {
-        toast.success("Joined Flash Attack match!");
-        fetchMatches(); // Re-fetch to update UI
-      }
+      toast.success("Joined Flash Attack match!");
+      fetchMatches(); // Re-fetch to update UI
     }
     catch (error: any) {
-      toast.error(`Network error joining match: ${error.message}`);
-      console.error("Network error joining match:", error);
+      toast.error(`Failed to join match: ${error.message}`);
+      console.error("Join match error:", error);
     }
   }, [session, supabase, fetchMatches]);
 
@@ -321,27 +298,16 @@ export function useFlashAttackGame() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/start-flash-match`, {
+      await invokeEdgeFunction('start-flash-match', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ match_id: matchId }),
+        body: { match_id: matchId },
+        accessToken: session.access_token,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error(`Failed to start match: ${data.error || 'Unknown error'}`);
-        console.error("Start match error:", data);
-      } else {
-        toast.success("Flash Attack match started!");
-        fetchMatches(); // Re-fetch to update UI
-      }
+      toast.success("Flash Attack match started!");
+      fetchMatches(); // Re-fetch to update UI
     } catch (error: any) {
-      toast.error(`Network error starting match: ${error.message}`);
-      console.error("Network error starting match:", error);
+      toast.error(`Failed to start match: ${error.message}`);
+      console.error("Start match error:", error);
     }
   }, [session, supabase, fetchMatches]);
 
@@ -356,27 +322,16 @@ export function useFlashAttackGame() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/next-flash-round`, {
+      await invokeEdgeFunction('next-flash-round', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ match_id: matchId }),
+        body: { match_id: matchId },
+        accessToken: session.access_token,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error(`Failed to advance round: ${data.error || 'Unknown error'}`);
-        console.error("Next round error:", data);
-      } else {
-        toast.success("Round advanced!");
-        fetchMatches(); // Re-fetch to update UI
-      }
+      toast.success("Round advanced!");
+      fetchMatches(); // Re-fetch to update UI
     } catch (error: any) {
-      toast.error(`Network error advancing round: ${error.message}`);
-      console.error("Network error advancing round:", error);
+      toast.error(`Failed to advance round: ${error.message}`);
+      console.error("Next round error:", error);
     }
   }, [session, supabase, fetchMatches]);
 
@@ -391,32 +346,21 @@ export function useFlashAttackGame() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/submit-flash-answer`, {
+      const data = await invokeEdgeFunction('submit-flash-answer', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
+        body: {
           match_id: matchId,
           round_id: roundId,
           answer_text: answerText,
           response_time_ms: responseTimeMs,
-        }),
+        },
+        accessToken: session.access_token,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error(`Failed to submit answer: ${data.error || 'Unknown error'}`);
-        console.error("Submit answer error:", data);
-      } else {
-        toast.success(data.is_correct ? "Correct answer!" : "Incorrect answer.");
-        fetchPlayersRoundsAndAnswers(matchId, currentMatch?.current_round_number || null); // Re-fetch to update scores and answers
-      }
+      toast.success((data as any).is_correct ? "Correct answer!" : "Incorrect answer.");
+      fetchPlayersRoundsAndAnswers(matchId, currentMatch?.current_round_number || null); // Re-fetch to update scores and answers
     } catch (error: any) {
-      toast.error(`Network error submitting answer: ${error.message}`);
-      console.error("Network error submitting answer:", error);
+      toast.error(`Failed to submit answer: ${error.message}`);
+      console.error("Submit answer error:", error);
     }
   }, [session, supabase, fetchPlayersRoundsAndAnswers, currentMatch?.current_round_number]);
 

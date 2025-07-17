@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { RoomData } from "./types";
 import { useNotifications } from "@/hooks/use-notifications";
 import { SupabaseClient } from "@supabase/supabase-js";
+import { invokeEdgeFunction } from "@/lib/supabase-edge-functions"; // Import the new utility
 
 interface UseRoomMembershipProps {
   rooms: RoomData[];
@@ -232,28 +233,17 @@ export function useRoomMembership({ rooms, setRooms, fetchRooms }: UseRoomMember
     }
 
     try {
-      const response = await fetch('https://mrdupsekghsnbooyrdmj.supabase.co/functions/v1/kick-room-member', {
+      await invokeEdgeFunction('kick-room-member', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ roomId, userIdToKick }),
+        body: { roomId, userIdToKick },
+        accessToken: session.access_token,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error("Error kicking user: " + (data.error || "Unknown error"));
-        console.error("Error kicking user:", data.error);
-      } else {
-        toast.success("User kicked successfully!");
-        await fetchRooms(); // Explicitly re-fetch rooms after kicking
-        addNotification(`You were kicked from the room: "${rooms.find(r => r.id === roomId)?.name || roomId.substring(0, 8) + '...'}"`, userIdToKick);
-      }
-    } catch (error) {
-      toast.error("Failed to kick user due to network error.");
-      console.error("Network error kicking user:", error);
+      toast.success("User kicked successfully!");
+      await fetchRooms(); // Explicitly re-fetch rooms after kicking
+      addNotification(`You were kicked from the room: "${rooms.find(r => r.id === roomId)?.name || roomId.substring(0, 8) + '...'}"`, userIdToKick);
+    } catch (error: any) {
+      toast.error(`Failed to kick user: ${error.message}`);
+      console.error("Error kicking user:", error);
     }
   }, [session, supabase, fetchRooms, addNotification, rooms]);
 

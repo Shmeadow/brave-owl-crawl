@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch"; // Import Switch
 import Image from "next/image"; // Import Image component
+import { invokeEdgeFunction } from "@/lib/supabase-edge-functions"; // Import invokeEdgeFunction
 
 const profileFormSchema = z.object({
   first_name: z.string().min(1, { message: "First name is required." }).max(50, { message: "First name too long." }).optional().or(z.literal("")),
@@ -156,28 +157,16 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
 
     setIsDeletingAccount(true);
     try {
-      // Call the Edge Function to delete the user
-      const response = await fetch('https://mrdupsekghsnbooyrdmj.supabase.co/functions/v1/delete-user', {
+      await invokeEdgeFunction('delete-user', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ userId: session.user.id }),
+        body: { userId: session.user.id },
+        accessToken: session.access_token,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error("Error deleting account: " + (data.error || "Unknown error"));
-        console.error("Error deleting account:", data.error);
-      } else {
-        toast.success("Account deleted successfully. Redirecting...");
-        // Supabase's onAuthStateChange will handle the sign out and redirect
-      }
-    } catch (error) {
-      toast.error("Failed to delete account due to network error.");
-      console.error("Network error during account deletion:", error);
+      toast.success("Account deleted successfully. Redirecting...");
+      // Supabase's onAuthStateChange will handle the sign out and redirect
+    } catch (error: any) {
+      toast.error("Failed to delete account: " + error.message);
+      console.error("Error deleting account:", error);
     } finally {
       setIsDeletingAccount(false);
     }

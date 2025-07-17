@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { RoomData } from "./types";
 import { getRandomBackground } from "@/lib/backgrounds";
 import { useNotifications } from "@/hooks/use-notifications";
+import { invokeEdgeFunction } from "@/lib/supabase-edge-functions"; // Import the new utility
 
 interface UseRoomManagementProps {
   rooms: RoomData[];
@@ -218,26 +219,17 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
     }
 
     try {
-      const response = await fetch('https://mrdupsekghsnbooyrdmj.supabase.co/functions/v1/set-room-password', {
+      await invokeEdgeFunction('set-room-password', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ roomId, password }),
+        body: { roomId, password },
+        accessToken: session.access_token,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error("Error setting password: " + (data.error || "Unknown error"));
-      } else {
-        setRooms(prev => prev.map(r => r.id === roomId ? { ...r, password_hash: password ? 'set' : null } : r));
-        toast.success(password ? "Room password set successfully!" : "Room password removed successfully!");
-        await fetchRooms(); // Explicitly re-fetch rooms after update
-      }
-    } catch (error) {
-      toast.error("Failed to set password due to network error.");
+      setRooms(prev => prev.map(r => r.id === roomId ? { ...r, password_hash: password ? 'set' : null } : r));
+      toast.success(password ? "Room password set successfully!" : "Room password removed successfully!");
+      await fetchRooms(); // Explicitly re-fetch rooms after update
+    } catch (error: any) {
+      toast.error(`Failed to set password: ${error.message}`);
+      console.error("Error setting password:", error);
     }
   }, [session, supabase, rooms, setRooms, fetchRooms]);
 
