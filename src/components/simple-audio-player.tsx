@@ -264,13 +264,14 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
               {/* URL Input Toggle (Drawer for mobile) */}
               <Drawer open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
                 <DrawerTrigger asChild>
-                  <button
+                  {/* Wrap children in a single span */}
+                  <span
                     className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
                     title="Change Media URL"
                   >
                     <Link size={12} className="mr-0.5" />
                     {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
-                  </button>
+                  </span>
                 </DrawerTrigger>
                 <DrawerContent className="h-auto max-h-[90vh] flex flex-col">
                   <DrawerHeader>
@@ -400,13 +401,14 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
           <div className="flex-grow min-w-0">
             <Popover open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
               <PopoverTrigger asChild>
-                <button
+                {/* Wrap children in a single span */}
+                <span
                   className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
                   title="Change Media URL"
                 >
                   <Link size={12} className="mr-0.5" />
                   {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
-                </button>
+                </span>
               </PopoverTrigger>
               <PopoverContent className="w-64 p-0 z-[901] bg-popover/80 backdrop-blur-lg border-white/20">
                 {renderMediaInput}

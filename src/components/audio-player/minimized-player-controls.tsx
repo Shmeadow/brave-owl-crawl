@@ -39,7 +39,8 @@ export function MinimizedPlayerControls({
         title={currentIsPlaying ? "Pause" : "Play"}
         disabled={!playerIsReady}
       >
-        {currentIsPlaying ? <Pause size={20} /> : <Play size={20} />}
+        {/* Wrap children in a single span */}
+        <span>{currentIsPlaying ? <Pause size={20} /> : <Play size={20} />}</span>
       </button>
 
       {/* Volume Control */}
@@ -51,7 +52,8 @@ export function MinimizedPlayerControls({
           title={currentIsMuted ? "Unmute" : "Mute"}
           disabled={isVolumeControlDisabled}
         >
-          {currentIsMuted || currentVolume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
+          {/* Wrap children in a single span */}
+          <span>{currentIsMuted || currentVolume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}</span>
         </button>
         <input
           type="range"
@@ -71,7 +73,8 @@ export function MinimizedPlayerControls({
         className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 flex-shrink-0 h-9 w-9 flex items-center justify-center"
         title="Expand Player"
       >
-        <ChevronLeft size={20} />
+        {/* Wrap children in a single span */}
+        <span><ChevronLeft size={20} /></span>
       </button>
     </div>
   );
