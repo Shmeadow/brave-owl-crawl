@@ -48,9 +48,9 @@ export function BackgroundEffectsMenu() {
                     <Image
                       src={imageUrl}
                       alt={`Background ${imageUrl.split("/").pop()}`}
-                      fill
+                      width={100} // Explicit width
+                      height={96} // Explicit height (h-24 is 96px)
                       className="object-cover"
-                      // Removed the 'sizes' prop to simplify image loading
                     />
                     {isActive && (
                       <div className="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 text-white text-sm font-bold">
