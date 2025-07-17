@@ -222,8 +222,8 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
         <CardContent>
           <Progress value={progressPercentage} className="w-full mb-6" />
           
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               <Label htmlFor="flashcard-size-test">Card Size:</Label>
               <ToggleGroup type="single" value={flashcardSize} onValueChange={(value: FlashcardSize) => setFlashcardSize(value)} className="h-auto">
                 <ToggleGroupItem value="sm" aria-label="Small" className="h-8 px-3 text-sm">S</ToggleGroupItem>
@@ -231,7 +231,7 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
                 <ToggleGroupItem value="lg" aria-label="Large" className="h-8 px-3 text-sm">L</ToggleGroupItem>
               </ToggleGroup>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               <Label htmlFor="timer-toggle">Timer:</Label>
               <input
                 type="checkbox"

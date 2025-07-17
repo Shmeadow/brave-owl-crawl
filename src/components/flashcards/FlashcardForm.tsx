@@ -67,7 +67,7 @@ export function FlashcardForm({ onSave, editingCard, onCancel, categories, selec
       <CardHeader>
         <CardTitle>{editingCard ? 'Edit Flashcard' : 'Add New Flashcard'}</CardTitle>
       </CardHeader>
-      <CardContent className="p-6">
+      <CardContent className="p-4 sm:p-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
@@ -114,9 +114,7 @@ export function FlashcardForm({ onSave, editingCard, onCancel, categories, selec
                     <SelectContent>
                       {/* Removed SelectItem for "Uncategorized" */}
                       {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </SelectItem>
+                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

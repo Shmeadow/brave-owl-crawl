@@ -123,7 +123,7 @@ export function LearnMode({ flashcards, onGradeCard, goToSummary, flashcardSize,
             {isFlipped && (
               <div className="w-full max-w-md text-center space-y-2 mt-4">
                 <p className="font-semibold">How well did you know this?</p>
-                <div className="flex justify-center gap-2">
+                <div className="flex flex-wrap justify-center gap-2">
                   <Button onClick={() => handleGradeAndProceed('Again')} variant="destructive">Again</Button>
                   <Button onClick={() => handleGradeAndProceed('Hard')} variant="outline">Hard</Button>
                   <Button onClick={() => handleGradeAndProceed('Good')} variant="outline">Good</Button>

@@ -142,30 +142,30 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
     <div className="w-full space-y-8">
       <Card className="bg-card backdrop-blur-xl border-white/20 p-4 sm:p-6 md:p-8 rounded-xl shadow-lg w-full">
         <CardHeader className="p-0 pb-6">
-          <CardTitle className="text-3xl font-bold text-foreground text-center">
+          <CardTitle className="text-2xl sm:text-3xl font-bold text-foreground text-center">
             Session Summary
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center mb-6">
             <div className="bg-muted p-4 rounded-lg shadow-sm border border-border">
-              <p className="text-lg font-semibold text-foreground">Total Cards Reviewed</p>
-              <p className="text-4xl font-bold text-primary">{overallTotal}</p>
+              <p className="text-base sm:text-lg font-semibold text-foreground">Total Cards Reviewed</p>
+              <p className="text-3xl sm:text-4xl font-bold text-primary">{overallTotal}</p>
             </div>
             <div className="bg-green-100/70 dark:bg-green-900/30 p-4 rounded-lg shadow-sm border border-green-200/50 dark:border-green-800/50">
-              <p className="text-lg font-semibold text-green-800 dark:text-green-300">Correct Answers</p>
-              <p className="text-4xl font-bold text-green-900 dark:text-green-200">{overallCorrect}</p>
+              <p className="text-base sm:text-lg font-semibold text-green-800 dark:text-green-300">Correct Answers</p>
+              <p className="text-3xl sm:text-4xl font-bold text-green-900 dark:text-green-200">{overallCorrect}</p>
             </div>
             <div className="bg-red-100/70 dark:bg-red-900/30 p-4 rounded-lg shadow-sm border border-red-200/50 dark:border-red-800/50">
-              <p className="text-lg font-semibold text-red-800 dark:text-red-300">Incorrect Answers</p>
-              <p className="text-4xl font-bold text-red-900 dark:text-red-200">{overallTotal - overallCorrect}</p>
+              <p className="text-base sm:text-lg font-semibold text-red-800 dark:text-red-300">Incorrect Answers</p>
+              <p className="text-3xl sm:text-4xl font-bold text-red-900 dark:text-red-200">{overallTotal - overallCorrect}</p>
             </div>
           </div>
-          <div className="text-center text-2xl font-bold text-foreground mb-10">
+          <div className="text-center text-xl sm:text-2xl font-bold text-foreground mb-10">
             Overall Accuracy: {overallAccuracy}%
           </div>
 
-          <h3 className="text-xl font-bold text-foreground mb-4 text-center flex items-center justify-center gap-2">
+          <h3 className="text-lg sm:text-xl font-bold text-foreground mb-4 text-center flex items-center justify-center gap-2">
             <BarChart2 className="h-5 w-5" /> Performance Breakdown
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
@@ -181,7 +181,7 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
             </Card>
           </div>
 
-          <h3 className="text-xl font-bold text-foreground mb-4 text-center flex items-center justify-center gap-2">
+          <h3 className="text-lg sm:text-xl font-bold text-foreground mb-4 text-center flex items-center justify-center gap-2">
             <BookOpen className="h-5 w-5" /> Card Status Distribution
           </h3>
           <div className="space-y-3 mb-10">
@@ -209,7 +209,7 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
 
           {summaryData.topMissedCards.length > 0 && (
             <>
-              <h3 className="text-xl font-bold text-foreground mb-4 text-center flex items-center justify-center gap-2">
+              <h3 className="text-lg sm:text-xl font-bold text-foreground mb-4 text-center flex items-center justify-center gap-2">
                 <XCircle className="h-5 w-5 text-red-500" /> Top Missed Cards
               </h3>
               <ul className="space-y-3 mb-10">
@@ -230,7 +230,7 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
             </>
           )}
 
-          <h3 className="text-xl font-bold text-foreground mb-4 text-center">Session History</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-foreground mb-4 text-center">Session History</h3>
           {sessions.length > 0 ? (
             <ScrollArea className="h-[400px] pr-4">
               <Accordion type="single" collapsible className="w-full" defaultValue={sessions[0]?.id}>
