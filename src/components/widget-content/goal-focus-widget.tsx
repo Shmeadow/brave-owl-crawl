@@ -42,7 +42,7 @@ export function GoalFocusWidget({ isCurrentRoomWritable }: GoalFocusWidgetProps)
 
   // Default to 'manage' view
   return (
-    <div className="h-full w-full flex flex-col items-center gap-4 p-4">
+    <div className="h-full w-full flex flex-col items-center gap-4 p-2 sm:p-4">
       {view === 'manage' && hasIncompleteGoals && (
          <div className="text-center">
            <Button variant="link" onClick={() => setView('kickoff')}>

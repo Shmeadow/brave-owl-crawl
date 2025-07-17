@@ -36,7 +36,7 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
   }
 
   return (
-    <div className="h-full w-full flex flex-col items-center gap-6 p-4">
+    <div className="h-full w-full flex flex-col items-center gap-6 p-2 sm:p-4">
       <h1 className="text-3xl font-bold text-foreground text-center">Your Journal</h1>
 
       {!isLoggedInMode && (

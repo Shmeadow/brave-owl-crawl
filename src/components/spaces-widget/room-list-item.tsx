@@ -59,7 +59,7 @@ export function RoomListItem({ room }: RoomListItemProps) {
   return (
     <div
       className={cn(
-        "flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-md bg-muted backdrop-blur-xl",
+        "flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 border rounded-md bg-muted backdrop-blur-xl",
         currentRoomId === room.id && "ring-2 ring-primary"
       )}
     >
