@@ -42,7 +42,7 @@ const WIDGET_CONFIGS = {
   "stats-progress": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
   "flash-cards": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
   "goal-focus": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
-  "background-effects": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
+  "background-effects": { initialPosition: { x: 80, y: 70 }, initialWidth: 400, initialHeight: 600 },
 };
 
 // Constants for layout dimensions (needed for mainContentArea calculation)

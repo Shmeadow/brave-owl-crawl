@@ -31,7 +31,7 @@ export function BackgroundEffectsMenu() {
         </TabsList>
 
         <TabsContent value="static-images" className="mt-4">
-          <ScrollArea className="h-[450px] p-4">
+          <ScrollArea className="h-[450px] p-2"> {/* Changed p-4 to p-2 */}
             <div className="grid grid-cols-2 gap-4">
               {staticImages.map((imageUrl) => {
                 const isActive = !background.isVideo && background.url === imageUrl;
@@ -51,7 +51,7 @@ export function BackgroundEffectsMenu() {
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      priority={false}
+                      // Removed priority={false} and loading="lazy" for better preview rendering
                     />
                     {isActive && (
                       <div className="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 text-white text-sm font-bold">
@@ -66,7 +66,7 @@ export function BackgroundEffectsMenu() {
         </TabsContent>
 
         <TabsContent value="animated-backgrounds" className="mt-4">
-          <ScrollArea className="h-[450px] p-4">
+          <ScrollArea className="h-[450px] p-2"> {/* Changed p-4 to p-2 */}
             <div className="grid grid-cols-2 gap-4">
               {animatedBackgrounds.map((bg) => (
                 <AnimatedBackgroundPreviewItem
