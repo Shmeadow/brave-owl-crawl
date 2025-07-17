@@ -24,8 +24,7 @@ import { PlayerDisplay } from './audio-player/player-display';
 import { MediaInput } from './audio-player/media-input';
 import { PlayerControls } from './audio-player/player-controls';
 import { ProgressBar } from './audio-player/progress-bar';
-import { MinimizedPlayerControls } from './audio-player/minimized-player-controls'; // This might become redundant
-import { MobileDockedPlayer } from './audio-player/mobile-docked-player'; // NEW IMPORT
+import { MinimizedPlayerControls } from './audio-player/minimized-player-controls';
 
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 const HEADER_HEIGHT = 64; // px
@@ -45,10 +44,9 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   const [isUrlInputOpen, setIsUrlInputOpen] = useState(false); // State for popover/drawer
   const [displayMode, setDisplayMode] = useState<'normal' | 'maximized' | 'minimized'>(() => {
     if (typeof window !== 'undefined') {
-      if (isMobile) {
-        return 'minimized'; // Always start minimized on mobile
-      }
       const savedMode = localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY);
+      // On mobile, default to 'normal' if no saved mode, otherwise use saved mode.
+      // This allows it to be floating and not always minimized.
       return initialDisplayMode || (savedMode === 'minimized' ? 'minimized' : 'normal');
     }
     return initialDisplayMode;
@@ -227,48 +225,138 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
 
   if (isMobile) {
     return (
-      <MobileDockedPlayer
-        playerType={playerType}
-        committedMediaUrl={committedMediaUrl}
-        audioRef={audioRef}
-        youtubeIframeRef={youtubeIframeRef}
-        spotifyCurrentTrack={spotifyCurrentTrack}
-        onLoadedMetadata={htmlAudioOnLoadedMetadata}
-        onTimeUpdate={htmlAudioOnTimeUpdate}
-        onEnded={htmlAudioOnEnded}
-        playerIsReady={playerIsReady}
-        currentIsPlaying={currentIsPlaying}
-        togglePlayPause={togglePlayPause}
-        currentVolume={currentVolume}
-        currentIsMuted={currentIsMuted}
-        toggleMute={toggleMute}
-        handleVolumeChange={handleVolumeChange}
-        currentPlaybackTime={currentPlaybackTime}
-        totalDuration={totalDuration}
-        handleProgressBarChange={handleProgressBarChange}
-        formatTime={formatTime}
-        stagedInputUrl={stagedInputUrl}
-        setStagedInputUrl={setStagedInputUrl}
-        loadNewMedia={loadNewMedia}
-        connectToSpotify={connectToSpotify}
-        session={session}
-        spotifyPlayerReady={spotifyPlayerReady}
-      />
+      <div className={cn(
+        "fixed z-[900] transition-all duration-300 ease-in-out",
+        displayMode === 'normal' && `bottom-4 right-4 w-64 rounded-3xl`,
+        displayMode === 'minimized' && 'bottom-4 right-4 w-10 h-40 rounded-full',
+        displayMode === 'maximized' && 'inset-0 w-full h-full flex flex-col items-center justify-center rounded-none', // Maximize to full screen
+        className // Apply external positioning classes
+      )}>
+        <div className={cn(
+          "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex flex-col w-full h-full",
+          displayMode === 'normal' && 'p-1 rounded-3xl',
+          displayMode === 'maximized' && 'p-4 rounded-none', // No rounded corners when maximized
+          displayMode === 'minimized' && 'hidden'
+        )}>
+          <PlayerDisplay
+            playerType={playerType}
+            inputUrl={committedMediaUrl}
+            audioRef={audioRef}
+            youtubeIframeRef={youtubeIframeRef}
+            spotifyCurrentTrack={spotifyCurrentTrack}
+            onLoadedMetadata={htmlAudioOnLoadedMetadata}
+            onTimeUpdate={htmlAudioOnTimeUpdate}
+            onEnded={htmlAudioOnEnded}
+            isMaximized={displayMode === 'maximized'}
+            className={cn(
+              displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : '',
+              'w-full',
+              displayMode === 'maximized' ? 'flex-1' : '' // Take full height when maximized
+            )}
+          />
+
+          {playerType === 'spotify' && spotifyCurrentTrack && (
+            <div className="text-center p-0.5 flex-shrink-0">
+              <p className="text-sm font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
+              <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map((a: { name: string }) => a.name).join(', ')}</p>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between space-x-1 mb-0.5 flex-shrink-0 w-full">
+            <div className="flex-grow min-w-0">
+              <Drawer open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
+                <DrawerTrigger asChild>
+                  <button
+                    className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
+                    title="Change Media URL"
+                  >
+                    <Link size={10} className="mr-0.5" />
+                    {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
+                  </button>
+                </DrawerTrigger>
+                <DrawerContent className="h-auto max-h-[90vh] flex flex-col">
+                  <DrawerHeader>
+                    <DrawerTitle>Embed Media URL</DrawerTitle>
+                  </DrawerHeader>
+                  <div className="p-4">
+                    {renderMediaInput}
+                  </div>
+                </DrawerContent>
+              </Drawer>
+            </div>
+
+            <PlayerControls
+              playerType={playerType}
+              playerIsReady={playerIsReady}
+              currentIsPlaying={currentIsPlaying}
+              togglePlayPause={togglePlayPause}
+              skipBackward={skipBackward}
+              skipForward={skipForward}
+              currentVolume={currentVolume}
+              currentIsMuted={currentIsMuted}
+              toggleMute={toggleMute}
+              handleVolumeChange={handleVolumeChange}
+              canPlayPause={canPlayPause}
+              canSeek={canSeek}
+              displayMode={displayMode}
+              setDisplayMode={setDisplayMode}
+            />
+          </div>
+
+          <ProgressBar
+            playerType={playerType}
+            playerIsReady={playerIsReady}
+            currentPlaybackTime={currentPlaybackTime}
+            totalDuration={totalDuration}
+            handleProgressBarChange={handleProgressBarChange}
+            formatTime={formatTime}
+          />
+
+          {playerType === 'spotify' && session && !spotifyPlayerReady && (
+            <div className="text-center text-xs text-muted-foreground mt-1">
+              <p>Log in to Spotify for full playback control.</p>
+              <Button onClick={connectToSpotify} className="text-primary hover:underline mt-0.5" size="sm">
+                Connect to Spotify
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {displayMode === 'minimized' && (
+          <div
+            className={cn(
+              "bg-card/60 backdrop-blur-xl border-white/20 p-1 rounded-full flex items-center justify-between w-full h-full"
+            )}
+            title="Expand Player"
+          >
+            <MinimizedPlayerControls
+              playerType={playerType}
+              playerIsReady={playerIsReady}
+              currentIsPlaying={currentIsPlaying}
+              togglePlayPause={togglePlayPause}
+              currentVolume={currentVolume}
+              currentIsMuted={currentIsMuted}
+              toggleMute={toggleMute}
+              setDisplayMode={setDisplayMode}
+            />
+          </div>
+        )}
+      </div>
     );
   }
 
-  // Desktop rendering
+  // Desktop rendering (remains unchanged)
   return (
     <div className={cn(
       "fixed z-[900] transition-all duration-300 ease-in-out",
-      displayMode === 'normal' && `top-[120px] right-4 w-64 rounded-3xl`, // Adjusted width to w-64, rounded-3xl
-      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-10 h-40 rounded-full', // Adjusted height to h-40
-      displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-96 flex flex-col items-center justify-center rounded-3xl' // rounded-3xl
+      displayMode === 'normal' && `top-[120px] right-4 w-64 rounded-3xl`,
+      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-10 h-40 rounded-full',
+      displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-96 flex flex-col items-center justify-center rounded-3xl'
     )}>
       <div className={cn(
-        "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex flex-col w-full", // Applied styling here
-        displayMode === 'normal' && 'p-1 rounded-3xl', // Reduced padding, rounded-3xl
-        displayMode === 'maximized' && 'p-4 items-center justify-center rounded-3xl', // rounded-3xl
+        "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex flex-col w-full",
+        displayMode === 'normal' && 'p-1 rounded-3xl',
+        displayMode === 'maximized' && 'p-4 items-center justify-center rounded-3xl',
         displayMode === 'minimized' && 'hidden'
       )}>
         <PlayerDisplay
@@ -288,13 +376,13 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
         />
 
         {playerType === 'spotify' && spotifyCurrentTrack && (
-          <div className="text-center p-0.5 flex-shrink-0"> {/* Reduced padding */}
+          <div className="text-center p-0.5 flex-shrink-0">
             <p className="text-sm font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
-            <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map(a => a.name).join(', ')}</p>
+            <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map((a: { name: string }) => a.name).join(', ')}</p>
           </div>
         )}
 
-        <div className="flex items-center justify-between space-x-1 mb-0.5 flex-shrink-0 w-full"> {/* Reduced space-x and mb */}
+        <div className="flex items-center justify-between space-x-1 mb-0.5 flex-shrink-0 w-full">
           <div className="flex-grow min-w-0">
             <Popover open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
               <PopoverTrigger asChild>
@@ -302,7 +390,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
                   className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
                   title="Change Media URL"
                 >
-                  <Link size={10} className="mr-0.5" /> {/* Smaller icon */}
+                  <Link size={10} className="mr-0.5" />
                   {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
                 </button>
               </PopoverTrigger>
@@ -340,9 +428,9 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
         />
 
         {playerType === 'spotify' && session && !spotifyPlayerReady && (
-          <div className="text-center text-xs text-muted-foreground mt-1"> {/* Smaller text and margin */}
+          <div className="text-center text-xs text-muted-foreground mt-1">
             <p>Log in to Spotify for full playback control.</p>
-            <Button onClick={connectToSpotify} className="text-primary hover:underline mt-0.5" size="sm"> {/* Smaller button */}
+            <Button onClick={connectToSpotify} className="text-primary hover:underline mt-0.5" size="sm">
               Connect to Spotify
             </Button>
           </div>
@@ -352,7 +440,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
       {displayMode === 'minimized' && (
         <div
           className={cn(
-            "bg-card/60 backdrop-blur-xl border-white/20 p-1 rounded-full flex items-center justify-between w-full h-full" // Reduced padding, ensured rounded-full
+            "bg-card/60 backdrop-blur-xl border-white/20 p-1 rounded-full flex items-center justify-between w-full h-full"
           )}
           title="Expand Player"
         >
