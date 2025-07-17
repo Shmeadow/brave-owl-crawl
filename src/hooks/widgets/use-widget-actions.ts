@@ -136,6 +136,11 @@ export function useWidgetActions({
         );
         const restoredSize = existingWidget.normalSize || { width: effectiveInitialWidth, height: effectiveInitialHeight };
 
+        // Ensure restored size is not larger than mainContentArea
+        const clampedRestoredSize = { ...restoredSize };
+        if (clampedRestoredSize.width > mainContentArea.width) clampedRestoredSize.width = mainContentArea.width;
+        if (clampedRestoredSize.height > mainContentArea.height) clampedRestoredSize.height = mainContentArea.height;
+
         const updatedWidgets = prev.map((widget: WidgetState) =>
           widget.id === id
             ? {
@@ -145,8 +150,8 @@ export function useWidgetActions({
                 isMaximized: false,
                 isPinned: false,
                 zIndex: newMaxZIndex,
-                position: restoredPosition,
-                size: restoredSize,
+                position: clampPosition(restoredPosition.x, restoredPosition.y, clampedRestoredSize.width, clampedRestoredSize.height, mainContentArea),
+                size: clampedRestoredSize,
               }
             : widget
         );
@@ -244,12 +249,17 @@ export function useWidgetActions({
         if (widget.id === id) {
           if (widget.isMaximized) {
             // It's maximized, restore to normal
+            const restoredSize = { ...widget.normalSize! };
+            if (restoredSize.width > mainContentArea.width) restoredSize.width = mainContentArea.width;
+            if (restoredSize.height > mainContentArea.height) restoredSize.height = mainContentArea.height;
+            const restoredPosition = clampPosition(widget.normalPosition!.x, widget.normalPosition!.y, restoredSize.width, restoredSize.height, mainContentArea);
+
             return {
               ...widget,
               isMaximized: false,
               isClosed: false, // Ensure visible
-              position: widget.normalPosition!,
-              size: widget.normalSize!,
+              position: restoredPosition,
+              size: restoredSize,
             };
           } else {
             // It's normal or minimized, so maximize it.
@@ -257,14 +267,20 @@ export function useWidgetActions({
             const normalSizeToSave = widget.isMinimized ? widget.normalSize! : widget.size;
             const normalPositionToSave = widget.isMinimized ? widget.normalPosition! : widget.position;
 
+            // Clamp these before saving them as normal state
+            const clampedNormalSize = { ...normalSizeToSave };
+            if (clampedNormalSize.width > mainContentArea.width) clampedNormalSize.width = mainContentArea.width;
+            if (clampedNormalSize.height > mainContentArea.height) clampedNormalSize.height = mainContentArea.height;
+            const clampedNormalPosition = clampPosition(normalPositionToSave.x, normalPositionToSave.y, clampedNormalSize.width, clampedNormalSize.height, mainContentArea);
+
             return {
               ...widget,
               isMaximized: true,
               isMinimized: false, // Ensure it's not minimized
               isPinned: false, // Maximizing unpins it
               isClosed: false, // Ensure visible
-              normalSize: normalSizeToSave,
-              normalPosition: normalPositionToSave,
+              normalSize: clampedNormalSize,
+              normalPosition: clampedNormalPosition,
               size: { width: mainContentArea.width, height: mainContentArea.height },
               position: { x: mainContentArea.left, y: mainContentArea.top },
             };
@@ -282,26 +298,39 @@ export function useWidgetActions({
         if (widget.id === id) {
           if (widget.isPinned) {
             // UNPINNING: Restore from the state saved before pinning.
+            const restoredSize = { ...widget.previousSize! };
+            if (restoredSize.width > mainContentArea.width) restoredSize.width = mainContentArea.width;
+            if (restoredSize.height > mainContentArea.height) restoredSize.height = mainContentArea.height;
+            const restoredPosition = clampPosition(widget.previousPosition!.x, widget.previousPosition!.y, restoredSize.width, restoredSize.height, mainContentArea);
+
             return {
               ...widget,
               isPinned: false,
               isMinimized: false, // Unpinning always restores to a non-minimized state for now.
-              position: widget.previousPosition!,
-              size: widget.previousSize!,
+              position: restoredPosition,
+              size: restoredSize,
               // Infer if it was maximized based on the restored size.
-              isMaximized: widget.previousSize?.width === mainContentArea.width && widget.previousSize?.height === mainContentArea.height,
+              isMaximized: restoredSize.width === mainContentArea.width && restoredSize.height === mainContentArea.height,
               previousPosition: undefined, // Clear the previous state
               previousSize: undefined, // Clear the previous state
             };
           } else {
             // PINNING: Save the current state before changing it.
+            const previousPositionToSave = widget.position;
+            const previousSizeToSave = widget.size;
+            // Clamp these before saving them as previous state
+            const clampedPreviousSize = { ...previousSizeToSave };
+            if (clampedPreviousSize.width > mainContentArea.width) clampedPreviousSize.width = mainContentArea.width;
+            if (clampedPreviousSize.height > mainContentArea.height) clampedPreviousSize.height = mainContentArea.height;
+            const clampedPreviousPosition = clampPosition(previousPositionToSave.x, previousPositionToSave.y, clampedPreviousSize.width, clampedPreviousSize.height, mainContentArea);
+
             return {
               ...widget,
               isPinned: true,
               isMinimized: true,  // Pinned state is a form of minimized state.
               isMaximized: false, // A pinned widget is never maximized.
-              previousPosition: widget.position, // Save current position
-              previousSize: widget.size,       // Save current size
+              previousPosition: clampedPreviousPosition, // Save current position
+              previousSize: clampedPreviousSize,       // Save current size
               // Importantly, we DO NOT touch normalPosition or normalSize here.
               // They hold the state for un-maximizing.
             };
@@ -351,14 +380,17 @@ export function useWidgetActions({
           if (widget.id === id) {
             if (widget.isClosed) {
               // Open it
+              const restoredSize = widget.normalSize || { width: effectiveInitialWidth, height: effectiveInitialHeight };
+              // Ensure restored size is not larger than mainContentArea
+              if (restoredSize.width > mainContentArea.width) restoredSize.width = mainContentArea.width;
+              if (restoredSize.height > mainContentArea.height) restoredSize.height = mainContentArea.height;
               const restoredPosition = widget.normalPosition || clampPosition(
                 effectiveInitialX, // Use effective X for clamping
                 effectiveInitialY, // Use effective Y for clamping
-                effectiveInitialWidth,
-                effectiveInitialHeight,
+                restoredSize.width,
+                restoredSize.height,
                 mainContentArea
               );
-              const restoredSize = widget.normalSize || { width: effectiveInitialWidth, height: effectiveInitialHeight };
               return {
                 ...widget,
                 isClosed: false,
@@ -366,7 +398,7 @@ export function useWidgetActions({
                 isMaximized: false,
                 isPinned: false,
                 zIndex: newMaxZIndex,
-                position: restoredPosition,
+                position: clampPosition(restoredPosition.x, restoredPosition.y, restoredSize.width, restoredSize.height, mainContentArea), // Re-clamp position
                 size: restoredSize,
               };
             } else {

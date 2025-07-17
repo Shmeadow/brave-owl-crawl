@@ -23,7 +23,7 @@ import { useWidget } from "@/components/widget/widget-provider";
 import { checkAndClearClientData } from "@/lib/client-version";
 import dynamic from 'next/dynamic';
 import { useRooms } from "@/hooks/use-rooms";
-import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification";
+import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification"; // Corrected import path
 import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar";
 import { CookieConsentBar } from "@/components/cookie-consent-bar";
 import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT } from "@/lib/constants"; // Import new constant
@@ -182,7 +182,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             {isDashboard && isMobile && (
               <>
                 {/* Mobile-specific SimpleAudioPlayer positioned at middle-right */}
-                <DynamicSimpleAudioPlayer isMobile={isMobile} />
+                <DynamicSimpleAudioPlayer isMobile={isMobile} displayMode="minimized" />
                 <DynamicMobileControls>
                   <DynamicPomodoroWidget 
                     isMinimized={isPomodoroMinimized}
@@ -209,7 +209,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               onToggleOpen={() => setIsChatOpen(!isChatOpen)}
               onNewUnreadMessage={handleNewUnreadMessage}
               onClearUnreadMessages={handleClearUnreadMessages}
-              unreadCount={unreadChatCount} /* Corrected prop name here */
+              unreadCount={unreadChatCount}
               currentRoomId={currentRoomId}
               currentRoomName={currentRoomName}
               isCurrentRoomWritable={isCurrentRoomWritable}
