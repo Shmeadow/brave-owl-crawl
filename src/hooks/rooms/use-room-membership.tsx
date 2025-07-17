@@ -94,7 +94,7 @@ export function useRoomMembership({ rooms, setRooms, fetchRooms }: UseRoomMember
       toast.success(`You successfully joined "${room.name}"!`);
       // Dispatch event to update current room immediately
       window.dispatchEvent(new CustomEvent('roomJoined', { detail: { roomId: resolvedRoomId, roomName: room.name } }));
-      fetchRooms();
+      await fetchRooms(); // Explicitly re-fetch rooms after joining
       addNotification(`You joined the room: "${room.name}".`);
       return;
     }
@@ -133,7 +133,7 @@ export function useRoomMembership({ rooms, setRooms, fetchRooms }: UseRoomMember
       toast.success(`You successfully joined "${room.name}"!`);
       // Dispatch event to update current room immediately
       window.dispatchEvent(new CustomEvent('roomJoined', { detail: { roomId: resolvedRoomId, roomName: room.name } }));
-      fetchRooms();
+      await fetchRooms(); // Explicitly re-fetch rooms after joining
       addNotification(`You joined the room: "${room.name}".`);
       return;
     }
@@ -170,6 +170,7 @@ export function useRoomMembership({ rooms, setRooms, fetchRooms }: UseRoomMember
 
       toast.success(`Request to join "${room.name}" sent to room owner.`);
       addNotification(`New join request for "${room.name}" from ${session.user.email}.`, room.creator_id);
+      await fetchRooms(); // Explicitly re-fetch rooms after sending request
       return;
     }
   }, [session, supabase, rooms, fetchRooms, addNotification]);
@@ -220,8 +221,9 @@ export function useRoomMembership({ rooms, setRooms, fetchRooms }: UseRoomMember
     } else {
       toast.success("Successfully left the room.");
       addNotification(`You left the room: "${roomToLeave.name}".`);
+      await fetchRooms(); // Explicitly re-fetch rooms after leaving
     }
-  }, [session, supabase, rooms, setRooms, addNotification]);
+  }, [session, supabase, rooms, setRooms, addNotification, fetchRooms]);
 
   const handleKickUser = useCallback(async (roomId: string, userIdToKick: string) => {
     if (!session?.user?.id || !supabase) {
@@ -246,7 +248,7 @@ export function useRoomMembership({ rooms, setRooms, fetchRooms }: UseRoomMember
         console.error("Error kicking user:", data.error);
       } else {
         toast.success("User kicked successfully!");
-        fetchRooms();
+        await fetchRooms(); // Explicitly re-fetch rooms after kicking
         addNotification(`You were kicked from the room: "${rooms.find(r => r.id === roomId)?.name || roomId.substring(0, 8) + '...'}"`, userIdToKick);
       }
     } catch (error) {

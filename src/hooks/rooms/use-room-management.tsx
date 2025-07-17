@@ -117,10 +117,11 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
       }
 
       addNotification(`You created a new room: "${data.name}".`);
+      await fetchRooms(); // Explicitly re-fetch rooms after creation
       return { data: finalRoom, error: null };
     }
     return { data: null, error: { message: "Unknown error creating room" } };
-  }, [session, supabase, setRooms, addNotification, refreshProfile, profile]);
+  }, [session, supabase, setRooms, addNotification, refreshProfile, profile, fetchRooms]);
 
   const handleUpdateRoomName = useCallback(async (roomId: string, newName: string) => {
     if (!session?.user?.id || !supabase) {
@@ -150,9 +151,10 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
       return { data: null, error };
     } else {
       toast.success(`Room name updated to "${newName}"!`);
+      await fetchRooms(); // Explicitly re-fetch rooms after update
       return { data, error: null };
     }
-  }, [session, supabase, rooms, setRooms]);
+  }, [session, supabase, rooms, setRooms, fetchRooms]);
 
   const handleUpdateRoomType = useCallback(async (roomId: string, newType: 'public' | 'private') => {
     if (!session?.user?.id || !supabase) {
@@ -189,8 +191,9 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
       setRooms(originalRooms); // Revert on error
     } else {
       toast.success(`Room "${roomToUpdate.name}" is now ${newType}.`);
+      await fetchRooms(); // Explicitly re-fetch rooms after update
     }
-  }, [session, supabase, rooms, setRooms]);
+  }, [session, supabase, rooms, setRooms, fetchRooms]);
 
   const handleSetRoomPassword = useCallback(async (roomId: string, password: string | null) => {
     if (!session?.user?.id || !supabase) {
@@ -231,11 +234,12 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
       } else {
         setRooms(prev => prev.map(r => r.id === roomId ? { ...r, password_hash: password ? 'set' : null } : r));
         toast.success(password ? "Room password set successfully!" : "Room password removed successfully!");
+        await fetchRooms(); // Explicitly re-fetch rooms after update
       }
     } catch (error) {
       toast.error("Failed to set password due to network error.");
     }
-  }, [session, supabase, rooms, setRooms]);
+  }, [session, supabase, rooms, setRooms, fetchRooms]);
 
   const handleSendRoomInvitation = useCallback(async (roomId: string, receiverEmail: string) => {
     if (!session?.user?.id || !supabase) {
@@ -296,8 +300,9 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
     } else {
       toast.success("Room deleted successfully.");
       addNotification(`You deleted the room: "${roomToDelete.name}".`);
+      await fetchRooms(); // Explicitly re-fetch rooms after deletion
     }
-  }, [session, supabase, addNotification, setRooms, rooms]);
+  }, [session, supabase, addNotification, setRooms, rooms, fetchRooms]);
 
   const handleUpdateRoomDescription = useCallback(async (roomId: string, newDescription: string | null) => {
     if (!session?.user?.id || !supabase) {
@@ -328,8 +333,9 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
       setRooms(originalRooms); // Revert on error
     } else {
       toast.success(`Room "${roomToUpdate.name}" description updated!`);
+      await fetchRooms(); // Explicitly re-fetch rooms after update
     }
-  }, [session, supabase, rooms, setRooms]);
+  }, [session, supabase, rooms, setRooms, fetchRooms]);
 
   const handleUpdateRoomBackground = useCallback(async (roomId: string, backgroundUrl: string, isVideoBackground: boolean) => {
     if (!session?.user?.id || !supabase) {
@@ -360,8 +366,9 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
       setRooms(originalRooms); // Revert on error
     } else {
       toast.success(`Room "${roomToUpdate.name}" background updated!`);
+      await fetchRooms(); // Explicitly re-fetch rooms after update
     }
-  }, [session, supabase, rooms, setRooms]);
+  }, [session, supabase, rooms, setRooms, fetchRooms]);
 
   return {
     handleCreateRoom,

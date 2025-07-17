@@ -29,10 +29,11 @@ interface WidgetProviderProps {
   initialWidgetConfigs: { [key: string]: WidgetConfig };
   mainContentArea: MainContentArea;
   isMobile: boolean; // Added isMobile prop
+  isCurrentRoomWritable: boolean; // New prop
 }
 
-export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea, isMobile }: WidgetProviderProps) {
-  const { activeWidgets, setActiveWidgets, loading: persistenceLoading, isLoggedInMode } = useWidgetPersistence({ initialWidgetConfigs, mainContentArea, isMobile });
+export function WidgetProvider({ children, initialWidgetConfigs, mainContentArea, isMobile, isCurrentRoomWritable }: WidgetProviderProps) {
+  const { activeWidgets, setActiveWidgets, loading: persistenceLoading, isLoggedInMode } = useWidgetPersistence({ initialWidgetConfigs, mainContentArea, isMobile, isCurrentRoomWritable });
 
   const {
     addWidget,

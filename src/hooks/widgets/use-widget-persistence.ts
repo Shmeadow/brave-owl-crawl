@@ -25,9 +25,10 @@ interface UseWidgetPersistenceProps {
   initialWidgetConfigs: { [key: string]: WidgetConfig };
   mainContentArea: MainContentArea;
   isMobile: boolean; // New prop
+  isCurrentRoomWritable: boolean; // New prop
 }
 
-export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea, isMobile }: UseWidgetPersistenceProps) {
+export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea, isMobile, isCurrentRoomWritable }: UseWidgetPersistenceProps) {
   const { supabase, session, loading: authLoading } = useSupabase();
   const { currentRoomId } = useCurrentRoom();
   const [activeWidgets, setActiveWidgets] = useState<WidgetState[]>([]);
@@ -141,7 +142,8 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea, is
   useEffect(() => {
     if (!mounted.current || loading) return;
     const saveWidgetStates = async () => {
-      if (isLoggedInMode && session && supabase) {
+      // Only save if the current room is writable OR if it's the personal dashboard (currentRoomId is null)
+      if (isLoggedInMode && session && supabase && (isCurrentRoomWritable || currentRoomId === null)) {
         const statesToSave = activeWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id, currentRoomId));
         if (statesToSave.length > 0) {
           const { error } = await supabase.from('user_widget_states').upsert(statesToSave, { onConflict: 'user_id,widget_id,room_id' });
@@ -154,7 +156,7 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea, is
     };
     const debounceSave = setTimeout(saveWidgetStates, 1000);
     return () => clearTimeout(debounceSave);
-  }, [activeWidgets, isLoggedInMode, session, supabase, loading, mounted, currentRoomId]);
+  }, [activeWidgets, isLoggedInMode, session, supabase, loading, mounted, currentRoomId, isCurrentRoomWritable]);
 
   useEffect(() => {
     if (!currentRoomId || !supabase) return;
