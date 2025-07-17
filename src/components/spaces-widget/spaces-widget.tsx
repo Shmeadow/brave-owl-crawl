@@ -8,7 +8,6 @@ import { Separator } from "@/components/ui/separator";
 import { MyRoomsList } from "./my-rooms-list";
 import { ExploreRoomsList } from "./explore-rooms-list";
 import { RoomActions } from "./room-actions";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface SpacesWidgetProps {
   isCurrentRoomWritable: boolean;
@@ -31,24 +30,22 @@ export function SpacesWidget({ isCurrentRoomWritable }: SpacesWidgetProps) {
   const publicRoomsToExplore = rooms.filter(room => room.type === 'public' && !room.is_member && room.creator_id !== session?.user?.id);
 
   return (
-    <div className="h-full w-full overflow-y-auto p-4">
-      <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto py-4">
+    <div className="h-full w-full overflow-y-auto p-2 sm:p-4">
+      <div className="flex flex-col items-center gap-4 sm:gap-8 w-full max-w-4xl mx-auto py-2 sm:py-4">
         <h1 className="text-3xl font-bold text-foreground text-center">Spaces</h1>
 
-        <MyRoomsList myRooms={myRooms} />
+        <RoomActions />
 
         <Separator className="w-full" />
 
-        <Card className="w-full bg-background/50 backdrop-blur-xl border-white/20 p-4">
-          <CardHeader className="p-0 pb-4">
-            <CardTitle className="text-xl">Join or Explore Rooms</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 space-y-4">
-            <RoomActions />
-            <Separator />
+        <MyRoomsList myRooms={myRooms} />
+
+        {publicRoomsToExplore.length > 0 && (
+          <>
+            <Separator className="w-full" />
             <ExploreRoomsList publicRooms={publicRoomsToExplore} />
-          </CardContent>
-        </Card>
+          </>
+        )}
 
         {!session && (
           <p className="text-sm text-muted-foreground mt-4 text-center">
