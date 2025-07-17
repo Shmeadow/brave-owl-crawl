@@ -39,9 +39,9 @@ export function useFlashcardSize() {
       } else {
         query.is('room_id', null).eq('user_id', session.user.id);
       }
-      const { data: supabaseSettings, error: fetchError } = await query.single();
+      const { data: supabaseSettings, error: fetchError } = await query.maybeSingle(); // Changed to maybeSingle()
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
+      if (fetchError) { // No need to check for PGRST116 explicitly with maybeSingle
         toast.error("Error fetching flashcard size settings: " + fetchError.message);
         setSizeState(DEFAULT_SIZE);
       } else if (supabaseSettings) {
