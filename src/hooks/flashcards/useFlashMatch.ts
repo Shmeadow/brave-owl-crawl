@@ -67,10 +67,6 @@ interface FlashMatchState {
 }
 
 export function useFlashMatch() {
-  const { supabase, session, loading: authLoading } = useSupabase();
-  const { currentRoomId } = useCurrentRoom();
-  const { cards, loading: cardsLoading } = useFlashcards(); // To get available flashcards
-
   const [state, setState] = useState<FlashMatchState>({
     currentMatch: null,
     players: [],
@@ -80,6 +76,10 @@ export function useFlashMatch() {
     error: null,
     roundTimeLeft: null,
   });
+
+  const { supabase, session, loading: authLoading } = useSupabase();
+  const { currentRoomId } = useCurrentRoom();
+  const { cards, loading: cardsLoading } = useFlashcards(); // To get available flashcards
 
   const channelRef = useRef<any>(null);
   const roundTimerIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -160,17 +160,19 @@ export function useFlashMatch() {
       }
       currentRound = round;
 
-      const { data: answers, error: answersError } = await supabase
-        .from('flash_match_player_answers')
-        .select('*, profiles(first_name, last_name)')
-        .eq('round_id', currentRound.id);
+      if (currentRound) { // Ensure currentRound is not null before using its id
+        const { data: answers, error: answersError } = await supabase
+          .from('flash_match_player_answers')
+          .select('*, profiles(first_name, last_name)')
+          .eq('round_id', currentRound.id);
 
-      if (answersError) {
-        console.error("Error fetching player answers:", answersError);
-        setState(prev => ({ ...prev, error: answersError.message, loading: false }));
-        return;
+        if (answersError) {
+          console.error("Error fetching player answers:", answersError);
+          setState(prev => ({ ...prev, error: answersError.message, loading: false }));
+          return;
+        }
+        playerAnswers = answers;
       }
-      playerAnswers = answers;
     }
 
     setState(prev => ({
@@ -276,8 +278,14 @@ export function useFlashMatch() {
 
     if (state.currentMatch?.status === 'in_progress' && state.currentRound?.round_end_time) {
       const calculateTimeLeft = () => {
+        const roundEndTime = state.currentRound?.round_end_time;
+        if (!roundEndTime) { // Explicitly check for null/undefined
+          setState(prev => ({ ...prev, roundTimeLeft: null }));
+          clearInterval(roundTimerIntervalRef.current!);
+          return;
+        }
+        const endTime = new Date(roundEndTime).getTime();
         const now = new Date().getTime();
-        const endTime = new Date(state.currentRound!.round_end_time).getTime();
         const timeLeft = Math.max(0, Math.floor((endTime - now) / 1000));
         setState(prev => ({ ...prev, roundTimeLeft: timeLeft }));
 
