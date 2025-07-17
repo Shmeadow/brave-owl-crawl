@@ -67,7 +67,7 @@ export function FlashcardForm({ onSave, editingCard, onCancel, categories, selec
       <CardHeader>
         <CardTitle>{editingCard ? 'Edit Flashcard' : 'Add New Flashcard'}</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 sm:p-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField

@@ -202,7 +202,7 @@ export function ImportExport({ cards, onBulkImport, categories, onAddCategory }:
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 sm:p-6">
       <Tabs defaultValue="import">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="import">Import</TabsTrigger>

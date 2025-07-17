@@ -212,7 +212,7 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
   });
 
   return (
-    <div className={cn("w-full mx-auto space-y-4 relative", containerMaxWidthClass)}>
+    <div className={cn("w-full mx-auto space-y-4 sm:space-y-8 relative", containerMaxWidthClass)}>
       <Card>
         <CardHeader className="flex flex-row justify-between items-center">
           <CardTitle>Test Mode</CardTitle>

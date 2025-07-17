@@ -140,7 +140,7 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
 
   return (
     <div className="w-full space-y-6">
-      <Card className="bg-card backdrop-blur-xl border-white/20 p-6 rounded-xl shadow-lg w-full">
+      <Card className="bg-card backdrop-blur-xl border-white/20 p-6 sm:p-8 rounded-xl shadow-lg w-full">
         <CardHeader className="p-0 pb-6">
           <CardTitle className="text-3xl font-bold text-foreground text-center">
             Session Summary

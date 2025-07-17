@@ -6,7 +6,7 @@ import { Music, Link } from "lucide-react"; // Import Link icon
 
 export function MediaWidget() {
   return (
-    <div className="h-full w-full flex flex-col items-center justify-center p-4">
+    <div className="h-full w-full flex flex-col items-center justify-center p-4 sm:p-6">
       <Music className="h-16 w-16 text-primary mb-4" />
       <h2 className="text-2xl font-bold mb-2 text-foreground text-center">Your Media Hub</h2>
       <p className="text-muted-foreground text-center mb-4">
