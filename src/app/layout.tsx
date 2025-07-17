@@ -31,18 +31,18 @@ export const metadata: Metadata = {
 
 // Define initial configurations for all widgets here to pass to WidgetProvider
 const WIDGET_CONFIGS = {
-  "spaces": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
-  "sounds": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
-  "calendar": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
-  "timer": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
-  "tasks": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
-  "drawing-board": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
-  "journal": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
-  "media": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
-  "stats-progress": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
-  "flash-cards": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
-  "goal-focus": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
-  "background-effects": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 500 },
+  "spaces": { initialPosition: { x: 80, y: 70 }, initialWidth: 450, initialHeight: 600 },
+  "sounds": { initialPosition: { x: 80, y: 70 }, initialWidth: 450, initialHeight: 600 },
+  "calendar": { initialPosition: { x: 80, y: 70 }, initialWidth: 450, initialHeight: 600 },
+  "timer": { initialPosition: { x: 80, y: 70 }, initialWidth: 450, initialHeight: 600 },
+  "tasks": { initialPosition: { x: 80, y: 70 }, initialWidth: 450, initialHeight: 600 },
+  "drawing-board": { initialPosition: { x: 80, y: 70 }, initialWidth: 450, initialHeight: 600 },
+  "journal": { initialPosition: { x: 80, y: 70 }, initialWidth: 450, initialHeight: 600 },
+  "media": { initialPosition: { x: 80, y: 70 }, initialWidth: 450, initialHeight: 600 },
+  "stats-progress": { initialPosition: { x: 80, y: 70 }, initialWidth: 450, initialHeight: 600 },
+  "flash-cards": { initialPosition: { x: 80, y: 70 }, initialWidth: 450, initialHeight: 600 },
+  "goal-focus": { initialPosition: { x: 80, y: 70 }, initialWidth: 450, initialHeight: 600 },
+  "background-effects": { initialPosition: { x: 80, y: 70 }, initialWidth: 450, initialHeight: 600 },
 };
 
 // Constants for layout dimensions (needed for mainContentArea calculation)
