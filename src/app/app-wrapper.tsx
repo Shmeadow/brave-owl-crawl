@@ -101,8 +101,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
         contentHeight = windowHeight - HEADER_HEIGHT_DESKTOP;
       } else {
         // Mobile layout: account for horizontal sidebar and bottom controls
-        contentTop = MOBILE_HEADER_EFFECTIVE_HEIGHT + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT;
-        contentHeight = windowHeight - (MOBILE_HEADER_EFFECTIVE_HEIGHT + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_CONTROLS_HEIGHT);
+        contentTop = MOBILE_HEADER_EFFECTIVE_HEIGHT + 4 + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + 8; // Header + gap + Sidebar + gap
+        contentHeight = windowHeight - (contentTop + MOBILE_CONTROLS_HEIGHT); // Adjusted contentHeight
       }
 
       setMainContentArea({

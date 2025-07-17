@@ -29,7 +29,7 @@ export function ProgressBar({
         value={currentPlaybackTime}
         onChange={handleProgressBarChange}
         className="w-full h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary"
-        disabled={!playerIsReady || totalDuration === 0 || playerType === 'spotify'}
+        disabled={!playerIsReady || totalDuration === 0} // Removed playerType === 'spotify'
         aria-label="Playback progress"
       />
       <span className="text-xs text-muted-foreground w-8 text-left">{formatTime(totalDuration)}</span>

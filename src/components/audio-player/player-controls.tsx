@@ -37,7 +37,7 @@ export function PlayerControls({
   setDisplayMode,
 }: PlayerControlsProps) {
 
-  const isVolumeControlDisabled = !playerIsReady || playerType === 'spotify';
+  const isVolumeControlDisabled = !playerIsReady; // Removed playerType === 'spotify'
 
   return (
     <div className="flex items-center space-x-2 flex-shrink-0">
