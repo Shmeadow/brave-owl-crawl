@@ -72,7 +72,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
       <div className={cn(
         "flex items-center min-w-0 gap-1 px-2 py-1",
         "bg-card/50 backdrop-blur-xl border border-white/20 rounded-full",
-        "flex-1" // Make left capsule take equal space
+        "flex-1 h-full" // Make left capsule take equal space and full height
       )}>
         {/* Removed mobile sidebar toggle button */}
         <Link href="/dashboard" className="flex items-center space-x-1">
@@ -115,7 +115,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
       <div className={cn(
         "flex items-center gap-1 px-2 py-1",
         "bg-card/50 backdrop-blur-xl border border-white/20 rounded-full",
-        "flex-1 justify-end" // Make right capsule take equal space and align content to end
+        "flex-1 justify-end h-full" // Make right capsule take equal space and align content to end, and full height
       )}>
         <UserNameCapsule />
         <BugReportButton />
