@@ -46,8 +46,8 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     if (typeof window !== 'undefined') {
       const savedMode = localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY);
       if (isMobile) {
-          // On mobile, if savedMode was 'maximized', default to 'normal'. Otherwise, use savedMode or 'normal'.
-          return (savedMode === 'maximized' ? 'normal' : (savedMode === 'minimized' ? 'minimized' : 'normal'));
+          // On mobile, allow normal, maximized, or minimized.
+          return (savedMode === 'maximized' ? 'maximized' : (savedMode === 'minimized' ? 'minimized' : 'normal'));
       }
       return initialDisplayMode || (savedMode === 'minimized' ? 'minimized' : 'normal');
     }
@@ -229,8 +229,9 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     return (
       <div className={cn(
         "fixed z-[900] transition-all duration-300 ease-in-out",
-        displayMode === 'normal' && `bottom-4 left-4 w-64 rounded-3xl`,
-        displayMode === 'minimized' && 'bottom-4 left-4 w-fit h-10 rounded-full px-2', // Horizontal dock
+        displayMode === 'normal' && `top-1/2 -translate-y-1/2 right-4 w-64 rounded-3xl`,
+        displayMode === 'minimized' && 'top-1/2 -translate-y-1/2 right-4 w-10 h-[120px] rounded-full', // Vertical minimized
+        displayMode === 'maximized' && 'inset-0 w-full h-full flex flex-col items-center justify-center rounded-none',
         className // Apply external positioning classes
       )}>
         {displayMode !== 'minimized' && (

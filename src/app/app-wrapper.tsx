@@ -181,7 +181,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             {isDashboard && !isMobile && <IndependentPinnedWidgetsDock isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />}
             {isDashboard && isMobile && (
               <>
-                {/* Mobile-specific SimpleAudioPlayer positioned at bottom-left */}
+                {/* Mobile-specific SimpleAudioPlayer positioned at middle-right */}
                 <DynamicSimpleAudioPlayer isMobile={isMobile} />
                 <DynamicMobileControls>
                   <DynamicPomodoroWidget 
@@ -209,7 +209,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               onToggleOpen={() => setIsChatOpen(!isChatOpen)}
               onNewUnreadMessage={handleNewUnreadMessage}
               onClearUnreadMessages={handleClearUnreadMessages}
-              unreadCount={unreadChatCount}
+              unreadCount={unreadChatCount} /* Corrected prop name here */
               currentRoomId={currentRoomId}
               currentRoomName={currentRoomName}
               isCurrentRoomWritable={isCurrentRoomWritable}

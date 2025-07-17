@@ -34,7 +34,7 @@ export function MinimizedPlayerControls({
   return (
     <div className={cn(
       "flex items-center justify-between w-full h-full p-0.5 gap-1", // Reduced padding, gap
-      isMobile ? "flex-row" : "flex-col" // Conditional flex direction
+      isMobile ? "flex-col" : "flex-col" // Always vertical for minimized player
     )}>
       {/* Play/Pause Button */}
       <button
