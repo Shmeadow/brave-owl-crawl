@@ -18,11 +18,13 @@ export function useRoomFetching() {
 
     setLoading(true);
     const nowIso = new Date().toISOString();
-    let allFetchedRooms: RoomData[] = [];
+    let allRoomsMap = new Map<string, RoomData>(); // Use a Map for deduplication
 
     if (session?.user?.id) {
-      // 1. Fetch rooms created by the user OR rooms where the user is a member
-      const { data: userAssociatedRooms, error: userAssociatedError } = await supabase
+      const userId = session.user.id;
+
+      // 1. Fetch rooms created by the user
+      const { data: createdRooms, error: createdError } = await supabase
         .from('rooms')
         .select(`
           id,
@@ -36,29 +38,69 @@ export function useRoomFetching() {
           closes_at,
           deleted_at,
           description,
-          profiles!creator_id(first_name, last_name),
-          room_members(user_id)
+          profiles!creator_id(first_name, last_name)
         `)
-        .or(`creator_id.eq.${session.user.id},room_members.user_id.eq.${session.user.id}`)
+        .eq('creator_id', userId)
         .is('deleted_at', null)
-        .gt('closes_at', nowIso)
-        .order('created_at', { ascending: true });
+        .gt('closes_at', nowIso);
 
-      if (userAssociatedError) {
-        console.error("Error fetching user associated rooms:", userAssociatedError);
-        toast.error("Failed to load your rooms.");
+      if (createdError) {
+        console.error("Error fetching created rooms:", createdError);
+        toast.error("Failed to load your created rooms.");
       } else {
-        const processedRooms = (userAssociatedRooms as any[]).map(room => ({
-          ...room,
-          is_member: room.creator_id === session.user.id || (room.room_members && room.room_members.length > 0),
-          profiles: Array.isArray(room.profiles) ? room.profiles[0] : room.profiles,
-        }));
-        allFetchedRooms.push(...processedRooms);
+        (createdRooms as any[]).forEach(room => {
+          const processedRoom: RoomData = {
+            ...room,
+            is_member: true, // Creator is always a member
+            profiles: Array.isArray(room.profiles) ? room.profiles[0] : room.profiles,
+          };
+          allRoomsMap.set(room.id, processedRoom);
+        });
       }
 
-      // 2. Fetch public rooms that the user is NOT a member of and did NOT create
-      // This query will fetch all public rooms, and we'll filter out user's rooms client-side.
-      const { data: publicRoomsData, error: publicRoomsError } = await supabase
+      // 2. Fetch rooms where the user is a member
+      const { data: memberRooms, error: memberError } = await supabase
+        .from('room_members')
+        .select(`
+          room_id,
+          rooms(
+            id,
+            creator_id,
+            name,
+            created_at,
+            background_url,
+            is_video_background,
+            password_hash,
+            type,
+            closes_at,
+            deleted_at,
+            description,
+            profiles!creator_id(first_name, last_name)
+          )
+        `)
+        .eq('user_id', userId)
+        .is('rooms.deleted_at', null) // Filter on the joined room
+        .gt('rooms.closes_at', nowIso); // Filter on the joined room
+
+      if (memberError) {
+        console.error("Error fetching member rooms:", memberError);
+        toast.error("Failed to load your joined rooms.");
+      } else {
+        (memberRooms as any[]).forEach(memberEntry => {
+          const room = memberEntry.rooms;
+          if (room && !allRoomsMap.has(room.id)) { // Only add if not already added as a created room
+            const processedRoom: RoomData = {
+              ...room,
+              is_member: true,
+              profiles: Array.isArray(room.profiles) ? room.profiles[0] : room.profiles,
+            };
+            allRoomsMap.set(room.id, processedRoom);
+          }
+        });
+      }
+
+      // 3. Fetch public rooms (that the user is not already a member of or creator of)
+      const { data: publicRooms, error: publicError } = await supabase
         .from('rooms')
         .select(`
           id,
@@ -76,41 +118,29 @@ export function useRoomFetching() {
         `)
         .eq('type', 'public')
         .is('deleted_at', null)
-        .gt('closes_at', nowIso)
-        .order('created_at', { ascending: true });
+        .gt('closes_at', nowIso);
 
-      if (publicRoomsError) {
-        console.error("Error fetching public rooms:", publicRoomsError);
+      if (publicError) {
+        console.error("Error fetching public rooms:", publicError);
       } else {
-        const publicRooms = (publicRoomsData as any[]).map(room => ({
-          ...room,
-          is_member: false, // Assume not a member initially, will be overridden by userAssociatedRooms
-          profiles: Array.isArray(room.profiles) ? room.profiles[0] : room.profiles,
-        }));
-        allFetchedRooms.push(...publicRooms);
+        (publicRooms as any[]).forEach(room => {
+          if (!allRoomsMap.has(room.id)) { // Only add if not already in the map
+            const processedRoom: RoomData = {
+              ...room,
+              is_member: false, // Public rooms are not "memberships" in the same way
+              profiles: Array.isArray(room.profiles) ? room.profiles[0] : room.profiles,
+            };
+            allRoomsMap.set(room.id, processedRoom);
+          }
+        });
       }
 
-      // Deduplicate and set is_member flag correctly
-      const uniqueRoomsMap = new Map<string, RoomData>();
-      allFetchedRooms.forEach(room => {
-        const existing = uniqueRoomsMap.get(room.id);
-        if (!existing || room.is_member) { // Prioritize if user is a member
-          uniqueRoomsMap.set(room.id, room);
-        }
-      });
-
-      // Filter out public rooms that the user is already a member of or created
-      const finalRooms = Array.from(uniqueRoomsMap.values()).filter(room => {
-        if (room.type === 'public' && !room.is_member && room.creator_id !== session.user.id) {
-          return true; // Keep public rooms user is not involved with
-        }
-        return room.is_member || room.creator_id === session.user.id; // Keep all rooms user is involved with
-      });
-
+      // Convert map values to array and sort
+      const finalRooms = Array.from(allRoomsMap.values()).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
       setRooms(finalRooms);
 
     } else {
-      // If not logged in, fetch only public rooms
+      // Guest mode: fetch only public rooms
       const { data: publicRoomsData, error: publicRoomsError } = await supabase
         .from('rooms')
         .select(`
