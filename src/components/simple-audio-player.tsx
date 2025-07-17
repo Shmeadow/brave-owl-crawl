@@ -8,7 +8,7 @@ import { useSpotifyPlayer } from '@/hooks/use-spotify-player';
 import { cn, getYouTubeEmbedUrl } from '@/lib/utils';
 import { useSupabase } from '@/integrations/supabase/auth';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Import Popover components
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Drawer,
   DrawerContent,
@@ -16,8 +16,8 @@ import {
   DrawerTitle,
   DrawerDescription,
   DrawerTrigger,
-} from "@/components/ui/drawer"; // Import Drawer components
-import { MOBILE_HORIZONTAL_SIDEBAR_HEIGHT } from '@/lib/constants'; // Import new constant
+} from "@/components/ui/drawer";
+import { MOBILE_HORIZONTAL_SIDEBAR_HEIGHT } from '@/lib/constants';
 
 // Import new modular components
 import { PlayerDisplay } from './audio-player/player-display';
@@ -41,17 +41,32 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   const [stagedInputUrl, setStagedInputUrl] = useState('');
   const [committedMediaUrl, setCommittedMediaUrl] = useState('');
   const [playerType, setPlayerType] = useState<'audio' | 'youtube' | 'spotify' | null>(null);
-  const [isUrlInputOpen, setIsUrlInputOpen] = useState(false); // State for popover/drawer
+  const [isUrlInputOpen, setIsUrlInputOpen] = useState(false);
   const [displayMode, setDisplayMode] = useState<'normal' | 'maximized' | 'minimized'>(() => {
-    if (typeof window !== 'undefined') {
-      const savedMode = localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY);
-      if (isMobile) {
-          // On mobile, 'maximized' is not allowed. Default to 'normal' if 'maximized' was saved.
-          return (savedMode === 'maximized' ? 'normal' : (savedMode === 'minimized' ? 'minimized' : 'normal'));
-      }
-      return initialDisplayMode || (savedMode === 'minimized' ? 'minimized' : 'normal');
+    if (typeof window === 'undefined') {
+      return initialDisplayMode; // Server-side rendering, use initial prop
     }
-    return initialDisplayMode;
+
+    const savedMode = localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY);
+
+    if (isMobile) {
+      // On mobile, if a mode was saved, use it. Otherwise, use the initialDisplayMode prop.
+      // 'maximized' is not allowed on mobile, so if savedMode is 'maximized', treat it as 'normal'.
+      if (savedMode === 'minimized') {
+        return 'minimized';
+      } else if (savedMode === 'normal' || savedMode === 'maximized') { // Treat maximized as normal on mobile
+        return 'normal';
+      }
+      // If no valid saved mode, use the initial prop (which is 'minimized' for mobile player)
+      return initialDisplayMode;
+    } else {
+      // Desktop logic
+      if (savedMode === 'minimized' || savedMode === 'normal' || savedMode === 'maximized') {
+        return savedMode as 'normal' | 'maximized' | 'minimized';
+      }
+      // If no valid saved mode, use the initial prop (which is 'normal' for desktop player)
+      return initialDisplayMode;
+    }
   });
 
   const youtubeIframeRef = useRef<HTMLIFrameElement>(null);
@@ -101,8 +116,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     toggleMute: spotifyToggleMute,
     seekTo: spotifySeekTo,
     connectToSpotify,
-    disconnectFromSpotify, // Added disconnect
-    transferPlayback,
+    disconnectFromSpotify,
     playTrack: spotifyPlayTrack,
   } = useSpotifyPlayer(session?.access_token || null);
 
@@ -117,10 +131,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
       setPlayerType('youtube');
     } else if (committedMediaUrl.includes('open.spotify.com')) {
       setPlayerType('spotify');
-      // If Spotify URL is set and user is logged in, try to connect/play via SDK
       if (session?.access_token) {
-        // connectToSpotify is called by the hook itself when accessToken is provided.
-        // We only need to explicitly play the track if it's a new track and player is ready.
         if (spotifyPlayerReady && spotifyCurrentTrack?.uri !== committedMediaUrl) {
           spotifyPlayTrack(committedMediaUrl);
         }
@@ -201,9 +212,9 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   };
 
   const loadNewMedia = () => {
-    setStagedInputUrl(stagedInputUrl.trim()); // Trim whitespace
+    setStagedInputUrl(stagedInputUrl.trim());
     setCommittedMediaUrl(stagedInputUrl.trim());
-    setIsUrlInputOpen(false); // Close popover/drawer after loading
+    setIsUrlInputOpen(false);
   };
 
   const currentPlaybackTime = playerType === 'youtube' ? youtubeCurrentTime : (playerType === 'spotify' ? spotifyCurrentTime : audioCurrentTime);
@@ -225,12 +236,11 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     />
   );
 
-  // Render the main player content (PlayerDisplay and controls)
   const mainPlayerContent = (
     <div className={cn(
       "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex flex-col w-full h-full",
       displayMode === 'normal' && 'p-1 rounded-xl',
-      displayMode === 'maximized' && 'p-4 rounded-none', // No rounded corners when maximized
+      displayMode === 'maximized' && 'p-4 rounded-none',
     )}>
       <PlayerDisplay
         playerType={playerType}
@@ -244,7 +254,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
         isMaximized={displayMode === 'maximized'}
         className={cn(
           'w-full',
-          displayMode === 'maximized' ? 'flex-1' : '' // Take full height when maximized
+          displayMode === 'maximized' ? 'flex-1' : ''
         )}
       />
 
@@ -268,7 +278,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
                   {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
                 </button>
               </DrawerTrigger>
-              <DrawerContent className="h-auto max-h-[150px] flex flex-col z-[1100] p-4"> {/* Reduced max-h, added p-4 */}
+              <DrawerContent className="h-auto max-h-[150px] flex flex-col z-[1100] p-4">
                 {renderMediaInput}
               </DrawerContent>
             </Drawer>
@@ -284,10 +294,10 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
                 </button>
               </PopoverTrigger>
               <PopoverContent
-                className="w-56 z-[1100] p-2" // Reduced width and padding
+                className="w-56 z-[1100] p-2"
                 onClick={(e) => e.stopPropagation()}
-                side="top" // Changed side to top for a "hoverbar" feel
-                align="start" // Align to start of trigger
+                side="top"
+                align="start"
                 onOpenAutoFocus={(e) => e.preventDefault()}
               >
                 {renderMediaInput}
@@ -311,7 +321,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
           canSeek={canSeek}
           displayMode={displayMode}
           setDisplayMode={setDisplayMode}
-          isMobile={isMobile} // Pass isMobile prop
+          isMobile={isMobile}
         />
       </div>
 
@@ -335,20 +345,17 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     </div>
   );
 
-  // Render logic for mobile
   if (isMobile) {
     return (
       <div className={cn(
         "fixed z-[900] transition-all duration-300 ease-in-out",
-        displayMode === 'normal' && `top-32 right-4 w-64 rounded-xl`, // Changed top from 24 to 32
-        displayMode === 'minimized' && 'top-1/2 -translate-y-1/2 right-4 w-10 h-[120px] rounded-full', // Vertical minimized
-        // Removed displayMode === 'maximized' class as it's no longer a valid state for mobile
-        className // Apply external positioning classes
+        displayMode === 'normal' && `top-32 right-4 w-64 rounded-xl`,
+        displayMode === 'minimized' && 'top-1/2 -translate-y-1/2 right-4 w-10 h-[120px] rounded-full',
+        className
       )}>
-        {/* Always render mainPlayerContent, but hide it with CSS if minimized */}
         <div className={cn(
           "w-full h-full",
-          displayMode === 'minimized' && 'opacity-0 pointer-events-none absolute' // Keep it mounted but invisible and non-interactive
+          displayMode === 'minimized' && 'opacity-0 pointer-events-none absolute'
         )}>
           {mainPlayerContent}
         </div>
@@ -369,7 +376,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
               currentIsMuted={currentIsMuted}
               toggleMute={toggleMute}
               setDisplayMode={setDisplayMode}
-              isMobile={isMobile} // Pass isMobile prop
+              isMobile={isMobile}
             />
           </div>
         )}
@@ -377,18 +384,16 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     );
   }
 
-  // Desktop rendering
   return (
     <div className={cn(
       "fixed z-[900] transition-all duration-300 ease-in-out",
-      displayMode === 'normal' && `top-[72px] right-4 w-64 rounded-xl`, // Changed top from 120px to 72px
-      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-10 h-[120px] rounded-full', // Adjusted height to h-[120px]
+      displayMode === 'normal' && `top-[72px] right-4 w-64 rounded-xl`,
+      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-10 h-[120px] rounded-full',
       displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-96 flex flex-col items-center justify-center rounded-xl'
     )}>
-      {/* Always render mainPlayerContent, but hide it with CSS if minimized */}
       <div className={cn(
         "w-full h-full",
-        displayMode === 'minimized' && 'opacity-0 pointer-events-none absolute' // Keep it mounted but invisible and non-interactive
+        displayMode === 'minimized' && 'opacity-0 pointer-events-none absolute'
       )}>
         {mainPlayerContent}
       </div>
@@ -409,7 +414,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
             currentIsMuted={currentIsMuted}
             toggleMute={toggleMute}
             setDisplayMode={setDisplayMode}
-            isMobile={isMobile} // Pass isMobile prop
+            isMobile={isMobile}
           />
         </div>
       )}
