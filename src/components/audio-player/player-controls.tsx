@@ -44,12 +44,12 @@ export function PlayerControls({
       {/* Play/Pause Button */}
       <button
         onClick={togglePlayPause}
-        className="p-0.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105 h-8 w-8 flex items-center justify-center"
+        className="p-0.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105 h-7 w-7 flex items-center justify-center"
         aria-label={currentIsPlaying ? "Pause" : "Play"}
         title={currentIsPlaying ? "Pause" : "Play"}
         disabled={!canPlayPause}
       >
-        {currentIsPlaying ? <Pause size={18} /> : <Play size={18} />}
+        {currentIsPlaying ? <Pause size={16} /> : <Play size={16} />}
       </button>
 
       {/* Volume Control */}
