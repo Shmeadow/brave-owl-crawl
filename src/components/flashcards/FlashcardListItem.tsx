@@ -47,7 +47,7 @@ export function FlashcardListItem({
   return (
     <li
       className={cn(
-        "flex flex-col justify-between bg-muted backdrop-blur-xl p-3 sm:p-4 rounded-lg shadow-sm border border-border transition-all duration-200",
+        "group flex flex-col justify-between bg-muted backdrop-blur-xl p-3 sm:p-4 rounded-lg shadow-sm border border-border transition-all duration-200",
         selectionMode ? "cursor-pointer" : "hover:shadow-lg hover:border-primary/50",
         isSelected && "ring-2 ring-primary border-primary"
       )}
@@ -61,7 +61,7 @@ export function FlashcardListItem({
         <p className="text-xs text-muted-foreground">
           Created: {new Date(card.created_at).toLocaleDateString()}
         </p>
-        <div className="flex flex-col gap-1"> {/* Changed to flex-col for vertical arrangement */}
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"> {/* Changed to flex-row for horizontal arrangement, added opacity for hover */}
           <Button
             variant="ghost"
             size="icon"
