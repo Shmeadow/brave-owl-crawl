@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
@@ -8,7 +8,6 @@ import { useWidget } from "@/components/widget/widget-provider";
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, Palette, Image, BarChart2, BookOpen, Goal, WandSparkles, BookText } from "lucide-react";
 
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
-const SIDEBAR_WIDTH_EXPANDED = 250; // px
 const SIDEBAR_WIDTH_MOBILE = 250; // px
 const HEADER_HEIGHT_REM = 4; // 4rem = 64px
 
@@ -21,26 +20,12 @@ export function Sidebar({ isMobile }: SidebarProps) {
   const { toggleWidget } = useWidget();
   const sidebarRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseEnter = useCallback(() => {
-    if (!isMobile) {
-      setIsSidebarOpen(true);
-    }
-  }, [isMobile, setIsSidebarOpen]);
-
-  const handleMouseLeave = useCallback(() => {
+  useEffect(() => {
+    // On desktop, the sidebar is always collapsed visually, so we ensure the state reflects that.
+    // On mobile, the state is controlled by the hamburger menu.
     if (!isMobile) {
       setIsSidebarOpen(false);
     }
-  }, [isMobile, setIsSidebarOpen]);
-
-  useEffect(() => {
-    if (isMobile) {
-      // On mobile, the sidebar state is controlled by the hamburger menu in the header.
-      // We don't want hover effects.
-      return;
-    }
-    // On desktop, we reset the state to closed when the mobile status changes.
-    setIsSidebarOpen(false);
   }, [isMobile, setIsSidebarOpen]);
 
   const navItems = [
@@ -64,9 +49,13 @@ export function Sidebar({ isMobile }: SidebarProps) {
     }
   };
 
+  // Determine sidebar width based on device type and open state (for mobile)
   const sidebarWidth = isMobile
     ? (isSidebarOpen ? SIDEBAR_WIDTH_MOBILE : 0)
-    : (isSidebarOpen ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_DESKTOP);
+    : SIDEBAR_WIDTH_DESKTOP;
+
+  // The sidebar is only visually "expanded" with text on mobile when it's open
+  const isExpanded = isMobile && isSidebarOpen;
 
   return (
     <div
@@ -81,8 +70,6 @@ export function Sidebar({ isMobile }: SidebarProps) {
           : ""
       )}
       style={{ width: `${sidebarWidth}px` }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
       <div className="flex flex-col gap-2 overflow-y-auto">
         {navItems.map((item) => (
@@ -92,7 +79,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
             label={item.label}
             isActive={activePanel === item.id}
             onClick={() => handleSidebarItemClick(item.id, item.label)}
-            isExpanded={isSidebarOpen}
+            isExpanded={isExpanded}
           />
         ))}
       </div>
