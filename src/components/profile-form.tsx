@@ -187,24 +187,24 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="flex flex-col items-center gap-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6"> {/* Reduced space-y for mobile */}
+        <div className="flex flex-col items-center gap-3 sm:gap-4"> {/* Reduced gap for mobile */}
           <div className="relative group">
-            <Avatar className="h-24 w-24">
+            <Avatar className="h-20 w-20 sm:h-24 sm:w-24"> {/* Reduced size for mobile */}
               {form.watch("profile_image_url") ? (
                 <Image
                   src={form.watch("profile_image_url")!}
                   alt="Profile Image"
                   fill
                   className="object-cover"
-                  sizes="96px"
+                  sizes="80px" // Adjusted sizes for mobile
                   priority={false}
                 />
               ) : (
                 <AvatarImage src={undefined} alt="Profile Image" />
               )}
-              <AvatarFallback className="text-4xl font-bold">
-                {isUploading ? <Loader2 className="h-8 w-8 animate-spin" /> : userInitials}
+              <AvatarFallback className="text-3xl sm:text-4xl font-bold"> {/* Reduced font size for mobile */}
+                {isUploading ? <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin" /> : userInitials} {/* Reduced icon size for mobile */}
               </AvatarFallback>
             </Avatar>
             <input
@@ -219,11 +219,11 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
               htmlFor="profile-image-upload"
               className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
             >
-              <Camera className="h-8 w-8 text-white" />
+              <Camera className="h-6 w-6 sm:h-8 sm:w-8 text-white" /> {/* Reduced icon size for mobile */}
               <span className="sr-only">Upload Profile Image</span>
             </label>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground"> {/* Reduced font size for mobile */}
             Role: <span className="font-semibold capitalize">{initialProfile.role || 'user'}</span>
           </p>
         </div>
@@ -233,11 +233,11 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
           name="first_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>First Name</FormLabel>
+              <FormLabel className="text-sm">First Name</FormLabel> {/* Reduced font size for mobile */}
               <FormControl>
-                <Input placeholder="John" {...field} />
+                <Input placeholder="John" {...field} className="h-9 text-sm" /> {/* Reduced height and font size for mobile */}
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-xs" /> {/* Reduced font size for mobile */}
             </FormItem>
           )}
         />
@@ -246,11 +246,11 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
           name="last_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Last Name</FormLabel>
+              <FormLabel className="text-sm">Last Name</FormLabel> {/* Reduced font size for mobile */}
               <FormControl>
-                <Input placeholder="Doe" {...field} />
+                <Input placeholder="Doe" {...field} className="h-9 text-sm" /> {/* Reduced height and font size for mobile */}
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-xs" /> {/* Reduced font size for mobile */}
             </FormItem>
           )}
         />
@@ -259,11 +259,11 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
           name="profile_image_url"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Profile Image URL (Optional)</FormLabel>
+              <FormLabel className="text-sm">Profile Image URL (Optional)</FormLabel> {/* Reduced font size for mobile */}
               <FormControl>
-                <Input placeholder="https://example.com/avatar.jpg" {...field} />
+                <Input placeholder="https://example.com/avatar.jpg" {...field} className="h-9 text-sm" /> {/* Reduced height and font size for mobile */}
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-xs" /> {/* Reduced font size for mobile */}
             </FormItem>
           )}
         />
@@ -272,12 +272,12 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
           control={form.control}
           name="time_format_24h"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 sm:p-4"> {/* Reduced padding for mobile */}
               <div className="space-y-0.5">
-                <FormLabel className="text-base">
+                <FormLabel className="text-sm sm:text-base"> {/* Reduced font size for mobile */}
                   Use 24-hour time format
                 </FormLabel>
-                <FormDescription>
+                <FormDescription className="text-xs"> {/* Reduced font size for mobile */}
                   Toggle to switch between 24-hour (00:00) and 12-hour (AM/PM) time display.
                 </FormDescription>
               </div>
@@ -291,30 +291,30 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
           )}
         />
 
-        <Button type="submit" className="w-full" disabled={!form.formState.isDirty || isUploading}>
-          {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+        <Button type="submit" className="w-full h-9 sm:h-10 text-sm sm:text-base" disabled={!form.formState.isDirty || isUploading}> {/* Reduced height and font size for mobile */}
+          {isUploading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4 animate-spin" /> : null} {/* Reduced icon size for mobile */}
           Save Profile
         </Button>
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive" className="w-full mt-4" disabled={isDeletingAccount}>
-              {isDeletingAccount ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+            <Button variant="destructive" className="w-full mt-2 sm:mt-4 h-9 sm:h-10 text-sm sm:text-base" disabled={isDeletingAccount}> {/* Reduced height and font size for mobile */}
+              {isDeletingAccount ? <Loader2 className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4 animate-spin" /> : <Trash2 className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />} {/* Reduced icon size for mobile */}
               Delete My Account
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
+              <AlertDialogTitle className="text-lg sm:text-xl">Are you absolutely sure?</AlertDialogTitle> {/* Reduced font size for mobile */}
+              <AlertDialogDescription className="text-sm"> {/* Reduced font size for mobile */}
                 This action cannot be undone. This will permanently delete your account
                 and remove your data from our servers.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteAccount} disabled={isDeletingAccount}>
-                {isDeletingAccount ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              <AlertDialogCancel className="h-9 text-sm">Cancel</AlertDialogCancel> {/* Reduced height and font size for mobile */}
+              <AlertDialogAction onClick={handleDeleteAccount} disabled={isDeletingAccount} className="h-9 text-sm"> {/* Reduced height and font size for mobile */}
+                {isDeletingAccount ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null} {/* Reduced icon size for mobile */}
                 Continue
               </AlertDialogAction>
             </AlertDialogFooter>

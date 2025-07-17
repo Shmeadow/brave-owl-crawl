@@ -6,7 +6,7 @@ import { Loader2, Chrome, Github } from "lucide-react";
 import { redirect, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Auth } from '@supabase/auth-ui-react';
-import { ThemeSupa } from '@supabase/auth-ui-shared';
+import { ThemeSupa } from '@supabase/auth-ui-shared'; // Corrected import path
 import Link from "next/link";
 import { CustomSignupForm } from "@/components/auth/custom-signup-form";
 import { Button } from "@/components/ui/button";
@@ -80,16 +80,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-dvh bg-transparent p-4"> {/* Changed min-h-screen to min-h-dvh */}
+    <div className="flex flex-col items-center justify-center min-h-dvh bg-transparent p-2 sm:p-4"> {/* Reduced padding for mobile */}
       <div
         className={cn(
-          "w-full max-w-md p-6 rounded-xl shadow-lg",
+          "w-full max-w-md p-4 sm:p-6 rounded-xl shadow-lg", // Reduced padding for mobile
           "bg-card border border-border",
-          "flex flex-col items-center gap-4"
+          "flex flex-col items-center gap-3 sm:gap-4" // Reduced gap for mobile
         )}
       >
-        <h1 className="text-3xl font-extrabold text-foreground text-center">Welcome to CozyHub</h1>
-        <p className="text-base text-muted-foreground text-center">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground text-center">Welcome to CozyHub</h1> {/* Reduced font size for mobile */}
+        <p className="text-sm sm:text-base text-muted-foreground text-center"> {/* Reduced font size for mobile */}
           {authFormType === 'sign_in' && 'Sign in to your account.'}
           {authFormType === 'sign_up' && 'Create a new account.'}
           {authFormType === 'forgotten_password' && 'Reset your password.'}
@@ -118,32 +118,32 @@ export default function LoginPage() {
               }}
             />
             
-            <Separator className="my-3" />
-            <p className="text-sm text-muted-foreground text-center mb-1">Or connect with</p>
-            <div className="flex gap-3 w-full justify-center">
+            <Separator className="my-2 sm:my-3" /> {/* Reduced margin for mobile */}
+            <p className="text-xs sm:text-sm text-muted-foreground text-center mb-0.5 sm:mb-1">Or connect with</p> {/* Reduced font size and margin for mobile */}
+            <div className="flex gap-2 sm:gap-3 w-full justify-center"> {/* Reduced gap for mobile */}
               <Button
                 variant="outline"
-                size="lg"
+                size="sm" // Reduced size for mobile
                 onClick={() => handleOAuthSignIn('google')}
-                className="flex-1"
+                className="flex-1 text-xs sm:text-sm" // Reduced font size for mobile
               >
-                <Chrome className="mr-2 h-5 w-5" /> Google
+                <Chrome className="mr-1.5 h-4 w-4 sm:mr-2 sm:h-5 sm:w-5" /> Google {/* Reduced icon size for mobile */}
               </Button>
               <Button
                 variant="outline"
-                size="lg"
+                size="sm" // Reduced size for mobile
                 onClick={() => handleOAuthSignIn('github')}
-                className="flex-1"
+                className="flex-1 text-xs sm:text-sm" // Reduced font size for mobile
               >
-                <Github className="mr-2 h-5 w-5" /> GitHub
+                <Github className="mr-1.5 h-4 w-4 sm:mr-2 sm:h-5 sm:w-5" /> GitHub {/* Reduced icon size for mobile */}
               </Button>
             </div>
 
-            <div className="flex flex-col items-center gap-1 w-full mt-3">
-              <Button variant="link" onClick={() => setAuthFormType('forgotten_password')} className="w-full">
+            <div className="flex flex-col items-center gap-0.5 sm:gap-1 w-full mt-2 sm:mt-3"> {/* Reduced gap and margin for mobile */}
+              <Button variant="link" onClick={() => setAuthFormType('forgotten_password')} className="w-full text-xs sm:text-sm"> {/* Reduced font size for mobile */}
                 Forgot your password?
               </Button>
-              <Button variant="link" onClick={() => setAuthFormType('sign_up')} className="w-full">
+              <Button variant="link" onClick={() => setAuthFormType('sign_up')} className="w-full text-xs sm:text-sm"> {/* Reduced font size for mobile */}
                 Don't have an account? Sign Up
               </Button>
             </div>
@@ -178,13 +178,13 @@ export default function LoginPage() {
                 },
               }}
             />
-            <Button variant="link" onClick={() => setAuthFormType('sign_in')} className="w-full mt-2">
+            <Button variant="link" onClick={() => setAuthFormType('sign_in')} className="w-full mt-1.5 sm:mt-2 text-xs sm:text-sm"> {/* Reduced margin and font size for mobile */}
               Back to Sign In
             </Button>
           </>
         )}
         
-        <Link href="/landing" className="text-sm text-muted-foreground hover:underline mt-3">
+        <Link href="/landing" className="text-xs sm:text-sm text-muted-foreground hover:underline mt-2 sm:mt-3"> {/* Reduced font size and margin for mobile */}
           Back to Landing Page
         </Link>
       </div>
