@@ -71,13 +71,14 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
       <div className="flex items-center gap-1 min-w-0">
         <Link href="/dashboard" className="flex items-center space-x-1">
           <h1 className="text-lg font-bold text-primary hidden sm:block">Cozy Hub</h1>
-          <Button className="bg-header-button-dark text-header-button-dark-foreground h-8 w-8 hover:bg-header-button-dark/80" size="icon" title="Home">
+          <Button className="h-8 w-8 hover:bg-header-button-dark/20" variant="ghost" size="icon" title="Home">
             <Home className="h-4 w-4" />
           </Button>
         </Link>
         <h1 className="text-base font-semibold truncate max-w-[120px] sm:max-w-[200px]">{currentRoomName}</h1>
         <Button
-          className="bg-header-button-dark text-header-button-dark-foreground flex-shrink-0 h-8 w-8 hover:bg-header-button-dark/80"
+          className="flex-shrink-0 h-8 w-8 hover:bg-header-button-dark/20"
+          variant="ghost"
           size="icon"
           title="Spaces"
           onClick={() => toggleWidget('spaces', 'Spaces')}
@@ -87,7 +88,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         {session && (
           <Popover open={isRoomSettingsOpen} onOpenChange={setIsRoomSettingsOpen}>
             <PopoverTrigger asChild>
-              <Button className="bg-header-button-dark text-header-button-dark-foreground flex-shrink-0 h-8 w-8 hover:bg-header-button-dark/80" size="icon" title="Room Options">
+              <Button className="flex-shrink-0 h-8 w-8 hover:bg-header-button-dark/20" variant="ghost" size="icon" title="Room Options">
                 <Settings className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
@@ -110,9 +111,10 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         <UserNameCapsule />
         <BugReportButton />
         {session && <NotificationsDropdown />}
-        <BackgroundBlurSlider className="hidden md:flex bg-header-button-dark/50 rounded-full" />
+        <BackgroundBlurSlider className="hidden md:flex bg-background/50 rounded-full" />
         <Button
-          className="bg-header-button-dark text-header-button-dark-foreground h-8 w-8 hover:bg-header-button-dark/80"
+          className="h-8 w-8 hover:bg-header-button-dark/20"
+          variant="ghost"
           size="icon"
           title="Statistics"
           onClick={() => toggleWidget('stats-progress', 'Statistics')}
