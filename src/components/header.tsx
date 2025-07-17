@@ -22,7 +22,6 @@ import { RoomSettingsContent } from "@/components/spaces-widget/RoomSettingsCont
 import { CreatePersonalRoomForm } from "./create-personal-room-form";
 import { BugReportButton } from "./bug-report-button";
 import { TimeAndProgressDisplay, useClock } from "@/components/time-and-progress-display";
-import { Separator } from "@/components/ui/separator"; // Import Separator
 
 interface HeaderProps {
   onToggleChat: () => void;
@@ -41,10 +40,10 @@ const ClockTrigger = () => {
       {isLoading ? (
         <span>--:--:--</span>
       ) : (
-        <div> {/* Wrap in a div to ensure a single child */}
+        <>
           <span>{timeString}</span>
           <span className="text-xs opacity-70">{dateString}</span>
-        </div>
+        </>
       )}
     </Button>
   );
@@ -103,7 +102,6 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
             </PopoverContent>
           </Popover>
         )}
-        <Separator orientation="vertical" className="h-6 hidden sm:block" />
       </div>
 
       {/* Right Group */}
@@ -112,28 +110,9 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         "justify-end"
       )}>
         <UserNameCapsule />
-        <Separator orientation="vertical" className="h-6 hidden sm:block" />
         <BugReportButton />
         {session && <NotificationsDropdown />}
-        {isMobile && (
-          <Button
-            className="h-8 w-8 hover:bg-header-button-dark/20 relative"
-            variant="ghost"
-            size="icon"
-            title="Chat"
-            onClick={onToggleChat}
-          >
-            <MessageSquare className="h-4 w-4" />
-            {unreadChatCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-                {unreadChatCount}
-              </span>
-            )}
-          </Button>
-        )}
-        <Separator orientation="vertical" className="h-6 hidden md:block" />
         <BackgroundBlurSlider className="hidden md:flex bg-background/50 rounded-full" />
-        <Separator orientation="vertical" className="h-6 hidden md:block" />
         <Button
           className="h-8 w-8 hover:bg-header-button-dark/20"
           variant="ghost"
@@ -143,7 +122,6 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         >
           <BarChart2 className="h-4 w-4" />
         </Button>
-        <Separator orientation="vertical" className="h-6 hidden md:block" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <ClockTrigger />
@@ -152,7 +130,6 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
             <TimeAndProgressDisplay />
           </DropdownMenuContent>
         </DropdownMenu>
-        <Separator orientation="vertical" className="h-6 hidden sm:block" />
         <UserNav />
       </div>
     </header>
