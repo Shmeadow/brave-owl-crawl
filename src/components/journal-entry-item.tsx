@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Star, Trash2, ChevronDown, ChevronUp, Lightbulb } from "lucide-react"; // Import Lightbulb
+import { Trash2, ChevronDown, ChevronUp, Lightbulb } from "lucide-react"; // Import Lightbulb
 import { cn } from "@/lib/utils";
 import { JournalEntryData } from "@/hooks/use-journal";
 import { toast } from "sonner";
@@ -17,7 +17,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface JournalEntryItemProps {
   entry: JournalEntryData;
-  onToggleStar: (entryId: string) => void;
   onDelete: (entryId: string) => void;
   isCurrentRoomWritable: boolean;
   onUpdateEntryContent: (entryId: string, newContent: string) => void;
@@ -28,7 +27,6 @@ interface JournalEntryItemProps {
 
 export function JournalEntryItem({
   entry,
-  onToggleStar,
   onDelete,
   isCurrentRoomWritable,
   onUpdateEntryContent,
@@ -47,14 +45,6 @@ export function JournalEntryItem({
       setIsContentOpen(true);
     }
   }, [isInitiallyOpen, isContentOpen]);
-
-  const handleToggleStarClick = () => {
-    if (!isCurrentRoomWritable) {
-      toast.error("You do not have permission to star/unstar journal entries in this room.");
-      return;
-    }
-    onToggleStar(entry.id);
-  };
 
   const handleDeleteClick = () => {
     if (!isCurrentRoomWritable) {
@@ -130,20 +120,7 @@ export function JournalEntryItem({
             </CardTitle>
           )}
           <div className="flex items-center gap-2 self-end sm:self-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "h-9 w-9",
-                entry.starred ? "text-yellow-500 hover:bg-yellow-100" : "text-muted-foreground hover:bg-accent"
-              )}
-              onClick={handleToggleStarClick}
-              disabled={!isCurrentRoomWritable}
-              title="Toggle Star"
-            >
-              <Star className={cn("h-5 w-5", entry.starred && "fill-current")} />
-              <span className="sr-only">Toggle Star</span>
-            </Button>
+            {/* Removed Star Button */}
             <Button
               variant="ghost"
               size="icon"

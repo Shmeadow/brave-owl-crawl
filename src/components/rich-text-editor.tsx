@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Important, Callout } from '@/lib/tiptap-extensions'; // Import Callout
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
-import { Star, Undo, Redo, Bold, Italic, Strikethrough, Pilcrow, Heading1, Heading2, List, ListOrdered, Highlighter, X, Quote, Code, Minus, ListChecks, Lightbulb, Image as ImageIcon } from 'lucide-react'; // Import ListChecks, Lightbulb, ImageIcon
+import { Undo, Redo, Bold, Italic, Strikethrough, Pilcrow, Heading1, Heading2, List, ListOrdered, Highlighter, X, Quote, Code, Minus, ListChecks, Lightbulb, Image as ImageIcon, Star } from 'lucide-react'; // Import ListChecks, Lightbulb, ImageIcon, Star
 import { Separator } from '@/components/ui/separator';
 import { FontSize } from '@tiptap/extension-font-size';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -33,7 +33,14 @@ export function RichTextEditor({
 }: RichTextEditorProps) {
   const editorRef = useRef<any>(null);
 
-  const starColors = [
+  const highlightColors = [
+    { name: 'Yellow', value: '#fff59d' },
+    { name: 'Blue', value: '#bfdbfe' },
+    { name: 'Green', value: '#dcfce7' },
+    { name: 'Red', value: '#fee2e2' },
+  ];
+
+  const importantColors = [
     { name: 'Yellow', value: '#fbbf24' },
     { name: 'Blue', value: '#60a5fa' },
     { name: 'Green', value: '#4ade80' },
@@ -114,7 +121,7 @@ export function RichTextEditor({
   if (!editor) return null;
 
   return (
-    <div className={cn("rounded-md border border-input bg-transparent", disabled && "cursor-not-allowed opacity-50")}>
+    <div className={cn("rounded-md bg-transparent border-none", disabled && "cursor-not-allowed opacity-50")}>
       <div className="flex flex-wrap items-center gap-0.5 p-1 border-b border-input"> {/* Reduced gap and padding */}
         {/* Style Group */}
         <Button type="button" onClick={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('bold') && 'ring-2 ring-primary')} title="Bold"><Bold className="h-4 w-4" /></Button>
@@ -160,30 +167,60 @@ export function RichTextEditor({
         <Button type="button" onClick={() => editor.chain().focus().toggleTaskList().run()} disabled={!editor.can().chain().focus().toggleTaskList().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('taskList') && 'ring-2 ring-primary')} title="Task List"><ListChecks className="h-4 w-4" /></Button>
         <Separator orientation="vertical" className="h-6 mx-1" />
         {/* Highlight Group */}
-        <Button type="button" onClick={() => editor.chain().focus().setHighlight({ color: '#fff59d' }).run()} disabled={disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('highlight', { color: '#fff59d' }) && 'ring-2 ring-primary')} title="Highlight"><Highlighter className="h-4 w-4" /></Button>
-        <Button type="button" onClick={() => editor.chain().focus().unsetHighlight().run()} disabled={!editor.isActive('highlight') || disabled} variant="ghost" size="icon" className="h-8 w-8" title="Remove Highlight"><X className="h-4 w-4" /></Button>
+        <Select
+          value={editor.isActive('highlight') ? editor.getAttributes('highlight').color : 'none'}
+          onValueChange={(value) => {
+            if (value === 'none') {
+              editor.chain().focus().unsetHighlight().run();
+            } else {
+              editor.chain().focus().setHighlight({ color: value }).run();
+            }
+          }}
+          disabled={disabled}
+        >
+          <SelectTrigger className="w-[80px] h-8 text-xs">
+            <SelectValue placeholder="Highlight" />
+          </SelectTrigger>
+          <SelectContent className="z-[1200]">
+            <SelectItem value="none">None</SelectItem>
+            {highlightColors.map(color => (
+              <SelectItem key={color.value} value={color.value}>
+                <div className="flex items-center">
+                  <span className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: color.value }}></span>
+                  {color.name}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Separator orientation="vertical" className="h-6 mx-1" />
         {/* Important/Star Group */}
-        {starColors.map(color => (
-          <Button
-            key={color.value}
-            type="button"
-            onClick={() => {
-              if (editor.isActive('important', { color: color.value })) {
-                editor.chain().focus().unsetImportant().run();
-              } else {
-                editor.chain().focus().toggleImportant({ color: color.value }).run();
-              }
-            }}
-            disabled={editor.state.selection.empty || disabled}
-            variant="ghost"
-            size="icon"
-            className={cn("h-8 w-8", editor.isActive('important', { color: color.value }) && 'ring-2 ring-primary')}
-            title={`Mark as ${color.name} Important`}
-          >
-            <Star className="h-4 w-4" style={{ color: color.value, fill: editor.isActive('important', { color: color.value }) ? color.value : 'transparent' }} />
-          </Button>
-        ))}
+        <Select
+          value={editor.isActive('important') ? editor.getAttributes('important').color : 'none'}
+          onValueChange={(value) => {
+            if (value === 'none') {
+              editor.chain().focus().unsetImportant().run();
+            } else {
+              editor.chain().focus().toggleImportant({ color: value }).run();
+            }
+          }}
+          disabled={disabled}
+        >
+          <SelectTrigger className="w-[80px] h-8 text-xs">
+            <SelectValue placeholder="Important" />
+          </SelectTrigger>
+          <SelectContent className="z-[1200]">
+            <SelectItem value="none">None</SelectItem>
+            {importantColors.map(color => (
+              <SelectItem key={color.value} value={color.value}>
+                <div className="flex items-center">
+                  <Star className="h-3 w-3 mr-2" style={{ color: color.value, fill: color.value }} />
+                  {color.name}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Separator orientation="vertical" className="h-6 mx-1" />
         {/* Image Button */}
         <Button type="button" onClick={addImage} disabled={disabled} variant="ghost" size="icon" className="h-8 w-8" title="Insert Image"><ImageIcon className="h-4 w-4" /></Button>

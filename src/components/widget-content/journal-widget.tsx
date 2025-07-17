@@ -27,7 +27,6 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
     isLoggedInMode,
     handleAddJournalEntry,
     handleDeleteJournalEntry,
-    handleToggleStarJournalEntry,
     handleUpdateJournalEntryContent,
     handleUpdateJournalEntryTitle,
     handleBulkImportJournalEntries, // New import function
@@ -106,7 +105,6 @@ export function JournalWidget({ isCurrentRoomWritable }: JournalWidgetProps) {
                 />
                 <JournalEntryList
                   entries={journalEntries}
-                  onToggleStar={handleToggleStarJournalEntry}
                   onDelete={handleDeleteJournalEntry}
                   isCurrentRoomWritable={isCurrentRoomWritable}
                   onUpdateEntryContent={handleUpdateJournalEntryContent}

@@ -7,7 +7,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface JournalEntryListProps {
   entries: JournalEntryData[];
-  onToggleStar: (entryId: string) => void;
   onDelete: (entryId: string) => void;
   isCurrentRoomWritable: boolean;
   onUpdateEntryContent: (entryId: string, newContent: string) => void;
@@ -18,7 +17,6 @@ interface JournalEntryListProps {
 
 export function JournalEntryList({
   entries,
-  onToggleStar,
   onDelete,
   isCurrentRoomWritable,
   onUpdateEntryContent,
@@ -37,7 +35,6 @@ export function JournalEntryList({
               <JournalEntryItem
                 key={entry.id}
                 entry={entry}
-                onToggleStar={onToggleStar}
                 onDelete={onDelete}
                 isCurrentRoomWritable={isCurrentRoomWritable}
                 onUpdateEntryContent={onUpdateEntryContent}

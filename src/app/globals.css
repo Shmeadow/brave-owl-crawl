@@ -169,24 +169,24 @@
 
   /* Adjusting default ProseMirror/Tiptap spacing */
   .prose p {
-    margin-top: 0.5em; /* Reduced from default 1em */
-    margin-bottom: 0.5em; /* Reduced from default 1em */
+    margin-top: 0.25em; /* Further reduced */
+    margin-bottom: 0.25em; /* Further reduced */
   }
 
   .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
-    margin-top: 1em; /* Keep some space above */
-    margin-bottom: 0.5em; /* Reduce space below */
+    margin-top: 0.75em; /* Reduced */
+    margin-bottom: 0.25em; /* Reduced */
   }
 
   .prose ul, .prose ol {
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
+    margin-top: 0.25em; /* Reduced */
+    margin-bottom: 0.25em; /* Reduced */
     padding-left: 1.5em; /* Ensure indentation */
   }
 
   .prose li {
-    margin-top: 0.25em;
-    margin-bottom: 0.25em;
+    margin-top: 0.15em; /* Reduced */
+    margin-bottom: 0.15em; /* Reduced */
   }
 
   /* Important Marker */
@@ -195,7 +195,6 @@
     padding: 0.1em 0.3em;
     border-radius: 0.3em;
     font-weight: 600;
-    /* Removed padding-left and ::before pseudo-element */
     /* Ensure text is always readable */
     color: hsl(var(--foreground)); /* Default to foreground color */
   }
@@ -215,15 +214,22 @@
   /* Highlight styles for better contrast and persistence */
   .prose mark {
     background-color: hsl(var(--accent)); /* Default, but overridden by data-color */
-    color: hsl(var(--accent-foreground)); /* Default, but overridden by data-color */
+    color: inherit; /* Ensure text color is not affected by highlight */
     border-radius: 0.125rem;
     padding: 0.05em 0.2em;
     box-decoration-break: clone;
+    opacity: 0.7; /* Faded highlight */
   }
 
   /* Specific highlight colors - made more vibrant */
-  .prose mark[data-color="#fff59d"] { @apply bg-yellow-400 text-gray-900; }
-  .dark .prose mark[data-color="#fff59d"] { @apply bg-yellow-700 text-yellow-100; }
+  .prose mark[data-color="#fff59d"] { @apply bg-yellow-300; }
+  .dark .prose mark[data-color="#fff59d"] { @apply bg-yellow-800; }
+  .prose mark[data-color="#bfdbfe"] { @apply bg-blue-300; }
+  .dark .prose mark[data-color="#bfdbfe"] { @apply bg-blue-800; }
+  .prose mark[data-color="#dcfce7"] { @apply bg-green-300; }
+  .dark .prose mark[data-color="#dcfce7"] { @apply bg-green-800; }
+  .prose mark[data-color="#fee2e2"] { @apply bg-red-300; }
+  .dark .prose mark[data-color="#fee2e2"] { @apply bg-red-800; }
 
   /* Horizontal Rule (Divider) */
   .prose hr.prose-hr {

@@ -16,7 +16,6 @@ export interface JournalEntryData {
   user_id?: string; // Optional for local storage entries
   title: string | null;
   content: string; // Can be HTML or JSON string
-  starred: boolean;
   created_at: string;
   type: 'note' | 'journal'; // Will always be 'journal' for this hook
 }
@@ -28,7 +27,7 @@ export interface ImportantReminder {
   timestamp: string;
 }
 
-const LOCAL_STORAGE_KEY = 'guest_journal_entries';
+const LOCAL_STORAGE_KEY = 'guest_journal_entries'; // Keep for initial migration check
 
 export function useJournal() {
   const { supabase, session, loading: authLoading } = useSupabase();
@@ -90,6 +89,7 @@ export function useJournal() {
         // User is logged in
         setIsLoggedInMode(true);
         
+        // Attempt to migrate local entries first (one-time operation)
         const localEntriesString = localStorage.getItem(LOCAL_STORAGE_KEY);
         let localEntries: JournalEntryData[] = [];
         try {
@@ -101,7 +101,7 @@ export function useJournal() {
 
         const { data: supabaseEntries, error: fetchError } = await supabase
           .from('notes') // Still using the 'notes' table
-          .select('*')
+          .select('id, user_id, title, content, created_at, type') // Select specific columns, exclude 'starred'
           .eq('user_id', session.user.id)
           .eq('type', 'journal') // Filter by type 'journal'
           .order('created_at', { ascending: false }); // Newest first for journal
@@ -126,11 +126,11 @@ export function useJournal() {
                     user_id: session.user.id,
                     title: localEntry.title,
                     content: localEntry.content,
-                    starred: localEntry.starred,
+                    // starred: localEntry.starred, // Removed starred
                     created_at: localEntry.created_at || new Date().toISOString(),
                     type: 'journal', // Ensure type is 'journal' during migration
                   })
-                  .select()
+                  .select('id, user_id, title, content, created_at, type') // Select specific columns
                   .single();
 
                 if (insertError) {
@@ -160,7 +160,6 @@ export function useJournal() {
         // Ensure all loaded entries have a 'type' property, default to 'journal' if missing
         loadedEntries = loadedEntries.map(entry => ({ ...entry, type: entry.type || 'journal' }));
         setJournalEntries(loadedEntries);
-        // Removed: if (loadedEntries.length === 0) { toast.info("You are browsing journal entries as a guest. Your entries will be saved locally."); }
       }
       setLoading(false);
     };
@@ -180,6 +179,33 @@ export function useJournal() {
     setImportantReminders(extractImportantReminders(journalEntries));
   }, [journalEntries, extractImportantReminders]);
 
+  // Realtime subscription for logged-in users
+  useEffect(() => {
+    if (!supabase || !session?.user?.id || !isLoggedInMode) return;
+
+    const channel = supabase.channel('journal_entries_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notes', filter: `user_id=eq.${session.user.id}` }, (payload) => {
+        // Assert payload.new and payload.old to JournalEntryData for type safety
+        const newEntry = payload.new as JournalEntryData;
+        const oldEntry = payload.old as JournalEntryData;
+
+        if (newEntry?.type !== 'journal' && oldEntry?.type !== 'journal') return; // Only process journal entries
+
+        if (payload.eventType === 'INSERT') {
+          setJournalEntries(prev => [newEntry, ...prev]);
+        } else if (payload.eventType === 'UPDATE') {
+          setJournalEntries(prev => prev.map(entry => entry.id === newEntry.id ? newEntry : entry));
+        } else if (payload.eventType === 'DELETE') {
+          setJournalEntries(prev => prev.filter(entry => entry.id !== oldEntry.id));
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, session, isLoggedInMode]);
+
   const handleAddJournalEntry = useCallback(async ({ title, content }: { title: string; content: string; }) => {
     if (isLoggedInMode && session && supabase) {
       const { data, error } = await supabase
@@ -188,17 +214,16 @@ export function useJournal() {
           user_id: session.user.id,
           title,
           content,
-          starred: false,
           type: 'journal', // Always 'journal' for this hook
         })
-        .select()
+        .select('id, user_id, title, content, created_at, type') // Select specific columns
         .single();
 
       if (error) {
         toast.error("Error adding journal entry (Supabase): " + error.message);
         console.error("Error adding journal entry (Supabase):", error);
       } else if (data) {
-        setJournalEntries((prevEntries) => [data as JournalEntryData, ...prevEntries]); // Add to front for journal
+        // State update handled by realtime subscription
         toast.success("Journal entry added successfully to your account!");
       }
     } else {
@@ -206,7 +231,6 @@ export function useJournal() {
         id: crypto.randomUUID(),
         title,
         content,
-        starred: false,
         created_at: new Date().toISOString(),
         type: 'journal', // Always 'journal' for this hook
       };
@@ -228,7 +252,7 @@ export function useJournal() {
         toast.error("Error deleting journal entry (Supabase): " + error.message);
         console.error("Error deleting journal entry (Supabase):", error);
       } else {
-        setJournalEntries(prevEntries => prevEntries.filter(entry => entry.id !== entryId));
+        // State update handled by realtime subscription
         toast.success("Journal entry deleted from your account.");
       }
     } else {
@@ -236,37 +260,6 @@ export function useJournal() {
       toast.success("Journal entry deleted (locally).");
     }
   }, [isLoggedInMode, session, supabase]);
-
-  const handleToggleStarJournalEntry = useCallback(async (entryId: string) => {
-    const entryToUpdate = journalEntries.find(entry => entry.id === entryId);
-    if (!entryToUpdate) return;
-
-    const newStarredStatus = !entryToUpdate.starred;
-
-    if (isLoggedInMode && session && supabase) {
-      const { data, error } = await supabase
-        .from('notes')
-        .update({ starred: newStarredStatus })
-        .eq('id', entryId)
-        .eq('user_id', session.user.id)
-        .eq('type', 'journal') // Ensure updating only journal entries
-        .select()
-        .single();
-
-      if (error) {
-        toast.error("Error updating star status (Supabase): " + error.message);
-        console.error("Error updating star status (Supabase):", error);
-      } else if (data) {
-        setJournalEntries(prevEntries => prevEntries.map(entry => entry.id === entryId ? data as JournalEntryData : entry));
-        toast.info(newStarredStatus ? "Journal entry starred!" : "Journal entry unstarred.");
-      }
-    } else {
-      setJournalEntries(prevEntries => prevEntries.map(entry =>
-        entry.id === entryId ? { ...entry, starred: newStarredStatus } : entry
-      ));
-      toast.info(newStarredStatus ? "Journal entry starred (locally)!" : "Journal entry unstarred (locally).");
-    }
-  }, [journalEntries, isLoggedInMode, session, supabase]);
 
   const handleUpdateJournalEntryContent = useCallback(async (entryId: string, newContent: string) => {
     const entryToUpdate = journalEntries.find(entry => entry.id === entryId);
@@ -279,14 +272,14 @@ export function useJournal() {
         .eq('id', entryId)
         .eq('user_id', session.user.id)
         .eq('type', 'journal') // Ensure updating only journal entries
-        .select()
+        .select('id, user_id, title, content, created_at, type') // Select specific columns
         .single();
 
       if (error) {
         toast.error("Error updating journal entry content (Supabase): " + error.message);
         console.error("Error updating journal entry content (Supabase):", error);
       } else if (data) {
-        setJournalEntries(prevEntries => prevEntries.map(entry => entry.id === entryId ? data as JournalEntryData : entry));
+        // State update handled by realtime subscription
         // toast.success("Journal entry content updated!"); // Too frequent, removed
       }
     } else {
@@ -308,14 +301,14 @@ export function useJournal() {
         .eq('id', entryId)
         .eq('user_id', session.user.id)
         .eq('type', 'journal') // Ensure updating only journal entries
-        .select()
+        .select('id, user_id, title, content, created_at, type') // Select specific columns
         .single();
 
       if (error) {
         toast.error("Error updating journal entry title (Supabase): " + error.message);
         console.error("Error updating journal entry title (Supabase):", error);
       } else if (data) {
-        setJournalEntries(prevEntries => prevEntries.map(entry => entry.id === entryId ? data as JournalEntryData : entry));
+        // State update handled by realtime subscription
         toast.success("Journal entry title updated!");
       }
     } else {
@@ -338,15 +331,14 @@ export function useJournal() {
         user_id: session.user.id,
         title: entry.title,
         content: entry.content,
-        starred: false,
         type: 'journal',
       }));
-      const { data, error } = await supabase.from('notes').insert(toInsert).select();
+      const { data, error } = await supabase.from('notes').insert(toInsert).select('id, user_id, title, content, created_at, type');
       if (error) {
         toast.error("Error importing entries: " + error.message);
         return 0;
       } else if (data) {
-        setJournalEntries(prev => [...(data as JournalEntryData[]), ...prev]); // Add new entries to the front
+        // State update handled by realtime subscription
         return data.length;
       }
     } else {
@@ -354,7 +346,6 @@ export function useJournal() {
         id: crypto.randomUUID(),
         title: entry.title,
         content: entry.content,
-        starred: false,
         created_at: new Date().toISOString(),
         type: 'journal',
       }));
@@ -373,7 +364,6 @@ export function useJournal() {
         id: entry.id,
         title: entry.title,
         content: entry.content,
-        starred: entry.starred,
         created_at: entry.created_at,
       })), null, 2);
     }
@@ -405,7 +395,6 @@ export function useJournal() {
     isLoggedInMode,
     handleAddJournalEntry,
     handleDeleteJournalEntry,
-    handleToggleStarJournalEntry,
     handleUpdateJournalEntryContent,
     handleUpdateJournalEntryTitle,
     handleBulkImportJournalEntries,
