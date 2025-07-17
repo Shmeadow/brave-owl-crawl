@@ -74,11 +74,15 @@ export function useRoomMembership({ rooms, setRooms, fetchRooms }: UseRoomMember
 
     if (room.creator_id === session.user.id) {
       toast.info("You are the creator of this room.");
+      // Ensure current room is set if it's their own room
+      window.dispatchEvent(new CustomEvent('roomJoined', { detail: { roomId: resolvedRoomId, roomName: room.name } }));
       return;
     }
 
     if (room.is_member) {
       toast.info("You are already a member of this room.");
+      // Ensure current room is set if they are already a member
+      window.dispatchEvent(new CustomEvent('roomJoined', { detail: { roomId: resolvedRoomId, roomName: room.name } }));
       return;
     }
 
@@ -93,9 +97,8 @@ export function useRoomMembership({ rooms, setRooms, fetchRooms }: UseRoomMember
         return;
       }
       toast.success(`You successfully joined "${room.name}"!`);
-      // Dispatch event to update current room immediately
       window.dispatchEvent(new CustomEvent('roomJoined', { detail: { roomId: resolvedRoomId, roomName: room.name } }));
-      await fetchRooms(); // Explicitly re-fetch rooms after joining
+      await fetchRooms();
       addNotification(`You joined the room: "${room.name}".`);
       return;
     }
@@ -122,7 +125,6 @@ export function useRoomMembership({ rooms, setRooms, fetchRooms }: UseRoomMember
         return;
       }
       
-      // If password is correct, join the room
       const { error: memberInsertError } = await supabase
         .from('room_members')
         .insert({ room_id: resolvedRoomId, user_id: session.user.id });
@@ -132,9 +134,8 @@ export function useRoomMembership({ rooms, setRooms, fetchRooms }: UseRoomMember
         return;
       }
       toast.success(`You successfully joined "${room.name}"!`);
-      // Dispatch event to update current room immediately
       window.dispatchEvent(new CustomEvent('roomJoined', { detail: { roomId: resolvedRoomId, roomName: room.name } }));
-      await fetchRooms(); // Explicitly re-fetch rooms after joining
+      await fetchRooms();
       addNotification(`You joined the room: "${room.name}".`);
       return;
     }
@@ -169,9 +170,9 @@ export function useRoomMembership({ rooms, setRooms, fetchRooms }: UseRoomMember
         return;
       }
 
-      toast.success(`Request to join "${room.name}" sent to room owner.`);
+      toast.info(`This is a private room. A join request has been sent to the room owner.`);
       addNotification(`New join request for "${room.name}" from ${session.user.email}.`, room.creator_id);
-      await fetchRooms(); // Explicitly re-fetch rooms after sending request
+      await fetchRooms();
       return;
     }
   }, [session, supabase, rooms, fetchRooms, addNotification]);
