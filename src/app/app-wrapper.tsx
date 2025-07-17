@@ -26,7 +26,7 @@ import { useRooms } from "@/hooks/use-rooms";
 import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification";
 import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar";
 import { CookieConsentBar } from "@/components/cookie-consent-bar";
-import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT, MOBILE_HEADER_EFFECTIVE_HEIGHT, MOBILE_HEADER_SIDEBAR_GAP, MOBILE_SIDEBAR_CONTENT_GAP, MOBILE_SIDEBAR_TOP_OFFSET } from "@/lib/constants"; // Import new constant
+import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT, MOBILE_HEADER_EFFECTIVE_HEIGHT, MOBILE_HEADER_SIDEBAR_GAP, MOBILE_SIDEBAR_CONTENT_GAP } from "@/lib/constants"; // Removed MOBILE_SIDEBAR_TOP_OFFSET
 
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
@@ -48,7 +48,7 @@ const SIDEBAR_CONTENT_GAP = 16; // px (gap between sidebar and main content)
 export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
   const { loading, session, profile } = useSupabase();
   const pathname = usePathname();
-  const { isSidebarOpen, setIsSidebarOpen } = useSidebar(); // isSidebarOpen will now always be true
+  const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const { currentRoomId, currentRoomName, isCurrentRoomWritable } = useCurrentRoom();
   const { rooms, pendingRequests, dismissRequest } = useRooms();
   const { activeEffect } = useEffects();
@@ -89,7 +89,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
       const windowHeight = window.innerHeight;
       
       let contentLeft = 0;
-      let contentTop = 0; // Start from 0, then add header height
+      let contentTop = 0;
       let contentWidth = windowWidth;
       let contentHeight = windowHeight;
 
@@ -101,8 +101,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
         contentHeight = windowHeight - HEADER_HEIGHT_DESKTOP;
       } else {
         // Mobile layout: account for horizontal sidebar and bottom controls
-        contentTop = MOBILE_SIDEBAR_TOP_OFFSET + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_SIDEBAR_CONTENT_GAP; // New calculation for mobile content top
-        contentHeight = windowHeight - (contentTop + MOBILE_CONTROLS_HEIGHT); // Adjusted contentHeight
+        contentTop = MOBILE_HEADER_EFFECTIVE_HEIGHT + MOBILE_HEADER_SIDEBAR_GAP + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_SIDEBAR_CONTENT_GAP; // Corrected calculation
+        contentHeight = windowHeight - (contentTop + MOBILE_CONTROLS_HEIGHT);
       }
 
       setMainContentArea({
@@ -116,7 +116,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     calculateArea();
     window.addEventListener('resize', calculateArea);
     return () => window.removeEventListener('resize', calculateArea);
-  }, [isMobile]); // Added isMobile to dependencies
+  }, [isMobile]);
 
   if (loading) {
     return <LoadingScreen />;
@@ -137,7 +137,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
       <FocusSessionProvider>
         <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea} isMobile={isMobile}>
           <div className="relative h-screen bg-transparent">
-            {/* Removed the old shadow element */}
             {activeEffect === 'rain' && <DynamicRainEffect />}
             {activeEffect === 'snow' && <DynamicSnowEffect />}
             {activeEffect === 'raindrops' && <DynamicRaindropsEffect />}
@@ -148,7 +147,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               onClearUnreadMessages={handleClearUnreadMessages}
               unreadChatCount={unreadChatCount}
               isMobile={isMobile}
-              // Removed onToggleSidebar prop as it's no longer needed
             />
             <DynamicWelcomeBackModal
               isOpen={showWelcomeBack}
@@ -158,7 +156,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               currentRoomName={currentRoomName}
             />
             <DynamicPlayingSoundsBar isMobile={isMobile} />
-            <Sidebar isMobile={isMobile} /> {/* Sidebar is always rendered */}
+            <Sidebar isMobile={isMobile} />
             <GuestModeWarningBar />
             {pendingRequests.length > 0 && (
               <RoomJoinRequestNotification
@@ -183,7 +181,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             {isDashboard && !isMobile && <IndependentPinnedWidgetsDock isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />}
             {isDashboard && isMobile && (
               <>
-                <DynamicSimpleAudioPlayer isMobile={isMobile} displayMode="normal" /> {/* Changed to normal for mobile */}
+                <DynamicSimpleAudioPlayer isMobile={isMobile} displayMode="normal" />
                 <DynamicMobileControls>
                   <DynamicPomodoroWidget 
                     isMinimized={isPomodoroMinimized}

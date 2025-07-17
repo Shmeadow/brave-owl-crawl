@@ -6,5 +6,3 @@ export const MOBILE_HEADER_EFFECTIVE_HEIGHT = 64; // px - HEADER_HEIGHT_MOBILE (
 // New mobile spacing constants
 export const MOBILE_HEADER_SIDEBAR_GAP = 24; // Gap between header and horizontal sidebar (approx 1.5 inches)
 export const MOBILE_SIDEBAR_CONTENT_GAP = 16; // Gap between horizontal sidebar and main content/player (approx 1 inch)
-
-export const MOBILE_SIDEBAR_TOP_OFFSET = 100; // New: Fixed top position for mobile sidebar
