@@ -37,11 +37,11 @@ const WIDGET_CONFIGS = {
   "timer": { initialPosition: { x: 80, y: 70 }, initialWidth: 300, initialHeight: 350 },
   "tasks": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
   "drawing-board": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
-  "journal": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
+  "journal": { initialPosition: { x: 80, y: 70 }, initialWidth: 800, initialHeight: 750 },
   "media": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
   "stats-progress": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
-  "flash-cards": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
-  "goal-focus": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
+  "flash-cards": { initialPosition: { x: 80, y: 70 }, initialWidth: 700, initialHeight: 700 },
+  "goal-focus": { initialPosition: { x: 80, y: 70 }, initialWidth: 550, initialHeight: 650 },
   "background-effects": { initialPosition: { x: 80, y: 70 }, initialWidth: 400, initialHeight: 600 },
 };
 
