@@ -56,7 +56,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
       )}
       style={{ width: `${SIDEBAR_WIDTH_DESKTOP}px` }} // Always use desktop width
     >
-      <div className="flex flex-col gap-1 overflow-y-auto"> {/* Reduced gap */}
+      <div className="flex flex-col gap-1"> {/* Removed ScrollArea */}
         {navItems.map((item) => (
           <SidebarItem
             key={item.id}

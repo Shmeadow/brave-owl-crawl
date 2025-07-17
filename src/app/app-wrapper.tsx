@@ -26,6 +26,7 @@ import { useRooms } from "@/hooks/use-rooms";
 import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification";
 import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar";
 import { CookieConsentBar } from "@/components/cookie-consent-bar";
+import { MOBILE_CONTROLS_HEIGHT } from "@/lib/constants"; // Import MOBILE_CONTROLS_HEIGHT from new constants file
 
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
@@ -87,22 +88,31 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
       
-      // Main content area always starts to the right of the fixed sidebar
-      const contentLeft = SIDEBAR_WIDTH_DESKTOP + SIDEBAR_LEFT_OFFSET + SIDEBAR_CONTENT_GAP;
-      const contentWidth = windowWidth - contentLeft;
+      let contentLeft = 0;
+      let contentWidth = windowWidth;
+      let contentHeight = windowHeight - HEADER_HEIGHT;
+
+      if (!isMobile) {
+        // Desktop layout
+        contentLeft = SIDEBAR_WIDTH_DESKTOP + SIDEBAR_LEFT_OFFSET + SIDEBAR_CONTENT_GAP;
+        contentWidth = windowWidth - contentLeft;
+      } else {
+        // Mobile layout: account for bottom controls
+        contentHeight -= MOBILE_CONTROLS_HEIGHT;
+      }
 
       setMainContentArea({
         left: contentLeft,
         top: HEADER_HEIGHT,
         width: contentWidth,
-        height: windowHeight - HEADER_HEIGHT,
+        height: contentHeight,
       });
     };
 
     calculateArea();
     window.addEventListener('resize', calculateArea);
     return () => window.removeEventListener('resize', calculateArea);
-  }, []); // Removed isMobile from dependencies as sidebar is now fixed
+  }, [isMobile]); // Added isMobile to dependencies
 
   if (loading) {
     return <LoadingScreen />;

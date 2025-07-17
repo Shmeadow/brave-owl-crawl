@@ -1,0 +1,1 @@
+export const MOBILE_CONTROLS_HEIGHT = 40; // px - Estimated height of the mobile controls bar
