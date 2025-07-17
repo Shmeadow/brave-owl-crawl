@@ -114,7 +114,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
         <UserNameCapsule />
         <BugReportButton />
         {session && <NotificationsDropdown />}
-        <BackgroundBlurSlider className="hidden md:flex bg-background/50 rounded-full" />
+        {/* BackgroundBlurSlider is now conditionally rendered inside UserNav for mobile */}
         <Button
           className="h-8 w-8 hover:bg-header-button-dark/20"
           variant="ghost"
@@ -149,7 +149,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
             )}
           </Button>
         )}
-        <UserNav />
+        <UserNav isMobile={isMobile} /> {/* Pass isMobile prop */}
       </div>
     </header>
   );
