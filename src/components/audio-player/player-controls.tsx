@@ -41,37 +41,16 @@ export function PlayerControls({
 
   return (
     <div className="flex items-center space-x-2 flex-shrink-0">
-      {playerType !== 'spotify' && (
-        <div className="flex items-center space-x-1">
-          <button
-            onClick={skipBackward}
-            className="p-0 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
-            aria-label="Skip backward 10 seconds"
-            title="Skip Backward"
-            disabled={!canSeek}
-          >
-            <Rewind size={14} />
-          </button>
-          <button
-            onClick={togglePlayPause}
-            className="p-0.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105 h-8 w-8 flex items-center justify-center"
-            aria-label={currentIsPlaying ? "Pause" : "Play"}
-            title={currentIsPlaying ? "Pause" : "Play"}
-            disabled={!canPlayPause}
-          >
-            {currentIsPlaying ? <Pause size={18} /> : <Play size={18} />}
-          </button>
-          <button
-            onClick={skipForward}
-            className="p-0 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
-            aria-label="Skip forward 10 seconds"
-            title="Skip Forward"
-            disabled={!canSeek}
-          >
-            <FastForward size={14} />
-          </button>
-        </div>
-      )}
+      {/* Play/Pause Button */}
+      <button
+        onClick={togglePlayPause}
+        className="p-0.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300 shadow-xs transform hover:scale-105 h-8 w-8 flex items-center justify-center"
+        aria-label={currentIsPlaying ? "Pause" : "Play"}
+        title={currentIsPlaying ? "Pause" : "Play"}
+        disabled={!canPlayPause}
+      >
+        {currentIsPlaying ? <Pause size={18} /> : <Play size={18} />}
+      </button>
 
       {/* Volume Control */}
       <div className="flex items-center space-x-1 ml-3">
