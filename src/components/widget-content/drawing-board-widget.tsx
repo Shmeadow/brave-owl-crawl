@@ -1,7 +1,8 @@
 "use client";
 
 import React from 'react';
-import { Excalidraw, ExcalidrawAPIRef } from "@excalidraw/excalidraw";
+import { Excalidraw } from "@excalidraw/excalidraw";
+import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw"; // Import as type only
 import "@excalidraw/excalidraw/index.min.css"; // Import Excalidraw styles
 
 interface DrawingBoardWidgetProps {
@@ -10,15 +11,14 @@ interface DrawingBoardWidgetProps {
 }
 
 export function DrawingBoardWidget({ isCurrentRoomWritable, isMobile }: DrawingBoardWidgetProps) {
-  // ExcalidrawAPIRef can be used to programmatically control the Excalidraw instance,
-  // e.g., saving/loading data, clearing the canvas. For now, we'll keep it simple.
-  const excalidrawRef = React.useRef<ExcalidrawAPIRef>(null);
+  // ExcalidrawImperativeAPI is the correct type for the ref object.
+  const excalidrawRef = React.useRef<ExcalidrawImperativeAPI>(null);
 
   return (
     <div className="h-full w-full flex flex-col">
       <div className="flex-1 relative">
         <Excalidraw
-          ref={excalidrawRef}
+          ref={excalidrawRef as React.Ref<ExcalidrawImperativeAPI>} // Type assertion to satisfy TS2322
           theme="dark" // Use dark theme to match app
           viewModeEnabled={!isCurrentRoomWritable} // Disable editing if not writable
           zenModeEnabled={false}
