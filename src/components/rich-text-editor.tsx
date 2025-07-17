@@ -10,12 +10,13 @@ import ListItem from '@tiptap/extension-list-item';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Button } from '@/components/ui/button';
 import { Important, Callout } from '@/lib/tiptap-extensions'; // Import Callout
-import { Star, Undo, Redo, Bold, Italic, Strikethrough, Pilcrow, Heading1, Heading2, List, ListOrdered, Highlighter, X, Quote, Code, Minus, ListChecks, Lightbulb } from 'lucide-react'; // Import ListChecks, Lightbulb
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
+import { Star, Undo, Redo, Bold, Italic, Strikethrough, Pilcrow, Heading1, Heading2, List, ListOrdered, Highlighter, X, Quote, Code, Minus, ListChecks, Lightbulb, Image as ImageIcon } from 'lucide-react'; // Import ListChecks, Lightbulb, ImageIcon
 import { Separator } from '@/components/ui/separator';
 import { FontSize } from '@tiptap/extension-font-size';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import TaskList from '@tiptap/extension-task-list'; // Import TaskList
-import TaskItem from '@tiptap/extension-task-item'; // Import TaskItem
+import Image from '@tiptap/extension-image'; // Import Image extension
 
 interface RichTextEditorProps {
   content: string;
@@ -54,16 +55,20 @@ export function RichTextEditor({
       Highlight.configure({ multicolor: true }),
       Important,
       FontSize,
-      TaskList, // Add TaskList
+      TaskList,
       TaskItem.configure({
         nested: true,
-      }), // Add TaskItem
-      Callout, // Add Callout
+      }),
+      Callout,
+      Image.configure({
+        inline: false, // Images are block-level by default
+        allowBase64: true, // Allow base64 images (e.g., pasted from clipboard)
+      }),
     ],
     content: '',
     editorProps: {
       attributes: {
-        class: 'prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none min-h-[150px] max-w-none', /* Adjusted min-height */
+        class: 'prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none min-h-[150px] max-w-none',
       },
     },
     onUpdate({ editor }) {
@@ -99,11 +104,18 @@ export function RichTextEditor({
     }
   }, [content, editor]);
 
+  const addImage = useCallback(() => {
+    const url = window.prompt('URL');
+    if (url) {
+      editor?.chain().focus().setImage({ src: url }).run();
+    }
+  }, [editor]);
+
   if (!editor) return null;
 
   return (
     <div className={cn("rounded-md border border-input bg-transparent", disabled && "cursor-not-allowed opacity-50")}>
-      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-input">
+      <div className="flex flex-wrap items-center gap-0.5 p-1 border-b border-input"> {/* Reduced gap and padding */}
         {/* Style Group */}
         <Button type="button" onClick={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('bold') && 'ring-2 ring-primary')} title="Bold"><Bold className="h-4 w-4" /></Button>
         <Button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('italic') && 'ring-2 ring-primary')} title="Italic"><Italic className="h-4 w-4" /></Button>
@@ -139,7 +151,7 @@ export function RichTextEditor({
         <Button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} disabled={!editor.can().chain().focus().toggleHeading({ level: 2 }).run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('heading', { level: 2 }) && 'ring-2 ring-primary')} title="Heading 2"><Heading2 className="h-4 w-4" /></Button>
         <Button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()} disabled={!editor.can().chain().focus().toggleBlockquote().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('blockquote') && 'ring-2 ring-primary')} title="Blockquote"><Quote className="h-4 w-4" /></Button>
         <Button type="button" onClick={() => editor.chain().focus().toggleCodeBlock().run()} disabled={!editor.can().chain().focus().toggleCodeBlock().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('codeBlock') && 'ring-2 ring-primary')} title="Code Block"><Code className="h-4 w-4" /></Button>
-        <Button type="button" onClick={() => editor.chain().focus().setHorizontalRule().run()} disabled={!editor.can().chain().focus().setHorizontalRule().run() || disabled} variant="ghost" size="icon" className="h-8 w-8" title="Horizontal Rule"><Minus className="h-4 w-4" /></Button>
+        <Button type="button" onClick={() => editor.chain().focus().setHorizontalRule().run()} disabled={!editor.can().chain().focus().setHorizontalRule().run() || disabled} variant="ghost" size="icon" className="h-8 w-8" title="Divider"><Minus className="h-4 w-4" /></Button> {/* Renamed to Divider */}
         <Button type="button" onClick={() => editor.chain().focus().toggleCallout().run()} disabled={disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('callout') && 'ring-2 ring-primary')} title="Callout"><Lightbulb className="h-4 w-4" /></Button>
         <Separator orientation="vertical" className="h-6 mx-1" />
         {/* List Group */}
@@ -172,6 +184,9 @@ export function RichTextEditor({
             <Star className="h-4 w-4" style={{ color: color.value, fill: editor.isActive('important', { color: color.value }) ? color.value : 'transparent' }} />
           </Button>
         ))}
+        <Separator orientation="vertical" className="h-6 mx-1" />
+        {/* Image Button */}
+        <Button type="button" onClick={addImage} disabled={disabled} variant="ghost" size="icon" className="h-8 w-8" title="Insert Image"><ImageIcon className="h-4 w-4" /></Button>
         <div className="flex-grow" />
         {/* History Group */}
         <Button type="button" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo() || disabled} variant="ghost" size="icon" className="h-8 w-8" title="Undo"><Undo className="h-4 w-4" /></Button>

@@ -167,6 +167,7 @@
     box-shadow: inset 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   }
 
+  /* Important Marker */
   .prose .important-journal-item {
     position: relative;
     padding: 0.1em 0.3em;
@@ -193,22 +194,36 @@
   }
 
   /* Light Mode - Improved Contrast for Important Mark */
-  .prose .important-journal-item[data-color="#fbbf24"] { @apply bg-yellow-100 text-yellow-900; }
+  .prose .important-journal-item[data-color="#fbbf24"] { @apply bg-yellow-300 text-gray-900; } /* Dark text on yellow */
   .prose .important-journal-item[data-color="#60a5fa"] { @apply bg-blue-100 text-blue-800; }
   .prose .important-journal-item[data-color="#4ade80"] { @apply bg-green-100 text-green-800; }
   .prose .important-journal-item[data-color="#f87171"] { @apply bg-red-100 text-red-800; }
 
   /* Dark Mode - Improved Contrast for Important Mark */
-  .dark .prose .important-journal-item[data-color="#fbbf24"] { @apply bg-yellow-900/50 text-yellow-300; }
+  .dark .prose .important-journal-item[data-color="#fbbf24"] { @apply bg-yellow-800/50 text-yellow-100; } /* Light text on darker yellow */
   .dark .prose .important-journal-item[data-color="#60a5fa"] { @apply bg-blue-900/50 text-blue-300; }
   .dark .prose .important-journal-item[data-color="#4ade80"] { @apply bg-green-900/50 text-green-300; }
   .dark .prose .important-journal-item[data-color="#f87171"] { @apply bg-red-900/50 text-red-300; }
 
-  /* Light mode highlight styles for better contrast */
-  .prose mark[data-color="#fff59d"] { @apply bg-yellow-300 text-gray-900 rounded-sm px-0.5; }
+  /* Highlight styles for better contrast and persistence */
+  .prose mark {
+    background-color: hsl(var(--accent)); /* Use accent color for highlight */
+    color: hsl(var(--accent-foreground)); /* Use accent foreground for text */
+    border-radius: 0.125rem; /* Slightly rounded corners */
+    padding: 0.05em 0.2em; /* Small padding */
+    box-decoration-break: clone; /* Ensures highlight wraps nicely */
+  }
 
-  /* Dark mode highlight styles for better contrast */
-  .dark .prose mark[data-color="#fff59d"] { @apply bg-yellow-800 text-yellow-100 rounded-sm px-0.5; }
+  /* Specific highlight colors */
+  .prose mark[data-color="#fff59d"] { @apply bg-yellow-300 text-gray-900; }
+  .dark .prose mark[data-color="#fff59d"] { @apply bg-yellow-800 text-yellow-100; }
+
+  /* Horizontal Rule (Divider) */
+  .prose hr.prose-hr {
+    border: none;
+    border-top: 1px solid hsl(var(--border));
+    margin: 0.5em 0; /* Reduced vertical margin */
+  }
 
   /* Tiptap Task List styles */
   .prose ul[data-type="taskList"] {
@@ -234,9 +249,9 @@
 
   /* Tiptap Callout styles */
   .prose .prose-callout {
-    padding: 1rem;
+    padding: 0.75rem; /* Reduced padding */
     border-radius: 0.5rem;
-    margin: 1rem 0;
+    margin: 0.75rem 0; /* Reduced vertical margin */
     display: flex;
     align-items: flex-start;
     gap: 0.75rem;
@@ -298,6 +313,16 @@
     border-left: 4px solid hsl(0 80% 50%);
   }
   .prose .prose-callout[data-type="danger"]::before { content: '🚨'; }
+
+  /* Tiptap Image styles */
+  .prose img {
+    max-width: 100%; /* Ensure images don't overflow */
+    height: auto; /* Maintain aspect ratio */
+    display: block; /* Ensure it behaves as a block element */
+    margin: 1em auto; /* Center images and add some vertical spacing */
+    border-radius: 0.5rem; /* Slightly rounded corners */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Subtle shadow */
+  }
 
   /* Hide tldraw branding */
   .tl-branding {
