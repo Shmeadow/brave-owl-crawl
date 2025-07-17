@@ -41,10 +41,10 @@ const ClockTrigger = () => {
       {isLoading ? (
         <span>--:--:--</span>
       ) : (
-        <>
+        <div> {/* Wrap in a div to ensure a single child */}
           <span>{timeString}</span>
           <span className="text-xs opacity-70">{dateString}</span>
-        </>
+        </div>
       )}
     </Button>
   );
