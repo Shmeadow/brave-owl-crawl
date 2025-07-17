@@ -78,7 +78,7 @@ export function GuestModeWarningBar() {
       "fixed z-[905]",
       "bg-yellow-100/80 backdrop-blur-xl border-yellow-300 text-yellow-800 shadow-lg rounded-full", // Apply rounded-full here
       "animate-in slide-in-from-top-full duration-500 ease-out",
-      isMobile ? "top-24" : "top-16", // Adjusted for mobile
+      isMobile ? "top-32" : "top-16", // Adjusted for mobile
       "left-1/2 -translate-x-1/2 w-full max-w-md", // Max width for desktop, full width for mobile
       "flex items-center justify-between p-2 gap-2" // Horizontal layout, reduced padding
     )}>
