@@ -76,7 +76,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
         className={cn(
           "shadow-lg flex flex-col transition-all duration-300 ease-in-out mx-auto", // Added mx-auto for horizontal centering
           "bg-card/60 backdrop-blur-lg border-white/20", // Consistent transparency
-          isMobileExpanded ? "h-auto p-2 rounded-3xl w-full max-w-[200px]" : "h-32 p-1 items-center justify-between flex-col rounded-full w-10" // Adjusted max-width, height, padding, and rounded-full
+          isMobileExpanded ? "h-auto p-2 rounded-3xl w-full max-w-xs" : "h-40 p-1 items-center justify-between flex-col rounded-full w-10" // Changed to flex-col for minimized
         )}
       >
         {isMobileExpanded ? (
@@ -171,23 +171,21 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
         ) : (
           // Minimized mobile view (vertical)
           <>
-            <span className="text-xs font-semibold capitalize text-muted-foreground">
-              {mode.replace('-', ' ')}
-            </span>
+            <span className="text-sm font-semibold capitalize">{mode.replace('-', ' ')}</span>
             <div
               className={cn(
-                "text-xl font-bold font-mono my-1",
+                "text-xl font-bold font-mono",
                 isCurrentRoomWritable ? "cursor-pointer hover:text-primary" : "cursor-not-allowed opacity-70"
               )}
               onClick={toggleMobileExpand}
             >
               {formatTime(timeLeft)}
             </div>
-            <div className="flex flex-col gap-1"> {/* Reduced gap */}
-              <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-7 w-7" disabled={!isCurrentRoomWritable}> {/* Smaller buttons */}
+            <div className="flex flex-col gap-3"> {/* Changed to flex-col for vertical buttons */}
+              <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-9 w-9" disabled={!isCurrentRoomWritable}>
                 {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               </Button>
-              <Button onClick={(e) => { e.stopPropagation(); handleReset(); }} size="icon" variant="secondary" className="h-7 w-7" disabled={!isCurrentRoomWritable}> {/* Smaller buttons */}
+              <Button onClick={(e) => { e.stopPropagation(); handleReset(); }} size="icon" variant="secondary" className="h-9 w-9" disabled={!isCurrentRoomWritable}>
                 <RotateCcw className="h-4 w-4" />
               </Button>
             </div>
@@ -334,7 +332,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
           <span className="text-xs font-semibold capitalize">{mode.replace('-', ' ')}</span>
           <div
             className={cn(
-              "text-xl font-bold font-mono my-1",
+              "text-3xl font-bold font-mono my-1",
               isCurrentRoomWritable ? "cursor-pointer hover:text-primary" : "cursor-not-allowed opacity-70"
             )}
             onClick={isMinimized ? () => setIsMinimized(false) : undefined}
