@@ -6,7 +6,7 @@ import { Star, Trash2, ChevronDown, ChevronUp, Lightbulb } from "lucide-react"; 
 import { cn } from "@/lib/utils";
 import { JournalEntryData } from "@/hooks/use-journal";
 import { toast } from "sonner";
-import { RichTextEditor } from "./rich-text-editor";
+import { QuillEditor } from "./quill-editor"; // Import QuillEditor
 import { Input } from "@/components/ui/input";
 import {
   Collapsible,
@@ -169,7 +169,7 @@ export function JournalEntryItem({
           </p>
           <CollapsibleContent>
             <div className="pt-2 border-t border-border/50">
-              <RichTextEditor
+              <QuillEditor // Use QuillEditor here
                 content={entry.content}
                 onChange={handleContentChange}
                 disabled={!isCurrentRoomWritable}

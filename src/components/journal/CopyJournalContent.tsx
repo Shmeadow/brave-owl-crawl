@@ -43,15 +43,11 @@ export function CopyJournalContent({
     const rows = entries.map(entry => {
       const title = `"${(entry.title || '').replace(/"/g, '""')}"`;
       let contentText = entry.content;
-      // If content is JSON, try to convert to plain text for copy
-      if (contentText.trim().startsWith('{')) {
-        try {
-          const jsonContent = JSON.parse(contentText);
-          contentText = jsonContent.content?.map((node: any) => node.text || '').join(' ') || '';
-        } catch (e) {
-          console.error("Error parsing JSON content for copy:", e);
-        }
-      }
+      // Content is now HTML, so convert to plain text for copy
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = contentText;
+      contentText = tempDiv.textContent || '';
+
       const content = `"${contentText.replace(/"/g, '""')}"`;
       return `${title}${actualColSep}${content}`;
     });
