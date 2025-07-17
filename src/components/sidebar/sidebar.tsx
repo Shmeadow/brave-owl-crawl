@@ -54,7 +54,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
         "bg-card/60 backdrop-blur-xl border border-white/40 shadow-xl",
         "transition-all duration-300 ease-in-out",
         isMobile ?
-          `top-[${HEADER_HEIGHT_MOBILE}px] left-0 right-0 flex-row justify-around p-0.5 gap-0.5 rounded-none overflow-x-auto` : // Mobile: horizontal, below header
+          `top-[${HEADER_HEIGHT_MOBILE + 4}px] left-0 right-0 flex-row justify-around p-0.5 gap-0.5 rounded-none overflow-x-auto` : // Mobile: horizontal, below header with 4px gap
           "top-1/2 -translate-y-1/2 left-2 rounded-full p-1 gap-1 flex-col" // Desktop: vertical, left side
       )}
       style={isMobile ? { height: `${MOBILE_HORIZONTAL_SIDEBAR_HEIGHT}px`, width: '100%' } : { width: `${SIDEBAR_WIDTH_DESKTOP}px` }}
