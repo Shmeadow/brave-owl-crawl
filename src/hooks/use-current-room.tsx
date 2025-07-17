@@ -62,35 +62,19 @@ export function useCurrentRoom() {
       return;
     }
 
-    let shouldUpdateCurrentRoom = false;
+    const currentRoomFromState = rooms.find(room => room.id === currentRoomId);
     let newTargetRoomId: string | null = null;
     let newTargetRoomName: string = "Dashboard";
 
-    // Check if the currentRoomId is still valid and accessible
-    const existingCurrentRoom = rooms.find(room => room.id === currentRoomId);
-
-    if (existingCurrentRoom && session) {
-      // If logged in, check if the existing current room is still accessible
-      if (existingCurrentRoom.is_member || existingCurrentRoom.creator_id === session.user.id) {
+    // Scenario 1: User is logged in
+    if (session) {
+      // Check if the current room is valid and accessible for the logged-in user
+      if (currentRoomFromState && (currentRoomFromState.is_member || currentRoomFromState.creator_id === session.user.id)) {
         // Current room is valid and accessible, keep it.
-        newTargetRoomId = existingCurrentRoom.id;
-        newTargetRoomName = existingCurrentRoom.name;
+        newTargetRoomId = currentRoomFromState.id;
+        newTargetRoomName = currentRoomFromState.name;
       } else {
-        // Current room is not accessible for the logged-in user, need to find a new one.
-        shouldUpdateCurrentRoom = true;
-      }
-    } else if (existingCurrentRoom && !session && existingCurrentRoom.type === 'public') {
-      // If guest, and current room is a public room, keep it.
-      newTargetRoomId = existingCurrentRoom.id;
-      newTargetRoomName = existingCurrentRoom.name;
-    } else {
-      // No current room, or it's invalid/inaccessible (e.g., private room for guest, or deleted room)
-      shouldUpdateCurrentRoom = true;
-    }
-
-    if (shouldUpdateCurrentRoom) {
-      if (session) {
-        // Logged in user: prioritize personal room, then first created room
+        // Current room is invalid or inaccessible, find a new default
         if (profile?.personal_room_id) {
           const personalRoom = rooms.find(room => room.id === profile.personal_room_id);
           if (personalRoom) {
@@ -98,24 +82,31 @@ export function useCurrentRoom() {
             newTargetRoomName = personalRoom.name;
           }
         }
+        // If no personal room or it's not found, default to dashboard (null)
         if (!newTargetRoomId) {
-          const firstCreatedRoom = rooms.find(room => room.creator_id === session.user.id);
-          if (firstCreatedRoom) {
-            newTargetRoomId = firstCreatedRoom.id;
-            newTargetRoomName = firstCreatedRoom.name;
-          }
+          newTargetRoomId = null;
+          newTargetRoomName = "Dashboard";
         }
+      }
+    }
+    // Scenario 2: User is a guest
+    else {
+      // Check if the current room is a valid public room for a guest
+      if (currentRoomFromState && currentRoomFromState.type === 'public') {
+        // Current room is valid public room, keep it.
+        newTargetRoomId = currentRoomFromState.id;
+        newTargetRoomName = currentRoomFromState.name;
       } else {
-        // Guest user: default to null (Dashboard)
+        // Current room is invalid or not public, default to dashboard (null)
         newTargetRoomId = null;
         newTargetRoomName = "Dashboard";
       }
+    }
 
-      // Only update if the new target is different from the current state
-      if (newTargetRoomId !== currentRoomId || newTargetRoomName !== currentRoomName) {
-        setCurrentRoomIdState(newTargetRoomId);
-        setCurrentRoomNameState(newTargetRoomName);
-      }
+    // Only update if the new target is different from the current state
+    if (newTargetRoomId !== currentRoomId || newTargetRoomName !== currentRoomName) {
+      setCurrentRoomIdState(newTargetRoomId);
+      setCurrentRoomNameState(newTargetRoomName);
     }
   }, [authLoading, roomsLoading, session, profile, rooms, currentRoomId, currentRoomName]);
 
