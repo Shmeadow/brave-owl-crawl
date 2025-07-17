@@ -9,7 +9,7 @@ import { useEffects } from "@/context/effect-provider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { staticImages, animatedBackgrounds } from "@/lib/backgrounds";
 import { AnimatedBackgroundPreviewItem } from "./animated-background-preview-item";
-import Image from "next/image";
+// Removed: import Image from "next/image"; // No longer needed for static images
 
 export function BackgroundEffectsMenu() {
   const { background, setBackground } = useBackground();
@@ -45,14 +45,11 @@ export function BackgroundEffectsMenu() {
                     }`}
                     onClick={() => handleBackgroundChange(imageUrl, false)}
                   >
-                    <Image
+                    <img
                       src={imageUrl}
                       alt={`Background ${imageUrl.split("/").pop()}`}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      priority={false}
-                      loading="lazy"
+                      className="object-cover w-full h-full" // Ensure it covers the container
+                      loading="lazy" // Still good for performance
                     />
                     {isActive && (
                       <div className="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 text-white text-sm font-bold">
