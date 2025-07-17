@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Star, Trash2, ChevronDown, ChevronUp } from "lucide-react"; // Removed Lightbulb
+import { Star, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { JournalEntryData } from "@/hooks/use-journal";
 import { toast } from "sonner";
@@ -13,7 +13,10 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrixEditor } from "./trix-editor"; // Import TrixEditor
+import dynamic from 'next/dynamic'; // Import dynamic
+
+// Dynamically import TrixEditor with SSR disabled
+const DynamicTrixEditor = dynamic(() => import("./trix-editor").then(mod => mod.TrixEditor), { ssr: false });
 
 interface JournalEntryItemProps {
   entry: JournalEntryData;
@@ -22,8 +25,6 @@ interface JournalEntryItemProps {
   isCurrentRoomWritable: boolean;
   onUpdateEntryContent: (entryId: string, newContent: string) => void;
   onUpdateEntryTitle: (entryId: string, newTitle: string) => void;
-  // Removed isInitiallyOpen?: boolean;
-  // Removed onOpenChange?: (isOpen: boolean) => void;
 }
 
 export function JournalEntryItem({
@@ -33,13 +34,11 @@ export function JournalEntryItem({
   isCurrentRoomWritable,
   onUpdateEntryContent,
   onUpdateEntryTitle,
-  // Removed isInitiallyOpen,
-  // Removed onOpenChange,
 }: JournalEntryItemProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitlePrefix, setEditedTitlePrefix] = useState('');
   const [datePart, setDatePart] = useState('');
-  const [isContentOpen, setIsContentOpen] = useState(false); // Default to false
+  const [isContentOpen, setIsContentOpen] = useState(false);
 
   const handleToggleStarClick = () => {
     if (!isCurrentRoomWritable) {
@@ -159,7 +158,7 @@ export function JournalEntryItem({
           </p>
           <CollapsibleContent>
             <div className="pt-2 border-t border-border/50">
-              <TrixEditor
+              <DynamicTrixEditor
                 content={entry.content}
                 onChange={handleContentChange}
                 disabled={!isCurrentRoomWritable}
