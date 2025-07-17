@@ -31,17 +31,17 @@ export const metadata: Metadata = {
 
 // Define initial configurations for all widgets here to pass to WidgetProvider
 const WIDGET_CONFIGS = {
-  "spaces": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
-  "sounds": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
-  "calendar": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
-  "timer": { initialPosition: { x: 80, y: 70 }, initialWidth: 300, initialHeight: 350 },
-  "tasks": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
-  "drawing-board": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
-  "journal": { initialPosition: { x: 80, y: 70 }, initialWidth: 800, initialHeight: 750 },
-  "media": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
-  "stats-progress": { initialPosition: { x: 80, y: 70 }, initialWidth: 650, initialHeight: 800 },
-  "flash-cards": { initialPosition: { x: 80, y: 70 }, initialWidth: 700, initialHeight: 700 },
-  "goal-focus": { initialPosition: { x: 80, y: 70 }, initialWidth: 550, initialHeight: 650 },
+  "spaces": { initialPosition: { x: 80, y: 70 }, initialWidth: 800, initialHeight: 700 },
+  "sounds": { initialPosition: { x: 80, y: 70 }, initialWidth: 400, initialHeight: 600 },
+  "calendar": { initialPosition: { x: 80, y: 70 }, initialWidth: 800, initialHeight: 700 },
+  "timer": { initialPosition: { x: 80, y: 70 }, initialWidth: 350, initialHeight: 400 },
+  "tasks": { initialPosition: { x: 80, y: 70 }, initialWidth: 700, initialHeight: 700 },
+  "drawing-board": { initialPosition: { x: 80, y: 70 }, initialWidth: 900, initialHeight: 700 },
+  "journal": { initialPosition: { x: 80, y: 70 }, initialWidth: 900, initialHeight: 750 },
+  "media": { initialPosition: { x: 80, y: 70 }, initialWidth: 500, initialHeight: 600 },
+  "stats-progress": { initialPosition: { x: 80, y: 70 }, initialWidth: 600, initialHeight: 700 },
+  "flash-cards": { initialPosition: { x: 80, y: 70 }, initialWidth: 800, initialHeight: 700 },
+  "goal-focus": { initialPosition: { x: 80, y: 70 }, initialWidth: 600, initialHeight: 700 },
   "background-effects": { initialPosition: { x: 80, y: 70 }, initialWidth: 400, initialHeight: 600 },
 };
 
