@@ -18,7 +18,7 @@ interface TrixEditorProps {
 }
 
 export function TrixEditor({ content, onChange, disabled }: TrixEditorProps) {
-  const editorRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<HTMLDivElement | null>(null);
   const isMounted = useRef(false);
 
   useEffect(() => {
@@ -52,8 +52,8 @@ export function TrixEditor({ content, onChange, disabled }: TrixEditorProps) {
     <div className={cn("rounded-md border border-input bg-transparent", disabled && "cursor-not-allowed opacity-50")}>
       <ReactTrixEditor
         input="trix-editor-input"
-        editorRef={editorRef}
-        className="trix-content min-h-[150px] p-2" // Apply min-height and padding
+        editorRef={editorRef as React.RefObject<HTMLDivElement>} // Explicitly cast here
+        className="trix-content min-h-[150px] p-2"
         onChange={handleChange}
         readOnly={disabled}
       />
