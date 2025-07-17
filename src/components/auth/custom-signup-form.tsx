@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, ControllerRenderProps } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ const signupFormSchema = z.object({
   username: z.string()
     .min(2, { message: "Username must be at least 2 characters." })
     .max(30, { message: "Username cannot exceed 30 characters." })
-    .refine(name => !profanityList.some(word => name.toLowerCase().includes(word)), {
+    .refine((name: string) => !profanityList.some(word => name.toLowerCase().includes(word)), {
       message: "Username contains profanity. Please choose a different one.",
     }),
 });
@@ -102,7 +102,7 @@ export function CustomSignupForm({ supabase, onSuccess, onSwitchToSignIn }: Cust
         <FormField
           control={form.control}
           name="email"
-          render={({ field }) => (
+          render={({ field }: { field: ControllerRenderProps<z.infer<typeof signupFormSchema>, "email"> }) => (
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
@@ -115,7 +115,7 @@ export function CustomSignupForm({ supabase, onSuccess, onSwitchToSignIn }: Cust
         <FormField
           control={form.control}
           name="password"
-          render={({ field }) => (
+          render={({ field }: { field: ControllerRenderProps<z.infer<typeof signupFormSchema>, "password"> }) => (
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
@@ -128,7 +128,7 @@ export function CustomSignupForm({ supabase, onSuccess, onSwitchToSignIn }: Cust
         <FormField
           control={form.control}
           name="username"
-          render={({ field }) => (
+          render={({ field }: { field: ControllerRenderProps<z.infer<typeof signupFormSchema>, "username"> }) => (
             <FormItem>
               <FormLabel>Username</FormLabel>
               <FormControl>

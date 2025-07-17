@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { useFlashcards, CardData } from '@/hooks/use-flashcards';
 import { useSupabase } from '@/integrations/supabase/auth';
@@ -270,7 +270,7 @@ export function FlashcardApp() {
           <CardContent className="p-4 flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <Label>Test Type</Label>
-              <ToggleGroup type="single" value={testType} onValueChange={(value) => value && setTestType(value as 'text' | 'choices')} disabled={cards.length < 4} className="mt-1 grid grid-cols-2">
+              <ToggleGroup type="single" value={testType} onValueChange={(value: string) => value && setTestType(value as 'text' | 'choices')} disabled={cards.length < 4} className="mt-1 grid grid-cols-2">
                   <ToggleGroupItem value="text">Text Input</ToggleGroupItem>
                   <ToggleGroupItem value="choices">Multiple Choice</ToggleGroupItem>
               </ToggleGroup>

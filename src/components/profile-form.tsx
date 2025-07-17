@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, ControllerRenderProps } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -231,7 +231,7 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
         <FormField
           control={form.control}
           name="first_name"
-          render={({ field }) => (
+          render={({ field }: { field: ControllerRenderProps<ProfileFormValues, "first_name"> }) => (
             <FormItem>
               <FormLabel>First Name</FormLabel>
               <FormControl>
@@ -244,7 +244,7 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
         <FormField
           control={form.control}
           name="last_name"
-          render={({ field }) => (
+          render={({ field }: { field: ControllerRenderProps<ProfileFormValues, "last_name"> }) => (
             <FormItem>
               <FormLabel>Last Name</FormLabel>
               <FormControl>
@@ -257,7 +257,7 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
         <FormField
           control={form.control}
           name="profile_image_url"
-          render={({ field }) => (
+          render={({ field }: { field: ControllerRenderProps<ProfileFormValues, "profile_image_url"> }) => (
             <FormItem>
               <FormLabel>Profile Image URL (Optional)</FormLabel>
               <FormControl>
@@ -271,7 +271,7 @@ export function ProfileForm({ initialProfile, onProfileUpdated }: ProfileFormPro
         <FormField
           control={form.control}
           name="time_format_24h"
-          render={({ field }) => (
+          render={({ field }: { field: ControllerRenderProps<ProfileFormValues, "time_format_24h"> }) => (
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
                 <FormLabel className="text-base">

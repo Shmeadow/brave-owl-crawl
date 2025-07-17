@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, ControllerRenderProps } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -72,7 +72,7 @@ export function CreatePersonalRoomForm({ onRoomCreated, onClose }: CreatePersona
           <FormField
             control={form.control}
             name="name"
-            render={({ field }) => (
+            render={({ field }: { field: ControllerRenderProps<z.infer<typeof formSchema>, "name"> }) => (
               <FormItem>
                 <FormLabel>Room Name</FormLabel>
                 <FormControl>
@@ -85,7 +85,7 @@ export function CreatePersonalRoomForm({ onRoomCreated, onClose }: CreatePersona
           <FormField
             control={form.control}
             name="description"
-            render={({ field }) => (
+            render={({ field }: { field: ControllerRenderProps<z.infer<typeof formSchema>, "description"> }) => (
               <FormItem>
                 <FormLabel>Description (Optional)</FormLabel>
                 <FormControl>
@@ -98,7 +98,7 @@ export function CreatePersonalRoomForm({ onRoomCreated, onClose }: CreatePersona
           <FormField
             control={form.control}
             name="type"
-            render={({ field }) => (
+            render={({ field }: { field: ControllerRenderProps<z.infer<typeof formSchema>, "type"> }) => (
               <FormItem>
                 <FormLabel>Room Type</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!session}>

@@ -38,7 +38,7 @@ export function BackgroundBlurSlider({ className, isMobile }: BackgroundBlurSlid
         min={0}
         max={16}
         step={1}
-        onValueChange={(value) => setBlur(value[0])}
+        onValueChange={(value: number[]) => setBlur(value[0])}
         title="Adjust Background Blur"
       />
       <TooltipProvider>

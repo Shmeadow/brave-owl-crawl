@@ -12,7 +12,7 @@ import { CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, ControllerRenderProps } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
@@ -126,7 +126,7 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
                   <FormField
                     control={form.control}
                     name="title"
-                    render={({ field }) => (
+                    render={({ field }: { field: ControllerRenderProps<z.infer<typeof eventFormSchema>, "title"> }) => (
                       <FormItem>
                         <FormLabel>Event Title</FormLabel>
                         <FormControl>
@@ -139,7 +139,7 @@ export function CalendarWidget({ isCurrentRoomWritable }: CalendarWidgetProps) {
                   <FormField
                     control={form.control}
                     name="description"
-                    render={({ field }) => (
+                    render={({ field }: { field: ControllerRenderProps<z.infer<typeof eventFormSchema>, "description"> }) => (
                       <FormItem>
                         <FormLabel>Description (Optional)</FormLabel>
                         <FormControl>

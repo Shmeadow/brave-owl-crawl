@@ -16,7 +16,7 @@ export function DrawingBoardWidget({ isCurrentRoomWritable, isMobile }: DrawingB
     <div className="h-full w-full flex flex-col">
       <div className="flex-1 relative">
         <Excalidraw
-          excalidrawAPI={(api) => {
+          excalidrawAPI={(api: ExcalidrawImperativeAPI) => {
             excalidrawRef.current = api;
           }}
           theme="dark" // Set Excalidraw theme to dark

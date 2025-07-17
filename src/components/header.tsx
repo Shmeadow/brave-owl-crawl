@@ -93,7 +93,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
                 <Settings className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+            <PopoverContent className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20" align="start" onOpenAutoFocus={(e: React.FocusEvent) => e.preventDefault()}>
               {userOwnsPersonalRoom && usersPersonalRoom ? (
                 <RoomSettingsContent room={usersPersonalRoom} />
               ) : (

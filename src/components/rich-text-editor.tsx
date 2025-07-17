@@ -1,6 +1,6 @@
 "use client";
 
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import React, { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
@@ -53,8 +53,8 @@ export function RichTextEditor({
         class: 'prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none min-h-[300px] max-w-none',
       },
     },
-    onUpdate({ editor }) {
-      onChange(JSON.stringify(editor.getJSON()));
+    onUpdate({ editor: currentEditor }: { editor: Editor }) {
+      onChange(JSON.stringify(currentEditor.getJSON()));
     },
     editable: !disabled,
     immediatelyRender: false,
