@@ -41,7 +41,6 @@ const DynamicWelcomeBackModal = dynamic(() => import("@/components/welcome-back-
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
 const SIDEBAR_WIDTH_DESKTOP = 60; // px
-const SIDEBAR_WIDTH_EXPANDED = 250; // px
 const SIDEBAR_WIDTH_MOBILE = 250; // px
 
 export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
@@ -54,7 +53,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const isMobile = useIsMobile();
   const { goals } = useGoals();
 
-  const [sidebarCurrentWidth, setSidebarCurrentWidth] = useState(0);
   const [mainContentArea, setMainContentArea] = useState({ left: 0, top: 0, width: 0, height: 0 });
 
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -84,18 +82,17 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const firstIncompleteGoal = goals.find(g => !g.completed) || null;
 
   useEffect(() => {
-    const newSidebarWidth = isMobile
-      ? (isSidebarOpen ? SIDEBAR_WIDTH_MOBILE : 0)
-      : (isSidebarOpen ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_DESKTOP);
-    setSidebarCurrentWidth(newSidebarWidth);
-  }, [isSidebarOpen, isMobile]);
-
-  useEffect(() => {
     const calculateArea = () => {
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
-      const contentLeft = isMobile ? 0 : sidebarCurrentWidth;
-      const contentWidth = isMobile ? windowWidth : windowWidth - sidebarCurrentWidth;
+      
+      // On mobile, the sidebar overlays content, so the main area starts at left: 0.
+      // On desktop, the main content area starts to the right of the static floating sidebar.
+      // Sidebar is 60px wide + 16px left offset + 16px gap = 92px.
+      const desktopContentLeft = SIDEBAR_WIDTH_DESKTOP + 16 + 16;
+      
+      const contentLeft = isMobile ? 0 : desktopContentLeft;
+      const contentWidth = isMobile ? windowWidth : windowWidth - contentLeft;
 
       setMainContentArea({
         left: contentLeft,
@@ -108,7 +105,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     calculateArea();
     window.addEventListener('resize', calculateArea);
     return () => window.removeEventListener('resize', calculateArea);
-  }, [sidebarCurrentWidth, isMobile]);
+  }, [isMobile]);
 
   if (loading) {
     return <LoadingScreen />;

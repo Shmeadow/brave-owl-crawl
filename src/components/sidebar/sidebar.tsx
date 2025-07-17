@@ -21,7 +21,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // On desktop, the sidebar is always collapsed visually, so we ensure the state reflects that.
+    // On desktop, the sidebar is always visually collapsed.
     // On mobile, the state is controlled by the hamburger menu.
     if (!isMobile) {
       setIsSidebarOpen(false);
@@ -49,7 +49,6 @@ export function Sidebar({ isMobile }: SidebarProps) {
     }
   };
 
-  // Determine sidebar width based on device type and open state (for mobile)
   const sidebarWidth = isMobile
     ? (isSidebarOpen ? SIDEBAR_WIDTH_MOBILE : 0)
     : SIDEBAR_WIDTH_DESKTOP;
@@ -61,15 +60,15 @@ export function Sidebar({ isMobile }: SidebarProps) {
     <div
       ref={sidebarRef}
       className={cn(
-        "fixed top-16 z-[1001] flex flex-col items-center py-4",
-        "bg-card/60 backdrop-blur-xl border border-white/40 rounded-r-lg shadow-xl",
+        "fixed z-[1001] flex flex-col",
+        "bg-card/60 backdrop-blur-xl border border-white/40 shadow-xl",
         "transition-all duration-300 ease-in-out",
-        `h-[calc(100vh-${HEADER_HEIGHT_REM}rem)]`,
-        isMobile
-          ? `${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`
-          : ""
+        // Mobile-specific styles
+        isMobile && `top-16 h-[calc(100vh-${HEADER_HEIGHT_REM}rem)] rounded-r-lg py-4 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`,
+        // Desktop-specific styles
+        !isMobile && "top-1/2 -translate-y-1/2 left-4 rounded-full p-2 gap-2"
       )}
-      style={{ width: `${sidebarWidth}px` }}
+      style={isMobile ? { width: `${sidebarWidth}px` } : {}}
     >
       <div className="flex flex-col gap-2 overflow-y-auto">
         {navItems.map((item) => (
@@ -82,9 +81,6 @@ export function Sidebar({ isMobile }: SidebarProps) {
             isExpanded={isExpanded}
           />
         ))}
-      </div>
-      <div className="mt-auto pt-4">
-        {/* Docking button removed */}
       </div>
     </div>
   );
