@@ -181,8 +181,8 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             {isDashboard && !isMobile && <IndependentPinnedWidgetsDock isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />}
             {isDashboard && isMobile && (
               <>
-                {/* Mobile-specific SimpleAudioPlayer positioned at bottom-right */}
-                <DynamicSimpleAudioPlayer isMobile={isMobile} displayMode="normal" /> {/* Changed to normal */}
+                {/* Mobile-specific SimpleAudioPlayer positioned at bottom-left */}
+                <DynamicSimpleAudioPlayer isMobile={isMobile} />
                 <DynamicMobileControls>
                   <DynamicPomodoroWidget 
                     isMinimized={isPomodoroMinimized}

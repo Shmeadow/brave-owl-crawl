@@ -13,6 +13,7 @@ interface MinimizedPlayerControlsProps {
   currentIsMuted: boolean;
   toggleMute: () => void;
   setDisplayMode: (mode: 'normal' | 'maximized' | 'minimized') => void;
+  isMobile: boolean; // New prop
 }
 
 export function MinimizedPlayerControls({
@@ -24,13 +25,17 @@ export function MinimizedPlayerControls({
   currentIsMuted,
   toggleMute,
   setDisplayMode,
+  isMobile, // Destructure new prop
 }: MinimizedPlayerControlsProps) {
 
   // Volume control is now only mute/unmute button
   const isVolumeControlDisabled = !playerIsReady || playerType === 'spotify';
 
   return (
-    <div className="flex flex-col items-center justify-between w-full h-full py-1 gap-1"> {/* Changed to flex-col, added py-1, reduced gap */}
+    <div className={cn(
+      "flex items-center justify-between w-full h-full p-0.5 gap-1", // Reduced padding, gap
+      isMobile ? "flex-row" : "flex-col" // Conditional flex direction
+    )}>
       {/* Play/Pause Button */}
       <button
         onClick={togglePlayPause}

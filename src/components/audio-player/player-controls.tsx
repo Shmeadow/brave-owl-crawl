@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Play, Pause, Volume2, VolumeX, FastForward, Rewind, Maximize, Minimize, ChevronRight } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, FastForward, Rewind, Maximize, Minimize, ChevronRight, ChevronDown } from 'lucide-react'; // Import ChevronDown
 
 interface PlayerControlsProps {
   playerType: 'audio' | 'youtube' | 'spotify' | null;
@@ -77,34 +77,46 @@ export function PlayerControls({
         />
       </div>
 
-      {/* Player Mode Buttons (now integrated) */}
+      {/* Player Mode Buttons */}
       <div className="flex justify-end gap-1 ml-2">
-        {displayMode === 'normal' && (
-          <button
-            onClick={() => setDisplayMode('maximized')}
-            className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
-            title="Maximize Player"
-          >
-            <Maximize size={14} />
-          </button>
-        )}
-        {displayMode === 'maximized' && (
-          <button
-            onClick={() => setDisplayMode('normal')}
-            className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
-            title="Shrink Player"
-          >
-            <Minimize size={14} />
-          </button>
-        )}
-        {!isMobile && ( // Only show minimize button on desktop
+        {isMobile ? (
+          // Mobile: Only Dock button
           <button
             onClick={() => setDisplayMode('minimized')}
             className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
-            title="Minimize Player"
+            title="Dock Player"
           >
-            <ChevronRight size={14} />
+            <ChevronDown size={14} />
           </button>
+        ) : (
+          // Desktop: Maximize/Minimize and Dock buttons
+          <>
+            {displayMode === 'normal' && (
+              <button
+                onClick={() => setDisplayMode('maximized')}
+                className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
+                title="Maximize Player"
+              >
+                <Maximize size={14} />
+              </button>
+            )}
+            {displayMode === 'maximized' && (
+              <button
+                onClick={() => setDisplayMode('normal')}
+                className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
+                title="Shrink Player"
+              >
+                <Minimize size={14} />
+              </button>
+            )}
+            <button
+              onClick={() => setDisplayMode('minimized')}
+              className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
+              title="Minimize Player"
+            >
+              <ChevronRight size={14} />
+            </button>
+          </>
         )}
       </div>
     </div>
