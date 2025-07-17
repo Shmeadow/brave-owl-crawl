@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useSupabase } from '@/integrations/supabase/auth';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card'; // Keep Card for compact mode
 import { X, Info, ChevronUp, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useSupabase } from '@/integrations/supabase/auth'; // Import useSupabase
 
 const LOCAL_STORAGE_DISMISSED_KEY = 'guest_mode_warning_dismissed';
 
@@ -73,23 +73,22 @@ export function GuestModeWarningBar() {
 
   // Full display mode
   return (
-    <Card className={cn(
+    <div className={cn( // Changed from Card to div
       "fixed z-[905]",
-      "bg-yellow-100/80 backdrop-blur-xl border-yellow-300 text-yellow-800 shadow-lg rounded-lg",
+      "bg-yellow-100/80 backdrop-blur-xl border-yellow-300 text-yellow-800 shadow-lg rounded-full", // Apply rounded-full here
       "animate-in slide-in-from-top-full duration-500 ease-out",
-      isMobile ? "top-16 left-1/2 -translate-x-1/2 w-[calc(100vw-2rem)] max-w-xs" : "top-16 left-1/2 -translate-x-1/2 w-full max-w-md"
+      "top-16 left-1/2 -translate-x-1/2 w-full max-w-md", // Max width for desktop, full width for mobile
+      "flex items-center justify-between p-2 gap-2" // Horizontal layout, reduced padding
     )}>
-      <CardContent className="p-3 flex items-center gap-3">
-        <Info className="h-5 w-5 flex-shrink-0" />
-        <div className="flex-1 text-sm">
-          <p className="font-semibold">You are in Guest Mode.</p>
-          <p>Your data is saved locally. <Link href="/login" className="underline font-medium hover:text-yellow-900">Log in</Link> to save and sync your data.</p>
-        </div>
-        <Button variant="ghost" size="icon" className="h-7 w-7 text-yellow-700 hover:bg-yellow-200" onClick={handleDismiss} title="Dismiss">
-          <X className="h-4 w-4" />
-          <span className="sr-only">Dismiss warning</span>
-        </Button>
-      </CardContent>
-    </Card>
+      <Info className="h-4 w-4 flex-shrink-0" /> {/* Smaller icon */}
+      <div className="flex-1 text-xs"> {/* Smaller text */}
+        <p className="font-semibold inline">You are in Guest Mode.</p>
+        <p className="inline ml-1">Your data is saved locally. <Link href="/login" className="underline font-medium hover:text-yellow-900">Log in</Link> to save and sync your data.</p>
+      </div>
+      <Button variant="ghost" size="icon" className="h-6 w-6 text-yellow-700 hover:bg-yellow-200" onClick={handleDismiss} title="Dismiss">
+        <X className="h-3 w-3" /> {/* Smaller icon */}
+        <span className="sr-only">Dismiss warning</span>
+      </Button>
+    </div>
   );
 }

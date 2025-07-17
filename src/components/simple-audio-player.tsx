@@ -233,8 +233,8 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
       <div className={cn(
         "fixed top-[72px] right-4 z-[901]", // Position at top right for mobile
         "transition-all duration-300 ease-in-out",
-        "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full", // Applied styling here
-        isMobileExpanded ? "h-auto p-2 max-w-xs" : "h-14 p-2 items-center justify-between flex-row max-w-[192px]" // Adjusted max-width for minimized
+        "bg-card/40 backdrop-blur-xl border-white/20 shadow-sm flex flex-col w-full", // Applied styling here
+        isMobileExpanded ? "h-auto p-1 rounded-xl max-w-[200px]" : "h-10 p-1 items-center justify-between flex-row rounded-full w-40" // Adjusted max-width, height, padding, and rounded-full
       )}>
         {isMobileExpanded ? (
           <>
@@ -254,14 +254,14 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
 
             {/* Spotify Track Info */}
             {playerType === 'spotify' && spotifyCurrentTrack && (
-              <div className="text-center p-1 flex-shrink-0">
-                <p className="text-sm font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
+              <div className="text-center p-0.5 flex-shrink-0"> {/* Reduced padding */}
+                <p className="text-xs font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p> {/* Smaller text */}
                 <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map(a => a.name).join(', ')}</p>
               </div>
             )}
 
             {/* Main Player Row: URL Input Toggle and Controls */}
-            <div className="flex items-center justify-between space-x-2 mb-1 flex-shrink-0 w-full">
+            <div className="flex items-center justify-between space-x-1 mb-0.5 flex-shrink-0 w-full"> {/* Reduced space-x and mb */}
               {/* URL Input Toggle (Drawer for mobile) */}
               <Drawer open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
                 <DrawerTrigger asChild>
@@ -269,7 +269,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
                     className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
                     title="Change Media URL"
                   >
-                    <Link size={12} className="mr-0.5" />
+                    <Link size={10} className="mr-0.5" /> {/* Smaller icon */}
                     {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
                   </button>
                 </DrawerTrigger>
@@ -311,20 +311,20 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
             />
 
             {playerType === 'spotify' && session && !spotifyPlayerReady && (
-              <div className="text-center text-sm text-muted-foreground mt-2">
+              <div className="text-center text-xs text-muted-foreground mt-1"> {/* Smaller text and margin */}
                 <p>Log in to Spotify for full playback control.</p>
-                <Button onClick={connectToSpotify} className="text-primary hover:underline mt-1">
+                <Button onClick={connectToSpotify} className="text-primary hover:underline mt-0.5" size="sm"> {/* Smaller button */}
                   Connect to Spotify
                 </Button>
               </div>
             )}
             <Button
               onClick={toggleMobileExpand}
-              className="w-full mt-2"
+              className="w-full mt-1" // Reduced margin
               variant="secondary"
               size="sm"
             >
-              <ChevronDown className="mr-2 h-4 w-4" /> Collapse Player
+              <ChevronDown className="mr-1 h-3 w-3" /> Collapse Player {/* Smaller icon */}
             </Button>
           </>
         ) : (
@@ -349,10 +349,10 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
 
             <button
               onClick={toggleMobileExpand}
-              className="p-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 ml-1 flex-shrink-0 h-8 w-8"
+              className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 ml-0.5 flex-shrink-0 h-7 w-7" // Smaller button
               title="Expand Player"
             >
-              <ChevronUp size={16} />
+              <ChevronUp size={14} /> {/* Smaller icon */}
             </button>
           </>
         )}
@@ -364,13 +364,13 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   return (
     <div className={cn(
       "fixed z-[900] transition-all duration-300 ease-in-out",
-      displayMode === 'normal' && `top-[120px] right-4 w-80`, // Adjusted top to 120px
-      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-48 h-12',
+      displayMode === 'normal' && `top-[120px] right-4 w-64 rounded-xl`, // Adjusted width, added rounded-xl
+      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-40 h-10 rounded-full', // Adjusted width, height, added rounded-full
       displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-[500px] flex flex-col items-center justify-center'
     )}>
       <div className={cn(
-        "bg-card/40 backdrop-blur-xl border-white/20 rounded-lg shadow-sm flex flex-col w-full", // Applied styling here
-        displayMode === 'normal' && 'p-1',
+        "bg-card/40 backdrop-blur-xl border-white/20 shadow-sm flex flex-col w-full", // Applied styling here
+        displayMode === 'normal' && 'p-1', // Reduced padding
         displayMode === 'maximized' && 'p-4 items-center justify-center',
         displayMode === 'minimized' && 'hidden'
       )}>
@@ -391,13 +391,13 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
         />
 
         {playerType === 'spotify' && spotifyCurrentTrack && (
-          <div className="text-center p-1 flex-shrink-0">
+          <div className="text-center p-0.5 flex-shrink-0"> {/* Reduced padding */}
             <p className="text-sm font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
             <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map(a => a.name).join(', ')}</p>
           </div>
         )}
 
-        <div className="flex items-center justify-between space-x-1.5 mb-1 flex-shrink-0 w-full">
+        <div className="flex items-center justify-between space-x-1 mb-0.5 flex-shrink-0 w-full"> {/* Reduced space-x and mb */}
           <div className="flex-grow min-w-0">
             <Popover open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
               <PopoverTrigger asChild>
@@ -405,7 +405,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
                   className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
                   title="Change Media URL"
                 >
-                  <Link size={12} className="mr-0.5" />
+                  <Link size={10} className="mr-0.5" /> {/* Smaller icon */}
                   {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
                 </button>
               </PopoverTrigger>
@@ -443,9 +443,9 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
         />
 
         {playerType === 'spotify' && session && !spotifyPlayerReady && (
-          <div className="text-center text-sm text-muted-foreground mt-2">
+          <div className="text-center text-xs text-muted-foreground mt-1"> {/* Smaller text and margin */}
             <p>Log in to Spotify for full playback control.</p>
-            <Button onClick={connectToSpotify} className="text-primary hover:underline mt-1">
+            <Button onClick={connectToSpotify} className="text-primary hover:underline mt-0.5" size="sm"> {/* Smaller button */}
               Connect to Spotify
             </Button>
           </div>
@@ -455,7 +455,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
       {displayMode === 'minimized' && (
         <div
           className={cn(
-            "bg-card/40 backdrop-blur-xl border-white/20 p-2 rounded-lg shadow-sm flex items-center justify-between w-full h-full"
+            "bg-card/40 backdrop-blur-xl border-white/20 p-1 rounded-full flex items-center justify-between w-full h-full" // Reduced padding, ensured rounded-full
           )}
           title="Expand Player"
         >
