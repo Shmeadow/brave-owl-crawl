@@ -6,13 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Maximize, Pin, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDraggable } from "@dnd-kit/core";
+import { ResizableBox } from "@/components/resizable-box";
 import type { ResizeCallbackData } from 'react-resizable';
 import { DOCKED_WIDGET_WIDTH, DOCKED_WIDGET_HEIGHT, MINIMIZED_WIDGET_WIDTH, MINIMIZED_WIDGET_HEIGHT } from "@/hooks/widgets/types"; // Import constants
 import { WidgetHeader } from './widget-header';
-import dynamic from 'next/dynamic'; // Import dynamic
-
-// Dynamically import ResizableBox to ensure it's only rendered on the client side
-const DynamicResizableBox = dynamic(() => import('@/components/resizable-box').then(mod => mod.ResizableBox), { ssr: false });
 
 interface WidgetProps {
   id: string;
@@ -179,7 +176,7 @@ export function Widget({
       )}
       onMouseDown={onBringToFront}
     >
-      <DynamicResizableBox
+      <ResizableBox
         width={actualWidth}
         height={actualHeight}
         onResizeStop={(e: React.SyntheticEvent, data: ResizeCallbackData) => {
@@ -193,7 +190,7 @@ export function Widget({
         resizeHandles={isResizable ? ['s', 'e', 'w', 'se', 'sw'] : []}
       >
         {renderWidgetContent}
-      </DynamicResizableBox>
+      </ResizableBox>
     </div>
   );
 }

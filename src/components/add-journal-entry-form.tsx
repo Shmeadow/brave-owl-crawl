@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { QuillEditor } from "./quill-editor"; // Import QuillEditor
+import { RichTextEditor } from "./rich-text-editor";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Keep Card for consistency if used directly
 
 const today = new Date();
@@ -82,7 +82,7 @@ export function AddJournalEntryForm({ onAddEntry, isCurrentRoomWritable }: AddJo
               <FormItem>
                 <FormLabel>Content</FormLabel>
                 <FormControl>
-                  <QuillEditor // Use QuillEditor here
+                  <RichTextEditor
                     content={field.value}
                     onChange={field.onChange}
                     disabled={!isCurrentRoomWritable}
