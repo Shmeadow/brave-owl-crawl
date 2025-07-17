@@ -15,11 +15,11 @@ export function BackgroundBlurSlider({ className }: BackgroundBlurSliderProps) {
   const { blur, setBlur } = useBackgroundBlur();
 
   return (
-    <div className={cn("flex items-center gap-2 w-32", className)}> {/* Apply className here */}
+    <div className={cn("flex items-center gap-3 w-40 p-1.5", className)}> {/* Adjusted width, gap, and added padding */}
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Sun className="h-4 w-4 text-muted-foreground" />
+            <Sun className="h-5 w-5 text-muted-foreground" /> {/* Increased icon size */}
           </TooltipTrigger>
           <TooltipContent>
             Clear
@@ -37,7 +37,7 @@ export function BackgroundBlurSlider({ className }: BackgroundBlurSliderProps) {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Wind className="h-4 w-4 text-muted-foreground" />
+            <Wind className="h-5 w-5 text-muted-foreground" /> {/* Increased icon size */}
           </TooltipTrigger>
           <TooltipContent>
             Blurry

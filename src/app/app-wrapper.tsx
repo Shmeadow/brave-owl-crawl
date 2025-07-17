@@ -133,7 +133,6 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
       <FocusSessionProvider>
         <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea} isMobile={isMobile}>
           <div className="relative h-screen bg-transparent">
-            {/* Removed the old shadow element */}
             {activeEffect === 'rain' && <DynamicRainEffect />}
             {activeEffect === 'snow' && <DynamicSnowEffect />}
             {activeEffect === 'raindrops' && <DynamicRaindropsEffect />}
