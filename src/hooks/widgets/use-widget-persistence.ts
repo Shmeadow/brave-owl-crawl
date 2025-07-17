@@ -151,7 +151,7 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea, is
           // For personal dashboard (currentRoomId === null), use the specific partial unique index name.
           // For room-specific widgets (currentRoomId !== null), use the composite unique key.
           const onConflictTarget = currentRoomId === null
-            ? 'user_widget_states_user_id_widget_id_null_room_id_key' // Explicit constraint name for NULL room_id
+            ? 'user_id,widget_id' // Corrected: Use column names for the unique constraint
             : 'user_id,widget_id,room_id'; // Composite key for non-null room_id
 
           console.log("Attempting to upsert widget states with onConflict target:", onConflictTarget, "for room ID:", currentRoomId);
