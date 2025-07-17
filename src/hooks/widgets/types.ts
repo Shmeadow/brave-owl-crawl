@@ -70,8 +70,8 @@ export const SIDEBAR_OPEN_OFFSET_X = 20; // Increased from 5px for desktop
 export const SIDEBAR_OPEN_OFFSET_Y = 20; // Increased from 5px for desktop
 
 // New constants for default mobile widget sizes
-export const DEFAULT_WIDGET_WIDTH_MOBILE = 320; // Increased from 320
-export const DEFAULT_WIDGET_HEIGHT_MOBILE = 500; // Increased from 500
+export const DEFAULT_WIDGET_WIDTH_MOBILE = 360; // Increased from 320
+export const DEFAULT_WIDGET_HEIGHT_MOBILE = 600; // Increased from 500
 
 export const LOCAL_STORAGE_WIDGET_STATE_KEY = 'active_widget_states';
 
