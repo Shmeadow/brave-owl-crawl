@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { RichTextEditor } from "./rich-text-editor";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Keep Card for consistency if used directly
+// Removed: import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Keep Card for consistency if used directly
 
 const today = new Date();
 const dateString = today.toLocaleDateString('en-US', {
