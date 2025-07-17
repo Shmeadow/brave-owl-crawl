@@ -203,12 +203,11 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
     <Card
       className={cn(
         "fixed bottom-20 left-1/2 -translate-x-1/2",
-        "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg",
         "flex transition-all duration-300 ease-in-out z-[901]",
-        "w-64", // Changed from w-56 to w-64 for desktop
-        isMinimized
-          ? "flex-col items-center px-2 py-1 h-auto cursor-pointer"
-          : "flex-col items-center p-4 gap-4 h-auto" // Changed p-3 gap-3 to p-4 gap-4
+        // Styles for normal (expanded) state
+        !isMinimized && "w-64 flex-col items-center p-4 gap-4 h-auto bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-lg",
+        // Styles for minimized (docked) state
+        isMinimized && "w-48 flex-col items-center px-2 py-1 h-auto cursor-pointer bg-card/60 backdrop-blur-lg border-white/20 shadow-lg rounded-full"
       )}
       onClick={isMinimized ? () => setIsMinimized(false) : undefined}
     >
