@@ -35,10 +35,17 @@ interface HeaderProps {
 }
 
 const ClockTrigger = () => {
-  const { timeString, isLoading } = useClock();
+  const { timeString, dateString, isLoading } = useClock();
   return (
-    <Button variant="ghost" className="font-mono text-base px-3 hidden md:flex">
-      {isLoading ? "--:--:--" : timeString}
+    <Button variant="ghost" className="font-mono text-sm px-3 hidden md:flex flex-col h-auto py-1">
+      {isLoading ? (
+        <span>--:--:--</span>
+      ) : (
+        <>
+          <span>{timeString}</span>
+          <span className="text-xs opacity-70">{dateString}</span>
+        </>
+      )}
     </Button>
   );
 };
@@ -63,7 +70,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
     )}>
       {/* Left Capsule */}
       <div className={cn(
-        "flex items-center flex-1 min-w-0 gap-2 px-4 py-2",
+        "flex items-center min-w-0 gap-2 px-4 py-2",
         "bg-card/50 backdrop-blur-xl border border-white/20 rounded-full"
       )}>
         {isMobile && (
