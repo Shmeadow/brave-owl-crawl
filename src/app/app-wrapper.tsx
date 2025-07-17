@@ -26,7 +26,7 @@ import { useRooms } from "@/hooks/use-rooms";
 import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification";
 import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar";
 import { CookieConsentBar } from "@/components/cookie-consent-bar";
-import { MOBILE_CONTROLS_HEIGHT } from "@/lib/constants"; // Import MOBILE_CONTROLS_HEIGHT from new constants file
+import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT } from "@/lib/constants"; // Import new constant
 
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
@@ -41,8 +41,8 @@ const DynamicWelcomeBackModal = dynamic(() => import("@/components/welcome-back-
 
 // Constants for layout dimensions
 const HEADER_HEIGHT = 64; // px
-const SIDEBAR_WIDTH_DESKTOP = 60; // px
-const SIDEBAR_LEFT_OFFSET = 16; // px (from left edge of screen)
+const SIDEBAR_WIDTH_DESKTOP = 48; // px (from sidebar.tsx)
+const SIDEBAR_LEFT_OFFSET = 8; // px (from sidebar.tsx)
 const SIDEBAR_CONTENT_GAP = 16; // px (gap between sidebar and main content)
 
 export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
@@ -89,6 +89,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
       const windowHeight = window.innerHeight;
       
       let contentLeft = 0;
+      let contentTop = HEADER_HEIGHT;
       let contentWidth = windowWidth;
       let contentHeight = windowHeight - HEADER_HEIGHT;
 
@@ -97,13 +98,14 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
         contentLeft = SIDEBAR_WIDTH_DESKTOP + SIDEBAR_LEFT_OFFSET + SIDEBAR_CONTENT_GAP;
         contentWidth = windowWidth - contentLeft;
       } else {
-        // Mobile layout: account for bottom controls
-        contentHeight -= MOBILE_CONTROLS_HEIGHT;
+        // Mobile layout: account for horizontal sidebar and bottom controls
+        contentTop += MOBILE_HORIZONTAL_SIDEBAR_HEIGHT;
+        contentHeight -= (MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_CONTROLS_HEIGHT);
       }
 
       setMainContentArea({
         left: contentLeft,
-        top: HEADER_HEIGHT,
+        top: contentTop,
         width: contentWidth,
         height: contentHeight,
       });
@@ -144,7 +146,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               onClearUnreadMessages={handleClearUnreadMessages}
               unreadChatCount={unreadChatCount}
               isMobile={isMobile}
-              onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} // This prop is now effectively a no-op
+              // Removed onToggleSidebar prop as it's no longer needed
             />
             <DynamicWelcomeBackModal
               isOpen={showWelcomeBack}
@@ -165,7 +167,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             <div
               role="main"
               className="absolute right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
-              style={{ left: `${mainContentArea.left}px`, top: `${HEADER_HEIGHT}px`, width: `${mainContentArea.width}px`, height: `${mainContentArea.height}px` }}
+              style={{ left: `${mainContentArea.left}px`, top: `${mainContentArea.top}px`, width: `${mainContentArea.width}px`, height: `${mainContentArea.height}px` }}
             >
               <main className="flex-1 relative overflow-y-auto bg-transparent">
                 <div className={cn("h-full", isMobile ? "p-4" : "p-4 sm:p-6 lg:p-8")}>
@@ -179,7 +181,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             {isDashboard && !isMobile && <IndependentPinnedWidgetsDock isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />}
             {isDashboard && isMobile && (
               <>
-                <DynamicSimpleAudioPlayer isMobile={isMobile} displayMode="minimized" />
+                <DynamicSimpleAudioPlayer isMobile={isMobile} displayMode="normal" /> {/* Changed to normal for mobile */}
                 <DynamicMobileControls>
                   <DynamicPomodoroWidget 
                     isMinimized={isPomodoroMinimized}

@@ -6,6 +6,7 @@ import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
 import { useWidget } from "@/components/widget/widget-provider";
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, Palette, Image, BarChart2, BookOpen, Goal, WandSparkles, BookText } from "lucide-react";
+import { MOBILE_HORIZONTAL_SIDEBAR_HEIGHT } from "@/lib/constants"; // Import new constant
 
 const SIDEBAR_WIDTH_DESKTOP = 48; // Reduced from 60px
 const HEADER_HEIGHT_REM = 4; // 4rem = 64px
@@ -49,14 +50,16 @@ export function Sidebar({ isMobile }: SidebarProps) {
     <div
       ref={sidebarRef}
       className={cn(
-        "fixed z-[1001] flex flex-col",
+        "fixed z-[1001] flex",
         "bg-card/60 backdrop-blur-xl border border-white/40 shadow-xl",
         "transition-all duration-300 ease-in-out",
-        "top-1/2 -translate-y-1/2 left-2 rounded-full p-1 gap-1" // Reduced left and padding
+        isMobile ?
+          "top-[64px] left-0 right-0 flex-row justify-around p-0.5 gap-0.5 rounded-none overflow-x-auto" : // Mobile: horizontal, below header
+          "top-1/2 -translate-y-1/2 left-2 rounded-full p-1 gap-1 flex-col" // Desktop: vertical, left side
       )}
-      style={{ width: `${SIDEBAR_WIDTH_DESKTOP}px` }} // Always use desktop width
+      style={isMobile ? { height: `${MOBILE_HORIZONTAL_SIDEBAR_HEIGHT}px`, width: '100%' } : { width: `${SIDEBAR_WIDTH_DESKTOP}px` }}
     >
-      <div className="flex flex-col gap-1"> {/* Removed ScrollArea */}
+      <div className={cn("flex", isMobile ? "flex-row" : "flex-col", "gap-1")}>
         {navItems.map((item) => (
           <SidebarItem
             key={item.id}

@@ -14,6 +14,7 @@ import { FlashCard } from '@/components/flash-card'; // Import FlashCard
 import { FlashcardSize } from '@/hooks/use-flashcard-size'; // Import FlashcardSize type
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'; // Import ToggleGroup
 import { Input } from '@/components/ui/input'; // Import Input for timer setting
+import { calculateCloseness } from '@/utils/flashcard-helpers'; // Import calculateCloseness
 
 interface TestModeProps {
   flashcards: CardData[];
@@ -124,7 +125,14 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
 
   const handleSubmission = useCallback((answer: string) => {
     if (!currentCard) return;
-    const correct = answer.trim().toLowerCase() === currentCard.back.trim().toLowerCase();
+
+    let correct = false;
+    if (testType === 'text') {
+      const closeness = calculateCloseness(answer, currentCard.back);
+      correct = closeness >= 95; // Consider 95% closeness as correct for text input
+    } else { // 'choices'
+      correct = answer.trim().toLowerCase() === currentCard.back.trim().toLowerCase();
+    }
     
     setIsCorrect(correct);
     setIsAnswered(true);
@@ -146,7 +154,7 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
       setShowFeedbackOverlay(false);
       handleNext();
     }, 800); // Shortened feedback duration
-  }, [currentCard, onAnswer, handleNext]);
+  }, [currentCard, onAnswer, handleNext, testType]); // Added testType to dependencies
 
   const handleSkip = () => {
     if (!currentCard) return;

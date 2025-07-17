@@ -24,7 +24,7 @@ export function SidebarItem({ icon: Icon, label, isActive, onClick, isExpanded }
             variant="ghost"
             className={cn(
               "relative transition-all duration-200 flex items-center",
-              "h-10 w-10 justify-center rounded-full", // Always compact size
+              "h-10 w-10 justify-center rounded-md", // Changed to rounded-md
               "bg-transparent text-white/70 hover:bg-white/10 hover:text-white",
               isActive && "bg-white/20 text-white ring-inset ring-2 ring-white/50 box-border"
             )}

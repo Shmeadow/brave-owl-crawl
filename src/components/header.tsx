@@ -29,7 +29,7 @@ interface HeaderProps {
   onClearUnreadMessages: () => void;
   unreadChatCount: number;
   isMobile: boolean;
-  onToggleSidebar: () => void; // This prop will now be unused but kept for interface compatibility
+  // Removed onToggleSidebar: () => void;
   isChatOpen: boolean;
 }
 
@@ -49,7 +49,7 @@ const ClockTrigger = () => {
   );
 };
 
-export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onToggleSidebar }: HeaderProps) => {
+export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isChatOpen }: HeaderProps) => {
   const { session, profile } = useSupabase();
   const { currentRoomName } = useCurrentRoom();
   const { rooms } = useRooms();
