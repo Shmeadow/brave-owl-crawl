@@ -128,8 +128,8 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
 
     let correct = false;
     if (testType === 'text') {
-      const closeness = calculateCloseness(answer, currentCard.back);
-      correct = closeness >= 95; // Consider 95% closeness as correct for text input
+      // Strict comparison for text input
+      correct = answer.trim().toLowerCase() === currentCard.back.trim().toLowerCase();
     } else { // 'choices'
       correct = answer.trim().toLowerCase() === currentCard.back.trim().toLowerCase();
     }
@@ -233,11 +233,11 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <Label htmlFor="flashcard-size-test">Card Size:</Label>
-              <ToggleGroup type="single" value={flashcardSize} onValueChange={(value: FlashcardSize) => setFlashcardSize(value)} className="h-auto">
-                <ToggleGroupItem value="sm" aria-label="Small" className="h-8 px-3 text-sm">S</ToggleGroupItem>
-                <ToggleGroupItem value="md" aria-label="Medium" className="h-8 px-3 text-sm">M</ToggleGroupItem>
-                <ToggleGroupItem value="lg" aria-label="Large" className="h-8 px-3 text-sm">L</ToggleGroupItem>
+              <ToggleGroup type="single" value={flashcardSize} onValueChange={(value: FlashcardSize) => setFlashcardSize(value)} disabled={flashcards.length < 4} className="mt-1 grid grid-cols-2">
+                  <ToggleGroupItem value="text">Text Input</ToggleGroupItem>
+                  <ToggleGroupItem value="choices">Multiple Choice</ToggleGroupItem>
               </ToggleGroup>
+              {flashcards.length < 4 && <p className="text-xs text-muted-foreground mt-1">Multiple choice requires at least 4 cards.</p>}
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <Label htmlFor="timer-toggle">Timer:</Label>
@@ -325,7 +325,6 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
                 "p-8 rounded-lg text-white text-4xl font-bold flex items-center gap-4 shadow-2xl animate-in zoom-in-95",
                 isCorrect ? 'bg-green-600' : 'bg-red-600'
             )}>
-                {isCorrect ? <CheckCircle size={48} /> : <XCircle size={48} />}
                 {isCorrect ? 'Correct!' : 'Incorrect!'}
             </div>
         </div>

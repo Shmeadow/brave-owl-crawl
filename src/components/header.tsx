@@ -33,10 +33,10 @@ interface HeaderProps {
   isChatOpen: boolean;
 }
 
-const ClockTrigger = () => {
+const ClockDisplay = () => { // Renamed from ClockTrigger
   const { timeString, dateString, isLoading } = useClock();
   return (
-    <Button className="bg-background/50 backdrop-blur-xl text-header-button-dark-foreground font-mono text-sm px-3 hidden md:flex flex-col h-auto py-1 hover:bg-header-button-dark/80">
+    <div className="bg-background/50 backdrop-blur-xl text-header-button-dark-foreground font-mono text-sm px-3 hidden md:flex flex-col h-auto py-1">
       {isLoading ? (
         <span>--:--:--</span>
       ) : (
@@ -45,7 +45,7 @@ const ClockTrigger = () => {
           <span className="text-xs opacity-70">{dateString}</span>
         </>
       )}
-    </Button>
+    </div>
   );
 };
 
@@ -123,14 +123,8 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
         >
           <BarChart2 className="h-4 w-4" />
         </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <ClockTrigger />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-auto p-0" align="end">
-            <TimeAndProgressDisplay />
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Directly render ClockDisplay instead of DropdownMenu */}
+        <ClockDisplay />
         {/* Mobile-only chat button */}
         {isMobile && (
           <Button
