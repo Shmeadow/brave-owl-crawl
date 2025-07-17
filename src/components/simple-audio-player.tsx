@@ -29,7 +29,6 @@ import { MinimizedPlayerControls } from './audio-player/minimized-player-control
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
 const HEADER_HEIGHT = 64; // px
 const EDGE_OFFSET = 4; // px, for padding from the edge
-const MOBILE_PLAYER_TOP_OFFSET = 16; // px, gap between sidebar and player
 
 interface SimpleAudioPlayerProps {
   isMobile: boolean;
@@ -230,15 +229,15 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     return (
       <div className={cn(
         "fixed z-[900] transition-all duration-300 ease-in-out",
-        displayMode === 'normal' && `top-[calc(${HEADER_HEIGHT}px + ${MOBILE_HORIZONTAL_SIDEBAR_HEIGHT}px + ${MOBILE_PLAYER_TOP_OFFSET}px)] right-4 w-64 rounded-lg`,
-        displayMode === 'minimized' && `top-[calc(${HEADER_HEIGHT}px + ${MOBILE_HORIZONTAL_SIDEBAR_HEIGHT}px + ${MOBILE_PLAYER_TOP_OFFSET}px)] right-4 w-10 h-[120px] rounded-full`, // Vertical minimized
+        displayMode === 'normal' && `top-1/2 -translate-y-1/2 right-4 w-64 rounded-3xl`,
+        displayMode === 'minimized' && 'top-1/2 -translate-y-1/2 right-4 w-10 h-[120px] rounded-full', // Vertical minimized
         displayMode === 'maximized' && 'inset-0 w-full h-full flex flex-col items-center justify-center rounded-none',
         className // Apply external positioning classes
       )}>
         {displayMode !== 'minimized' && (
           <div className={cn(
             "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex flex-col w-full h-full",
-            displayMode === 'normal' && 'p-1 rounded-lg',
+            displayMode === 'normal' && 'p-1 rounded-3xl',
             displayMode === 'maximized' && 'p-4 rounded-none', // No rounded corners when maximized
           )}>
             <PlayerDisplay
@@ -354,14 +353,14 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   return (
     <div className={cn(
       "fixed z-[900] transition-all duration-300 ease-in-out",
-      displayMode === 'normal' && `top-[120px] right-4 w-64 rounded-lg`,
+      displayMode === 'normal' && `top-[120px] right-4 w-64 rounded-3xl`,
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-10 h-[120px] rounded-full', // Adjusted height to h-[120px]
-      displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-96 flex flex-col items-center justify-center rounded-lg'
+      displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-96 flex flex-col items-center justify-center rounded-3xl'
     )}>
       <div className={cn(
         "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex flex-col w-full",
-        displayMode === 'normal' && 'p-1 rounded-lg',
-        displayMode === 'maximized' && 'p-4 items-center justify-center rounded-lg',
+        displayMode === 'normal' && 'p-1 rounded-3xl',
+        displayMode === 'maximized' && 'p-4 items-center justify-center rounded-3xl',
         displayMode === 'minimized' && 'hidden'
       )}>
         <PlayerDisplay
