@@ -225,6 +225,99 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     />
   );
 
+  // Render the main player content (PlayerDisplay and controls)
+  const mainPlayerContent = (
+    <div className={cn(
+      "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex flex-col w-full h-full",
+      displayMode === 'normal' && 'p-1 rounded-xl',
+      displayMode === 'maximized' && 'p-4 rounded-none', // No rounded corners when maximized
+    )}>
+      <PlayerDisplay
+        playerType={playerType}
+        inputUrl={committedMediaUrl}
+        audioRef={audioRef}
+        youtubeIframeRef={youtubeIframeRef}
+        spotifyCurrentTrack={spotifyCurrentTrack}
+        onLoadedMetadata={htmlAudioOnLoadedMetadata}
+        onTimeUpdate={htmlAudioOnTimeUpdate}
+        onEnded={htmlAudioOnEnded}
+        isMaximized={displayMode === 'maximized'}
+        className={cn(
+          'w-full',
+          displayMode === 'maximized' ? 'flex-1' : '' // Take full height when maximized
+        )}
+      />
+
+      {playerType === 'spotify' && spotifyCurrentTrack && (
+        <div className="text-center p-0.5 flex-shrink-0">
+          <p className="text-sm font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
+          <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map((a: { name: string }) => a.name).join(', ')}</p>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between space-x-1 mb-0.5 flex-shrink-0 w-full">
+        <div className="flex-grow min-w-0">
+          <Drawer open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
+            <DrawerTrigger asChild>
+              <button
+                className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
+                title="Change Media URL"
+              >
+                <Link size={10} className="mr-0.5" />
+                {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
+              </button>
+            </DrawerTrigger>
+            <DrawerContent className="h-auto max-h-[90vh] flex flex-col z-[1100]"> {/* Increased z-index */}
+              <DrawerHeader>
+                <DrawerTitle>Embed Media URL</DrawerTitle>
+              </DrawerHeader>
+              <div className="p-4">
+                {renderMediaInput}
+              </div>
+            </DrawerContent>
+          </Drawer>
+        </div>
+
+        <PlayerControls
+          playerType={playerType}
+          playerIsReady={playerIsReady}
+          currentIsPlaying={currentIsPlaying}
+          togglePlayPause={togglePlayPause}
+          skipBackward={skipBackward}
+          skipForward={skipForward}
+          currentVolume={currentVolume}
+          currentIsMuted={currentIsMuted}
+          toggleMute={toggleMute}
+          handleVolumeChange={handleVolumeChange}
+          canPlayPause={canPlayPause}
+          canSeek={canSeek}
+          displayMode={displayMode}
+          setDisplayMode={setDisplayMode}
+          isMobile={isMobile} // Pass isMobile prop
+        />
+      </div>
+
+      <ProgressBar
+        playerType={playerType}
+        playerIsReady={playerIsReady}
+        currentPlaybackTime={currentPlaybackTime}
+        totalDuration={totalDuration}
+        handleProgressBarChange={handleProgressBarChange}
+        formatTime={formatTime}
+      />
+
+      {playerType === 'spotify' && session && !spotifyPlayerReady && (
+        <div className="text-center text-xs text-muted-foreground mt-1">
+          <p>Log in to Spotify for full playback control.</p>
+          <Button onClick={connectToSpotify} className="text-primary hover:underline mt-0.5" size="sm">
+            Connect to Spotify
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+
+  // Render logic for mobile
   if (isMobile) {
     return (
       <div className={cn(
@@ -234,96 +327,13 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
         displayMode === 'maximized' && 'inset-0 w-full h-full flex flex-col items-center justify-center rounded-none',
         className // Apply external positioning classes
       )}>
-        {displayMode !== 'minimized' && (
-          <div className={cn(
-            "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex flex-col w-full h-full",
-            displayMode === 'normal' && 'p-1 rounded-xl',
-            displayMode === 'maximized' && 'p-4 rounded-none', // No rounded corners when maximized
-          )}>
-            <PlayerDisplay
-              playerType={playerType}
-              inputUrl={committedMediaUrl}
-              audioRef={audioRef}
-              youtubeIframeRef={youtubeIframeRef}
-              spotifyCurrentTrack={spotifyCurrentTrack}
-              onLoadedMetadata={htmlAudioOnLoadedMetadata}
-              onTimeUpdate={htmlAudioOnTimeUpdate}
-              onEnded={htmlAudioOnEnded}
-              isMaximized={displayMode === 'maximized'}
-              className={cn(
-                'w-full',
-                displayMode === 'maximized' ? 'flex-1' : '' // Take full height when maximized
-              )}
-            />
-
-            {playerType === 'spotify' && spotifyCurrentTrack && (
-              <div className="text-center p-0.5 flex-shrink-0">
-                <p className="text-sm font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
-                <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map((a: { name: string }) => a.name).join(', ')}</p>
-              </div>
-            )}
-
-            <div className="flex items-center justify-between space-x-1 mb-0.5 flex-shrink-0 w-full">
-              <div className="flex-grow min-w-0">
-                <Drawer open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
-                  <DrawerTrigger asChild>
-                    <button
-                      className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
-                      title="Change Media URL"
-                    >
-                      <Link size={10} className="mr-0.5" />
-                      {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
-                    </button>
-                  </DrawerTrigger>
-                  <DrawerContent className="h-auto max-h-[90vh] flex flex-col z-[1100]"> {/* Increased z-index */}
-                    <DrawerHeader>
-                      <DrawerTitle>Embed Media URL</DrawerTitle>
-                    </DrawerHeader>
-                    <div className="p-4">
-                      {renderMediaInput}
-                    </div>
-                  </DrawerContent>
-                </Drawer>
-              </div>
-
-              <PlayerControls
-                playerType={playerType}
-                playerIsReady={playerIsReady}
-                currentIsPlaying={currentIsPlaying}
-                togglePlayPause={togglePlayPause}
-                skipBackward={skipBackward}
-                skipForward={skipForward}
-                currentVolume={currentVolume}
-                currentIsMuted={currentIsMuted}
-                toggleMute={toggleMute}
-                handleVolumeChange={handleVolumeChange}
-                canPlayPause={canPlayPause}
-                canSeek={canSeek}
-                displayMode={displayMode}
-                setDisplayMode={setDisplayMode}
-                isMobile={isMobile} // Pass isMobile prop
-              />
-            </div>
-
-            <ProgressBar
-              playerType={playerType}
-              playerIsReady={playerIsReady}
-              currentPlaybackTime={currentPlaybackTime}
-              totalDuration={totalDuration}
-              handleProgressBarChange={handleProgressBarChange}
-              formatTime={formatTime}
-            />
-
-            {playerType === 'spotify' && session && !spotifyPlayerReady && (
-              <div className="text-center text-xs text-muted-foreground mt-1">
-                <p>Log in to Spotify for full playback control.</p>
-                <Button onClick={connectToSpotify} className="text-primary hover:underline mt-0.5" size="sm">
-                  Connect to Spotify
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
+        {/* Always render mainPlayerContent, but hide it with CSS if minimized */}
+        <div className={cn(
+          "w-full h-full",
+          displayMode === 'minimized' && 'hidden'
+        )}>
+          {mainPlayerContent}
+        </div>
 
         {displayMode === 'minimized' && (
           <div
@@ -349,7 +359,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     );
   }
 
-  // Desktop rendering (remains unchanged)
+  // Desktop rendering
   return (
     <div className={cn(
       "fixed z-[900] transition-all duration-300 ease-in-out",
@@ -357,89 +367,12 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-10 h-[120px] rounded-full', // Adjusted height to h-[120px]
       displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-96 flex flex-col items-center justify-center rounded-xl'
     )}>
+      {/* Always render mainPlayerContent, but hide it with CSS if minimized */}
       <div className={cn(
-        "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex flex-col w-full",
-        displayMode === 'normal' && 'p-1 rounded-xl',
-        displayMode === 'maximized' && 'p-4 items-center justify-center rounded-xl',
+        "w-full h-full",
         displayMode === 'minimized' && 'hidden'
       )}>
-        <PlayerDisplay
-          playerType={playerType}
-          inputUrl={committedMediaUrl}
-          audioRef={audioRef}
-          youtubeIframeRef={youtubeIframeRef}
-          spotifyCurrentTrack={spotifyCurrentTrack}
-          onLoadedMetadata={htmlAudioOnLoadedMetadata}
-          onTimeUpdate={htmlAudioOnTimeUpdate}
-          onEnded={htmlAudioOnEnded}
-          isMaximized={displayMode === 'maximized'}
-          className={cn(
-            displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : '',
-            'w-full'
-          )}
-        />
-
-        {playerType === 'spotify' && spotifyCurrentTrack && (
-          <div className="text-center p-0.5 flex-shrink-0">
-            <p className="text-sm font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
-            <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map((a: { name: string }) => a.name).join(', ')}</p>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between space-x-1 mb-0.5 flex-shrink-0 w-full">
-          <div className="flex-grow min-w-0">
-            <Popover open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
-              <PopoverTrigger asChild>
-                <button
-                  className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
-                  title="Change Media URL"
-                >
-                  <Link size={10} className="mr-0.5" />
-                  {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-64 p-0 z-[901] bg-popover/80 backdrop-blur-lg border-white/20">
-                {renderMediaInput}
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <PlayerControls
-            playerType={playerType}
-            playerIsReady={playerIsReady}
-            currentIsPlaying={currentIsPlaying}
-            togglePlayPause={togglePlayPause}
-            skipBackward={skipBackward}
-            skipForward={skipForward}
-            currentVolume={currentVolume}
-            currentIsMuted={currentIsMuted}
-            toggleMute={toggleMute}
-            handleVolumeChange={handleVolumeChange}
-            canPlayPause={canPlayPause}
-            canSeek={canSeek}
-            displayMode={displayMode}
-            setDisplayMode={setDisplayMode}
-            isMobile={isMobile} // Pass isMobile prop
-          />
-        </div>
-
-        <ProgressBar
-          playerType={playerType}
-          playerIsReady={playerIsReady}
-          currentPlaybackTime={currentPlaybackTime}
-          totalDuration={totalDuration}
-          handleProgressBarChange={handleProgressBarChange}
-          formatTime={formatTime}
-        />
-
-        {playerType === 'spotify' && session && !spotifyPlayerReady && (
-          <div className="text-center text-xs text-muted-foreground mt-1">
-            <p>Log in to Spotify for full playback control.</p>
-            <Button onClick={connectToSpotify} className="text-primary hover:underline mt-0.5" size="sm">
-              Connect to Spotify
-            </Button>
-          </div>
-        )}
+        {mainPlayerContent}
       </div>
 
       {displayMode === 'minimized' && (
