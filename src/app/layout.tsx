@@ -36,7 +36,7 @@ const WIDGET_CONFIGS = {
   "calendar": { initialPosition: { x: 200, y: 200 }, initialWidth: 750, initialHeight: 650 },
   "timer": { initialPosition: { x: 900, y: 250 }, initialWidth: 350, initialHeight: 200 },
   "tasks": { initialPosition: { x: 250, y: 300 }, initialWidth: 450, initialHeight: 550 },
-  "drawing-board": { initialPosition: { x: 700, y: 100 }, initialWidth: 800, initialHeight: 700 },
+  "drawing-board": { initialPosition: { x: 150, y: 150 }, initialWidth: 700, initialHeight: 550 },
   "journal": { initialPosition: { x: 700, y: 100 }, initialWidth: 800, initialHeight: 700 }, // New Journal widget
   "media": { initialPosition: { x: 300, y: 400 }, initialWidth: 550, initialHeight: 450 },
   "stats-progress": { initialPosition: { x: 850, y: 100 }, initialWidth: 600, initialHeight: 650 }, // Renamed from games
