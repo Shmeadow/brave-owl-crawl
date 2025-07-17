@@ -17,6 +17,7 @@ import {
   DrawerDescription,
   DrawerTrigger,
 } from "@/components/ui/drawer"; // Import Drawer components
+import { useFlashMatch } from "@/hooks/flashcards/useFlashMatch"; // Import useFlashMatch
 
 interface Message {
   id: string;
@@ -41,6 +42,7 @@ interface ChatPanelProps {
 
 export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnreadMessages, unreadCount, currentRoomId, currentRoomName, isCurrentRoomWritable, isMobile }: ChatPanelProps) {
   const { supabase, session, profile, loading: authLoading } = useSupabase();
+  const { currentMatch, submitAnswer, startMatch, joinMatch, stopMatch, players } = useFlashMatch(); // Use FlashMatch hook
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [showSupportContact, setShowSupportContact] = useState(false);
@@ -149,12 +151,67 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
       toast.error("Please select a room to chat in.");
       return;
     }
-    if (inputMessage.trim() && supabase) {
+
+    const messageContent = inputMessage.trim();
+    if (!messageContent) return;
+
+    // Check for FlashMatch commands
+    if (messageContent.startsWith('/')) {
+      const [command, ...args] = messageContent.substring(1).split(' ');
+      switch (command.toLowerCase()) {
+        case 'join':
+          if (currentMatch?.id) {
+            joinMatch(currentMatch.id);
+          } else {
+            toast.info("No active FlashMatch lobby to join in this room.");
+          }
+          break;
+        case 'start':
+          if (currentMatch?.id && currentMatch.status === 'lobby') {
+            const roundsArg = args.find(arg => arg.startsWith('rounds='));
+            const totalRounds = roundsArg ? parseInt(roundsArg.split('=')[1]) : 5;
+            startMatch(currentMatch.id, totalRounds);
+          } else {
+            toast.info("No FlashMatch lobby to start or match already in progress.");
+          }
+          break;
+        case 'answer':
+          if (currentMatch?.id && currentMatch.status === 'in_progress' && currentMatch.current_round_number) {
+            const answerText = args.join(' ');
+            submitAnswer(currentMatch.id, currentMatch.current_round_number, answerText);
+          } else {
+            toast.info("No active FlashMatch round to answer.");
+          }
+          break;
+        case 'stop':
+          if (currentMatch?.id && currentMatch.status === 'in_progress') {
+            stopMatch(currentMatch.id);
+          } else {
+            toast.info("No active FlashMatch to stop.");
+          }
+          break;
+        case 'scores':
+          if (currentMatch?.id && (currentMatch.status === 'in_progress' || currentMatch.status === 'completed')) {
+            const scoreSummary = players.map(p => `${p.profiles?.first_name || p.user_id.substring(0,6)}: ${p.score} pts`).join(' | ');
+            toast.info(`Current Scores: ${scoreSummary}`);
+          } else {
+            toast.info("No active or completed FlashMatch to show scores for.");
+          }
+          break;
+        default:
+          toast.error(`Unknown command: ${command}`);
+      }
+      setInputMessage(""); // Clear input after command
+      return;
+    }
+
+    // Regular chat message
+    if (messageContent && supabase) {
       const userId = session?.user?.id || null;
       const { error } = await supabase.from('chat_messages').insert({
         user_id: userId,
         room_id: currentRoomId,
-        content: inputMessage.trim(),
+        content: messageContent,
       });
 
       if (error) {
@@ -265,7 +322,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
             {!showSupportContact && (
               <div className="flex w-full items-center space-x-2">
                 <Input
-                  placeholder="Type your message..."
+                  placeholder="Type your message or /command..."
                   className="flex-1 bg-input/50 border-border focus:border-primary"
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
@@ -372,7 +429,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
         {!showSupportContact && (
           <div className="flex w-full items-center space-x-2">
             <Input
-              placeholder="Type your message..."
+              placeholder="Type your message or /command..."
               className="flex-1 bg-input/50 border-border focus:border-primary"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}

@@ -15,8 +15,10 @@ import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useFlashcardSize, FlashcardSize } from '@/hooks/use-flashcard-size'; // Import new hook
+import { FlashMatchMode } from './FlashMatchMode'; // Import new FlashMatchMode
+import { useCurrentRoom } from '@/hooks/use-current-room'; // Import useCurrentRoom
 
-type FlashcardMode = 'manage' | 'learn' | 'test' | 'summary';
+type FlashcardMode = 'manage' | 'learn' | 'test' | 'summary' | 'flashmatch'; // Add 'flashmatch'
 
 const SESSION_HISTORY_KEY = 'flashcard_session_history';
 
@@ -24,6 +26,7 @@ export function FlashcardApp() {
   const { cards, loading, isLoggedInMode, handleAddCard, handleDeleteCard, handleUpdateCard, handleAnswerFeedback: baseHandleAnswerFeedback, handleResetProgress, handleBulkAddCards, handleUpdateCardCategory, handleBulkDelete, handleBulkMove, handleGradeCard } = useFlashcards();
   const { categories, addCategory, deleteCategory, updateCategory } = useFlashcardCategories();
   const { session } = useSupabase();
+  const { isCurrentRoomWritable } = useCurrentRoom(); // Get isCurrentRoomWritable
   const [currentMode, setCurrentMode] = useState<FlashcardMode>('manage');
   const [sessionHistory, setSessionHistory] = useState<DetailedResult[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
@@ -221,6 +224,8 @@ export function FlashcardApp() {
         return <TestMode flashcards={cards} onAnswer={(cardId, isCorrect, userAnswer) => augmentedHandleAnswerFeedback(cardId, isCorrect, userAnswer, 'test')} onQuit={() => setCurrentMode('manage')} testType={testType} flashcardSize={flashcardSize} setFlashcardSize={setFlashcardSize} />;
       case 'summary':
         return <SummaryMode summaryData={generateSummaryData()} onResetProgress={handleResetProgress} onClearSummary={handleClearSummary} />;
+      case 'flashmatch':
+        return <FlashMatchMode isCurrentRoomWritable={isCurrentRoomWritable} />;
       default:
         return null;
     }
@@ -262,6 +267,12 @@ export function FlashcardApp() {
           variant={currentMode === 'summary' ? 'default' : 'outline'}
         >
           Summary
+        </Button>
+        <Button
+          onClick={() => setCurrentMode('flashmatch')}
+          variant={currentMode === 'flashmatch' ? 'default' : 'outline'}
+        >
+          FlashMatch
         </Button>
       </div>
 

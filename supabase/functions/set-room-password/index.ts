@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -103,9 +103,9 @@ serve(async (req) => {
       status: 200,
     });
 
-  } catch (error) {
-    console.error('Error in set-room-password function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error: unknown) {
+    console.error('Error in set-room-password function:', (error as Error).message);
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     });
