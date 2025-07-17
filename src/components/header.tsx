@@ -86,6 +86,15 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, onT
         </Link>
         <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
           <h1 className="text-xl font-semibold truncate">{currentRoomName}</h1>
+          <Button
+            variant="ghost"
+            size="icon"
+            title="Spaces"
+            className="flex-shrink-0"
+            onClick={() => toggleWidget('spaces', 'Spaces')}
+          >
+            <LayoutGrid className="h-5 w-5" />
+          </Button>
           {session && (
             <Popover open={isRoomSettingsOpen} onOpenChange={setIsRoomSettingsOpen}>
               <PopoverTrigger asChild>
