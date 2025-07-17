@@ -229,7 +229,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     return (
       <div className={cn(
         "fixed z-[900] transition-all duration-300 ease-in-out",
-        displayMode === 'normal' && `top-1/2 -translate-y-1/2 right-4 w-64 rounded-3xl`,
+        displayMode === 'normal' && `top-24 right-4 w-64 rounded-xl`, // Changed top and rounded-3xl to rounded-xl
         displayMode === 'minimized' && 'top-1/2 -translate-y-1/2 right-4 w-10 h-[120px] rounded-full', // Vertical minimized
         displayMode === 'maximized' && 'inset-0 w-full h-full flex flex-col items-center justify-center rounded-none',
         className // Apply external positioning classes
@@ -237,7 +237,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
         {displayMode !== 'minimized' && (
           <div className={cn(
             "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex flex-col w-full h-full",
-            displayMode === 'normal' && 'p-1 rounded-3xl',
+            displayMode === 'normal' && 'p-1 rounded-xl', // Changed rounded-3xl to rounded-xl
             displayMode === 'maximized' && 'p-4 rounded-none', // No rounded corners when maximized
           )}>
             <PlayerDisplay
@@ -275,7 +275,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
                       {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
                     </button>
                   </DrawerTrigger>
-                  <DrawerContent className="h-auto max-h-[90vh] flex flex-col">
+                  <DrawerContent className="h-auto max-h-[90vh] flex flex-col z-[1100]"> {/* Increased z-index */}
                     <DrawerHeader>
                       <DrawerTitle>Embed Media URL</DrawerTitle>
                     </DrawerHeader>
@@ -353,14 +353,14 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   return (
     <div className={cn(
       "fixed z-[900] transition-all duration-300 ease-in-out",
-      displayMode === 'normal' && `top-[120px] right-4 w-64 rounded-3xl`,
+      displayMode === 'normal' && `top-[120px] right-4 w-64 rounded-xl`, // Changed rounded-3xl to rounded-xl
       displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-10 h-[120px] rounded-full', // Adjusted height to h-[120px]
-      displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-96 flex flex-col items-center justify-center rounded-3xl'
+      displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-96 flex flex-col items-center justify-center rounded-xl' // Changed rounded-3xl to rounded-xl
     )}>
       <div className={cn(
         "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex flex-col w-full",
-        displayMode === 'normal' && 'p-1 rounded-3xl',
-        displayMode === 'maximized' && 'p-4 items-center justify-center rounded-3xl',
+        displayMode === 'normal' && 'p-1 rounded-xl', // Changed rounded-3xl to rounded-xl
+        displayMode === 'maximized' && 'p-4 items-center justify-center rounded-xl', // Changed rounded-3xl to rounded-xl
         displayMode === 'minimized' && 'hidden'
       )}>
         <PlayerDisplay
