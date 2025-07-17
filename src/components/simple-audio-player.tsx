@@ -46,8 +46,8 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     if (typeof window !== 'undefined') {
       const savedMode = localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY);
       if (isMobile) {
-          // On mobile, allow normal, maximized, or minimized.
-          return (savedMode === 'maximized' ? 'maximized' : (savedMode === 'minimized' ? 'minimized' : 'normal'));
+          // On mobile, 'maximized' is not allowed. Default to 'normal' if 'maximized' was saved.
+          return (savedMode === 'maximized' ? 'normal' : (savedMode === 'minimized' ? 'minimized' : 'normal'));
       }
       return initialDisplayMode || (savedMode === 'minimized' ? 'minimized' : 'normal');
     }
@@ -342,7 +342,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
         "fixed z-[900] transition-all duration-300 ease-in-out",
         displayMode === 'normal' && `top-32 right-4 w-64 rounded-xl`, // Changed top from 24 to 32
         displayMode === 'minimized' && 'top-1/2 -translate-y-1/2 right-4 w-10 h-[120px] rounded-full', // Vertical minimized
-        displayMode === 'maximized' && 'inset-0 w-full h-full flex flex-col items-center justify-center rounded-none',
+        // Removed displayMode === 'maximized' class as it's no longer a valid state for mobile
         className // Apply external positioning classes
       )}>
         {/* Always render mainPlayerContent, but hide it with CSS if minimized */}
