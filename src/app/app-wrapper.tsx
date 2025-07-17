@@ -23,7 +23,7 @@ import { useWidget } from "@/components/widget/widget-provider";
 import { checkAndClearClientData } from "@/lib/client-version";
 import dynamic from 'next/dynamic';
 import { useRooms } from "@/hooks/use-rooms";
-import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification"; // Corrected import path
+// Removed: import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification"; // Corrected import path
 import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar";
 import { CookieConsentBar } from "@/components/cookie-consent-bar";
 import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT } from "@/lib/constants"; // Import new constant
@@ -158,12 +158,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             <DynamicPlayingSoundsBar isMobile={isMobile} />
             <Sidebar isMobile={isMobile} /> {/* Sidebar is always rendered */}
             <GuestModeWarningBar />
-            {pendingRequests.length > 0 && (
-              <RoomJoinRequestNotification
-                request={pendingRequests[0]}
-                onDismiss={dismissRequest}
-              />
-            )}
+            {/* Removed RoomJoinRequestNotification */}
             <div
               role="main"
               className="absolute right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
