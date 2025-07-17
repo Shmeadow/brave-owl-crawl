@@ -18,6 +18,7 @@ interface PlayerControlsProps {
   canSeek: boolean;
   displayMode: 'normal' | 'maximized' | 'minimized';
   setDisplayMode: (mode: 'normal' | 'maximized' | 'minimized') => void;
+  isMobile: boolean; // New prop
 }
 
 export function PlayerControls({
@@ -35,6 +36,7 @@ export function PlayerControls({
   canSeek,
   displayMode,
   setDisplayMode,
+  isMobile, // Destructure new prop
 }: PlayerControlsProps) {
 
   const isVolumeControlDisabled = !playerIsReady || playerType === 'spotify';
@@ -95,13 +97,15 @@ export function PlayerControls({
             <Minimize size={14} />
           </button>
         )}
-        <button
-          onClick={() => setDisplayMode('minimized')}
-          className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
-          title="Minimize Player"
-        >
-          <ChevronRight size={14} />
-        </button>
+        {!isMobile && ( // Only show minimize button on desktop
+          <button
+            onClick={() => setDisplayMode('minimized')}
+            className="p-0.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition duration-300 h-6 w-6 flex items-center justify-center"
+            title="Minimize Player"
+          >
+            <ChevronRight size={14} />
+          </button>
+        )}
       </div>
     </div>
   );

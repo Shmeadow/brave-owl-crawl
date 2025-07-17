@@ -45,8 +45,11 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   const [displayMode, setDisplayMode] = useState<'normal' | 'maximized' | 'minimized'>(() => {
     if (typeof window !== 'undefined') {
       const savedMode = localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY);
-      // On mobile, default to 'normal' if no saved mode, otherwise use saved mode.
-      // This allows it to be floating and not always minimized.
+      // For mobile, if it's not maximized, it should be normal.
+      // For desktop, keep existing logic.
+      if (isMobile) {
+          return (savedMode === 'maximized' ? 'maximized' : 'normal'); // Only normal or maximized on mobile
+      }
       return initialDisplayMode || (savedMode === 'minimized' ? 'minimized' : 'normal');
     }
     return initialDisplayMode;
@@ -228,7 +231,6 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
       <div className={cn(
         "fixed z-[900] transition-all duration-300 ease-in-out",
         displayMode === 'normal' && `bottom-4 right-4 w-64 rounded-3xl`,
-        displayMode === 'minimized' && 'bottom-4 right-4 w-10 h-[120px] rounded-full', // Adjusted height to h-[120px]
         displayMode === 'maximized' && 'inset-0 w-full h-full flex flex-col items-center justify-center rounded-none', // Maximize to full screen
         className // Apply external positioning classes
       )}>
@@ -236,7 +238,6 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
           "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex flex-col w-full h-full",
           displayMode === 'normal' && 'p-1 rounded-3xl',
           displayMode === 'maximized' && 'p-4 rounded-none', // No rounded corners when maximized
-          displayMode === 'minimized' && 'hidden'
         )}>
           <PlayerDisplay
             playerType={playerType}
@@ -249,7 +250,6 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
             onEnded={htmlAudioOnEnded}
             isMaximized={displayMode === 'maximized'}
             className={cn(
-              displayMode === 'minimized' ? 'opacity-0 absolute pointer-events-none' : '',
               'w-full',
               displayMode === 'maximized' ? 'flex-1' : '' // Take full height when maximized
             )}
@@ -300,6 +300,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
               canSeek={canSeek}
               displayMode={displayMode}
               setDisplayMode={setDisplayMode}
+              isMobile={isMobile} // Pass isMobile prop
             />
           </div>
 
@@ -321,26 +322,6 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
             </div>
           )}
         </div>
-
-        {displayMode === 'minimized' && (
-          <div
-            className={cn(
-              "bg-card/60 backdrop-blur-xl border-white/20 p-1 rounded-full flex items-center justify-between w-full h-full"
-            )}
-            title="Expand Player"
-          >
-            <MinimizedPlayerControls
-              playerType={playerType}
-              playerIsReady={playerIsReady}
-              currentIsPlaying={currentIsPlaying}
-              togglePlayPause={togglePlayPause}
-              currentVolume={currentVolume}
-              currentIsMuted={currentIsMuted}
-              toggleMute={toggleMute}
-              setDisplayMode={setDisplayMode}
-            />
-          </div>
-        )}
       </div>
     );
   }
@@ -415,6 +396,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
             canSeek={canSeek}
             displayMode={displayMode}
             setDisplayMode={setDisplayMode}
+            isMobile={isMobile} // Pass isMobile prop
           />
         </div>
 
