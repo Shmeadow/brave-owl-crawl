@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Star, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Star, Trash2, ChevronDown, ChevronUp, Lightbulb } from "lucide-react"; // Import Lightbulb
 import { cn } from "@/lib/utils";
 import { JournalEntryData } from "@/hooks/use-journal";
 import { toast } from "sonner";
@@ -22,6 +22,8 @@ interface JournalEntryItemProps {
   isCurrentRoomWritable: boolean;
   onUpdateEntryContent: (entryId: string, newContent: string) => void;
   onUpdateEntryTitle: (entryId: string, newTitle: string) => void;
+  isInitiallyOpen?: boolean; // New prop
+  onOpenChange?: (isOpen: boolean) => void; // New prop
 }
 
 export function JournalEntryItem({
@@ -31,11 +33,20 @@ export function JournalEntryItem({
   isCurrentRoomWritable,
   onUpdateEntryContent,
   onUpdateEntryTitle,
+  isInitiallyOpen = false, // Default to false
+  onOpenChange, // Destructure new prop
 }: JournalEntryItemProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitlePrefix, setEditedTitlePrefix] = useState('');
   const [datePart, setDatePart] = useState('');
-  const [isContentOpen, setIsContentOpen] = useState(false);
+  const [isContentOpen, setIsContentOpen] = useState(isInitiallyOpen); // Initialize with isInitiallyOpen
+
+  // Effect to open the collapsible if isInitiallyOpen changes to true
+  useEffect(() => {
+    if (isInitiallyOpen && !isContentOpen) {
+      setIsContentOpen(true);
+    }
+  }, [isInitiallyOpen, isContentOpen]);
 
   const handleToggleStarClick = () => {
     if (!isCurrentRoomWritable) {
@@ -82,12 +93,19 @@ export function JournalEntryItem({
     onUpdateEntryContent(entry.id, newContent);
   }, [entry.id, onUpdateEntryContent]);
 
+  const handleCollapsibleOpenChange = (open: boolean) => {
+    setIsContentOpen(open);
+    if (onOpenChange) {
+      onOpenChange(open);
+    }
+  };
+
   return (
     <Card className={cn(
       "w-full bg-card backdrop-blur-xl border-white/20 shadow-sm transition-all duration-200 ease-in-out",
       "hover:shadow-md hover:border-primary/50"
     )}>
-      <Collapsible open={isContentOpen} onOpenChange={setIsContentOpen}>
+      <Collapsible open={isContentOpen} onOpenChange={handleCollapsibleOpenChange}>
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 gap-2">
           {isEditingTitle ? (
             <div className="flex items-center gap-2 flex-1 mr-2 w-full">

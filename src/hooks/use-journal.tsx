@@ -6,7 +6,10 @@ import { toast } from "sonner";
 import { generateHTML } from '@tiptap/html';
 import StarterKit from '@tiptap/starter-kit';
 import Highlight from '@tiptap/extension-highlight';
-import { Important } from '@/lib/tiptap-extensions';
+import { Important, Callout } from '@/lib/tiptap-extensions'; // Import Callout
+import TaskList from '@tiptap/extension-task-list'; // Import TaskList
+import TaskItem from '@tiptap/extension-task-item'; // Import TaskItem
+import { JSONContent } from '@tiptap/react'; // Import JSONContent type
 
 export interface JournalEntryData {
   id: string;
@@ -19,7 +22,7 @@ export interface JournalEntryData {
 }
 
 export interface ImportantReminder {
-  entryId: string;
+  entryId: string; // Added entryId
   entryTitle: string | null;
   text: string | null;
   timestamp: string;
@@ -37,7 +40,14 @@ export function useJournal() {
   // Function to extract important reminders from journal entries
   const extractImportantReminders = useCallback((entries: JournalEntryData[]): ImportantReminder[] => {
     const reminders: ImportantReminder[] = [];
-    const extensions = [StarterKit, Highlight, Important];
+    const extensions = [
+      StarterKit,
+      Highlight,
+      Important,
+      TaskList,
+      TaskItem,
+      Callout,
+    ];
 
     entries.forEach(entry => {
       if (entry.type === 'journal' && entry.content) {
@@ -54,7 +64,7 @@ export function useJournal() {
           const importantSpans = doc.querySelectorAll('.important-journal-item');
           importantSpans.forEach(span => {
             reminders.push({
-              entryId: entry.id,
+              entryId: entry.id, // Include entryId
               entryTitle: entry.title,
               text: span.textContent,
               timestamp: entry.created_at,
@@ -218,11 +228,11 @@ export function useJournal() {
         toast.error("Error deleting journal entry (Supabase): " + error.message);
         console.error("Error deleting journal entry (Supabase):", error);
       } else {
-        setJournalEntries(prevEntries => prevEntries.filter(entry => entry.id !== entry.id));
+        setJournalEntries(prevEntries => prevEntries.filter(entry => entry.id !== entryId));
         toast.success("Journal entry deleted from your account.");
       }
     } else {
-      setJournalEntries(prevEntries => prevEntries.filter(entry => entry.id !== entry.id));
+      setJournalEntries(prevEntries => prevEntries.filter(entry => entry.id !== entryId));
       toast.success("Journal entry deleted (locally).");
     }
   }, [isLoggedInMode, session, supabase]);
@@ -316,6 +326,78 @@ export function useJournal() {
     }
   }, [journalEntries, isLoggedInMode, session, supabase]);
 
+  const handleBulkImportJournalEntries = useCallback(async (newEntries: { title: string; content: string }[]): Promise<number> => {
+    const uniqueNewEntries = newEntries.filter(ne => !journalEntries.some(ee => ee.title === ne.title && ee.content === ne.content));
+    if (uniqueNewEntries.length === 0) {
+      toast.info("No new entries to import.");
+      return 0;
+    }
+
+    if (isLoggedInMode && session && supabase) {
+      const toInsert = uniqueNewEntries.map(entry => ({
+        user_id: session.user.id,
+        title: entry.title,
+        content: entry.content,
+        starred: false,
+        type: 'journal',
+      }));
+      const { data, error } = await supabase.from('notes').insert(toInsert).select();
+      if (error) {
+        toast.error("Error importing entries: " + error.message);
+        return 0;
+      } else if (data) {
+        setJournalEntries(prev => [...(data as JournalEntryData[]), ...prev]); // Add new entries to the front
+        return data.length;
+      }
+    } else {
+      const guestEntries: JournalEntryData[] = uniqueNewEntries.map(entry => ({
+        id: crypto.randomUUID(),
+        title: entry.title,
+        content: entry.content,
+        starred: false,
+        created_at: new Date().toISOString(),
+        type: 'journal',
+      }));
+      setJournalEntries(prev => [...guestEntries, ...prev]); // Add new entries to the front
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify([...guestEntries, ...journalEntries]));
+      return guestEntries.length;
+    }
+    return 0;
+  }, [journalEntries, isLoggedInMode, session, supabase, setJournalEntries]);
+
+  const generateJournalExportText = useCallback((entries: JournalEntryData[], colSep: string, rowSep: string, format: 'csv' | 'json' | 'text'): string => {
+    if (entries.length === 0) return "";
+
+    if (format === 'json') {
+      return JSON.stringify(entries.map(entry => ({
+        id: entry.id,
+        title: entry.title,
+        content: entry.content,
+        starred: entry.starred,
+        created_at: entry.created_at,
+      })), null, 2);
+    }
+
+    const header = `"title"${colSep}"content"`;
+    const rows = entries.map(entry => {
+      const title = `"${(entry.title || '').replace(/"/g, '""')}"`;
+      let contentText = entry.content;
+      // If content is JSON, try to convert to plain text for CSV/text export
+      if (contentText.trim().startsWith('{')) {
+        try {
+          const jsonContent = JSON.parse(contentText);
+          // A very basic conversion for display, might lose rich formatting
+          contentText = jsonContent.content?.map((node: any) => node.text || '').join(' ') || '';
+        } catch (e) {
+          console.error("Error parsing JSON content for export:", e);
+        }
+      }
+      const content = `"${contentText.replace(/"/g, '""')}"`;
+      return `${title}${colSep}${content}`;
+    });
+    return header + rowSep + rows.join(rowSep);
+  }, []);
+
   return {
     journalEntries,
     importantReminders,
@@ -326,5 +408,7 @@ export function useJournal() {
     handleToggleStarJournalEntry,
     handleUpdateJournalEntryContent,
     handleUpdateJournalEntryTitle,
+    handleBulkImportJournalEntries,
+    generateJournalExportText,
   };
 }

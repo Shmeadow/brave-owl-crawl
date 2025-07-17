@@ -208,6 +208,95 @@
   /* Dark mode highlight styles for better contrast */
   .dark .prose mark[data-color="#fff59d"] { @apply bg-yellow-800 text-yellow-100 rounded-sm px-0.5; }
 
+  /* Tiptap Task List styles */
+  .prose ul[data-type="taskList"] {
+    list-style: none;
+    padding: 0;
+  }
+
+  .prose ul[data-type="taskList"] li {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 0.5em;
+  }
+
+  .prose ul[data-type="taskList"] li > label {
+    flex-shrink: 0;
+    margin-right: 0.5em;
+    cursor: pointer;
+  }
+
+  .prose ul[data-type="taskList"] li > div {
+    flex-grow: 1;
+  }
+
+  /* Tiptap Callout styles */
+  .prose .prose-callout {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .prose .prose-callout::before {
+    content: '💡'; /* Default icon */
+    font-size: 1.25rem;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+
+  .prose .prose-callout[data-type="info"] {
+    background-color: hsl(210 40% 96.1%); /* muted */
+    color: hsl(222.2 47.4% 11.2%); /* foreground */
+    border-left: 4px solid hsl(210 40% 96.1%); /* primary */
+  }
+  .dark .prose .prose-callout[data-type="info"] {
+    background-color: hsl(217.2 32.6% 17.5%); /* muted */
+    color: hsl(210 40% 98%); /* foreground */
+    border-left: 4px solid hsl(210 40% 98%); /* primary */
+  }
+
+  .prose .prose-callout[data-type="warning"] {
+    background-color: hsl(40 80% 90%); /* light yellow */
+    color: hsl(40 80% 20%); /* dark yellow */
+    border-left: 4px solid hsl(40 80% 50%);
+  }
+  .dark .prose .prose-callout[data-type="warning"] {
+    background-color: hsl(40 80% 20%);
+    color: hsl(40 80% 90%);
+    border-left: 4px solid hsl(40 80% 50%);
+  }
+  .prose .prose-callout[data-type="warning"]::before { content: '⚠️'; }
+
+  .prose .prose-callout[data-type="success"] {
+    background-color: hsl(140 80% 90%); /* light green */
+    color: hsl(140 80% 20%); /* dark green */
+    border-left: 4px solid hsl(140 80% 50%);
+  }
+  .dark .prose .prose-callout[data-type="success"] {
+    background-color: hsl(140 80% 20%);
+    color: hsl(140 80% 90%);
+    border-left: 4px solid hsl(140 80% 50%);
+  }
+  .prose .prose-callout[data-type="success"]::before { content: '✅'; }
+
+  .prose .prose-callout[data-type="danger"] {
+    background-color: hsl(0 80% 90%); /* light red */
+    color: hsl(0 80% 20%); /* dark red */
+    border-left: 4px solid hsl(0 80% 50%);
+  }
+  .dark .prose .prose-callout[data-type="danger"] {
+    background-color: hsl(0 80% 20%);
+    color: hsl(0 80% 90%);
+    border-left: 4px solid hsl(0 80% 50%);
+  }
+  .prose .prose-callout[data-type="danger"]::before { content: '🚨'; }
+
   /* Hide tldraw branding */
   .tl-branding {
     display: none !important;

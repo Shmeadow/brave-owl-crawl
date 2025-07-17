@@ -9,11 +9,13 @@ import { Color } from '@tiptap/extension-color';
 import ListItem from '@tiptap/extension-list-item';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Button } from '@/components/ui/button';
-import { Important } from '@/lib/tiptap-extensions';
-import { Star, Undo, Redo, Bold, Italic, Strikethrough, Pilcrow, Heading1, Heading2, List, ListOrdered, Highlighter, X, Quote, Code, Minus } from 'lucide-react';
+import { Important, Callout } from '@/lib/tiptap-extensions'; // Import Callout
+import { Star, Undo, Redo, Bold, Italic, Strikethrough, Pilcrow, Heading1, Heading2, List, ListOrdered, Highlighter, X, Quote, Code, Minus, ListChecks, Lightbulb } from 'lucide-react'; // Import ListChecks, Lightbulb
 import { Separator } from '@/components/ui/separator';
-import { FontSize } from '@tiptap/extension-font-size'; // New import
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // New import for Select
+import { FontSize } from '@tiptap/extension-font-size';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import TaskList from '@tiptap/extension-task-list'; // Import TaskList
+import TaskItem from '@tiptap/extension-task-item'; // Import TaskItem
 
 interface RichTextEditorProps {
   content: string;
@@ -51,7 +53,12 @@ export function RichTextEditor({
       Color,
       Highlight.configure({ multicolor: true }),
       Important,
-      FontSize, // Add FontSize extension
+      FontSize,
+      TaskList, // Add TaskList
+      TaskItem.configure({
+        nested: true,
+      }), // Add TaskItem
+      Callout, // Add Callout
     ],
     content: '',
     editorProps: {
@@ -104,9 +111,9 @@ export function RichTextEditor({
         <Separator orientation="vertical" className="h-6 mx-1" />
         {/* Font Size */}
         <Select
-          value={editor.getAttributes('textStyle').fontSize || 'default-size'} // Default to 'default-size'
+          value={editor.getAttributes('textStyle').fontSize || 'default-size'}
           onValueChange={(value) => {
-            if (value === 'default-size') { // Check for 'default-size'
+            if (value === 'default-size') {
               editor.chain().focus().unsetFontSize().run();
             } else {
               editor.chain().focus().setFontSize(value).run();
@@ -118,7 +125,7 @@ export function RichTextEditor({
             <SelectValue placeholder="Size" />
           </SelectTrigger>
           <SelectContent className="z-[1200]">
-            <SelectItem value="default-size">Default</SelectItem> {/* Changed value to 'default-size' */}
+            <SelectItem value="default-size">Default</SelectItem>
             <SelectItem value="12px">Small</SelectItem>
             <SelectItem value="16px">Normal</SelectItem>
             <SelectItem value="20px">Large</SelectItem>
@@ -133,10 +140,12 @@ export function RichTextEditor({
         <Button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()} disabled={!editor.can().chain().focus().toggleBlockquote().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('blockquote') && 'ring-2 ring-primary')} title="Blockquote"><Quote className="h-4 w-4" /></Button>
         <Button type="button" onClick={() => editor.chain().focus().toggleCodeBlock().run()} disabled={!editor.can().chain().focus().toggleCodeBlock().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('codeBlock') && 'ring-2 ring-primary')} title="Code Block"><Code className="h-4 w-4" /></Button>
         <Button type="button" onClick={() => editor.chain().focus().setHorizontalRule().run()} disabled={!editor.can().chain().focus().setHorizontalRule().run() || disabled} variant="ghost" size="icon" className="h-8 w-8" title="Horizontal Rule"><Minus className="h-4 w-4" /></Button>
+        <Button type="button" onClick={() => editor.chain().focus().toggleCallout().run()} disabled={disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('callout') && 'ring-2 ring-primary')} title="Callout"><Lightbulb className="h-4 w-4" /></Button>
         <Separator orientation="vertical" className="h-6 mx-1" />
         {/* List Group */}
         <Button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} disabled={!editor.can().chain().focus().toggleBulletList().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('bulletList') && 'ring-2 ring-primary')} title="Bullet List"><List className="h-4 w-4" /></Button>
         <Button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} disabled={!editor.can().chain().focus().toggleOrderedList().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('orderedList') && 'ring-2 ring-primary')} title="Ordered List"><ListOrdered className="h-4 w-4" /></Button>
+        <Button type="button" onClick={() => editor.chain().focus().toggleTaskList().run()} disabled={!editor.can().chain().focus().toggleTaskList().run() || disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('taskList') && 'ring-2 ring-primary')} title="Task List"><ListChecks className="h-4 w-4" /></Button>
         <Separator orientation="vertical" className="h-6 mx-1" />
         {/* Highlight Group */}
         <Button type="button" onClick={() => editor.chain().focus().setHighlight({ color: '#fff59d' }).run()} disabled={disabled} variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('highlight', { color: '#fff59d' }) && 'ring-2 ring-primary')} title="Highlight"><Highlighter className="h-4 w-4" /></Button>

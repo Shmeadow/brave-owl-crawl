@@ -12,5 +12,11 @@ declare module '@tiptap/core' {
        */
       unsetImportant: () => ReturnType;
     };
+    callout: {
+      /**
+       * Toggle a callout block
+       */
+      toggleCallout: (attributes?: { type: string }) => ReturnType;
+    };
   }
 }

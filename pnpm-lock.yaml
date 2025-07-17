@@ -125,6 +125,12 @@ importers:
       '@tiptap/extension-list-item':
         specifier: ^2.5.5
         version: 2.26.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))
+      '@tiptap/extension-task-item':
+        specifier: ^3.0.7
+        version: 3.0.7(@tiptap/extension-list@3.0.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))(@tiptap/pm@3.0.1))
+      '@tiptap/extension-task-list':
+        specifier: ^3.0.7
+        version: 3.0.7(@tiptap/extension-list@3.0.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))(@tiptap/pm@3.0.1))
       '@tiptap/extension-text-style':
         specifier: ^2.5.5
         version: 2.26.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))
@@ -1611,6 +1617,16 @@ packages:
     resolution: {integrity: sha512-ZYC/yLBtVtaABxj49jbM2uFmV2qM4RnpB52bMbFgL/5zlLaD1lGLPYgZkU1ZVaWhxLqx9lodXyEfRdNJSQnqrg==}
     peerDependencies:
       '@tiptap/core': ^3.0.1
+
+  '@tiptap/extension-task-item@3.0.7':
+    resolution: {integrity: sha512-s0bbMGfXPvrOxU1IATkUy2c75ehKGUzwIUrMhOheYve7xrLqdW4G8V//IE3ehNttWNh0ajLMDsbLguqCzHKs5g==}
+    peerDependencies:
+      '@tiptap/extension-list': ^3.0.7
+
+  '@tiptap/extension-task-list@3.0.7':
+    resolution: {integrity: sha512-ovz1wXw0L4/gNXnojAIozM8IOFdgJE0KhjluDiYSei6knxXSppmhiAZ9ZAPicl63Yb4WpC113BQPZz+i0No3wg==}
+    peerDependencies:
+      '@tiptap/extension-list': ^3.0.7
 
   '@tiptap/extension-text-style@2.26.1':
     resolution: {integrity: sha512-t9Nc/UkrbCfnSHEUi1gvUQ2ZPzvfdYFT5TExoV2DTiUCkhG6+mecT5bTVFGW3QkPmbToL+nFhGn4ZRMDD0SP3Q==}
@@ -5434,6 +5450,14 @@ snapshots:
   '@tiptap/extension-strike@3.0.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))':
     dependencies:
       '@tiptap/core': 3.0.1(@tiptap/pm@3.0.1)
+
+  '@tiptap/extension-task-item@3.0.7(@tiptap/extension-list@3.0.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))(@tiptap/pm@3.0.1))':
+    dependencies:
+      '@tiptap/extension-list': 3.0.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))(@tiptap/pm@3.0.1)
+
+  '@tiptap/extension-task-list@3.0.7(@tiptap/extension-list@3.0.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))(@tiptap/pm@3.0.1))':
+    dependencies:
+      '@tiptap/extension-list': 3.0.1(@tiptap/core@3.0.1(@tiptap/pm@3.0.1))(@tiptap/pm@3.0.1)
 
   '@tiptap/extension-text-style@2.26.1(@tiptap/core@2.26.1(@tiptap/pm@2.26.1))':
     dependencies:
