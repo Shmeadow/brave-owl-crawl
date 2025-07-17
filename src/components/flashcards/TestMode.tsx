@@ -212,7 +212,7 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
   });
 
   return (
-    <div className={cn("w-full mx-auto space-y-4 sm:space-y-8 relative", containerMaxWidthClass)}>
+    <div className={cn("w-full mx-auto space-y-6 sm:space-y-8 relative", containerMaxWidthClass)}>
       <Card>
         <CardHeader className="flex flex-row justify-between items-center">
           <CardTitle>Test Mode</CardTitle>
@@ -278,7 +278,7 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
               <p className="ml-4 text-muted-foreground">Loading next card...</p>
             </div>
           ) : (
-            <div className="space-y-4 mt-4">
+            <div className="space-y-6 mt-6">
               {testType === 'text' ? (
                 <>
                   <Textarea

@@ -202,14 +202,14 @@ export function ImportExport({ cards, onBulkImport, categories, onAddCategory }:
   };
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-6">
       <Tabs defaultValue="import">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="import">Import</TabsTrigger>
           <TabsTrigger value="export">Export File</TabsTrigger>
           <TabsTrigger value="copy">Copy Text</TabsTrigger>
         </TabsList>
-        <TabsContent value="import" className="mt-4 space-y-4">
+        <TabsContent value="import" className="mt-4 space-y-6">
           <div>
             <Label>Import Into</Label>
             <Select value={importTarget} onValueChange={setImportTarget}>
@@ -243,11 +243,11 @@ export function ImportExport({ cards, onBulkImport, categories, onAddCategory }:
             <Input id="import-file" type="file" accept=".csv" onChange={handleFileChange} />
           </div>
         </TabsContent>
-        <TabsContent value="export" className="mt-4 space-y-4">
+        <TabsContent value="export" className="mt-4 space-y-6">
           <SeparatorOptions colSep={colSep} setColSep={setColSep} customColSep={customColSep} setCustomColSep={setCustomColSep} rowSep={rowSep} setRowSep={setRowSep} customRowSep={customRowSep} setCustomRowSep={setCustomRowSep} />
           <Button onClick={handleExport} className="w-full">Download CSV</Button>
         </TabsContent>
-        <TabsContent value="copy" className="mt-4 space-y-4">
+        <TabsContent value="copy" className="mt-4 space-y-6">
           <SeparatorOptions colSep={colSep} setColSep={setColSep} customColSep={customColSep} setCustomColSep={setCustomColSep} rowSep={rowSep} setRowSep={setRowSep} customRowSep={customRowSep} setCustomRowSep={setCustomRowSep} />
           <Textarea value={generatedText} readOnly rows={5} />
           <Button onClick={handleCopy} className="w-full">Copy to Clipboard</Button>

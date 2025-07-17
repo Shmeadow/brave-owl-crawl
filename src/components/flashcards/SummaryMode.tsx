@@ -139,15 +139,15 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
   const totalCardsInDeck = Object.values(summaryData.statusBreakdown).reduce((sum, count) => sum + count, 0);
 
   return (
-    <div className="w-full space-y-6">
-      <Card className="bg-card backdrop-blur-xl border-white/20 p-6 sm:p-8 rounded-xl shadow-lg w-full">
+    <div className="w-full space-y-8">
+      <Card className="bg-card backdrop-blur-xl border-white/20 p-4 sm:p-6 md:p-8 rounded-xl shadow-lg w-full">
         <CardHeader className="p-0 pb-6">
           <CardTitle className="text-3xl font-bold text-foreground text-center">
             Session Summary
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center mb-6">
             <div className="bg-muted p-4 rounded-lg shadow-sm border border-border">
               <p className="text-lg font-semibold text-foreground">Total Cards Reviewed</p>
               <p className="text-4xl font-bold text-primary">{overallTotal}</p>
@@ -161,14 +161,14 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
               <p className="text-4xl font-bold text-red-900 dark:text-red-200">{overallTotal - overallCorrect}</p>
             </div>
           </div>
-          <div className="text-center text-2xl font-bold text-foreground mb-8">
+          <div className="text-center text-2xl font-bold text-foreground mb-10">
             Overall Accuracy: {overallAccuracy}%
           </div>
 
           <h3 className="text-xl font-bold text-foreground mb-4 text-center flex items-center justify-center gap-2">
             <BarChart2 className="h-5 w-5" /> Performance Breakdown
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
             <Card className="p-4 bg-muted/50 border border-border">
               <CardTitle className="text-lg mb-3 flex items-center gap-2"><Brain className="h-5 w-5 text-blue-500" /> Learn Mode</CardTitle>
               {renderProgressBar(summaryData.learnModeStats.correct, summaryData.learnModeStats.total, "Correct", "bg-blue-500")}
@@ -184,7 +184,7 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
           <h3 className="text-xl font-bold text-foreground mb-4 text-center flex items-center justify-center gap-2">
             <BookOpen className="h-5 w-5" /> Card Status Distribution
           </h3>
-          <div className="space-y-3 mb-8">
+          <div className="space-y-3 mb-10">
             {Object.entries(summaryData.statusBreakdown).map(([status, count]) => (
               <div key={status} className="space-y-1">
                 <div className="flex justify-between text-sm">
@@ -212,7 +212,7 @@ export function SummaryMode({ summaryData, onResetProgress, onClearSummary }: Su
               <h3 className="text-xl font-bold text-foreground mb-4 text-center flex items-center justify-center gap-2">
                 <XCircle className="h-5 w-5 text-red-500" /> Top Missed Cards
               </h3>
-              <ul className="space-y-3 mb-8">
+              <ul className="space-y-3 mb-10">
                 {summaryData.topMissedCards.map((item, index) => (
                   <li key={item.card.id} className="p-3 rounded-md bg-red-50/70 dark:bg-red-900/20 border border-red-200/50 dark:border-red-800/30">
                     <p className="font-semibold text-md text-foreground">
