@@ -86,7 +86,7 @@ export function JournalDashboard({ isCurrentRoomWritable, onViewAllEntries, onRe
                 <PlusCircle className="mr-2 h-5 w-5" /> Quick Add
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] p-0">
+            <DialogContent className="sm:max-w-[600px] p-0 z-[1200]">
               <DialogHeader className="p-6 pb-4">
                 <DialogTitle>Add New Journal Entry</DialogTitle>
               </DialogHeader>
@@ -124,7 +124,7 @@ export function JournalDashboard({ isCurrentRoomWritable, onViewAllEntries, onRe
                         className="text-sm border-b border-border/50 pb-2 last:border-b-0 cursor-pointer hover:bg-muted/50 p-2 rounded-md"
                         onClick={() => onReminderClick(reminder)}
                       >
-                        <p className="font-semibold text-foreground truncate">
+                        <p className="font-semibold text-foreground flex items-center gap-2">
                           <Star className="h-4 w-4 text-yellow-500 fill-current mr-2 inline-block" /> {/* Added inline-block and mr-2 */}
                           From: "{reminder.entryTitle || 'Untitled Entry'}"
                         </p>
