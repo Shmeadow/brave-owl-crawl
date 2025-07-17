@@ -4,10 +4,9 @@ import React, { useState, useMemo } from 'react';
 import { CategorySidebar } from './CategorySidebar';
 import { FlashcardList } from './FlashcardList';
 import { FlashcardForm } from './FlashcardForm';
-import { ImportExport } from './ImportExport';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { LayoutGrid, FolderInput, Trash, X } from 'lucide-react';
+import { LayoutGrid, FolderInput, Trash, X, Upload, Download, Copy } from 'lucide-react'; // Added Upload, Download, Copy icons
 import { CardData, Category } from '@/hooks/flashcards/types';
 import { OrganizeCardModal } from './OrganizeCardModal';
 import { Slider } from '@/components/ui/slider';
@@ -15,7 +14,11 @@ import { Label } from '@/components/ui/label';
 import { useFlashcards } from '@/hooks/use-flashcards';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FlashcardSize } from '@/hooks/use-flashcard-size'; // Import FlashcardSize type
+import { FlashcardSize } from '@/hooks/use-flashcard-size';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Import Popover components
+import { ImportFlashcardsContent } from './ImportFlashcardsContent'; // Import new components
+import { ExportFlashcardsContent } from './ExportFlashcardsContent';
+import { CopyFlashcardsContent } from './CopyFlashcardsContent';
 
 interface ManageModeProps {
   cards: CardData[];
@@ -28,8 +31,8 @@ interface ManageModeProps {
   onDeleteCategory: (id: string, deleteContents: boolean) => Promise<boolean>;
   onUpdateCategory: (id: string, name: string) => void;
   onUpdateCardCategory: (cardId: string, newCategoryId: string | null) => void;
-  flashcardSize: FlashcardSize; // New prop
-  setFlashcardSize: (size: FlashcardSize) => void; // New prop
+  flashcardSize: FlashcardSize;
+  setFlashcardSize: (size: FlashcardSize) => void;
 }
 
 export function ManageMode({
@@ -43,8 +46,8 @@ export function ManageMode({
   onDeleteCategory,
   onUpdateCategory,
   onUpdateCardCategory,
-  flashcardSize, // Destructure new prop
-  setFlashcardSize, // Destructure new prop
+  flashcardSize,
+  setFlashcardSize,
 }: ManageModeProps) {
   const { fetchCards, handleBulkDelete, handleBulkMove } = useFlashcards();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | 'all' | null>('all');
@@ -55,6 +58,16 @@ export function ManageMode({
   const [isBulkMoveOpen, setIsBulkMoveOpen] = useState(false);
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   const [bulkMoveCategoryId, setBulkMoveCategoryId] = useState<string | null>(null);
+
+  // State for import/export/copy options
+  const [colSep, setColSep] = useState(',');
+  const [rowSep, setRowSep] = useState('\\n');
+  const [customColSep, setCustomColSep] = useState('');
+  const [customRowSep, setCustomRowSep] = useState('');
+
+  const [isImportPopoverOpen, setIsImportPopoverOpen] = useState(false);
+  const [isExportPopoverOpen, setIsExportPopoverOpen] = useState(false);
+  const [isCopyPopoverOpen, setIsCopyPopoverOpen] = useState(false);
 
   const filteredCards = useMemo(() => {
     if (selectedCategoryId === 'all') return cards;
@@ -116,9 +129,55 @@ export function ManageMode({
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle>Import/Export</CardTitle></CardHeader>
-          <CardContent className="p-0">
-            <ImportExport cards={cards} onBulkImport={onBulkImport} categories={categories} onAddCategory={onAddCategory} />
+          <CardHeader><CardTitle>Data Management</CardTitle></CardHeader>
+          <CardContent className="p-4 flex flex-col gap-3">
+            <Popover open={isImportPopoverOpen} onOpenChange={setIsImportPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full">
+                  <Upload className="mr-2 h-4 w-4" /> Import
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 z-[1100] p-0" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+                <ImportFlashcardsContent
+                  onBulkImport={onBulkImport}
+                  categories={categories}
+                  onAddCategory={onAddCategory}
+                  onClosePopover={() => setIsImportPopoverOpen(false)}
+                />
+              </PopoverContent>
+            </Popover>
+
+            <Popover open={isExportPopoverOpen} onOpenChange={setIsExportPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full">
+                  <Download className="mr-2 h-4 w-4" /> Export File
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 z-[1100] p-0" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+                <ExportFlashcardsContent
+                  cards={cards}
+                  colSep={colSep} setColSep={setColSep} customColSep={customColSep} setCustomColSep={setCustomColSep}
+                  rowSep={rowSep} setRowSep={setRowSep} customRowSep={customRowSep} setCustomRowSep={setCustomRowSep}
+                  onClosePopover={() => setIsExportPopoverOpen(false)}
+                />
+              </PopoverContent>
+            </Popover>
+
+            <Popover open={isCopyPopoverOpen} onOpenChange={setIsCopyPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full">
+                  <Copy className="mr-2 h-4 w-4" /> Copy Text
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 z-[1100] p-0" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+                <CopyFlashcardsContent
+                  cards={cards}
+                  colSep={colSep} setColSep={setColSep} customColSep={customColSep} setCustomColSep={setCustomColSep}
+                  rowSep={rowSep} setRowSep={setRowSep} customRowSep={customRowSep} setCustomRowSep={setCustomRowSep}
+                  onClosePopover={() => setIsCopyPopoverOpen(false)}
+                />
+              </PopoverContent>
+            </Popover>
           </CardContent>
         </Card>
       </div>
