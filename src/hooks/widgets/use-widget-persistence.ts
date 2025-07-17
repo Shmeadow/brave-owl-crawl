@@ -56,72 +56,87 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea, is
     });
   }, [mainContentArea]);
 
-  useEffect(() => {
+  // Memoize loadWidgetStates itself
+  const loadWidgetStates = useCallback(async () => {
     if (authLoading || !mounted.current) return;
 
     const sessionId = session?.user?.id || 'guest';
     const contextId = currentRoomId || sessionId;
     if (contextId === hasLoadedForSession.current) return;
 
-    const loadWidgetStates = async () => {
-      setLoading(true);
-      hasLoadedForSession.current = contextId;
-      let loadedWidgetStates: WidgetState[] = [];
+    setLoading(true);
+    hasLoadedForSession.current = contextId;
+    let loadedWidgetStates: WidgetState[] = [];
 
-      if (session && supabase) {
-        setIsLoggedInMode(true);
-        if (currentRoomId) {
-          const { data: roomWidgets, error } = await supabase.from('user_widget_states').select('*').eq('room_id', currentRoomId);
-          if (error) {
-            toast.error("Failed to load room widget layout.");
-          } else if (roomWidgets) {
-            const latestStates = new Map<string, DbWidgetState>();
-            for (const widget of roomWidgets) {
-              const existing = latestStates.get(widget.widget_id);
-              if (!existing || new Date(widget.updated_at) > new Date(existing.updated_at)) {
-                latestStates.set(widget.widget_id, widget);
-              }
+    if (session && supabase) {
+      setIsLoggedInMode(true);
+      if (currentRoomId) {
+        const { data: roomWidgets, error } = await supabase.from('user_widget_states').select('*').eq('room_id', currentRoomId);
+        if (error) {
+          toast.error("Failed to load room widget layout.");
+        } else if (roomWidgets) {
+          const latestStates = new Map<string, DbWidgetState>();
+          for (const widget of roomWidgets) {
+            const existing = latestStates.get(widget.widget_id);
+            if (!existing || new Date(widget.updated_at) > new Date(existing.updated_at)) {
+              latestStates.set(widget.widget_id, widget);
             }
-            loadedWidgetStates = Array.from(latestStates.values()).map(fromDbWidgetState);
           }
-        } else {
-          const { data: personalWidgets, error } = await supabase.from('user_widget_states').select('*').eq('user_id', session.user.id).is('room_id', null);
-          if (error) toast.error("Failed to load personal widget layout.");
-          else if (personalWidgets) loadedWidgetStates = personalWidgets.map(fromDbWidgetState);
+          loadedWidgetStates = Array.from(latestStates.values()).map(fromDbWidgetState);
         }
       } else {
-        setIsLoggedInMode(false);
-        loadedWidgetStates = [];
-        localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
+        // If not in a room, load personal widgets for the logged-in user
+        const { data: personalWidgets, error } = await supabase.from('user_widget_states').select('*').eq('user_id', session.user.id).is('room_id', null);
+        if (error) toast.error("Failed to load personal widget layout.");
+        else if (personalWidgets) loadedWidgetStates = personalWidgets.map(fromDbWidgetState);
       }
+    } else {
+      // Guest mode
+      setIsLoggedInMode(false);
+      // In guest mode, we don't persist across sessions, so we start fresh.
+      // The initialWidgetConfigs will provide the default state.
+      loadedWidgetStates = [];
+      localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY); // Clear any old local storage states
+    }
 
-      const allWidgets: WidgetState[] = Object.keys(initialWidgetConfigs).map(id => {
-        const config = initialWidgetConfigs[id];
-        const existingState = loadedWidgetStates.find(w => w.id === id);
+    const allWidgets: WidgetState[] = Object.keys(initialWidgetConfigs).map(id => {
+      const config = initialWidgetConfigs[id];
+      const existingState = loadedWidgetStates.find(w => w.id === id);
 
-        const effectiveInitialWidth = isMobile ? DEFAULT_WIDGET_WIDTH_MOBILE : config.initialWidth;
-        const effectiveInitialHeight = isMobile ? DEFAULT_WIDGET_HEIGHT_MOBILE : config.initialHeight;
+      const effectiveInitialWidth = isMobile ? DEFAULT_WIDGET_WIDTH_MOBILE : config.initialWidth;
+      const effectiveInitialHeight = isMobile ? DEFAULT_WIDGET_HEIGHT_MOBILE : config.initialHeight;
 
-        if (existingState) {
-          const clampedPos = clampPosition(existingState.position.x, existingState.position.y, existingState.size.width, existingState.size.height, mainContentArea);
-          return { ...existingState, position: clampedPos, normalPosition: existingState.normalPosition || clampedPos };
-        }
-        return {
-          id, title: id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-          position: clampPosition(config.initialPosition.x, config.initialPosition.y, effectiveInitialWidth, effectiveInitialHeight, mainContentArea),
-          size: { width: effectiveInitialWidth, height: effectiveInitialHeight },
-          zIndex: 903, isMinimized: false, isMaximized: false, isPinned: false, isClosed: true,
-          normalPosition: clampPosition(config.initialPosition.x, config.initialPosition.y, effectiveInitialWidth, effectiveInitialHeight, mainContentArea),
-          normalSize: { width: effectiveInitialWidth, height: effectiveInitialHeight },
-        };
-      });
-      
-      setActiveWidgets(recalculatePinnedWidgets(allWidgets));
-      setLoading(false);
-    };
+      if (existingState) {
+        const clampedPos = clampPosition(existingState.position.x, existingState.position.y, existingState.size.width, existingState.size.height, mainContentArea);
+        return { ...existingState, position: clampedPos, normalPosition: existingState.normalPosition || clampedPos };
+      }
+      return {
+        id, title: id.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+        position: clampPosition(config.initialPosition.x, config.initialPosition.y, effectiveInitialWidth, effectiveInitialHeight, mainContentArea),
+        size: { width: effectiveInitialWidth, height: effectiveInitialHeight },
+        zIndex: 903, isMinimized: false, isMaximized: false, isPinned: false, isClosed: true,
+        normalPosition: clampPosition(config.initialPosition.x, config.initialPosition.y, effectiveInitialWidth, effectiveInitialHeight, mainContentArea),
+        normalSize: { width: effectiveInitialWidth, height: effectiveInitialHeight },
+      };
+    });
+    
+    setActiveWidgets(recalculatePinnedWidgets(allWidgets));
+    setLoading(false);
+  }, [
+    authLoading,
+    session,
+    supabase,
+    currentRoomId,
+    initialWidgetConfigs,
+    isMobile,
+    mainContentArea,
+    recalculatePinnedWidgets,
+    // Removed setActiveWidgets, setLoading, setIsLoggedInMode from dependencies
+  ]);
 
+  useEffect(() => {
     loadWidgetStates();
-  }, [session, supabase, authLoading, initialWidgetConfigs, mainContentArea, recalculatePinnedWidgets, currentRoomId, isMobile]);
+  }, [loadWidgetStates]); // This useEffect is correct.
 
   useEffect(() => {
     if (!mounted.current || loading) return;
