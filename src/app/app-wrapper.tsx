@@ -26,7 +26,7 @@ import { useRooms } from "@/hooks/use-rooms";
 import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification";
 import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar";
 import { CookieConsentBar } from "@/components/cookie-consent-bar";
-import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT, MOBILE_HEADER_EFFECTIVE_HEIGHT, MOBILE_HEADER_SIDEBAR_GAP, MOBILE_SIDEBAR_CONTENT_GAP } from "@/lib/constants";
+import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT } from "@/lib/constants"; // Import new constant
 
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
@@ -40,18 +40,15 @@ const DynamicMobileControls = dynamic(() => import("@/components/mobile-controls
 const DynamicWelcomeBackModal = dynamic(() => import("@/components/welcome-back-modal").then(mod => mod.WelcomeBackModal), { ssr: false });
 
 // Constants for layout dimensions
-const HEADER_HEIGHT_DESKTOP = 64;
-const SIDEBAR_WIDTH_DESKTOP = 48;
-const SIDEBAR_LEFT_OFFSET = 8;
-const SIDEBAR_CONTENT_GAP = 16;
-
-// Hardcoded top for mobile sidebar for debugging
-// const DEBUG_MOBILE_SIDEBAR_TOP = 80; // This constant is no longer needed here
+const HEADER_HEIGHT = 64; // px
+const SIDEBAR_WIDTH_DESKTOP = 48; // px (from sidebar.tsx)
+const SIDEBAR_LEFT_OFFSET = 8; // px (from sidebar.tsx)
+const SIDEBAR_CONTENT_GAP = 16; // px (gap between sidebar and main content)
 
 export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
   const { loading, session, profile } = useSupabase();
   const pathname = usePathname();
-  const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
+  const { isSidebarOpen, setIsSidebarOpen } = useSidebar(); // isSidebarOpen will now always be true
   const { currentRoomId, currentRoomName, isCurrentRoomWritable } = useCurrentRoom();
   const { rooms, pendingRequests, dismissRequest } = useRooms();
   const { activeEffect } = useEffects();
@@ -92,22 +89,18 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
       const windowHeight = window.innerHeight;
       
       let contentLeft = 0;
-      let contentTop = 0;
+      let contentTop = HEADER_HEIGHT;
       let contentWidth = windowWidth;
-      let contentHeight = windowHeight;
+      let contentHeight = windowHeight - HEADER_HEIGHT;
 
       if (!isMobile) {
         // Desktop layout
-        contentTop = HEADER_HEIGHT_DESKTOP;
         contentLeft = SIDEBAR_WIDTH_DESKTOP + SIDEBAR_LEFT_OFFSET + SIDEBAR_CONTENT_GAP;
         contentWidth = windowWidth - contentLeft;
-        contentHeight = windowHeight - HEADER_HEIGHT_DESKTOP;
       } else {
         // Mobile layout: account for horizontal sidebar and bottom controls
-        // The sidebar's top is MOBILE_HEADER_EFFECTIVE_HEIGHT + MOBILE_HEADER_SIDEBAR_GAP
-        // So, content starts after the sidebar's height plus MOBILE_SIDEBAR_CONTENT_GAP
-        contentTop = (MOBILE_HEADER_EFFECTIVE_HEIGHT + MOBILE_HEADER_SIDEBAR_GAP) + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_SIDEBAR_CONTENT_GAP;
-        contentHeight = windowHeight - (contentTop + MOBILE_CONTROLS_HEIGHT);
+        contentTop += MOBILE_HORIZONTAL_SIDEBAR_HEIGHT;
+        contentHeight -= (MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_CONTROLS_HEIGHT);
       }
 
       setMainContentArea({
@@ -121,7 +114,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     calculateArea();
     window.addEventListener('resize', calculateArea);
     return () => window.removeEventListener('resize', calculateArea);
-  }, [isMobile]);
+  }, [isMobile]); // Added isMobile to dependencies
 
   if (loading) {
     return <LoadingScreen />;
@@ -142,6 +135,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
       <FocusSessionProvider>
         <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea} isMobile={isMobile}>
           <div className="relative h-screen bg-transparent">
+            {/* Removed the old shadow element */}
             {activeEffect === 'rain' && <DynamicRainEffect />}
             {activeEffect === 'snow' && <DynamicSnowEffect />}
             {activeEffect === 'raindrops' && <DynamicRaindropsEffect />}
@@ -152,6 +146,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               onClearUnreadMessages={handleClearUnreadMessages}
               unreadChatCount={unreadChatCount}
               isMobile={isMobile}
+              // Removed onToggleSidebar prop as it's no longer needed
             />
             <DynamicWelcomeBackModal
               isOpen={showWelcomeBack}
@@ -161,7 +156,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               currentRoomName={currentRoomName}
             />
             <DynamicPlayingSoundsBar isMobile={isMobile} />
-            <Sidebar isMobile={isMobile} />
+            <Sidebar isMobile={isMobile} /> {/* Sidebar is always rendered */}
             <GuestModeWarningBar />
             {pendingRequests.length > 0 && (
               <RoomJoinRequestNotification
@@ -186,7 +181,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             {isDashboard && !isMobile && <IndependentPinnedWidgetsDock isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />}
             {isDashboard && isMobile && (
               <>
-                <DynamicSimpleAudioPlayer isMobile={isMobile} displayMode="normal" />
+                <DynamicSimpleAudioPlayer isMobile={isMobile} displayMode="normal" /> {/* Changed to normal for mobile */}
                 <DynamicMobileControls>
                   <DynamicPomodoroWidget 
                     isMinimized={isPomodoroMinimized}

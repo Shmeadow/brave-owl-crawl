@@ -14,13 +14,8 @@ import { useSupabase, UserProfile } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
-import { BackgroundBlurSlider } from "./background-blur-slider"; // Import BackgroundBlurSlider
 
-interface UserNavProps {
-  isMobile: boolean; // New prop
-}
-
-export function UserNav({ isMobile }: UserNavProps) {
+export function UserNav() {
   const { supabase, session, profile, loading: authLoading } = useSupabase();
   const { theme, setTheme, themes } = useTheme();
   const router = useRouter();
@@ -75,21 +70,13 @@ export function UserNav({ isMobile }: UserNavProps) {
         <DropdownMenuItem onClick={() => router.push('/account')}>
           Account
         </DropdownMenuItem>
-        {isMobile && ( // Conditionally render for mobile
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="flex flex-col items-start space-y-2 py-2">
-              <span className="text-sm font-medium">Background Blur</span>
-              <BackgroundBlurSlider className="w-full" /> {/* Render the slider */}
-            </DropdownMenuItem>
-          </>
-        )}
         <DropdownMenuSeparator />
-        {session ? (
+        {session && (
           <DropdownMenuItem onClick={handleSignOut}>
             Log out
           </DropdownMenuItem>
-        ) : (
+        )}
+        {!session && (
           <DropdownMenuItem onClick={() => router.push('/login')}>
             Log in
           </DropdownMenuItem>

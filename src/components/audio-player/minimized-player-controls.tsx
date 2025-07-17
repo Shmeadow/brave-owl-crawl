@@ -28,7 +28,7 @@ export function MinimizedPlayerControls({
   setDisplayMode,
 }: MinimizedPlayerControlsProps) {
 
-  const isVolumeControlDisabled = !playerIsReady; // Removed playerType === 'spotify'
+  const isVolumeControlDisabled = !playerIsReady || playerType === 'spotify';
 
   return (
     <div className="flex flex-col items-center justify-between w-full h-full py-1 gap-1"> {/* Changed to flex-col, added py-1, reduced gap */}
@@ -60,10 +60,7 @@ export function MinimizedPlayerControls({
           max="1"
           step="0.01"
           value={currentVolume}
-          onChange={(e) => {
-            e.stopPropagation(); // Stop event propagation to prevent parent onClick
-            handleVolumeChange(e);
-          }}
+          onChange={handleVolumeChange}
           className={cn(
             "w-10 h-[0.15rem] rounded-lg appearance-none cursor-pointer accent-primary",
             "transform rotate-90 origin-center", // Rotate for vertical slider

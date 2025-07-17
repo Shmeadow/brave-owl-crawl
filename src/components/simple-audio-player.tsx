@@ -8,7 +8,7 @@ import { useSpotifyPlayer } from '@/hooks/use-spotify-player';
 import { cn, getYouTubeEmbedUrl } from '@/lib/utils';
 import { useSupabase } from '@/integrations/supabase/auth';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Import Popover components
 import {
   Drawer,
   DrawerContent,
@@ -16,26 +16,24 @@ import {
   DrawerTitle,
   DrawerDescription,
   DrawerTrigger,
-} from "@/components/ui/drawer";
-import { MOBILE_HORIZONTAL_SIDEBAR_HEIGHT, MOBILE_HEADER_EFFECTIVE_HEIGHT, MOBILE_HEADER_SIDEBAR_GAP, MOBILE_SIDEBAR_CONTENT_GAP } from '@/lib/constants';
+} from "@/components/ui/drawer"; // Import Drawer components
+import { MOBILE_HORIZONTAL_SIDEBAR_HEIGHT } from '@/lib/constants'; // Import new constant
 
 // Import new modular components
 import { PlayerDisplay } from './audio-player/player-display';
 import { MediaInput } from './audio-player/media-input';
 import { PlayerControls } from './audio-player/player-controls';
 import { ProgressBar } from './audio-player/progress-bar';
-import { MinimizedPlayerControls } from './audio-player/minimized-player-controls';
+import { MinimizedPlayerControls } from './audio-player/minimized-player-controls'; // New import
 
 const LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY = 'simple_audio_player_display_mode';
-const HEADER_HEIGHT = 64;
-const TOTAL_HEADER_AREA_HEIGHT = HEADER_HEIGHT;
-
-// Hardcoded top for mobile sidebar for debugging
-// const DEBUG_MOBILE_SIDEBAR_TOP = 80; // This constant is no longer needed here
+const HEADER_HEIGHT = 64; // px
+// const TIME_PROGRESS_BAR_HEIGHT = 64; // px - Removed as it's now fixed
+const TOTAL_HEADER_AREA_HEIGHT = HEADER_HEIGHT; // Adjusted to only include header height
 
 interface SimpleAudioPlayerProps {
   isMobile: boolean;
-  displayMode?: 'normal' | 'maximized' | 'minimized';
+  displayMode?: 'normal' | 'maximized' | 'minimized'; // Optional prop for initial display mode
 }
 
 const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal' }: SimpleAudioPlayerProps) => {
@@ -43,10 +41,11 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   const [stagedInputUrl, setStagedInputUrl] = useState('');
   const [committedMediaUrl, setCommittedMediaUrl] = useState('');
   const [playerType, setPlayerType] = useState<'audio' | 'youtube' | 'spotify' | null>(null);
-  const [isUrlInputOpen, setIsUrlInputOpen] = useState(false);
+  const [isUrlInputOpen, setIsUrlInputOpen] = useState(false); // State for popover/drawer
   const [displayMode, setDisplayMode] = useState<'normal' | 'maximized' | 'minimized'>(() => {
     if (typeof window !== 'undefined') {
       const savedMode = localStorage.getItem(LOCAL_STORAGE_PLAYER_DISPLAY_MODE_KEY);
+      // Prioritize initialDisplayMode prop if provided, otherwise use saved mode or default to 'normal'
       return initialDisplayMode || (savedMode === 'minimized' ? 'minimized' : 'normal');
     }
     return initialDisplayMode;
@@ -99,7 +98,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     toggleMute: spotifyToggleMute,
     seekTo: spotifySeekTo,
     connectToSpotify,
-    disconnectFromSpotify,
+    disconnectFromSpotify, // Added disconnect
     transferPlayback,
     playTrack: spotifyPlayTrack,
   } = useSpotifyPlayer(session?.access_token || null);
@@ -115,7 +114,10 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
       setPlayerType('youtube');
     } else if (committedMediaUrl.includes('open.spotify.com')) {
       setPlayerType('spotify');
+      // If Spotify URL is set and user is logged in, try to connect/play via SDK
       if (session?.access_token) {
+        // connectToSpotify is called by the hook itself when accessToken is provided.
+        // We only need to explicitly play the track if it's a new track and player is ready.
         if (spotifyPlayerReady && spotifyCurrentTrack?.uri !== committedMediaUrl) {
           spotifyPlayTrack(committedMediaUrl);
         }
@@ -196,9 +198,9 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   };
 
   const loadNewMedia = () => {
-    setStagedInputUrl(stagedInputUrl.trim());
+    setStagedInputUrl(stagedInputUrl.trim()); // Trim whitespace
     setCommittedMediaUrl(stagedInputUrl.trim());
-    setIsUrlInputOpen(false);
+    setIsUrlInputOpen(false); // Close popover/drawer after loading
   };
 
   const currentPlaybackTime = playerType === 'youtube' ? youtubeCurrentTime : (playerType === 'spotify' ? spotifyCurrentTime : audioCurrentTime);
@@ -223,15 +225,15 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   if (isMobile) {
     return (
       <div className={cn(
-        "fixed right-1 z-[901]",
-        // Calculate top based on header, header-sidebar gap, sidebar height, and sidebar-content gap
-        `top-[${MOBILE_HEADER_EFFECTIVE_HEIGHT + MOBILE_HEADER_SIDEBAR_GAP + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_SIDEBAR_CONTENT_GAP}px]`,
+        "fixed right-1 z-[901]", // Position at top right for mobile, changed right-4 to right-1
+        `top-[${HEADER_HEIGHT + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT}px]`, // Removed +8px offset
         "transition-all duration-300 ease-in-out",
-        "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex w-full",
-        displayMode === 'normal' || displayMode === 'maximized' ? "h-auto p-1 rounded-xl max-w-[224px] flex-col" : "h-40 p-1 items-center justify-between flex-col rounded-full w-10"
+        "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex w-full", // Applied styling here
+        displayMode === 'normal' || displayMode === 'maximized' ? "h-auto p-1 rounded-xl max-w-[224px] flex-col" : "h-40 p-1 items-center justify-between flex-col rounded-full w-10" // Use displayMode directly, and reverted width to w-10
       )}>
         {displayMode === 'normal' || displayMode === 'maximized' ? (
           <>
+            {/* PlayerDisplay is now inside and will fill available space */}
             <PlayerDisplay
               playerType={playerType}
               inputUrl={committedMediaUrl}
@@ -241,25 +243,28 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
               onLoadedMetadata={htmlAudioOnLoadedMetadata}
               onTimeUpdate={htmlAudioOnTimeUpdate}
               onEnded={htmlAudioOnEnded}
-              isMaximized={false}
+              isMaximized={false} // Not maximized in mobile expanded view
               className="w-full"
             />
 
+            {/* Spotify Track Info */}
             {playerType === 'spotify' && spotifyCurrentTrack && (
-              <div className="text-center p-0.5 flex-shrink-0">
-                <p className="text-xs font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
+              <div className="text-center p-0.5 flex-shrink-0"> {/* Reduced padding */}
+                <p className="text-xs font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p> {/* Smaller text */}
                 <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map(a => a.name).join(', ')}</p>
               </div>
             )}
 
-            <div className="flex items-center justify-between space-x-1 mb-0.5 flex-shrink-0 w-full">
+            {/* Main Player Row: URL Input Toggle and Controls */}
+            <div className="flex items-center justify-between space-x-1 mb-0.5 flex-shrink-0 w-full"> {/* Reduced space-x and mb */}
+              {/* URL Input Toggle (Drawer for mobile) */}
               <Drawer open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
                 <DrawerTrigger asChild>
                   <button
                     className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
                     title="Change Media URL"
                   >
-                    <Link size={10} className="mr-0.5" />
+                    <Link size={10} className="mr-0.5" /> {/* Smaller icon */}
                     {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
                   </button>
                 </DrawerTrigger>
@@ -286,8 +291,8 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
                 handleVolumeChange={handleVolumeChange}
                 canPlayPause={canPlayPause}
                 canSeek={canSeek}
-                displayMode={displayMode}
-                setDisplayMode={setDisplayMode}
+                displayMode={displayMode} // Pass displayMode
+                setDisplayMode={setDisplayMode} // Pass setDisplayMode
               />
             </div>
 
@@ -301,15 +306,16 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
             />
 
             {playerType === 'spotify' && session && !spotifyPlayerReady && (
-              <div className="text-center text-xs text-muted-foreground mt-1">
+              <div className="text-center text-xs text-muted-foreground mt-1"> {/* Smaller text and margin */}
                 <p>Log in to Spotify for full playback control.</p>
-                <Button onClick={connectToSpotify} className="text-primary hover:underline mt-0.5" size="sm">
+                <Button onClick={connectToSpotify} className="text-primary hover:underline mt-0.5" size="sm"> {/* Smaller button */}
                   Connect to Spotify
                 </Button>
               </div>
             )}
           </>
         ) : (
+          // Minimized mobile view
           <MinimizedPlayerControls
             playerType={playerType}
             playerIsReady={playerIsReady}
@@ -330,14 +336,14 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   return (
     <div className={cn(
       "fixed z-[900] transition-all duration-300 ease-in-out",
-      displayMode === 'normal' && `top-[120px] right-4 w-64 rounded-3xl`,
-      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-10 h-40 rounded-full',
-      displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-96 flex flex-col items-center justify-center rounded-3xl'
+      displayMode === 'normal' && `top-[120px] right-4 w-64 rounded-3xl`, // Adjusted width to w-64, rounded-3xl
+      displayMode === 'minimized' && 'right-4 top-1/2 -translate-y-1/2 w-10 h-40 rounded-full', // Adjusted height to h-40
+      displayMode === 'maximized' && 'right-4 top-1/2 -translate-y-1/2 w-96 flex flex-col items-center justify-center rounded-3xl' // rounded-3xl
     )}>
       <div className={cn(
-        "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex flex-col w-full",
-        displayMode === 'normal' && 'p-1 rounded-3xl',
-        displayMode === 'maximized' && 'p-4 items-center justify-center rounded-3xl',
+        "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex flex-col w-full", // Applied styling here
+        displayMode === 'normal' && 'p-1 rounded-3xl', // Reduced padding, rounded-3xl
+        displayMode === 'maximized' && 'p-4 items-center justify-center rounded-3xl', // rounded-3xl
         displayMode === 'minimized' && 'hidden'
       )}>
         <PlayerDisplay
@@ -357,13 +363,13 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
         />
 
         {playerType === 'spotify' && spotifyCurrentTrack && (
-          <div className="text-center p-0.5 flex-shrink-0">
+          <div className="text-center p-0.5 flex-shrink-0"> {/* Reduced padding */}
             <p className="text-sm font-semibold truncate text-foreground">{spotifyCurrentTrack.name}</p>
             <p className="text-xs truncate text-muted-foreground">{spotifyCurrentTrack.artists.map(a => a.name).join(', ')}</p>
           </div>
         )}
 
-        <div className="flex items-center justify-between space-x-1 mb-0.5 flex-shrink-0 w-full">
+        <div className="flex items-center justify-between space-x-1 mb-0.5 flex-shrink-0 w-full"> {/* Reduced space-x and mb */}
           <div className="flex-grow min-w-0">
             <Popover open={isUrlInputOpen} onOpenChange={setIsUrlInputOpen}>
               <PopoverTrigger asChild>
@@ -371,7 +377,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
                   className="text-xs font-bold text-primary hover:underline mt-0.5 flex items-center"
                   title="Change Media URL"
                 >
-                  <Link size={10} className="mr-0.5" />
+                  <Link size={10} className="mr-0.5" /> {/* Smaller icon */}
                   {isUrlInputOpen ? 'Hide URL' : 'Embed URL'}
                 </button>
               </PopoverTrigger>
@@ -409,9 +415,9 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
         />
 
         {playerType === 'spotify' && session && !spotifyPlayerReady && (
-          <div className="text-center text-xs text-muted-foreground mt-1">
+          <div className="text-center text-xs text-muted-foreground mt-1"> {/* Smaller text and margin */}
             <p>Log in to Spotify for full playback control.</p>
-            <Button onClick={connectToSpotify} className="text-primary hover:underline mt-0.5" size="sm">
+            <Button onClick={connectToSpotify} className="text-primary hover:underline mt-0.5" size="sm"> {/* Smaller button */}
               Connect to Spotify
             </Button>
           </div>
@@ -421,7 +427,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
       {displayMode === 'minimized' && (
         <div
           className={cn(
-            "bg-card/60 backdrop-blur-xl border-white/20 p-1 rounded-full flex items-center justify-between w-full h-full"
+            "bg-card/60 backdrop-blur-xl border-white/20 p-1 rounded-full flex items-center justify-between w-full h-full" // Reduced padding, ensured rounded-full
           )}
           title="Expand Player"
         >
