@@ -76,7 +76,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
         className={cn(
           "shadow-lg flex flex-col transition-all duration-300 ease-in-out mx-auto", // Added mx-auto for horizontal centering
           "bg-card/60 backdrop-blur-lg border-white/20", // Consistent transparency
-          isMobileExpanded ? "h-auto p-1 rounded-3xl w-full max-w-xs" : "h-28 p-1 items-center justify-between flex-col rounded-full w-28" // Adjusted height to h-28 and width to w-28, reduced padding
+          isMobileExpanded ? "h-auto p-1 rounded-xl w-full max-w-[200px]" : "h-20 p-1 items-center justify-between flex-col rounded-full w-20" // Adjusted height to h-20 and width to w-20 for minimized
         )}
       >
         {isMobileExpanded ? (
@@ -171,7 +171,7 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
         ) : (
           // Minimized mobile view (vertical)
           <>
-            <span className="text-sm font-semibold capitalize">{mode.replace('-', ' ')}</span>
+            <span className="text-base font-semibold capitalize mt-1">{mode.replace('-', ' ')}</span> {/* Bigger text, moved down */}
             <div
               className={cn(
                 "text-xl font-bold font-mono",
@@ -181,12 +181,12 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
             >
               {formatTime(timeLeft)}
             </div>
-            <div className="flex flex-row gap-2"> {/* Changed to flex-row for horizontal buttons */}
-              <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-7 w-7" disabled={!isCurrentRoomWritable}> {/* Smaller buttons */}
-                {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />} {/* Smaller icons */}
+            <div className="flex flex-row gap-1"> {/* Changed to flex-row for horizontal buttons, reduced gap */}
+              <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-6 w-6" disabled={!isCurrentRoomWritable}> {/* Smaller buttons */}
+                {isRunning ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />} {/* Smaller icons */}
               </Button>
-              <Button onClick={(e) => { e.stopPropagation(); handleReset(); }} size="icon" variant="secondary" className="h-7 w-7" disabled={!isCurrentRoomWritable}> {/* Smaller buttons */}
-                <RotateCcw className="h-4 w-4" /> {/* Smaller icons */}
+              <Button onClick={(e) => { e.stopPropagation(); handleReset(); }} size="icon" variant="secondary" className="h-6 w-6" disabled={!isCurrentRoomWritable}> {/* Smaller buttons */}
+                <RotateCcw className="h-3 w-3" /> {/* Smaller icons */}
               </Button>
             </div>
           </>
@@ -329,22 +329,22 @@ export function PomodoroWidget({ isMinimized, setIsMinimized, chatPanelWidth, is
 
       {isMinimized && (
         <div className="flex flex-col items-center justify-center w-full h-full py-2">
-          <span className="text-xs font-semibold capitalize">{mode.replace('-', ' ')}</span>
+          <span className="text-base font-semibold capitalize mt-1">{mode.replace('-', ' ')}</span>
           <div
             className={cn(
-              "text-3xl font-bold font-mono my-1",
+              "text-xl font-bold font-mono my-1",
               isCurrentRoomWritable ? "cursor-pointer hover:text-primary" : "cursor-not-allowed opacity-70"
             )}
             onClick={isMinimized ? () => setIsMinimized(false) : undefined}
           >
             {formatTime(timeLeft)}
           </div>
-          <div className="flex gap-2">
-            <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-7 w-7" disabled={!isCurrentRoomWritable}>
-              {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          <div className="flex gap-1">
+            <Button onClick={(e) => { e.stopPropagation(); handleStartPause(); }} size="icon" className="h-6 w-6" disabled={!isCurrentRoomWritable}>
+              {isRunning ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
             </Button>
-            <Button onClick={(e) => { e.stopPropagation(); handleReset(); }} size="icon" variant="secondary" className="h-7 w-7" disabled={!isCurrentRoomWritable}>
-              <RotateCcw className="h-4 w-4" />
+            <Button onClick={(e) => { e.stopPropagation(); handleReset(); }} size="icon" variant="secondary" className="h-6 w-6" disabled={!isCurrentRoomWritable}>
+              <RotateCcw className="h-3 w-3" />
             </Button>
           </div>
         </div>
