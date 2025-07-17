@@ -14,9 +14,10 @@ import { useFlashcardCategories } from '@/hooks/flashcards/useFlashcardCategorie
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { useFlashcardSize, FlashcardSize } from '@/hooks/use-flashcard-size'; // Import new hook
+import { useFlashcardSize, FlashcardSize } from '@/hooks/use-flashcard-size';
+import { FlashAttackMode } from './FlashAttackMode'; // Import the new component
 
-type FlashcardMode = 'manage' | 'learn' | 'test' | 'summary';
+type FlashcardMode = 'manage' | 'learn' | 'test' | 'summary' | 'flash-attack'; // Add 'flash-attack'
 
 const SESSION_HISTORY_KEY = 'flashcard_session_history';
 
@@ -28,7 +29,7 @@ export function FlashcardApp() {
   const [sessionHistory, setSessionHistory] = useState<DetailedResult[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [testType, setTestType] = useState<'text' | 'choices'>('text');
-  const { size: flashcardSize, setSize: setFlashcardSize, loading: sizeLoading } = useFlashcardSize(); // Use new hook
+  const { size: flashcardSize, setSize: setFlashcardSize, loading: sizeLoading } = useFlashcardSize();
 
   // Load session history from local storage on mount
   useEffect(() => {
@@ -211,8 +212,8 @@ export function FlashcardApp() {
             onDeleteCategory={deleteCategory}
             onUpdateCategory={updateCategory}
             onUpdateCardCategory={handleUpdateCardCategory}
-            flashcardSize={flashcardSize} // Pass flashcardSize to ManageMode
-            setFlashcardSize={setFlashcardSize} // Pass setFlashcardSize to ManageMode
+            flashcardSize={flashcardSize}
+            setFlashcardSize={setFlashcardSize}
           />
         );
       case 'learn':
@@ -221,6 +222,8 @@ export function FlashcardApp() {
         return <TestMode flashcards={cards} onAnswer={(cardId, isCorrect, userAnswer) => augmentedHandleAnswerFeedback(cardId, isCorrect, userAnswer, 'test')} onQuit={() => setCurrentMode('manage')} testType={testType} flashcardSize={flashcardSize} setFlashcardSize={setFlashcardSize} />;
       case 'summary':
         return <SummaryMode summaryData={generateSummaryData()} onResetProgress={handleResetProgress} onClearSummary={handleClearSummary} />;
+      case 'flash-attack':
+        return <FlashAttackMode />; // Render the new FlashAttackMode component
       default:
         return null;
     }
@@ -262,6 +265,12 @@ export function FlashcardApp() {
           variant={currentMode === 'summary' ? 'default' : 'outline'}
         >
           Summary
+        </Button>
+        <Button
+          onClick={() => setCurrentMode('flash-attack')}
+          variant={currentMode === 'flash-attack' ? 'destructive' : 'outline'} // Red button for Flash Attack
+        >
+          Flash Attack
         </Button>
       </div>
 
