@@ -131,7 +131,7 @@ export function GoalItem({ goal, onToggleComplete, onUpdateGoal, onDelete, isCur
             variant="ghost"
             size="icon"
             onClick={handleEdit}
-            className="text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+            className="text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity h-9 w-9"
             title="Edit goal"
             disabled={!isCurrentRoomWritable}
           >
@@ -142,7 +142,7 @@ export function GoalItem({ goal, onToggleComplete, onUpdateGoal, onDelete, isCur
             variant="ghost"
             size="icon"
             onClick={handleDelete}
-            className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+            className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity h-9 w-9"
             title="Delete goal"
             disabled={!isCurrentRoomWritable}
           >
@@ -150,8 +150,8 @@ export function GoalItem({ goal, onToggleComplete, onUpdateGoal, onDelete, isCur
             <span className="sr-only">Delete goal</span>
           </Button>
           <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-7 w-7">
-              <ChevronDown className="h-4 w-4" />
+            <Button variant="ghost" size="icon" className="h-9 w-9">
+              <ChevronDown className="h-5 w-5" />
               <span className="sr-only">Toggle stats</span>
             </Button>
           </CollapsibleTrigger>

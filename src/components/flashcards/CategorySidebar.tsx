@@ -74,41 +74,40 @@ export function CategorySidebar({
   return (
     <>
       <Card className="w-full flex flex-col bg-card backdrop-blur-xl border-white/20">
-        <CardHeader className="p-4 pb-2"> {/* Increased padding */}
-          <CardTitle className="text-base">Categories</CardTitle> {/* Reduced font size */}
+        <CardHeader className="p-4">
+          <CardTitle className="text-base">Categories</CardTitle>
         </CardHeader>
         <CardContent className="p-0 flex flex-col">
-          <div className="p-2 border-b"> {/* Increased padding */}
-            <div className="flex gap-2"> {/* Increased gap */}
+          <div className="p-4 border-b">
+            <div className="flex gap-2">
               <Input
                 placeholder="New category..."
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
-                className="h-9 text-base" // Increased height and font size
+                className="h-9 text-base"
               />
-              <Button onClick={handleAddCategory} size="icon" className="h-9 w-9"> {/* Increased size */}
-                <PlusCircle className="h-5 w-5" /> {/* Increased icon size */}
+              <Button onClick={handleAddCategory} size="icon" className="h-9 w-9">
+                <PlusCircle className="h-5 w-5" />
               </Button>
             </div>
           </div>
-          <ScrollArea className="h-[200px]"> {/* Reduced height */}
-            <div className="p-2 space-y-1"> {/* Increased padding and space-y */}
+          <ScrollArea className="h-[250px]">
+            <div className="p-4 pt-0 space-y-1">
               <Button
                 variant="ghost"
                 className={cn(
-                  'w-full justify-start text-left h-10 px-4 text-base', // Adjusted height and padding for consistency
+                  'w-full justify-start text-left h-10 px-4 text-base',
                   selectedCategoryId === 'all' && 'bg-accent text-accent-foreground'
                 )}
                 onClick={() => onSelectCategory('all')}
               >
                 <Folder className="mr-2 h-4 w-4" /> All Cards
               </Button>
-              {/* Removed explicit "Uncategorized" button */}
               {categories.map((category) => (
                 <div
                   key={category.id}
                   className={cn(
-                    'flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-accent h-10 text-base px-4', // Adjusted height, padding, font size for consistency
+                    'flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-accent h-10 text-base px-4',
                     selectedCategoryId === category.id && 'bg-accent text-accent-foreground'
                   )}
                   onClick={() => onSelectCategory(category.id)}
@@ -120,17 +119,17 @@ export function CategorySidebar({
                       onBlur={handleSaveEdit}
                       onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit()}
                       autoFocus
-                      className="h-9 text-base" // Adjusted height and font size
+                      className="h-9 text-base"
                     />
                   ) : (
                     <span className="flex-1 truncate">{category.name}</span>
                   )}
-                  <div className="flex gap-2"> {/* Increased gap */}
+                  <div className="flex gap-2">
                     <Button variant="ghost" size="icon" className="h-9 w-9" onClick={(e) => { e.stopPropagation(); handleStartEdit(category); }}>
-                      <Edit className="h-5 w-5" /> {/* Adjusted icon size */}
+                      <Edit className="h-5 w-5" />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive" onClick={(e) => { e.stopPropagation(); setDeletingCategory(category); }}>
-                      <Trash2 className="h-5 w-5" /> {/* Adjusted icon size */}
+                      <Trash2 className="h-5 w-5" />
                     </Button>
                   </div>
                 </div>
@@ -139,8 +138,6 @@ export function CategorySidebar({
           </ScrollArea>
         </CardContent>
       </Card>
-
-      {/* Removed Card Display Size section from here */}
 
       <DeleteCategoryDialog
         category={deletingCategory}

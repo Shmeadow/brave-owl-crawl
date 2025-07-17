@@ -135,7 +135,7 @@ export function TaskItem({ task, onToggleComplete, onUpdateTask, onDelete, isCur
             variant="ghost"
             size="icon"
             onClick={handleEdit}
-            className="text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+            className="text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity h-9 w-9"
             title="Edit task"
             disabled={!isCurrentRoomWritable}
           >
@@ -146,7 +146,7 @@ export function TaskItem({ task, onToggleComplete, onUpdateTask, onDelete, isCur
             variant="ghost"
             size="icon"
             onClick={handleDelete}
-            className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+            className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity h-9 w-9"
             title="Delete task"
             disabled={!isCurrentRoomWritable}
           >

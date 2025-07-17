@@ -88,7 +88,7 @@ export function JournalEntryItem({
       "hover:shadow-md hover:border-primary/50"
     )}>
       <Collapsible open={isContentOpen} onOpenChange={setIsContentOpen}>
-        <CardHeader className="flex flex-row items-center justify-between p-5 pb-3">
+        <CardHeader className="flex flex-row items-center justify-between p-4">
           {isEditingTitle ? (
             <div className="flex items-center gap-2 flex-1 mr-2">
               <Input
@@ -116,30 +116,30 @@ export function JournalEntryItem({
               variant="ghost"
               size="icon"
               className={cn(
-                "h-8 w-8",
+                "h-9 w-9",
                 entry.starred ? "text-yellow-500 hover:bg-yellow-100" : "text-muted-foreground hover:bg-accent"
               )}
               onClick={handleToggleStarClick}
               disabled={!isCurrentRoomWritable}
               title="Toggle Star"
             >
-              <Star className={cn("h-4 w-4", entry.starred && "fill-current")} />
+              <Star className={cn("h-5 w-5", entry.starred && "fill-current")} />
               <span className="sr-only">Toggle Star</span>
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-red-500 hover:bg-red-100 hover:text-red-600"
+              className="h-9 w-9 text-red-500 hover:bg-red-100 hover:text-red-600"
               onClick={handleDeleteClick}
               disabled={!isCurrentRoomWritable}
               title="Delete Entry"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-5 w-5" />
               <span className="sr-only">Delete Entry</span>
             </Button>
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                {isContentOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              <Button variant="ghost" size="icon" className="h-9 w-9">
+                {isContentOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                 <span className="sr-only">Toggle Content</span>
               </Button>
             </CollapsibleTrigger>
