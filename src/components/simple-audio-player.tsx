@@ -212,13 +212,6 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   const canPlayPause = playerIsReady;
   const canSeek = playerIsReady && totalDuration > 0;
 
-  // Mobile specific state for expanded/collapsed
-  const [isMobileExpanded, setIsMobileExpanded] = useState(false); // Default to false for mobile
-
-  const toggleMobileExpand = () => {
-    setIsMobileExpanded(prev => !prev);
-  };
-
   const renderMediaInput = (
     <MediaInput
       inputUrl={stagedInputUrl}
@@ -234,9 +227,9 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
         "fixed top-[72px] right-4 z-[901]", // Position at top right for mobile
         "transition-all duration-300 ease-in-out",
         "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex w-full", // Applied styling here
-        isMobileExpanded ? "h-auto p-1 rounded-xl max-w-[224px] flex-col" : "h-40 p-1 items-center justify-between flex-col rounded-full w-10" // Changed to flex-col for minimized
+        displayMode === 'normal' || displayMode === 'maximized' ? "h-auto p-1 rounded-xl max-w-[224px] flex-col" : "h-40 p-1 items-center justify-between flex-col rounded-full w-24" // Use displayMode directly, and increased width to w-24
       )}>
-        {isMobileExpanded ? (
+        {displayMode === 'normal' || displayMode === 'maximized' ? (
           <>
             {/* PlayerDisplay is now inside and will fill available space */}
             <PlayerDisplay
