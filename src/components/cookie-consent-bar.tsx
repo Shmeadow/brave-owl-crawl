@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile'; // Import useIsMobile
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Extend Window interface to include initializeGoogleAnalytics
 declare global {
@@ -16,19 +16,19 @@ declare global {
 
 export function CookieConsentBar() {
   const [showBar, setShowBar] = useState(false);
-  const isMobile = useIsMobile(); // Get mobile status
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const consent = localStorage.getItem('cookie_consent');
       if (consent === null) {
-        setShowBar(true);
+        setShowBar(true); // Show the bar if no consent is recorded
       }
     }
-  }, []);
+  }, []); // Empty dependency array means this runs once on mount
 
   const handleAccept = () => {
-    localStorage.setItem('cookie_consent', 'accepted');
+    localStorage.setItem('cookie_consent', 'accepted'); // Save consent
     if (window.initializeGoogleAnalytics) {
       window.initializeGoogleAnalytics();
     }
@@ -36,7 +36,7 @@ export function CookieConsentBar() {
   };
 
   const handleDecline = () => {
-    localStorage.setItem('cookie_consent', 'declined');
+    localStorage.setItem('cookie_consent', 'declined'); // Save consent
     // Ensure gtag is a no-op if declined
     if (window.gtag) {
       window.gtag = function() {};
