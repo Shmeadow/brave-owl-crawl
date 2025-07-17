@@ -225,8 +225,8 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
   if (isMobile) {
     return (
       <div className={cn(
-        "fixed right-4 z-[901]", // Position at top right for mobile
-        `top-[${HEADER_HEIGHT + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + 8}px]`, // Position below header and horizontal sidebar + 8px gap
+        "fixed right-1 z-[901]", // Position at top right for mobile, changed right-4 to right-1
+        `top-[${HEADER_HEIGHT + MOBILE_HORIZONTAL_SIDEBAR_HEIGHT}px]`, // Removed +8px offset
         "transition-all duration-300 ease-in-out",
         "bg-card/60 backdrop-blur-lg border-white/20 shadow-lg flex w-full", // Applied styling here
         displayMode === 'normal' || displayMode === 'maximized' ? "h-auto p-1 rounded-xl max-w-[224px] flex-col" : "h-40 p-1 items-center justify-between flex-col rounded-full w-10" // Use displayMode directly, and reverted width to w-10
