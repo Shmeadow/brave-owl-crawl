@@ -349,7 +349,7 @@ const SimpleAudioPlayer = ({ isMobile, displayMode: initialDisplayMode = 'normal
     return (
       <div className={cn(
         "fixed z-[900] transition-all duration-300 ease-in-out",
-        displayMode === 'normal' && `top-[120px] right-4 w-64 rounded-xl`,
+        displayMode === 'normal' && `top-[112px] right-4 w-64 rounded-xl`,
         displayMode === 'minimized' && 'top-1/2 -translate-y-1/2 right-4 w-10 h-[120px] rounded-full',
         className
       )}>
