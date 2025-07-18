@@ -26,6 +26,7 @@ import { useRooms } from "@/hooks/use-rooms";
 import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar";
 import { CookieConsentBar } from "@/components/cookie-consent-bar";
 import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT } from "@/lib/constants";
+import { RoomPermissionMessage } from "@/components/room-permission-message"; // Import new component
 
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
@@ -167,6 +168,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
             <DynamicPlayingSoundsBar isMobile={isMobile} />
             <Sidebar isMobile={isMobile} />
             <GuestModeWarningBar />
+            <RoomPermissionMessage /> {/* New: Display room permission message */}
             <div
               role="main"
               className="absolute right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
