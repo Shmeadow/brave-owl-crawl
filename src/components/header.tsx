@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, LayoutGrid, MessageSquare, BarChart2, Settings } from "lucide-react";
-import { useSupabase, UserProfile } from "@/integrations/supabase/auth";
+import { useSupabase } from "@/integrations/supabase/auth";
 import { UserNav } from "@/components/user-nav";
 import { UpgradeButton } from "@/components/upgrade-button";
 import { useCurrentRoom } from "@/hooks/use-current-room";
@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useRooms, RoomData } from "@/hooks/use-rooms";
 import Link from "next/link";
 import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
-import { useWidget } from "@/components/widget/widget-provider"; // Keep useWidget here
+import { useWidget } from "@/components/widget/widget-provider";
 import { UserNameCapsule } from "./user-name-capsule";
 import { cn } from "@/lib/utils";
 import { RoomSettingsContent } from "./spaces-widget/RoomSettingsContent";
@@ -29,6 +29,7 @@ export const formatTimeManual = (date: Date, use24Hour: boolean) => {
 
   if (!use24Hour) {
     ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
     hours = hours ? hours : 12; // the hour '0' should be '12'
   }
 
@@ -135,48 +136,21 @@ interface HeaderProps {
   unreadChatCount: number;
   isMobile: boolean;
   isChatOpen: boolean;
-  // New props added to HeaderProps
-  isNotificationsOpen: boolean;
-  setIsNotificationsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  isRoomSettingsOpen: boolean;
-  setIsRoomSettingsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  isBugReportOpen: boolean;
-  setIsBugReportOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  userOwnsPersonalRoom: boolean;
-  usersPersonalRoom: RoomData | null;
-  handleRoomCreated: (room: RoomData) => void;
-  toggleWidget: (id: string, title: string) => void; // This prop is now mandatory
-  session: ReturnType<typeof useSupabase>['session'];
-  profile: UserProfile | null;
-  currentRoomId: string | null;
-  currentRoomName: string;
-  isCurrentRoomWritable: boolean;
 }
 
-export const Header = React.memo(({
-  onToggleChat,
-  onNewUnreadMessage, // Added to props
-  onClearUnreadMessages, // Added to props
-  unreadChatCount,
-  isMobile,
-  isChatOpen,
-  isNotificationsOpen,
-  setIsNotificationsOpen,
-  isRoomSettingsOpen,
-  setIsRoomSettingsOpen,
-  isBugReportOpen,
-  setIsBugReportOpen,
-  userOwnsPersonalRoom,
-  usersPersonalRoom,
-  handleRoomCreated,
-  toggleWidget, // Destructure toggleWidget from props
-  session,
-  profile,
-  currentRoomId,
-  currentRoomName,
-  isCurrentRoomWritable,
-}: HeaderProps) => {
-  const { rooms } = useRooms(); // This is still needed for usersPersonalRoom logic
+export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isChatOpen }: HeaderProps) => {
+  const { session, profile } = useSupabase();
+  const { currentRoomName } = useCurrentRoom();
+  const { rooms } = useRooms();
+  const { toggleWidget } = useWidget();
+  const [isRoomSettingsOpen, setIsRoomSettingsOpen] = useState(false);
+
+  const usersPersonalRoom = rooms.find(room => room.id === profile?.personal_room_id && room.creator_id === session?.user?.id) || null;
+  const userOwnsPersonalRoom = !!usersPersonalRoom;
+
+  const handleRoomCreated = (newRoom: RoomData) => {
+    setIsRoomSettingsOpen(false);
+  };
 
   return (
     <header className={cn(
@@ -192,6 +166,31 @@ export const Header = React.memo(({
           </Button>
         </Link>
         <h1 className="text-base font-semibold truncate max-w-[120px] sm:max-w-[200px]">{currentRoomName}</h1>
+        <Button
+          className="flex-shrink-0 h-8 w-8 hover:bg-header-button-dark/20"
+          variant="ghost"
+          size="icon"
+          title="Spaces"
+          onClick={() => toggleWidget('spaces', 'Spaces')}
+        >
+          <LayoutGrid className="h-4 w-4" />
+        </Button>
+        {session && (
+          <Popover open={isRoomSettingsOpen} onOpenChange={setIsRoomSettingsOpen}>
+            <PopoverTrigger asChild>
+              <Button className="flex-shrink-0 h-8 w-8 hover:bg-header-button-dark/20" variant="ghost" size="icon" title="Room Options">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20" align="start" onOpenAutoFocus={(e: Event) => e.preventDefault()}>
+              {userOwnsPersonalRoom && usersPersonalRoom ? (
+                <RoomSettingsContent room={usersPersonalRoom} />
+              ) : (
+                <CreatePersonalRoomForm onRoomCreated={handleRoomCreated} onClose={() => setIsRoomSettingsOpen(false)} />
+              )}
+            </PopoverContent>
+          </Popover>
+        )}
       </div>
 
       {/* Clock and Progress - now absolutely positioned and truly centered */}
@@ -204,96 +203,37 @@ export const Header = React.memo(({
         "flex items-center gap-1 flex-shrink-0",
         "justify-end"
       )}>
-        {isMobile ? (
-          <>
-            {/* Mobile: 2x1 layout for primary actions */}
-            <div className="flex items-center gap-1">
-              <Button
-                className="h-8 w-8 hover:bg-header-button-dark/20"
-                variant="ghost"
-                size="icon"
-                title="Spaces"
-                onClick={() => toggleWidget('spaces', 'Spaces')}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative h-8 w-8 hover:bg-header-button-dark/20"
-                title="Open Chat"
-                onClick={onToggleChat}
-              >
-                <MessageSquare className="h-4 w-4" />
-                {unreadChatCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-                    {unreadChatCount}
-                  </span>
-                )}
-              </Button>
-            </div>
-            <UserNav
-              isMobile={isMobile}
-              unreadChatCount={unreadChatCount}
-              onToggleChat={onToggleChat}
-              isRoomSettingsOpen={isRoomSettingsOpen}
-              setIsRoomSettingsOpen={setIsRoomSettingsOpen}
-              userOwnsPersonalRoom={userOwnsPersonalRoom}
-              usersPersonalRoom={usersPersonalRoom}
-              handleRoomCreated={handleRoomCreated}
-              toggleWidget={toggleWidget}
-              session={session}
-              profile={profile}
-              currentRoomId={currentRoomId}
-              currentRoomName={currentRoomName}
-              isCurrentRoomWritable={isCurrentRoomWritable}
-              isNotificationsOpen={isNotificationsOpen}
-              setIsNotificationsOpen={setIsNotificationsOpen}
-              isBugReportOpen={isBugReportOpen}
-              setIsBugReportOpen={setIsBugReportOpen}
-            />
-          </>
-        ) : (
-          <>
-            {/* Render BackgroundBlurSlider only on desktop */}
-            <BackgroundBlurSlider className="hidden md:flex" />
-            <Button
-              className="h-8 w-8 hover:bg-header-button-dark/20"
-              variant="ghost"
-              size="icon"
-              title="Statistics"
-              onClick={() => toggleWidget('stats-progress', 'Statistics')}
-            >
-              <BarChart2 className="h-4 w-4" />
-            </Button>
-            <BugReportButton />
-            <UpgradeButton />
-            <UserNameCapsule />
-            {session && <NotificationsDropdown />}
-            {/* Chat button (now always visible) */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative h-8 w-8 hover:bg-header-button-dark/20"
-              title="Open Chat"
-              onClick={onToggleChat}
-            >
-              <MessageSquare className="h-4 w-4" />
-              {unreadChatCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-                  {unreadChatCount}
-                </span>
-              )}
-            </Button>
-            <UserNav
-              isMobile={isMobile}
-              // For desktop, these props are not directly used by UserNav's rendering logic
-              // but are still part of its interface. We can pass default/empty values or
-              // ensure they are optional in UserNavProps.
-              // Since they are already optional in UserNavProps, we don't need to pass them here.
-            />
-          </>
-        )}
+        {/* Render BackgroundBlurSlider only on desktop */}
+        {!isMobile && <BackgroundBlurSlider className="hidden md:flex" />}
+        <Button
+          className="h-8 w-8 hover:bg-header-button-dark/20"
+          variant="ghost"
+          size="icon"
+          title="Statistics"
+          onClick={() => toggleWidget('stats-progress', 'Statistics')}
+        >
+          <BarChart2 className="h-4 w-4" />
+        </Button>
+        <BugReportButton />
+        <UpgradeButton />
+        <UserNameCapsule />
+        {session && <NotificationsDropdown />}
+        {/* Chat button (now always visible) */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative h-8 w-8 hover:bg-header-button-dark/20"
+          title="Open Chat"
+          onClick={onToggleChat}
+        >
+          <MessageSquare className="h-4 w-4" />
+          {unreadChatCount > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+              {unreadChatCount}
+            </span>
+          )}
+        </Button>
+        <UserNav isMobile={isMobile} />
       </div>
     </header>
   );

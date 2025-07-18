@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { useSupabase, UserProfile } from '@/integrations/supabase/auth';
+import { useSupabase } from '@/integrations/supabase/auth';
 import { useSidebar } from "@/components/sidebar/sidebar-context";
 import { Toaster } from "@/components/ui/sonner";
 import { Sidebar } from "@/components/sidebar/sidebar";
@@ -22,14 +22,11 @@ import { PinnedWidgetsDock } from "@/components/pinned-widgets-dock";
 import { useWidget } from "@/components/widget/widget-provider";
 import { checkAndClearClientData } from "@/lib/client-version";
 import dynamic from 'next/dynamic';
-import { useRooms, RoomData } from "@/hooks/use-rooms";
-// Removed: import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification";
+import { useRooms } from "@/hooks/use-rooms";
+// Removed: import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification"; // Corrected import path
 import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar";
 import { CookieConsentBar } from "@/components/cookie-consent-bar";
-import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT } from "@/lib/constants";
-import { NotificationsModal } from "@/components/notifications/NotificationsModal";
-import { RoomSettingsModal } from "@/components/spaces-widget/RoomSettingsModal";
-import { BugReportModal } from "@/components/bug-report-modal";
+import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT } from "@/lib/constants"; // Import new constant
 
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
@@ -51,59 +48,19 @@ const SIDEBAR_CONTENT_GAP = 16; // px (gap between sidebar and main content)
 export function AppWrapper({ children, initialWidgetConfigs }: { children: React.ReactNode; initialWidgetConfigs: any }) {
   const { loading, session, profile } = useSupabase();
   const pathname = usePathname();
-  const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
+  const { isSidebarOpen, setIsSidebarOpen } = useSidebar(); // isSidebarOpen will now always be true
   const { currentRoomId, currentRoomName, isCurrentRoomWritable } = useCurrentRoom();
   const { rooms, pendingRequests, dismissRequest } = useRooms();
   const { activeEffect } = useEffects();
-  const isMobile = useIsMobile(); // Get isMobile here
+  const isMobile = useIsMobile();
   const { goals } = useGoals();
-  const { toggleWidget } = useWidget();
 
-  // mainContentArea is now calculated inside WidgetProvider, but AppWrapper still needs it for layout
-  // So, we'll calculate it here as well, or pass it down from WidgetProvider if it were exposed.
-  // For now, recalculating it here is fine as it's a simple layout calculation.
   const [mainContentArea, setMainContentArea] = useState({ left: 0, top: 0, width: 0, height: 0 });
-
-  useEffect(() => {
-    const calculateArea = () => {
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-      
-      let contentLeft = 0;
-      let contentTop = HEADER_HEIGHT;
-      let contentWidth = windowWidth;
-      let contentHeight = windowHeight - HEADER_HEIGHT;
-
-      if (!isMobile) {
-        contentLeft = SIDEBAR_WIDTH_DESKTOP + SIDEBAR_LEFT_OFFSET + SIDEBAR_CONTENT_GAP;
-        contentWidth = windowWidth - contentLeft;
-      } else {
-        contentTop += MOBILE_HORIZONTAL_SIDEBAR_HEIGHT;
-        contentHeight -= (MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_CONTROLS_HEIGHT);
-      }
-
-      setMainContentArea({
-        left: contentLeft,
-        top: contentTop,
-        width: contentWidth,
-        height: contentHeight,
-      });
-    };
-
-    calculateArea();
-    window.addEventListener('resize', calculateArea);
-    return () => window.removeEventListener('resize', calculateArea);
-  }, [isMobile]);
 
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [isPomodoroMinimized, setIsPomodoroMinimized] = useState(true);
   const [showWelcomeBack, setShowWelcomeBack] = useState(false);
-
-  // New states for mobile modals
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [isRoomSettingsOpen, setIsRoomSettingsOpen] = useState(false);
-  const [isBugReportOpen, setIsBugReportOpen] = useState(false);
 
   const isDashboard = pathname === '/dashboard';
   const isLoginPage = pathname === '/login';
@@ -126,107 +83,137 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
 
   const firstIncompleteGoal = goals.find(g => !g.completed) || null;
 
-  const usersPersonalRoom = rooms.find(room => room.id === profile?.personal_room_id && room.creator_id === session?.user?.id) || null;
-  const userOwnsPersonalRoom = !!usersPersonalRoom;
+  useEffect(() => {
+    const calculateArea = () => {
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      
+      let contentLeft = 0;
+      let contentTop = HEADER_HEIGHT;
+      let contentWidth = windowWidth;
+      let contentHeight = windowHeight - HEADER_HEIGHT;
 
-  const handleRoomCreated = (newRoom: RoomData) => {
-    // This function is passed down to CreatePersonalRoomForm
-    // It's a placeholder for now, as the actual room creation logic is in useRoomManagement
-    // and the room list will re-fetch automatically.
-    // You might want to add a toast or specific state update here if needed.
-  };
+      if (!isMobile) {
+        // Desktop layout
+        contentLeft = SIDEBAR_WIDTH_DESKTOP + SIDEBAR_LEFT_OFFSET + SIDEBAR_CONTENT_GAP;
+        contentWidth = windowWidth - contentLeft;
+      } else {
+        // Mobile layout: account for horizontal sidebar and bottom controls
+        contentTop += MOBILE_HORIZONTAL_SIDEBAR_HEIGHT;
+        contentHeight -= (MOBILE_HORIZONTAL_SIDEBAR_HEIGHT + MOBILE_CONTROLS_HEIGHT);
+      }
+
+      setMainContentArea({
+        left: contentLeft,
+        top: contentTop,
+        width: contentWidth,
+        height: contentHeight,
+      });
+    };
+
+    calculateArea();
+    window.addEventListener('resize', calculateArea);
+    return () => window.removeEventListener('resize', calculateArea);
+  }, [isMobile]); // Added isMobile to dependencies
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  if (pathname === '/pricing' || isLoginPage || isLandingPage) {
+    return (
+      <>
+        {children}
+        <Toaster />
+        <CookieConsentBar />
+      </>
+    );
+  }
 
   return (
     <AmbientSoundProvider>
       <FocusSessionProvider>
-        <div className="relative h-screen bg-transparent">
-          {activeEffect === 'rain' && <DynamicRainEffect />}
-          {activeEffect === 'snow' && <DynamicSnowEffect />}
-          {activeEffect === 'raindrops' && <DynamicRaindropsEffect />}
-          <Header
-            isChatOpen={isChatOpen}
-            onToggleChat={() => setIsChatOpen(!isChatOpen)}
-            onNewUnreadMessage={handleNewUnreadMessage}
-            onClearUnreadMessages={handleClearUnreadMessages}
-            unreadChatCount={unreadChatCount}
-            isMobile={isMobile}
-            isNotificationsOpen={isNotificationsOpen}
-            setIsNotificationsOpen={setIsNotificationsOpen}
-            isRoomSettingsOpen={isRoomSettingsOpen}
-            setIsRoomSettingsOpen={setIsRoomSettingsOpen}
-            isBugReportOpen={isBugReportOpen}
-            setIsBugReportOpen={setIsBugReportOpen}
-            userOwnsPersonalRoom={userOwnsPersonalRoom}
-            usersPersonalRoom={usersPersonalRoom}
-            handleRoomCreated={handleRoomCreated}
-            toggleWidget={toggleWidget}
-            session={session}
-            profile={profile}
-            currentRoomId={currentRoomId}
-            currentRoomName={currentRoomName}
-            isCurrentRoomWritable={isCurrentRoomWritable}
-          />
-          <DynamicWelcomeBackModal
-            isOpen={showWelcomeBack}
-            onClose={() => setShowWelcomeBack(false)}
-            profile={profile}
-            firstGoal={firstIncompleteGoal}
-            currentRoomName={currentRoomName}
-          />
-          <DynamicPlayingSoundsBar isMobile={isMobile} />
-          <Sidebar isMobile={isMobile} />
-          <GuestModeWarningBar />
-          <div
-            role="main"
-            className="absolute right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
-            style={{ left: `${mainContentArea.left}px`, top: `${mainContentArea.top}px`, width: `${mainContentArea.width}px`, height: `${mainContentArea.height}px` }}
-          >
-            <main className="flex-1 relative overflow-y-auto bg-transparent">
-              <div className={cn("h-full", isMobile ? "p-4" : "p-4 sm:p-6 lg:p-8")}>
-                {children}
-                {isDashboard && (
-                  <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} isMobile={isMobile} />
-                )}
-              </div>
-            </main>
+        <WidgetProvider initialWidgetConfigs={initialWidgetConfigs} mainContentArea={mainContentArea} isMobile={isMobile} isCurrentRoomWritable={isCurrentRoomWritable}>
+          <div className="relative h-screen bg-transparent">
+            {/* Removed the old shadow element */}
+            {activeEffect === 'rain' && <DynamicRainEffect />}
+            {activeEffect === 'snow' && <DynamicSnowEffect />}
+            {activeEffect === 'raindrops' && <DynamicRaindropsEffect />}
+            <Header
+              isChatOpen={isChatOpen}
+              onToggleChat={() => setIsChatOpen(!isChatOpen)}
+              onNewUnreadMessage={handleNewUnreadMessage}
+              onClearUnreadMessages={handleClearUnreadMessages}
+              unreadChatCount={unreadChatCount}
+              isMobile={isMobile}
+              // Removed onToggleSidebar prop as it's no longer needed
+            />
+            <DynamicWelcomeBackModal
+              isOpen={showWelcomeBack}
+              onClose={() => setShowWelcomeBack(false)}
+              profile={profile}
+              firstGoal={firstIncompleteGoal}
+              currentRoomName={currentRoomName}
+            />
+            <DynamicPlayingSoundsBar isMobile={isMobile} />
+            <Sidebar isMobile={isMobile} /> {/* Sidebar is always rendered */}
+            <GuestModeWarningBar />
+            {/* Removed RoomJoinRequestNotification */}
+            <div
+              role="main"
+              className="absolute right-0 bottom-0 flex flex-col transition-all duration-300 ease-in-out bg-transparent"
+              style={{ left: `${mainContentArea.left}px`, top: `${mainContentArea.top}px`, width: `${mainContentArea.width}px`, height: `${mainContentArea.height}px` }}
+            >
+              <main className="flex-1 relative overflow-y-auto bg-transparent">
+                <div className={cn("h-full", isMobile ? "p-4" : "p-4 sm:p-6 lg:p-8")}>
+                  {children}
+                  {isDashboard && (
+                    <WidgetContainer isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} isMobile={isMobile} />
+                  )}
+                </div>
+              </main>
+            </div>
+            {isDashboard && !isMobile && <IndependentPinnedWidgetsDock isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />}
+            {isDashboard && isMobile && (
+              <>
+                {/* Mobile-specific SimpleAudioPlayer positioned at middle-right */}
+                <DynamicSimpleAudioPlayer isMobile={isMobile} displayMode="minimized" />
+                <DynamicMobileControls>
+                  <DynamicPomodoroWidget 
+                    isMinimized={isPomodoroMinimized}
+                    setIsMinimized={setIsPomodoroMinimized}
+                    chatPanelWidth={0}
+                    isMobile={isMobile}
+                  />
+                </DynamicMobileControls>
+              </>
+            )}
+            {isDashboard && !isMobile && (
+              <>
+                <DynamicPomodoroWidget 
+                  isMinimized={isPomodoroMinimized}
+                  setIsMinimized={setIsPomodoroMinimized}
+                  chatPanelWidth={0}
+                  isMobile={isMobile}
+                />
+                <DynamicSimpleAudioPlayer isMobile={isMobile} />
+              </>
+            )}
+            <DynamicChatPanel
+              isOpen={isChatOpen}
+              onToggleOpen={() => setIsChatOpen(!isChatOpen)}
+              onNewUnreadMessage={handleNewUnreadMessage}
+              onClearUnreadMessages={handleClearUnreadMessages}
+              unreadCount={unreadChatCount}
+              currentRoomId={currentRoomId}
+              currentRoomName={currentRoomName}
+              isCurrentRoomWritable={isCurrentRoomWritable}
+              isMobile={isMobile}
+            />
+            <Toaster />
+            <CookieConsentBar />
           </div>
-          {isDashboard && !isMobile && <IndependentPinnedWidgetsDock isCurrentRoomWritable={isCurrentRoomWritable} mainContentArea={mainContentArea} />}
-          {isDashboard && isMobile && (
-            <>
-              <DynamicSimpleAudioPlayer isMobile={isMobile} displayMode="minimized" />
-              <DynamicPomodoroWidget 
-                isMinimized={isPomodoroMinimized}
-                setIsMinimized={setIsPomodoroMinimized}
-                chatPanelWidth={0}
-                isMobile={isMobile}
-              />
-            </>
-          )}
-          {isDashboard && !isMobile && (
-            <>
-              <DynamicPomodoroWidget 
-                isMinimized={isPomodoroMinimized}
-                setIsMinimized={setIsPomodoroMinimized}
-                chatPanelWidth={0}
-                isMobile={isMobile}
-              />
-              <DynamicSimpleAudioPlayer isMobile={isMobile} />
-            </>
-          )}
-          <DynamicChatPanel
-            isOpen={isChatOpen}
-            onToggleOpen={() => setIsChatOpen(!isChatOpen)}
-            onNewUnreadMessage={handleNewUnreadMessage}
-            onClearUnreadMessages={handleClearUnreadMessages}
-            unreadCount={unreadChatCount}
-            currentRoomId={currentRoomId}
-            currentRoomName={currentRoomName}
-            isCurrentRoomWritable={isCurrentRoomWritable}
-            isMobile={isMobile}
-          />
-          <Toaster />
-          <CookieConsentBar />
-        </div>
+        </WidgetProvider>
       </FocusSessionProvider>
     </AmbientSoundProvider>
   );

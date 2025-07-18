@@ -12,7 +12,7 @@ import { EffectProvider } from "@/context/effect-provider";
 import { ClientOnlyWrapper } from '@/components/client-only-wrapper';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
-import { WidgetProvider } from "@/components/widget/widget-provider"; // Import WidgetProvider
+// import { getRandomBackground } from '@/lib/backgrounds'; // Removed this import as we're using a fixed background
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -102,12 +102,9 @@ export default async function RootLayout({
                 >
                   <SidebarProvider>
                     <ClientOnlyWrapper>
-                      {/* WidgetProvider now wraps AppWrapper */}
-                      <WidgetProvider initialWidgetConfigs={WIDGET_CONFIGS}>
-                        <AppWrapper initialWidgetConfigs={WIDGET_CONFIGS}>
-                          {children}
-                        </AppWrapper>
-                      </WidgetProvider>
+                      <AppWrapper initialWidgetConfigs={WIDGET_CONFIGS}>
+                        {children}
+                      </AppWrapper>
                     </ClientOnlyWrapper>
                   </SidebarProvider>
                 </ThemeProvider>
