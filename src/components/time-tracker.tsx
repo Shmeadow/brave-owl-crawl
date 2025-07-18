@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
 
 interface TimeTrackerProps {
   isCurrentRoomWritable: boolean;
@@ -58,31 +59,47 @@ export function TimeTracker({ isCurrentRoomWritable }: TimeTrackerProps) {
     toast.warning("Time tracking reset.");
   };
 
+  const permissionTooltip = "You do not have permission to control the time tracker in this room.";
+
   return (
     <div className="flex flex-col items-center justify-center h-full w-full gap-4">
       <div className="text-6xl font-bold font-mono text-foreground tabular-nums">
         {formatTime(time)}
       </div>
       <div className="flex gap-4">
-        <Button 
-          onClick={handleStartPause} 
-          size="icon" 
-          className="h-12 w-12 rounded-full"
-          disabled={!isCurrentRoomWritable}
-          aria-label={isRunning ? "Pause" : "Start"}
-        >
-          {isRunning ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
-        </Button>
-        <Button 
-          onClick={handleReset} 
-          size="icon" 
-          variant="secondary" 
-          className="h-12 w-12 rounded-full"
-          disabled={!isCurrentRoomWritable}
-          aria-label="Reset"
-        >
-          <RotateCcw className="h-6 w-6" />
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                onClick={handleStartPause} 
+                size="icon" 
+                className="h-12 w-12 rounded-full"
+                disabled={!isCurrentRoomWritable}
+                aria-label={isRunning ? "Pause" : "Start"}
+              >
+                {isRunning ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
+              </Button>
+            </TooltipTrigger>
+            {!isCurrentRoomWritable && <TooltipContent>{permissionTooltip}</TooltipContent>}
+          </Tooltip>
+        </TooltipProvider>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                onClick={handleReset} 
+                size="icon" 
+                variant="secondary" 
+                className="h-12 w-12 rounded-full"
+                disabled={!isCurrentRoomWritable}
+                aria-label="Reset"
+              >
+                <RotateCcw className="h-6 w-6" />
+              </Button>
+            </TooltipTrigger>
+            {!isCurrentRoomWritable && <TooltipContent>{permissionTooltip}</TooltipContent>}
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
   );

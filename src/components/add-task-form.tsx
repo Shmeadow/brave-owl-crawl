@@ -128,6 +128,11 @@ export function AddTaskForm({ onAddTask, isCurrentRoomWritable }: AddTaskFormPro
         <Button type="submit" className="w-full" disabled={!isCurrentRoomWritable}>
           <Plus className="mr-2 h-4 w-4" /> Add Task
         </Button>
+        {!isCurrentRoomWritable && (
+          <p className="text-sm text-destructive text-center mt-2">
+            You do not have permission to add tasks in this room.
+          </p>
+        )}
       </form>
     </Form>
   );
