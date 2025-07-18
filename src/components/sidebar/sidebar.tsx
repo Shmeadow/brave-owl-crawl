@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { SidebarItem } from "./sidebar-item";
 import { useSidebar } from "./sidebar-context";
-import { useWidget } from "@/components/widget/widget-provider";
+import { useWidget } from "@/components/widget/widget-provider"; // Keep useWidget here
 import { LayoutGrid, Volume2, Calendar, Timer, ListTodo, Palette, Image, BarChart2, BookOpen, Goal, WandSparkles, BookText } from "lucide-react";
 import { MOBILE_HORIZONTAL_SIDEBAR_HEIGHT } from "@/lib/constants"; // Import new constant
 
@@ -13,11 +13,12 @@ const HEADER_HEIGHT_REM = 4; // 4rem = 64px
 
 interface SidebarProps {
   isMobile: boolean;
+  // toggleWidget: (id: string, title: string) => void; // Removed from props
 }
 
 export function Sidebar({ isMobile }: SidebarProps) {
-  const { activePanel, setActivePanel, setIsSidebarOpen } = useSidebar(); // Removed isSidebarOpen from destructuring as it's always true
-  const { toggleWidget } = useWidget();
+  const { activePanel, setActivePanel, setIsSidebarOpen } = useSidebar(); // isSidebarOpen will now always be true
+  const { toggleWidget } = useWidget(); // Get toggleWidget from useWidget hook directly
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   // Set sidebar to always be open

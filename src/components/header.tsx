@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useRooms, RoomData } from "@/hooks/use-rooms";
 import Link from "next/link";
 import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
-import { useWidget } from "@/components/widget/widget-provider";
+import { useWidget } from "@/components/widget/widget-provider"; // Keep useWidget here
 import { UserNameCapsule } from "./user-name-capsule";
 import { cn } from "@/lib/utils";
 import { RoomSettingsContent } from "./spaces-widget/RoomSettingsContent";
