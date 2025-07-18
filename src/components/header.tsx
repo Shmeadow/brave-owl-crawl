@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, LayoutGrid, MessageSquare, BarChart2, Settings } from "lucide-react";
 import { useSupabase } from "@/integrations/supabase/auth";
@@ -29,11 +29,10 @@ export const formatTimeManual = (date: Date, use24Hour: boolean) => {
 
   if (!use24Hour) {
     ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
     hours = hours ? hours : 12; // the hour '0' should be '12'
   }
 
-  const pad = (num: number) => String(num).padStart(2, '0');
+  const pad = (num: number) => String(num).padStart(2, "0");
 
   return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}${ampm ? ` ${ampm}` : ''}`;
 };
@@ -65,6 +64,8 @@ const HeaderClockAndProgress = () => {
   const { time, timeString, dateString, isLoading } = useClock();
   const [dailyProgress, setDailyProgress] = useState(0);
   const [gradient, setGradient] = useState('linear-gradient(to right, hsl(240 20% 15%), hsl(40 60% 70%))');
+  const timeDateRef = useRef<HTMLDivElement>(null);
+  const [timeDateWidth, setTimeDateWidth] = useState(0);
 
   useEffect(() => {
     const now = time;
@@ -94,6 +95,12 @@ const HeaderClockAndProgress = () => {
     setGradient(newGradient);
   }, [time]);
 
+  useEffect(() => {
+    if (timeDateRef.current) {
+      setTimeDateWidth(timeDateRef.current.offsetWidth);
+    }
+  }, [timeString, dateString]); // Recalculate width if time/date strings change
+
   return (
     <div className={cn(
       "text-header-button-dark-foreground font-mono flex flex-col items-center justify-center",
@@ -103,11 +110,11 @@ const HeaderClockAndProgress = () => {
         <span>--:--:--</span>
       ) : (
         <>
-          <div className="flex items-baseline gap-1">
+          <div ref={timeDateRef} className="flex items-baseline gap-1">
             <span className="font-bold text-xl text-foreground">{timeString}</span>
             <span className="text-sm opacity-70">{dateString}</span>
           </div>
-          <div className="w-24 h-1.5 rounded-full overflow-hidden relative bg-muted mt-1">
+          <div className="h-1.5 rounded-full overflow-hidden relative mt-1" style={{ width: `${timeDateWidth}px` }}>
             <div
               className="h-full rounded-full transition-all duration-1000 ease-linear relative overflow-hidden"
               style={{ width: `${dailyProgress}%`, background: gradient }}
