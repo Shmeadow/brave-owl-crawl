@@ -71,33 +71,35 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea, is
 
     if (session && supabase) {
       setIsLoggedInMode(true);
-      if (currentRoomId) {
-        const { data: roomWidgets, error } = await supabase.from('user_widget_states').select('*').eq('room_id', currentRoomId);
-        if (error) {
-          toast.error("Failed to load room widget layout.");
-        } else if (roomWidgets) {
-          const latestStates = new Map<string, DbWidgetState>();
-          for (const widget of roomWidgets) {
-            const existing = latestStates.get(widget.widget_id);
-            if (!existing || new Date(widget.updated_at) > new Date(existing.updated_at)) {
-              latestStates.set(widget.widget_id, widget);
-            }
+      // For logged-in users, load their specific layout for the current room or personal dashboard
+      const { data: userWidgets, error } = await supabase.from('user_widget_states')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .eq('room_id', currentRoomId); // Use currentRoomId directly for filtering
+      
+      if (error) {
+        toast.error("Failed to load widget layout.");
+      } else if (userWidgets) {
+        const latestStates = new Map<string, DbWidgetState>();
+        for (const widget of userWidgets) {
+          const existing = latestStates.get(widget.widget_id);
+          if (!existing || new Date(widget.updated_at) > new Date(existing.updated_at)) {
+            latestStates.set(widget.widget_id, widget);
           }
-          loadedWidgetStates = Array.from(latestStates.values()).map(fromDbWidgetState);
         }
-      } else {
-        // If not in a room, load personal widgets for the logged-in user
-        const { data: personalWidgets, error } = await supabase.from('user_widget_states').select('*').eq('user_id', session.user.id).is('room_id', null);
-        if (error) toast.error("Failed to load personal widget layout.");
-        else if (personalWidgets) loadedWidgetStates = personalWidgets.map(fromDbWidgetState);
+        loadedWidgetStates = Array.from(latestStates.values()).map(fromDbWidgetState);
       }
     } else {
-      // Guest mode
+      // Guest mode: load from local storage
       setIsLoggedInMode(false);
-      // In guest mode, we don't persist across sessions, so we start fresh.
-      // The initialWidgetConfigs will provide the default state.
-      loadedWidgetStates = [];
-      localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY); // Clear any old local storage states
+      const storedStatesString = localStorage.getItem(LOCAL_STORAGE_WIDGET_STATE_KEY);
+      try {
+        loadedWidgetStates = storedStatesString ? JSON.parse(storedStatesString) : [];
+      } catch (e) {
+        console.error("Error parsing local storage widget states:", e);
+        loadedWidgetStates = [];
+        localStorage.removeItem(LOCAL_STORAGE_WIDGET_STATE_KEY); // Clear corrupted data
+      }
     }
 
     const allWidgets: WidgetState[] = Object.keys(initialWidgetConfigs).map(id => {
@@ -142,36 +144,32 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea, is
   useEffect(() => {
     if (!mounted.current || loading) return;
     const saveWidgetStates = async () => {
-      // Only save if the current room is writable OR if it's the personal dashboard (currentRoomId is null)
-      // And only if there's a session (logged-in mode)
-      if (isLoggedInMode && session && supabase && (isCurrentRoomWritable || currentRoomId === null)) {
+      // Save for logged-in users (regardless of room writability, as this is a personal layout)
+      if (isLoggedInMode && session && supabase) {
         const statesToSave = activeWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id, currentRoomId));
         if (statesToSave.length > 0) {
-          // Determine the onConflict target based on currentRoomId
-          // For personal dashboard (currentRoomId === null), use the specific partial unique index name.
-          // For room-specific widgets (currentRoomId !== null), use the composite unique key.
-          const onConflictTarget = currentRoomId === null
-            ? 'user_id,widget_id' // Corrected: Use column names for the unique constraint
-            : 'user_id,widget_id,room_id'; // Composite key for non-null room_id
-
-          console.log("Attempting to upsert widget states with onConflict target:", onConflictTarget, "for room ID:", currentRoomId);
+          const onConflictTarget = 'user_id,widget_id,room_id'; // Always use the composite key for upsert
+          
           const { error } = await supabase.from('user_widget_states').upsert(statesToSave, { onConflict: onConflictTarget });
           if (error) {
             console.error("Supabase error saving widget layout:", error);
             toast.error("Failed to save widget layout. Check console for details.");
           }
         }
+      } else if (!isLoggedInMode) { // Save for guest users to local storage
+        localStorage.setItem(LOCAL_STORAGE_WIDGET_STATE_KEY, JSON.stringify(activeWidgets));
       }
     };
     const debounceSave = setTimeout(saveWidgetStates, 1000);
     return () => clearTimeout(debounceSave);
-  }, [activeWidgets, isLoggedInMode, session, supabase, loading, mounted, currentRoomId, isCurrentRoomWritable]);
+  }, [activeWidgets, isLoggedInMode, session, supabase, loading, mounted, currentRoomId]);
 
   useEffect(() => {
     if (!currentRoomId || !supabase) return;
     const channel = supabase.channel(`room-widgets-${currentRoomId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'user_widget_states', filter: `room_id=eq.${currentRoomId}` },
         (payload) => {
+          // Ignore changes made by the current user to prevent loops
           if ((payload.new as DbWidgetState)?.user_id === session?.user?.id) return;
           
           const processPayload = (dbWidget: DbWidgetState) => {
