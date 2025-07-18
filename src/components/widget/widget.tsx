@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react"; // Import useState
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Maximize, Pin, X } from "lucide-react";
@@ -64,6 +64,7 @@ export function Widget({
   isInsideDock = false, // Default to false
 }: WidgetProps) {
   const widgetRef = useRef<HTMLDivElement>(null); // Ref to the widget's main div
+  const [isAnimatingPosition, setIsAnimatingPosition] = useState(true); // New state for controlling position animation
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `widget-${id}`,
@@ -71,8 +72,21 @@ export function Widget({
     disabled: isPinned || isMaximized || isInsideDock || isClosed,
   });
 
-  // Removed the problematic useEffect that caused infinite re-renders.
-  // dnd-kit's transform and CSS transitions will now handle movement smoothly.
+  // Effect to control position animation based on dragging state
+  useEffect(() => {
+    if (isDragging) {
+      // When dragging starts, disable position animation
+      setIsAnimatingPosition(false);
+    } else {
+      // When dragging ends, re-enable position animation after a short delay
+      // This allows the position to snap first, then transitions for other changes.
+      const timer = setTimeout(() => {
+        setIsAnimatingPosition(true);
+      }, 50); // Small delay to allow position update before transition applies
+
+      return () => clearTimeout(timer);
+    }
+  }, [isDragging]);
 
   const isVisuallyMinimized = isMinimized || isPinned;
   const isResizable = !isMaximized && !isVisuallyMinimized && !isInsideDock && !isClosed && !isMobile;
@@ -166,7 +180,7 @@ export function Widget({
       }}
       className={cn(
         "bg-card/40 border-white/20 shadow-lg rounded-lg flex flex-col",
-        "transition-[left,top,width,height] duration-300 ease-in-out",
+        isAnimatingPosition && "transition-[left,top,width,height] duration-300 ease-in-out", // Conditionally apply transition
         isTopmost ? "backdrop-blur-2xl" : "backdrop-blur-xl",
         isResizable ? "resize" : "",
         isMinimized && !isPinned ? "cursor-pointer" : "",
