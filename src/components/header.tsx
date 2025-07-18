@@ -165,15 +165,15 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
       {isMobile ? (
         <div className="flex flex-col w-full h-full">
           {/* Top Row: Icons */}
-          <div className="flex items-center justify-between w-full px-1 py-1">
+          <div className="flex items-center justify-between w-full px-1 py-0.5"> {/* Reduced py-1 to py-0.5 */}
             <div className="flex items-center gap-1">
               <Link href="/dashboard" className="flex items-center">
-                <Button className="h-8 w-8 hover:bg-header-button-dark/20" variant="ghost" size="icon" title="Home">
+                <Button className="h-7 w-7 hover:bg-header-button-dark/20" variant="ghost" size="icon" title="Home"> {/* Reduced h-8 w-8 to h-7 w-7 */}
                   <Home className="h-4 w-4" />
                 </Button>
               </Link>
               <Button
-                className="flex-shrink-0 h-8 w-8 hover:bg-header-button-dark/20"
+                className="flex-shrink-0 h-7 w-7 hover:bg-header-button-dark/20"
                 variant="ghost"
                 size="icon"
                 title="Spaces"
@@ -184,7 +184,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
               {session && (
                 <Popover open={isRoomSettingsOpen} onOpenChange={setIsRoomSettingsOpen}>
                   <PopoverTrigger asChild>
-                    <Button className="flex-shrink-0 h-8 w-8 hover:bg-header-button-dark/20" variant="ghost" size="icon" title="Room Options">
+                    <Button className="flex-shrink-0 h-7 w-7 hover:bg-header-button-dark/20" variant="ghost" size="icon" title="Room Options">
                       <Settings className="h-4 w-4" />
                     </Button>
                   </PopoverTrigger>
@@ -200,7 +200,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
             </div>
             <div className="flex items-center gap-1">
               <Button
-                className="h-8 w-8 hover:bg-header-button-dark/20"
+                className="h-7 w-7 hover:bg-header-button-dark/20"
                 variant="ghost"
                 size="icon"
                 title="Statistics"
@@ -214,7 +214,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative h-8 w-8 hover:bg-header-button-dark/20"
+                className="relative h-7 w-7 hover:bg-header-button-dark/20"
                 title="Open Chat"
                 onClick={onToggleChat}
               >
@@ -229,8 +229,8 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
             </div>
           </div>
           {/* Bottom Row: Room Name and User Name */}
-          <div className="flex items-center justify-between w-full px-2 py-1">
-            <h1 className="text-sm font-semibold truncate max-w-[calc(50%-10px)]">{currentRoomName}</h1>
+          <div className="flex items-center justify-between w-full px-1 py-0.5"> {/* Reduced px-2 to px-1 and py-1 to py-0.5 */}
+            <h1 className="text-xs font-semibold truncate max-w-[calc(50%-10px)]">{currentRoomName}</h1> {/* Reduced text-sm to text-xs */}
             <UserNameCapsule />
           </div>
         </div>
