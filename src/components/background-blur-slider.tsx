@@ -22,7 +22,11 @@ export function BackgroundBlurSlider({ className, isMobile }: BackgroundBlurSlid
   }
 
   return (
-    <div className={cn("flex items-center gap-2 w-32", className)}> {/* Apply className here */}
+    <div className={cn(
+      "flex items-center gap-2 w-32",
+      !isMobile && "bg-card/60 backdrop-blur-xl border border-white/20 rounded-full p-1.5", // Apply styles only on desktop
+      className
+    )}>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
