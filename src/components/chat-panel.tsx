@@ -265,6 +265,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
             {!showSupportContact && (
               <div className="flex w-full items-center space-x-2">
                 <Input
+                  id="chat-input-message" // Added ID here
                   placeholder="Type your message..."
                   className="flex-1 bg-input/50 border-border focus:border-primary"
                   value={inputMessage}
@@ -372,6 +373,7 @@ export function ChatPanel({ isOpen, onToggleOpen, onNewUnreadMessage, onClearUnr
         {!showSupportContact && (
           <div className="flex w-full items-center space-x-2">
             <Input
+              id="chat-input-message" // Added ID here
               placeholder="Type your message..."
               className="flex-1 bg-input/50 border-border focus:border-primary"
               value={inputMessage}

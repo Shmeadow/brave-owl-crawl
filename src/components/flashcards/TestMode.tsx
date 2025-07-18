@@ -112,16 +112,13 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
   }, [currentCard, testType, testDeck]);
 
   const handleNext = useCallback(() => {
-    if (currentIndex < testDeck.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-      setIsAnswered(false);
-      setUserAnswer('');
-      setIsCorrect(null);
-      setCurrentTimer(timerDuration); // Reset timer for next card
-    } else {
-      setIsComplete(true);
-    }
-  }, [currentIndex, testDeck.length, timerDuration]);
+    if (testDeck.length === 0) return;
+    const nextIndex = (currentIndex + 1) % testDeck.length;
+    setCurrentIndex(nextIndex);
+    setUserAnswer('');
+    setIsCorrect(null);
+    setCurrentTimer(timerDuration); // Reset timer for next card
+  }, [currentIndex, testDeck, timerDuration]);
 
   const handleSubmission = useCallback((answer: string) => {
     if (!currentCard) return;
@@ -257,6 +254,7 @@ export function TestMode({ flashcards, onAnswer, onQuit, testType, flashcardSize
               {timerEnabled && (
                 <div className="flex items-center gap-1">
                   <Input
+                    id="timer-duration-input" // Added ID here
                     type="number"
                     value={timerDuration}
                     onChange={(e) => setTimerDuration(Math.max(1, parseInt(e.target.value) || 1))}

@@ -67,7 +67,7 @@ export function CopyFlashcardsContent({
           <div className="flex items-center space-x-2"><RadioGroupItem value=";" id="col-semi-copy" /><Label htmlFor="col-semi-copy">Semicolon (;)</Label></div>
           <div className="flex items-center space-x-2"><RadioGroupItem value="custom" id="col-custom-copy" /><Label htmlFor="col-custom-copy">Custom</Label></div>
         </RadioGroup>
-        {colSep === 'custom' && <Input placeholder="Custom separator" value={customColSep} onChange={(e) => setCustomColSep(e.target.value)} />}
+        {colSep === 'custom' && <Input id="custom-col-sep-copy" placeholder="Custom separator" value={customColSep} onChange={(e) => setCustomColSep(e.target.value)} />}
       </div>
       <div className="space-y-2">
         <Label>Row Separator</Label>
@@ -76,9 +76,9 @@ export function CopyFlashcardsContent({
           <div className="flex items-center space-x-2"><RadioGroupItem value=";" id="row-semi-copy" /><Label htmlFor="row-semi-copy">Semicolon (;)</Label></div>
           <div className="flex items-center space-x-2"><RadioGroupItem value="custom" id="row-custom-copy" /><Label htmlFor="row-custom-copy">Custom</Label></div>
         </RadioGroup>
-        {rowSep === 'custom' && <Input placeholder="Custom separator" value={customRowSep} onChange={(e) => setCustomRowSep(e.target.value)} />}
+        {rowSep === 'custom' && <Input id="custom-row-sep-copy" placeholder="Custom separator" value={customRowSep} onChange={(e) => setCustomRowSep(e.target.value)} />}
       </div>
-      <Textarea value={generatedText} readOnly rows={5} className="text-xs font-mono" />
+      <Textarea id="copied-text-area" value={generatedText} readOnly rows={5} className="text-xs font-mono" />
       <Button onClick={handleCopy} className="w-full">Copy to Clipboard</Button>
     </div>
   );

@@ -143,6 +143,7 @@ export function ImportFlashcardsContent({ onBulkImport, categories, onAddCategor
         </Select>
         {importTarget === 'new' && (
           <Input
+            id="new-category-name-import" // Added ID here
             placeholder="New category name"
             value={newCategoryName}
             onChange={(e) => setNewCategoryName(e.target.value)}
@@ -157,7 +158,7 @@ export function ImportFlashcardsContent({ onBulkImport, categories, onAddCategor
           <div className="flex items-center space-x-2"><RadioGroupItem value=";" id="col-semi-import" /><Label htmlFor="col-semi-import">Semicolon (;)</Label></div>
           <div className="flex items-center space-x-2"><RadioGroupItem value="custom" id="col-custom-import" /><Label htmlFor="col-custom-import">Custom</Label></div>
         </RadioGroup>
-        {colSep === 'custom' && <Input placeholder="Custom separator" value={customColSep} onChange={(e) => setCustomColSep(e.target.value)} />}
+        {colSep === 'custom' && <Input id="custom-col-sep-import" placeholder="Custom separator" value={customColSep} onChange={(e) => setCustomColSep(e.target.value)} />}
       </div>
       <div>
         <Label htmlFor="paste-csv">Paste CSV Data</Label>

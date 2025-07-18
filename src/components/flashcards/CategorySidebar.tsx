@@ -81,6 +81,7 @@ export function CategorySidebar({
           <div className="p-2 sm:p-4 border-b">
             <div className="flex gap-2">
               <Input
+                id="new-category-name-input" // Added ID here
                 placeholder="New category..."
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
@@ -114,6 +115,7 @@ export function CategorySidebar({
                 >
                   {editingCategoryId === category.id ? (
                     <Input
+                      id="edit-category-name-input" // Added ID here
                       value={editingCategoryName}
                       onChange={(e) => setEditingCategoryName(e.target.value)}
                       onBlur={handleSaveEdit}

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -71,7 +71,7 @@ export function ExportFlashcardsContent({
           <div className="flex items-center space-x-2"><RadioGroupItem value=";" id="col-semi-export" /><Label htmlFor="col-semi-export">Semicolon (;)</Label></div>
           <div className="flex items-center space-x-2"><RadioGroupItem value="custom" id="col-custom-export" /><Label htmlFor="col-custom-export">Custom</Label></div>
         </RadioGroup>
-        {colSep === 'custom' && <Input placeholder="Custom separator" value={customColSep} onChange={(e) => setCustomColSep(e.target.value)} />}
+        {colSep === 'custom' && <Input id="custom-col-sep-export" placeholder="Custom separator" value={customColSep} onChange={(e) => setCustomColSep(e.target.value)} />}
       </div>
       <div className="space-y-2">
         <Label>Row Separator</Label>
@@ -80,7 +80,7 @@ export function ExportFlashcardsContent({
           <div className="flex items-center space-x-2"><RadioGroupItem value=";" id="row-semi-export" /><Label htmlFor="row-semi-export">Semicolon (;)</Label></div>
           <div className="flex items-center space-x-2"><RadioGroupItem value="custom" id="row-custom-export" /><Label htmlFor="row-custom-export">Custom</Label></div>
         </RadioGroup>
-        {rowSep === 'custom' && <Input placeholder="Custom separator" value={customRowSep} onChange={(e) => setCustomRowSep(e.target.value)} />}
+        {rowSep === 'custom' && <Input id="custom-row-sep-export" placeholder="Custom separator" value={customRowSep} onChange={(e) => setCustomRowSep(e.target.value)} />}
       </div>
       <Button onClick={handleExport} className="w-full">Download CSV</Button>
     </div>
