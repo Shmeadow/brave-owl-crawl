@@ -77,7 +77,26 @@ export function JournalDashboard({ isCurrentRoomWritable, onViewAllEntries, onRe
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-        {/* Quick Add & View All */}
+        {/* Summary Cards */}
+        <Card className="bg-card backdrop-blur-xl border-white/20 flex flex-col items-center justify-center p-6 text-center">
+          <CardTitle className="mb-4">Total Entries</CardTitle>
+          <p className="text-5xl font-bold text-primary">{journalEntries.length}</p>
+          <Button variant="link" onClick={onViewAllEntries} className="mt-4">
+            <BookText className="mr-2 h-4 w-4" /> View All Entries
+          </Button>
+        </Card>
+
+        <Card className="bg-card backdrop-blur-xl border-white/20 flex flex-col items-center justify-center p-6 text-center">
+          <CardTitle className="mb-4">Important Reminders</CardTitle>
+          <p className="text-5xl font-bold text-yellow-500">{importantReminders.length}</p>
+          <Button variant="link" onClick={() => { /* Logic to switch to reminders tab */ }} className="mt-4">
+            <Star className="mr-2 h-4 w-4 fill-current text-yellow-500" /> View Reminders
+          </Button>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+        {/* Quick Add */}
         <Card className="bg-card backdrop-blur-xl border-white/20 flex flex-col items-center justify-center p-6 text-center">
           <CardTitle className="mb-4">Start a New Entry</CardTitle>
           <Dialog open={isAddEntryDialogOpen} onOpenChange={setIsAddEntryDialogOpen}>
@@ -99,78 +118,38 @@ export function JournalDashboard({ isCurrentRoomWritable, onViewAllEntries, onRe
               />
             </DialogContent>
           </Dialog>
-          <Button variant="link" onClick={onViewAllEntries} className="mt-4">
-            <BookText className="mr-2 h-4 w-4" /> View All Entries
-          </Button>
         </Card>
 
-        {/* Important Reminders */}
-        <Card className="bg-card backdrop-blur-xl border-white/20 flex flex-col">
+        {/* Recent Entries */}
+        <Card className="bg-card backdrop-blur-xl border-white/20 w-full">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-yellow-500 fill-current" /> Important Reminders
+              <History className="h-5 w-5" /> Recent Entries
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 p-4 pt-0">
-            <ScrollArea className="h-[200px] pr-4">
-              <div> {/* Added this div to wrap conditional content */}
-                {importantReminders.length === 0 ? (
-                  <p className="text-muted-foreground text-sm text-center py-4">No important reminders yet. Mark text with the ⭐ button in your journal entries!</p>
-                ) : (
-                  <ul className="space-y-3">
-                    {importantReminders.slice(0, 5).map((reminder, index) => (
-                      <li
-                        key={`${reminder.entryId}-${index}`}
-                        className="text-sm border-b border-border/50 pb-2 last:border-b-0 cursor-pointer hover:bg-muted/50 p-2 rounded-md"
-                        onClick={() => onReminderClick(reminder)}
-                      >
-                        <p className="font-semibold text-foreground flex items-center gap-2">
-                          <Star className="h-4 w-4 text-yellow-500 fill-current mr-2 inline-block" /> {/* Added inline-block and mr-2 */}
-                          From: "{reminder.entryTitle || 'Untitled Entry'}"
-                        </p>
-                        <p className="text-muted-foreground ml-6">"{reminder.text}"</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {format(new Date(reminder.timestamp), 'MMM d, yyyy')}
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div> {/* Closed this div */}
-            </ScrollArea>
+            {recentEntries.length === 0 ? (
+              <p className="text-muted-foreground text-sm text-center py-4">No recent entries. Add your first entry!</p>
+            ) : (
+              <ScrollArea className="h-[250px] pr-4">
+                <ul className="space-y-3">
+                  {recentEntries.map((entry) => (
+                    <li key={entry.id} className="text-sm border-b border-border/50 pb-2 last:border-b-0">
+                      <p className="font-semibold text-foreground truncate">{entry.title || 'Untitled Entry'}</p>
+                      <p className="text-muted-foreground text-xs mt-1">
+                        {format(new Date(entry.created_at), 'MMM d, yyyy, hh:mm a')}
+                      </p>
+                      <p className="text-muted-foreground mt-1 line-clamp-2">
+                        {renderContentPreview(entry.content)}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </ScrollArea>
+            )}
           </CardContent>
         </Card>
       </div>
-
-      {/* Recent Entries */}
-      <Card className="bg-card backdrop-blur-xl border-white/20 w-full">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2">
-            <History className="h-5 w-5" /> Recent Entries
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex-1 p-4 pt-0">
-          {recentEntries.length === 0 ? (
-            <p className="text-muted-foreground text-sm text-center py-4">No recent entries. Add your first entry!</p>
-          ) : (
-            <ScrollArea className="h-[250px] pr-4">
-              <ul className="space-y-3">
-                {recentEntries.map((entry) => (
-                  <li key={entry.id} className="text-sm border-b border-border/50 pb-2 last:border-b-0">
-                    <p className="font-semibold text-foreground truncate">{entry.title || 'Untitled Entry'}</p>
-                    <p className="text-muted-foreground text-xs mt-1">
-                      {format(new Date(entry.created_at), 'MMM d, yyyy, hh:mm a')}
-                    </p>
-                    <p className="text-muted-foreground mt-1 line-clamp-2">
-                      {renderContentPreview(entry.content)}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </ScrollArea>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }
