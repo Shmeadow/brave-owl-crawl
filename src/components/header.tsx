@@ -159,79 +159,80 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
       className={cn(
         "fixed top-0 z-[1002] w-full flex items-center justify-between py-2 px-1 gap-2",
         "bg-background/60 backdrop-blur-xl border-b border-white/20 shadow-lg",
-        isMobile ? "h-auto flex-col" : "h-14 flex-row" // Dynamic height and flex direction
+        isMobile ? "h-12 flex-row" : "h-14 flex-row" // Fixed height for mobile, flex-row
       )}
     >
       {isMobile ? (
-        <div className="flex flex-col w-full h-full">
-          {/* Top Row: Icons */}
-          <div className="flex items-center justify-between w-full px-1 py-0.5"> {/* Reduced py-1 to py-0.5 */}
-            <div className="flex items-center gap-1">
-              <Link href="/dashboard" className="flex items-center">
-                <Button className="h-7 w-7 hover:bg-header-button-dark/20" variant="ghost" size="icon" title="Home"> {/* Reduced h-8 w-8 to h-7 w-7 */}
-                  <Home className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Button
-                className="flex-shrink-0 h-7 w-7 hover:bg-header-button-dark/20"
-                variant="ghost"
-                size="icon"
-                title="Spaces"
-                onClick={() => toggleWidget('spaces', 'Spaces')}
-              >
-                <LayoutGrid className="h-4 w-4" />
+        <div className="flex items-center justify-between w-full px-1 py-0.5"> {/* Single row, reduced padding */}
+          {/* Left Group: Home, Spaces, Settings */}
+          <div className="flex items-center gap-0.5"> {/* Reduced gap */}
+            <Link href="/dashboard" className="flex items-center">
+              <Button className="h-7 w-7 hover:bg-header-button-dark/20" variant="ghost" size="icon" title="Home">
+                <Home className="h-4 w-4" />
               </Button>
-              {session && (
-                <Popover open={isRoomSettingsOpen} onOpenChange={setIsRoomSettingsOpen}>
-                  <PopoverTrigger asChild>
-                    <Button className="flex-shrink-0 h-7 w-7 hover:bg-header-button-dark/20" variant="ghost" size="icon" title="Room Options">
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20" align="start" onOpenAutoFocus={(e: Event) => e.preventDefault()}>
-                    {userOwnsPersonalRoom && usersPersonalRoom ? (
-                      <RoomSettingsContent room={usersPersonalRoom} />
-                    ) : (
-                      <CreatePersonalRoomForm onRoomCreated={handleRoomCreated} onClose={() => setIsRoomSettingsOpen(false)} />
-                    )}
-                  </PopoverContent>
-                </Popover>
-              )}
-            </div>
-            <div className="flex items-center gap-1">
-              <Button
-                className="h-7 w-7 hover:bg-header-button-dark/20"
-                variant="ghost"
-                size="icon"
-                title="Statistics"
-                onClick={() => toggleWidget('stats-progress', 'Statistics')}
-              >
-                <BarChart2 className="h-4 w-4" />
-              </Button>
-              <BugReportButton />
-              <UpgradeButton />
-              {session && <NotificationsDropdown />}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative h-7 w-7 hover:bg-header-button-dark/20"
-                title="Open Chat"
-                onClick={onToggleChat}
-              >
-                <MessageSquare className="h-4 w-4" />
-                {unreadChatCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-                    {unreadChatCount}
-                  </span>
-                )}
-              </Button>
-              <UserNav isMobile={isMobile} /> {/* Profile icon */}
-            </div>
+            </Link>
+            <Button
+              className="flex-shrink-0 h-7 w-7 hover:bg-header-button-dark/20"
+              variant="ghost"
+              size="icon"
+              title="Spaces"
+              onClick={() => toggleWidget('spaces', 'Spaces')}
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            {session && (
+              <Popover open={isRoomSettingsOpen} onOpenChange={setIsRoomSettingsOpen}>
+                <PopoverTrigger asChild>
+                  <Button className="flex-shrink-0 h-7 w-7 hover:bg-header-button-dark/20" variant="ghost" size="icon" title="Room Options">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20" align="start" onOpenAutoFocus={(e: Event) => e.preventDefault()}>
+                  {userOwnsPersonalRoom && usersPersonalRoom ? (
+                    <RoomSettingsContent room={usersPersonalRoom} />
+                  ) : (
+                    <CreatePersonalRoomForm onRoomCreated={handleRoomCreated} onClose={() => setIsRoomSettingsOpen(false)} />
+                  )}
+                </PopoverContent>
+              </Popover>
+            )}
           </div>
-          {/* Bottom Row: Room Name and User Name */}
-          <div className="flex items-center justify-between w-full px-1 py-0.5"> {/* Reduced px-2 to px-1 and py-1 to py-0.5 */}
-            <h1 className="text-xs font-semibold truncate max-w-[calc(50%-10px)]">{currentRoomName}</h1> {/* Reduced text-sm to text-xs */}
+
+          {/* Center Group: Room Name and User Name Capsule */}
+          <div className="flex items-center gap-1 flex-1 justify-center min-w-0 px-1"> {/* Added px-1 for inner spacing */}
+            <h1 className="text-xs font-semibold truncate max-w-[calc(50%-5px)]">{currentRoomName}</h1> {/* Adjusted max-w */}
             <UserNameCapsule />
+          </div>
+
+          {/* Right Group: Stats, Bug, Upgrade, Notifications, Chat, UserNav */}
+          <div className="flex items-center gap-0.5"> {/* Reduced gap */}
+            <Button
+              className="h-7 w-7 hover:bg-header-button-dark/20"
+              variant="ghost"
+              size="icon"
+              title="Statistics"
+              onClick={() => toggleWidget('stats-progress', 'Statistics')}
+            >
+              <BarChart2 className="h-4 w-4" />
+            </Button>
+            <BugReportButton />
+            <UpgradeButton />
+            {session && <NotificationsDropdown />}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative h-7 w-7 hover:bg-header-button-dark/20"
+              title="Open Chat"
+              onClick={onToggleChat}
+            >
+              <MessageSquare className="h-4 w-4" />
+              {unreadChatCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                  {unreadChatCount}
+                </span>
+              )}
+            </Button>
+            <UserNav isMobile={isMobile} /> {/* Profile icon */}
           </div>
         </div>
       ) : (
