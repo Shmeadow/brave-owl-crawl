@@ -29,6 +29,7 @@ export const formatTimeManual = (date: Date, use24Hour: boolean) => {
 
   if (!use24Hour) {
     ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
     hours = hours ? hours : 12; // the hour '0' should be '12'
   }
 
@@ -95,16 +96,18 @@ const HeaderClockAndProgress = () => {
 
   return (
     <div className={cn(
-      "bg-background/50 backdrop-blur-xl text-header-button-dark-foreground font-mono text-sm px-3 py-1 rounded-md",
-      "hidden md:flex items-center justify-center gap-2" // Changed to flex-row, added gap-2
+      "text-header-button-dark-foreground font-mono flex flex-col items-center justify-center",
+      "hidden md:flex" // Keep hidden on mobile
     )}>
       {isLoading ? (
         <span>--:--:--</span>
       ) : (
         <>
-          <span className="font-bold text-base text-foreground">{timeString}</span>
-          <span className="text-xs opacity-70">{dateString}</span>
-          <div className="w-16 h-1 rounded-full overflow-hidden relative bg-muted">
+          <div className="flex items-baseline gap-1">
+            <span className="font-bold text-xl text-foreground">{timeString}</span>
+            <span className="text-sm opacity-70">{dateString}</span>
+          </div>
+          <div className="w-24 h-1.5 rounded-full overflow-hidden relative bg-muted mt-1">
             <div
               className="h-full rounded-full transition-all duration-1000 ease-linear relative overflow-hidden"
               style={{ width: `${dailyProgress}%`, background: gradient }}
