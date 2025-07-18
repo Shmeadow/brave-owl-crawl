@@ -166,8 +166,7 @@ export function Widget({
       }}
       className={cn(
         "bg-card/40 border-white/20 shadow-lg rounded-lg flex flex-col",
-        "transition-all duration-300 ease-in-out",
-        isDragging && "transition-none",
+        "transition-[left,top,width,height] duration-300 ease-in-out", // Changed transition-all to specific properties
         isTopmost ? "backdrop-blur-2xl" : "backdrop-blur-xl",
         isResizable ? "resize" : "",
         isMinimized && !isPinned ? "cursor-pointer" : "",
