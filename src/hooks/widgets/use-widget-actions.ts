@@ -141,17 +141,19 @@ export function useWidgetActions({
         if (clampedRestoredSize.width > mainContentArea.width) clampedRestoredSize.width = mainContentArea.width;
         if (clampedRestoredSize.height > mainContentArea.height) clampedRestoredSize.height = mainContentArea.height;
 
+        const clampedRestoredPosition = clampPosition(restoredPosition.x, restoredPosition.y, clampedRestoredSize.width, clampedRestoredSize.height, mainContentArea);
+
         const updatedWidgets = prev.map((widget: WidgetState) =>
           widget.id === id
             ? {
                 ...widget,
                 isClosed: false,
                 isMinimized: false,
-                isMaximized: false,
                 isPinned: false,
                 zIndex: newMaxZIndex,
-                position: clampPosition(restoredPosition.x, restoredPosition.y, clampedRestoredSize.width, clampedRestoredSize.height, mainContentArea),
+                position: clampedRestoredPosition,
                 size: clampedRestoredSize,
+                isMaximized: clampedRestoredSize.width === mainContentArea.width && clampedRestoredSize.height === mainContentArea.height,
               }
             : widget
         );
@@ -201,13 +203,20 @@ export function useWidgetActions({
     setActiveWidgets(prev =>
       prev.map((widget: WidgetState) => {
         if (widget.id === id && !widget.isPinned && !widget.isMaximized && !widget.isClosed) {
-          // Directly apply the new position without clamping after drag
-          return { ...widget, position: newPosition, normalPosition: newPosition };
+          // Clamp the new position to ensure it stays within bounds
+          const clampedPosition = clampPosition(
+            newPosition.x,
+            newPosition.y,
+            widget.size.width, // Use current widget size for clamping
+            widget.size.height, // Use current widget size for clamping
+            mainContentArea
+          );
+          return { ...widget, position: clampedPosition, normalPosition: clampedPosition };
         }
         return widget;
       })
     );
-  }, [setActiveWidgets]);
+  }, [mainContentArea, setActiveWidgets]);
 
   const updateWidgetSize = useCallback((id: string, newSize: { width: number; height: number }) => {
     setActiveWidgets(prev =>
@@ -254,6 +263,10 @@ export function useWidgetActions({
               isClosed: false, // Ensure visible
               position: restoredPosition,
               size: restoredSize,
+              // Infer if it was maximized based on the restored size.
+              isMaximized: restoredSize.width === mainContentArea.width && restoredSize.height === mainContentArea.height,
+              previousPosition: undefined, // Clear the previous state
+              previousSize: undefined, // Clear the previous state
             };
           } else {
             // It's normal or minimized, so maximize it.
@@ -385,15 +398,19 @@ export function useWidgetActions({
                 restoredSize.height,
                 mainContentArea
               );
+
+              // Destructure isMaximized from widget to avoid duplicate property error
+              const { isMaximized: _oldIsMaximized, ...restOfWidget } = widget;
+
               return {
-                ...widget,
+                ...restOfWidget, // Spread the rest of the widget properties
                 isClosed: false,
                 isMinimized: false,
-                isMaximized: false,
                 isPinned: false,
                 zIndex: newMaxZIndex,
                 position: clampPosition(restoredPosition.x, restoredPosition.y, restoredSize.width, restoredSize.height, mainContentArea), // Re-clamp position
                 size: restoredSize,
+                isMaximized: restoredSize.width === mainContentArea.width && restoredSize.height === mainContentArea.height, // Set based on condition
               };
             } else {
               // Close it
