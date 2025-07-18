@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, LayoutGrid, MessageSquare, BarChart2, Settings } from "lucide-react";
 import { useSupabase } from "@/integrations/supabase/auth";
@@ -18,7 +18,107 @@ import { cn } from "@/lib/utils";
 import { RoomSettingsContent } from "./spaces-widget/RoomSettingsContent";
 import { CreatePersonalRoomForm } from "./create-personal-room-form";
 import { BugReportButton } from "./bug-report-button";
-import { TimeAndProgressDisplay, useClock } from "./time-and-progress-display";
+import SunCalc from 'suncalc'; // Import SunCalc
+
+// Helper function to format time manually
+export const formatTimeManual = (date: Date, use24Hour: boolean) => {
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const seconds = date.getSeconds();
+  let ampm = '';
+
+  if (!use24Hour) {
+    ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+  }
+
+  const pad = (num: number) => String(num).padStart(2, '0');
+
+  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}${ampm ? ` ${ampm}` : ''}`;
+};
+
+// Helper function to format date manually
+export const formatDateManual = (date: Date) => {
+  const options: Intl.DateTimeFormatOptions = { weekday: 'short', month: 'short', day: 'numeric' };
+  return date.toLocaleDateString('en-US', options);
+};
+
+// New hook to provide live time data
+export const useClock = () => {
+  const { profile, loading: authLoading } = useSupabase();
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    const timerId = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timerId);
+  }, []);
+
+  const use24HourFormat = profile?.time_format_24h ?? true;
+  const timeString = formatTimeManual(time, use24HourFormat);
+  const dateString = formatDateManual(time);
+
+  return { time, timeString, dateString, isLoading: authLoading };
+};
+
+const HeaderClockAndProgress = () => {
+  const { time, timeString, dateString, isLoading } = useClock();
+  const [dailyProgress, setDailyProgress] = useState(0);
+  const [gradient, setGradient] = useState('linear-gradient(to right, hsl(240 20% 15%), hsl(40 60% 70%))');
+
+  useEffect(() => {
+    const now = time;
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const progress = ((now.getTime() - startOfDay.getTime()) / (endOfDay.getTime() - startOfDay.getTime())) * 100;
+    setDailyProgress(progress);
+
+    const lat = 51.5074; // Default location (London)
+    const lon = -0.1278;
+    const times = SunCalc.getTimes(now, lat, lon);
+
+    const sunrise = times.sunrise.getTime();
+    const sunset = times.sunset.getTime();
+    const nowTime = now.getTime();
+
+    let newGradient;
+    if (nowTime < sunrise) {
+      newGradient = 'linear-gradient(to right, hsl(240 20% 10%), hsl(25 30% 25%))';
+    } else if (nowTime < times.solarNoon.getTime()) {
+      newGradient = 'linear-gradient(to right, hsl(45 90% 55%), hsl(50 80% 70%))';
+    } else if (nowTime < sunset) {
+      newGradient = 'linear-gradient(to right, hsl(50 80% 70%), hsl(15 85% 55%))';
+    } else {
+      newGradient = 'linear-gradient(to right, hsl(15 85% 55%), hsl(240 20% 10%))';
+    }
+    setGradient(newGradient);
+  }, [time]);
+
+  return (
+    <div className={cn(
+      "bg-background/50 backdrop-blur-xl text-header-button-dark-foreground font-mono text-sm px-3 hidden md:flex flex-col h-auto py-1 rounded-md",
+      "items-center justify-center"
+    )}>
+      {isLoading ? (
+        <span>--:--:--</span>
+      ) : (
+        <>
+          <div className="font-bold text-lg text-foreground">{timeString}</div>
+          <div className="text-xs opacity-70">{dateString}</div>
+          <div className="w-full mt-1 h-1.5 rounded-full overflow-hidden relative bg-muted">
+            <div
+              className="h-full rounded-full transition-all duration-1000 ease-linear relative overflow-hidden"
+              style={{ width: `${dailyProgress}%`, background: gradient }}
+            >
+              <div className="shimmer-effect"></div>
+            </div>
+          </div>
+          <div className="text-xs mt-0.5 w-full text-center opacity-70">Day Progress</div>
+        </>
+      )}
+    </div>
+  );
+};
 
 interface HeaderProps {
   onToggleChat: () => void;
@@ -28,33 +128,6 @@ interface HeaderProps {
   isMobile: boolean;
   isChatOpen: boolean;
 }
-
-const ClockDisplay = () => {
-  const { timeString, dateString, isLoading } = useClock();
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          className="bg-background/50 backdrop-blur-xl text-header-button-dark-foreground font-mono text-sm px-3 hidden md:flex flex-col h-auto py-1 hover:bg-header-button-dark/20"
-          title="View Date and Day Progress"
-        >
-          {isLoading ? (
-            <span>--:--:--</span>
-          ) : (
-            <>
-              <span>{timeString}</span>
-              <span className="text-xs opacity-70">{dateString}</span>
-            </>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 z-[1100] bg-popover/80 backdrop-blur-lg border-white/20" align="end">
-        <TimeAndProgressDisplay />
-      </PopoverContent>
-    </Popover>
-  );
-};
 
 export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isChatOpen }: HeaderProps) => {
   const { session, profile } = useSupabase();
@@ -128,7 +201,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
           <BarChart2 className="h-4 w-4" />
         </Button>
         {/* Directly render ClockDisplay instead of DropdownMenu */}
-        <ClockDisplay />
+        <HeaderClockAndProgress />
         <BugReportButton />
         <UpgradeButton />
         <UserNameCapsule />
