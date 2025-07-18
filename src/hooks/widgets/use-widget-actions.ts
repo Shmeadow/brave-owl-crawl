@@ -140,8 +140,9 @@ export function useWidgetActions({
         const clampedRestoredSize = { ...restoredSize };
         if (clampedRestoredSize.width > mainContentArea.width) clampedRestoredSize.width = mainContentArea.width;
         if (clampedRestoredSize.height > mainContentArea.height) clampedRestoredSize.height = mainContentArea.height;
+        const clampedRestoredPosition = clampPosition(restoredPosition.x, restoredPosition.y, clampedRestoredSize.width, clampedRestoredSize.height, mainContentArea);
 
-        const updatedWidgets = prev.map((widget: WidgetState) =>
+        return prev.map((widget: WidgetState) =>
           widget.id === id
             ? {
                 ...widget,
@@ -150,12 +151,11 @@ export function useWidgetActions({
                 isMaximized: false,
                 isPinned: false,
                 zIndex: newMaxZIndex,
-                position: clampPosition(restoredPosition.x, restoredPosition.y, clampedRestoredSize.width, clampedRestoredSize.height, mainContentArea),
+                position: clampedRestoredPosition,
                 size: clampedRestoredSize,
               }
             : widget
         );
-        return updatedWidgets; // Recalculation happens in updateAndRecalculate
       } else {
         // If widget does not exist (shouldn't happen with new persistence model, but as fallback)
         const clampedInitialPos = clampPosition(
@@ -182,7 +182,7 @@ export function useWidgetActions({
             normalPosition: clampedInitialPos,
           },
         ];
-        return newWidgets; // Recalculation happens in updateAndRecalculate
+        return newWidgets;
       }
     });
   }, [initialWidgetConfigs, maxZIndex, mainContentArea, updateAndRecalculate, isMobile]);
@@ -193,7 +193,7 @@ export function useWidgetActions({
       const updated = prev.map((widget: WidgetState) =>
         widget.id === id ? { ...widget, isClosed: true, isMinimized: false, isMaximized: false, isPinned: false } : widget
       );
-      return updated; // Recalculation happens in updateAndRecalculate
+      return updated;
     });
   }, [updateAndRecalculate]);
 
@@ -201,13 +201,20 @@ export function useWidgetActions({
     setActiveWidgets(prev =>
       prev.map((widget: WidgetState) => {
         if (widget.id === id && !widget.isPinned && !widget.isMaximized && !widget.isClosed) {
-          // Directly apply the new position without clamping after drag
-          return { ...widget, position: newPosition, normalPosition: newPosition };
+          // Clamp the new position to stay within bounds
+          const clampedPosition = clampPosition(
+            newPosition.x,
+            newPosition.y,
+            widget.size.width,
+            widget.size.height,
+            mainContentArea
+          );
+          return { ...widget, position: clampedPosition, normalPosition: clampedPosition };
         }
         return widget;
       })
     );
-  }, [setActiveWidgets]);
+  }, [mainContentArea, setActiveWidgets]);
 
   const updateWidgetSize = useCallback((id: string, newSize: { width: number; height: number }) => {
     setActiveWidgets(prev =>
@@ -282,7 +289,7 @@ export function useWidgetActions({
         }
         return widget;
       });
-      return updatedWidgets; // Recalculation happens in updateAndRecalculate
+      return updatedWidgets;
     });
   }, [mainContentArea, updateAndRecalculate]);
 
@@ -343,7 +350,7 @@ export function useWidgetActions({
       const updated = prev.map((widget: WidgetState) =>
         widget.id === id ? { ...widget, isClosed: true, isMinimized: false, isMaximized: false, isPinned: false } : widget
       );
-      return updated; // Recalculation happens in updateAndRecalculate
+      return updated;
     });
   }, [updateAndRecalculate, activePanel, setActivePanel]);
 
@@ -408,7 +415,7 @@ export function useWidgetActions({
           }
           return widget;
         });
-        return updatedWidgets; // Recalculation happens in updateAndRecalculate
+        return updatedWidgets;
       } else {
         // This case should ideally not happen if all widgets are pre-initialized in persistence.
         // But as a fallback, add it as a new, open widget.
@@ -433,7 +440,7 @@ export function useWidgetActions({
           normalSize: { width: effectiveInitialWidth, height: effectiveInitialHeight },
           normalPosition: clampedInitialPos,
         };
-        return [...prev, newWidget]; // Recalculation happens in updateAndRecalculate
+        return [...prev, newWidget];
       }
     });
   }, [activeWidgets, initialWidgetConfigs, maxZIndex, mainContentArea, updateAndRecalculate, isMobile]);
