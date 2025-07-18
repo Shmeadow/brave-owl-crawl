@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, PlusCircle, Play, Users, BookOpen, Clock, Crown, MessageSquare, CheckCircle, XCircle, Trophy } from "lucide-react";
+import { Loader2, PlusCircle, Play, Users, BookOpen, Clock, Crown, MessageSquare, CheckCircle, XCircle, Trophy, LogOut, X } from "lucide-react";
 import { useFlashAttackGame } from "@/hooks/flash-attack/useFlashAttackGame";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { useSupabase } from "@/integrations/supabase/auth";
@@ -31,6 +31,8 @@ export function FlashAttackMode() {
     startMatch,
     nextRound,
     submitAnswer,
+    leaveMatch, // New
+    cancelMatch, // New
     categories,
     userId,
   } = useFlashAttackGame();
@@ -106,6 +108,16 @@ export function FlashAttackMode() {
     const responseTimeMs = Date.now() - answerStartTimeRef.current;
     await submitAnswer(currentMatch.id, currentRound.id, playerAnswer.trim(), responseTimeMs);
     setPlayerAnswer(''); // Clear answer input after submission
+  };
+
+  const handleLeaveMatch = async () => {
+    if (!currentMatch) return;
+    await leaveMatch(currentMatch.id);
+  };
+
+  const handleCancelMatch = async () => {
+    if (!currentMatch) return;
+    await cancelMatch(currentMatch.id);
   };
 
   if (loading) {
@@ -217,6 +229,16 @@ export function FlashAttackMode() {
                 {!isRoomOwner && isPlayerInCurrentMatch && (
                   <p className="text-sm text-muted-foreground text-center">Waiting for the host to start the game...</p>
                 )}
+                {isPlayerInCurrentMatch && !isRoomOwner && (
+                  <Button onClick={handleLeaveMatch} variant="outline" className="w-full text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" /> Leave Match
+                  </Button>
+                )}
+                {isRoomOwner && (
+                  <Button onClick={handleCancelMatch} variant="destructive" className="w-full">
+                    <X className="mr-2 h-4 w-4" /> Cancel Match
+                  </Button>
+                )}
               </div>
             )}
 
@@ -277,6 +299,16 @@ export function FlashAttackMode() {
                 ) : (
                   <p className="text-muted-foreground text-center">Waiting for the next round to start...</p>
                 )}
+                {isPlayerInCurrentMatch && !isRoomOwner && (
+                  <Button onClick={handleLeaveMatch} variant="outline" className="w-full text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" /> Leave Match
+                  </Button>
+                )}
+                {isRoomOwner && (
+                  <Button onClick={handleCancelMatch} variant="destructive" className="w-full">
+                    <X className="mr-2 h-4 w-4" /> Cancel Match
+                  </Button>
+                )}
               </div>
             )}
 
@@ -293,7 +325,16 @@ export function FlashAttackMode() {
                     </li>
                   ))}
                 </ul>
-                {/* <Button variant="outline" className="mt-4">View Full Summary</Button> */}
+                {isPlayerInCurrentMatch && (
+                  <Button onClick={handleLeaveMatch} variant="outline" className="w-full text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" /> Leave Match
+                  </Button>
+                )}
+                {isRoomOwner && (
+                  <Button onClick={handleCancelMatch} variant="destructive" className="w-full">
+                    <X className="mr-2 h-4 w-4" /> Cancel Match
+                  </Button>
+                )}
               </div>
             )}
           </CardContent>

@@ -22,6 +22,9 @@ export function useFlashAttackGame() {
   const [roundCountdown, setRoundCountdown] = useState(0); // New state for countdown
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Define userId here
+  const userId = session?.user?.id || null;
+
   const clearCountdown = useCallback(() => {
     if (countdownIntervalRef.current) {
       clearInterval(countdownIntervalRef.current);
@@ -364,6 +367,54 @@ export function useFlashAttackGame() {
     }
   }, [session, supabase, fetchPlayersRoundsAndAnswers, currentMatch?.current_round_number]);
 
+  const leaveMatch = useCallback(async (matchId: string) => {
+    if (!session?.access_token) {
+      toast.error("You must be logged in to leave a match.");
+      return;
+    }
+    if (!supabase) {
+      toast.error("Supabase client not available.");
+      return;
+    }
+
+    try {
+      await invokeEdgeFunction('leave-flash-match', {
+        method: 'POST',
+        body: { match_id: matchId },
+        accessToken: session.access_token,
+      });
+      toast.success("Successfully left the match.");
+      fetchMatches(); // Re-fetch to update UI
+    } catch (error: any) {
+      toast.error(`Failed to leave match: ${error.message}`);
+      console.error("Leave match error:", error);
+    }
+  }, [session, supabase, fetchMatches]);
+
+  const cancelMatch = useCallback(async (matchId: string) => {
+    if (!session?.access_token) {
+      toast.error("You must be logged in to cancel a match.");
+      return;
+    }
+    if (!supabase) {
+      toast.error("Supabase client not available.");
+      return;
+    }
+
+    try {
+      await invokeEdgeFunction('cancel-flash-match', {
+        method: 'POST',
+        body: { match_id: matchId },
+        accessToken: session.access_token,
+      });
+      toast.success("Match cancelled successfully.");
+      fetchMatches(); // Re-fetch to update UI
+    } catch (error: any) {
+      toast.error(`Failed to cancel match: ${error.message}`);
+      console.error("Cancel match error:", error);
+    }
+  }, [session, supabase, fetchMatches]);
+
   return {
     activeMatches,
     currentMatch,
@@ -377,7 +428,9 @@ export function useFlashAttackGame() {
     startMatch,
     nextRound, // Expose nextRound
     submitAnswer, // Expose submitAnswer
+    leaveMatch, // Expose leaveMatch
+    cancelMatch, // Expose cancelMatch
     categories, // Expose categories for deck selection
-    userId: session?.user?.id,
+    userId,
   };
 }
