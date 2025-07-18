@@ -17,7 +17,12 @@ const bugReportSchema = z.object({
   report: z.string().min(10, { message: 'Please provide at least 10 characters.' }),
 });
 
-export function BugReportButton() {
+interface BugReportButtonProps {
+  isModal?: boolean; // New prop to indicate if it's rendered inside a modal
+  onModalClose?: () => void; // Callback to close modal if applicable
+}
+
+export function BugReportButton({ isModal = false, onModalClose }: BugReportButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { session } = useSupabase();
   const { guestId } = useGuestIdentity();
@@ -41,8 +46,40 @@ export function BugReportButton() {
     
     toast.info("Opening your email client to send the report.");
     form.reset();
-    setIsOpen(false);
+    if (isModal && onModalClose) {
+      onModalClose();
+    } else {
+      setIsOpen(false);
+    }
   };
+
+  const content = (
+    <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 p-4"> {/* Added padding here */}
+      <div className="space-y-2">
+        <h4 className="font-medium leading-none">Submit a Bug Report</h4>
+        <p className="text-sm text-muted-foreground">
+          Describe the issue you're encountering.
+        </p>
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="bug-report-textarea">Description</Label>
+        <Textarea
+          id="bug-report-textarea"
+          placeholder="What went wrong?"
+          {...form.register('report')}
+          className="min-h-[100px]"
+        />
+        {form.formState.errors.report && (
+          <p className="text-xs text-destructive">{form.formState.errors.report.message}</p>
+        )}
+      </div>
+      <Button type="submit">Send Report</Button>
+    </form>
+  );
+
+  if (isModal) {
+    return content; // Render content directly if it's a modal
+  }
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -53,27 +90,7 @@ export function BugReportButton() {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 z-[1100]" align="end">
-        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
-          <div className="space-y-2">
-            <h4 className="font-medium leading-none">Submit a Bug Report</h4>
-            <p className="text-sm text-muted-foreground">
-              Describe the issue you're encountering.
-            </p>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="bug-report-textarea">Description</Label>
-            <Textarea
-              id="bug-report-textarea"
-              placeholder="What went wrong?"
-              {...form.register('report')}
-              className="min-h-[100px]"
-            />
-            {form.formState.errors.report && (
-              <p className="text-xs text-destructive">{form.formState.errors.report.message}</p>
-            )}
-          </div>
-          <Button type="submit">Send Report</Button>
-        </form>
+        {content}
       </PopoverContent>
     </Popover>
   );

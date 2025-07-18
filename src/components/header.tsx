@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, LayoutGrid, MessageSquare, BarChart2, Settings } from "lucide-react";
-import { useSupabase } from "@/integrations/supabase/auth";
+import { useSupabase, UserProfile } from "@/integrations/supabase/auth";
 import { UserNav } from "@/components/user-nav";
 import { UpgradeButton } from "@/components/upgrade-button";
 import { useCurrentRoom } from "@/hooks/use-current-room";
@@ -29,7 +29,6 @@ export const formatTimeManual = (date: Date, use24Hour: boolean) => {
 
   if (!use24Hour) {
     ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
     hours = hours ? hours : 12; // the hour '0' should be '12'
   }
 
@@ -136,21 +135,48 @@ interface HeaderProps {
   unreadChatCount: number;
   isMobile: boolean;
   isChatOpen: boolean;
+  // New props added to HeaderProps
+  isNotificationsOpen: boolean;
+  setIsNotificationsOpen: (isOpen: boolean) => React.Dispatch<React.SetStateAction<boolean>>;
+  isRoomSettingsOpen: boolean;
+  setIsRoomSettingsOpen: (isOpen: boolean) => React.Dispatch<React.SetStateAction<boolean>>;
+  isBugReportOpen: boolean;
+  setIsBugReportOpen: (isOpen: boolean) => React.Dispatch<React.SetStateAction<boolean>>;
+  userOwnsPersonalRoom: boolean;
+  usersPersonalRoom: RoomData | null;
+  handleRoomCreated: (room: RoomData) => void;
+  toggleWidget: (id: string, title: string) => void;
+  session: ReturnType<typeof useSupabase>['session'];
+  profile: UserProfile | null;
+  currentRoomId: string | null;
+  currentRoomName: string;
+  isCurrentRoomWritable: boolean;
 }
 
-export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isChatOpen }: HeaderProps) => {
-  const { session, profile } = useSupabase();
-  const { currentRoomName } = useCurrentRoom();
-  const { rooms } = useRooms();
-  const { toggleWidget } = useWidget();
-  const [isRoomSettingsOpen, setIsRoomSettingsOpen] = useState(false);
-
-  const usersPersonalRoom = rooms.find(room => room.id === profile?.personal_room_id && room.creator_id === session?.user?.id) || null;
-  const userOwnsPersonalRoom = !!usersPersonalRoom;
-
-  const handleRoomCreated = (newRoom: RoomData) => {
-    setIsRoomSettingsOpen(false);
-  };
+export const Header = React.memo(({
+  onToggleChat,
+  onNewUnreadMessage, // Added to props
+  onClearUnreadMessages, // Added to props
+  unreadChatCount,
+  isMobile,
+  isChatOpen,
+  isNotificationsOpen,
+  setIsNotificationsOpen,
+  isRoomSettingsOpen,
+  setIsRoomSettingsOpen,
+  isBugReportOpen,
+  setIsBugReportOpen,
+  userOwnsPersonalRoom,
+  usersPersonalRoom,
+  handleRoomCreated,
+  toggleWidget,
+  session,
+  profile,
+  currentRoomId,
+  currentRoomName,
+  isCurrentRoomWritable,
+}: HeaderProps) => {
+  const { rooms } = useRooms(); // This is still needed for usersPersonalRoom logic
 
   return (
     <header className={cn(
@@ -180,8 +206,8 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
       )}>
         {isMobile ? (
           <>
-            {/* 2x2 Grid for mobile */}
-            <div className="grid grid-cols-2 gap-1">
+            {/* Mobile: 2x1 layout for primary actions */}
+            <div className="flex items-center gap-1">
               <Button
                 className="h-8 w-8 hover:bg-header-button-dark/20"
                 variant="ghost"
@@ -205,25 +231,27 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
                   </span>
                 )}
               </Button>
-              <NotificationsDropdown />
-              {session && (
-                <Popover open={isRoomSettingsOpen} onOpenChange={setIsRoomSettingsOpen}>
-                  <PopoverTrigger asChild>
-                    <Button className="flex-shrink-0 h-8 w-8 hover:bg-header-button-dark/20" variant="ghost" size="icon" title="Room Options">
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20" align="start" onOpenAutoFocus={(e: Event) => e.preventDefault()}>
-                    {userOwnsPersonalRoom && usersPersonalRoom ? (
-                      <RoomSettingsContent room={usersPersonalRoom} />
-                    ) : (
-                      <CreatePersonalRoomForm onRoomCreated={handleRoomCreated} onClose={() => setIsRoomSettingsOpen(false)} />
-                    )}
-                  </PopoverContent>
-                </Popover>
-              )}
             </div>
-            <UserNav isMobile={isMobile} />
+            <UserNav
+              isMobile={isMobile}
+              unreadChatCount={unreadChatCount}
+              onToggleChat={onToggleChat}
+              isRoomSettingsOpen={isRoomSettingsOpen}
+              setIsRoomSettingsOpen={setIsRoomSettingsOpen}
+              userOwnsPersonalRoom={userOwnsPersonalRoom}
+              usersPersonalRoom={usersPersonalRoom}
+              handleRoomCreated={handleRoomCreated}
+              toggleWidget={toggleWidget}
+              session={session}
+              profile={profile}
+              currentRoomId={currentRoomId}
+              currentRoomName={currentRoomName}
+              isCurrentRoomWritable={isCurrentRoomWritable}
+              isNotificationsOpen={isNotificationsOpen}
+              setIsNotificationsOpen={setIsNotificationsOpen}
+              isBugReportOpen={isBugReportOpen}
+              setIsBugReportOpen={setIsBugReportOpen}
+            />
           </>
         ) : (
           <>

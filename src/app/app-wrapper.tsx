@@ -27,6 +27,9 @@ import { useRooms } from "@/hooks/use-rooms";
 import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar";
 import { CookieConsentBar } from "@/components/cookie-consent-bar";
 import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT } from "@/lib/constants"; // Import new constant
+import { NotificationsModal } from "@/components/notifications/NotificationsModal"; // Import new modal
+import { RoomSettingsModal } from "@/components/spaces-widget/RoomSettingsModal"; // Import new modal
+import { BugReportModal } from "@/components/bug-report-modal"; // Import new modal
 
 // Dynamically import components that are not critical for initial render
 const DynamicChatPanel = dynamic(() => import("@/components/chat-panel").then(mod => mod.ChatPanel), { ssr: false });
@@ -54,6 +57,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const { activeEffect } = useEffects();
   const isMobile = useIsMobile();
   const { goals } = useGoals();
+  const { toggleWidget } = useWidget(); // Get toggleWidget from useWidget hook
 
   const [mainContentArea, setMainContentArea] = useState({ left: 0, top: 0, width: 0, height: 0 });
 
@@ -61,6 +65,11 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [isPomodoroMinimized, setIsPomodoroMinimized] = useState(true);
   const [showWelcomeBack, setShowWelcomeBack] = useState(false);
+
+  // New states for mobile modals
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isRoomSettingsOpen, setIsRoomSettingsOpen] = useState(false);
+  const [isBugReportOpen, setIsBugReportOpen] = useState(false);
 
   const isDashboard = pathname === '/dashboard';
   const isLoginPage = pathname === '/login';
@@ -130,6 +139,17 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
     );
   }
 
+  const usersPersonalRoom = rooms.find(room => room.id === profile?.personal_room_id && room.creator_id === session?.user?.id) || null;
+  const userOwnsPersonalRoom = !!usersPersonalRoom;
+
+  // Define handleRoomCreated here to pass to Header and then to UserNav
+  const handleRoomCreated = (newRoom: RoomData) => {
+    // This function is passed down to CreatePersonalRoomForm
+    // It's a placeholder for now, as the actual room creation logic is in useRoomManagement
+    // and the room list will re-fetch automatically.
+    // You might want to add a toast or specific state update here if needed.
+  };
+
   return (
     <AmbientSoundProvider>
       <FocusSessionProvider>
@@ -146,7 +166,23 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               onClearUnreadMessages={handleClearUnreadMessages}
               unreadChatCount={unreadChatCount}
               isMobile={isMobile}
-              // Removed onToggleSidebar prop as it's no longer needed
+              // Pass new states and handlers for mobile modals
+              isNotificationsOpen={isNotificationsOpen}
+              setIsNotificationsOpen={setIsNotificationsOpen}
+              isRoomSettingsOpen={isRoomSettingsOpen}
+              setIsRoomSettingsOpen={setIsRoomSettingsOpen}
+              isBugReportOpen={isBugReportOpen}
+              setIsBugReportOpen={setIsBugReportOpen}
+              // Pass additional props required by UserNav
+              userOwnsPersonalRoom={userOwnsPersonalRoom}
+              usersPersonalRoom={usersPersonalRoom}
+              handleRoomCreated={handleRoomCreated}
+              toggleWidget={toggleWidget}
+              session={session}
+              profile={profile}
+              currentRoomId={currentRoomId}
+              currentRoomName={currentRoomName}
+              isCurrentRoomWritable={isCurrentRoomWritable}
             />
             <DynamicWelcomeBackModal
               isOpen={showWelcomeBack}
