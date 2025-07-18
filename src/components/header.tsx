@@ -166,31 +166,6 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
           </Button>
         </Link>
         <h1 className="text-base font-semibold truncate max-w-[120px] sm:max-w-[200px]">{currentRoomName}</h1>
-        <Button
-          className="flex-shrink-0 h-8 w-8 hover:bg-header-button-dark/20"
-          variant="ghost"
-          size="icon"
-          title="Spaces"
-          onClick={() => toggleWidget('spaces', 'Spaces')}
-        >
-          <LayoutGrid className="h-4 w-4" />
-        </Button>
-        {session && (
-          <Popover open={isRoomSettingsOpen} onOpenChange={setIsRoomSettingsOpen}>
-            <PopoverTrigger asChild>
-              <Button className="flex-shrink-0 h-8 w-8 hover:bg-header-button-dark/20" variant="ghost" size="icon" title="Room Options">
-                <Settings className="h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20" align="start" onOpenAutoFocus={(e: Event) => e.preventDefault()}>
-              {userOwnsPersonalRoom && usersPersonalRoom ? (
-                <RoomSettingsContent room={usersPersonalRoom} />
-              ) : (
-                <CreatePersonalRoomForm onRoomCreated={handleRoomCreated} onClose={() => setIsRoomSettingsOpen(false)} />
-              )}
-            </PopoverContent>
-          </Popover>
-        )}
       </div>
 
       {/* Clock and Progress - now absolutely positioned and truly centered */}
@@ -203,37 +178,88 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
         "flex items-center gap-1 flex-shrink-0",
         "justify-end"
       )}>
-        {/* Render BackgroundBlurSlider only on desktop */}
-        {!isMobile && <BackgroundBlurSlider className="hidden md:flex" />}
-        <Button
-          className="h-8 w-8 hover:bg-header-button-dark/20"
-          variant="ghost"
-          size="icon"
-          title="Statistics"
-          onClick={() => toggleWidget('stats-progress', 'Statistics')}
-        >
-          <BarChart2 className="h-4 w-4" />
-        </Button>
-        <BugReportButton />
-        <UpgradeButton />
-        <UserNameCapsule />
-        {session && <NotificationsDropdown />}
-        {/* Chat button (now always visible) */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative h-8 w-8 hover:bg-header-button-dark/20"
-          title="Open Chat"
-          onClick={onToggleChat}
-        >
-          <MessageSquare className="h-4 w-4" />
-          {unreadChatCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-              {unreadChatCount}
-            </span>
-          )}
-        </Button>
-        <UserNav isMobile={isMobile} />
+        {isMobile ? (
+          <>
+            {/* 2x2 Grid for mobile */}
+            <div className="grid grid-cols-2 gap-1">
+              <Button
+                className="h-8 w-8 hover:bg-header-button-dark/20"
+                variant="ghost"
+                size="icon"
+                title="Spaces"
+                onClick={() => toggleWidget('spaces', 'Spaces')}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative h-8 w-8 hover:bg-header-button-dark/20"
+                title="Open Chat"
+                onClick={onToggleChat}
+              >
+                <MessageSquare className="h-4 w-4" />
+                {unreadChatCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                    {unreadChatCount}
+                  </span>
+                )}
+              </Button>
+              <NotificationsDropdown />
+              {session && (
+                <Popover open={isRoomSettingsOpen} onOpenChange={setIsRoomSettingsOpen}>
+                  <PopoverTrigger asChild>
+                    <Button className="flex-shrink-0 h-8 w-8 hover:bg-header-button-dark/20" variant="ghost" size="icon" title="Room Options">
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20" align="start" onOpenAutoFocus={(e: Event) => e.preventDefault()}>
+                    {userOwnsPersonalRoom && usersPersonalRoom ? (
+                      <RoomSettingsContent room={usersPersonalRoom} />
+                    ) : (
+                      <CreatePersonalRoomForm onRoomCreated={handleRoomCreated} onClose={() => setIsRoomSettingsOpen(false)} />
+                    )}
+                  </PopoverContent>
+                </Popover>
+              )}
+            </div>
+            <UserNav isMobile={isMobile} />
+          </>
+        ) : (
+          <>
+            {/* Render BackgroundBlurSlider only on desktop */}
+            <BackgroundBlurSlider className="hidden md:flex" />
+            <Button
+              className="h-8 w-8 hover:bg-header-button-dark/20"
+              variant="ghost"
+              size="icon"
+              title="Statistics"
+              onClick={() => toggleWidget('stats-progress', 'Statistics')}
+            >
+              <BarChart2 className="h-4 w-4" />
+            </Button>
+            <BugReportButton />
+            <UpgradeButton />
+            <UserNameCapsule />
+            {session && <NotificationsDropdown />}
+            {/* Chat button (now always visible) */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative h-8 w-8 hover:bg-header-button-dark/20"
+              title="Open Chat"
+              onClick={onToggleChat}
+            >
+              <MessageSquare className="h-4 w-4" />
+              {unreadChatCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                  {unreadChatCount}
+                </span>
+              )}
+            </Button>
+            <UserNav isMobile={isMobile} />
+          </>
+        )}
       </div>
     </header>
   );
