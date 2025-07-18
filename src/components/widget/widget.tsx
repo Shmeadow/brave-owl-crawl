@@ -63,22 +63,38 @@ export function Widget({
   isMobile,
   isInsideDock = false, // Default to false
 }: WidgetProps) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ // Destructure isDragging
+  const widgetRef = useRef<HTMLDivElement>(null); // Ref to the widget's main div
+
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `widget-${id}`,
     data: { id, type: "widget", initialPosition: position },
     disabled: isPinned || isMaximized || isInsideDock || isClosed,
   });
 
-  const currentTransformStyle = transform ? {
-    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-  } : {};
+  // Effect to "transfer" dnd-kit's transform to left/top when dragging starts
+  useEffect(() => {
+    if (isDragging && widgetRef.current) {
+      const style = window.getComputedStyle(widgetRef.current);
+      const matrix = new DOMMatrixReadOnly(style.transform);
+      
+      // Update the widget's position state to reflect the current transformed position
+      // This ensures the CSS `left`/`top` values are aligned with the visual position
+      // before dnd-kit's transform is cleared.
+      onSizeChange({ width: size.width, height: size.height }); // Trigger a state update to re-render with new position
+      
+      // Apply the transform's translation to the element's style directly
+      // and then clear the transform property.
+      widgetRef.current.style.left = `${position.x + matrix.e}px`;
+      widgetRef.current.style.top = `${position.y + matrix.f}px`;
+      widgetRef.current.style.transform = 'none';
+    }
+  }, [isDragging, position.x, position.y, size.width, size.height, onSizeChange]);
+
 
   const isVisuallyMinimized = isMinimized || isPinned;
-  // isResizable and isDraggable now allow mobile users to interact
-  const isResizable = !isMaximized && !isVisuallyMinimized && !isInsideDock && !isClosed && !isMobile; // Added !isMobile
+  const isResizable = !isMaximized && !isVisuallyMinimized && !isInsideDock && !isClosed && !isMobile;
   const isDraggable = !isMaximized && !isPinned && !isInsideDock && !isClosed;
 
-  // Determine actual width/height for ResizableBox based on state
   let actualWidth = size.width;
   let actualHeight = size.height;
 
@@ -93,16 +109,15 @@ export function Widget({
     actualHeight = MINIMIZED_WIDGET_HEIGHT;
   }
 
-  // Ensure minimum dimensions for ResizableBox, matching minConstraints
-  actualWidth = Math.max(actualWidth, 100); // Reduced from 150px
-  actualHeight = Math.max(actualHeight, 80); // Reduced from 100px
+  actualWidth = Math.max(actualWidth, 100);
+  actualHeight = Math.max(actualHeight, 80);
 
   const renderWidgetContent = (
     <Card className={cn(
       "w-full h-full flex flex-col overflow-hidden",
-      isInsideDock ? "bg-transparent border-none shadow-none" : "bg-transparent" // No background/border/shadow if inside dock
+      isInsideDock ? "bg-transparent border-none shadow-none" : "bg-transparent"
     )}>
-      {!isInsideDock && ( // Only render header if not inside dock
+      {!isInsideDock && (
         <WidgetHeader
           title={title}
           icon={Icon}
@@ -120,7 +135,7 @@ export function Widget({
         />
       )}
 
-      {!isVisuallyMinimized && !isInsideDock && ( // Only render content if not minimized and not inside dock
+      {!isVisuallyMinimized && !isInsideDock && (
         <CardContent className="flex-grow p-0 overflow-y-auto">
           <Content isCurrentRoomWritable={isCurrentRoomWritable} isMobile={isMobile} />
         </CardContent>
@@ -128,7 +143,6 @@ export function Widget({
     </Card>
   );
 
-  // Render logic for the widget wrapper
   if (isInsideDock) {
     return (
       <div
@@ -136,37 +150,40 @@ export function Widget({
         className={cn(
           "bg-card/40 backdrop-blur-xl border-white/20 shadow-lg rounded-full flex flex-col",
           "transition-all duration-300 ease-in-out",
-          "w-10 h-10", // Fixed size for the button in the dock (reduced)
+          "w-10 h-10",
           "pointer-events-auto",
-          "cursor-pointer" // Indicate clickable to unpin
+          "cursor-pointer"
         )}
-        onClick={() => onPin(id)} // Clicking a docked widget unpins it
+        onClick={() => onPin(id)}
         onMouseDown={onBringToFront}
       >
         <div className="flex items-center justify-center flex-1 min-w-0 h-full">
-          <Icon className="h-5 w-5 text-primary" /> {/* Reduced icon size */}
+          <Icon className="h-5 w-5 text-primary" />
           <span className="sr-only">{title}</span>
         </div>
       </div>
     );
   }
 
-  // For floating widgets (normal, minimized, maximized, or closed)
   return (
     <div
-      ref={setNodeRef}
+      ref={(node) => {
+        setNodeRef(node);
+        (widgetRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      }}
       style={{
         left: position.x,
         top: position.y,
         zIndex: zIndex,
-        ...currentTransformStyle,
         width: actualWidth,
         height: actualHeight,
         position: 'absolute',
+        // Apply dnd-kit's transform only when dragging
+        transform: isDragging && transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : 'none',
       }}
       className={cn(
         "bg-card/40 border-white/20 shadow-lg rounded-lg flex flex-col",
-        "transition-[left,top,width,height] duration-300 ease-in-out", // Changed transition-all to specific properties
+        "transition-[left,top,width,height] duration-300 ease-in-out",
         isTopmost ? "backdrop-blur-2xl" : "backdrop-blur-xl",
         isResizable ? "resize" : "",
         isMinimized && !isPinned ? "cursor-pointer" : "",
@@ -183,8 +200,8 @@ export function Widget({
             onSizeChange({ width: data.size.width, height: data.size.height });
           }
         }}
-        minConstraints={[100, 80]} // Reduced from [150, 100]
-        maxConstraints={[mainContentArea.width, mainContentArea.height]} // Ensure max constraints are respected
+        minConstraints={[100, 80]}
+        maxConstraints={[mainContentArea.width, mainContentArea.height]}
         className="w-full h-full"
         resizeHandles={isResizable ? ['s', 'e', 'w', 'se', 'sw'] : []}
       >
