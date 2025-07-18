@@ -201,19 +201,13 @@ export function useWidgetActions({
     setActiveWidgets(prev =>
       prev.map((widget: WidgetState) => {
         if (widget.id === id && !widget.isPinned && !widget.isMaximized && !widget.isClosed) {
-          const clampedPos = clampPosition(
-            newPosition.x,
-            newPosition.y,
-            widget.size.width,
-            widget.size.height,
-            mainContentArea
-          );
-          return { ...widget, position: clampedPos, normalPosition: clampedPos };
+          // Directly apply the new position without clamping after drag
+          return { ...widget, position: newPosition, normalPosition: newPosition };
         }
         return widget;
       })
     );
-  }, [mainContentArea, setActiveWidgets]);
+  }, [setActiveWidgets]);
 
   const updateWidgetSize = useCallback((id: string, newSize: { width: number; height: number }) => {
     setActiveWidgets(prev =>
