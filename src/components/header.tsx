@@ -145,7 +145,7 @@ interface HeaderProps {
   userOwnsPersonalRoom: boolean;
   usersPersonalRoom: RoomData | null;
   handleRoomCreated: (room: RoomData) => void;
-  toggleWidget: (id: string, title: string) => void;
+  toggleWidget: (id: string, title: string) => void; // This prop is now mandatory
   session: ReturnType<typeof useSupabase>['session'];
   profile: UserProfile | null;
   currentRoomId: string | null;
@@ -169,7 +169,7 @@ export const Header = React.memo(({
   userOwnsPersonalRoom,
   usersPersonalRoom,
   handleRoomCreated,
-  toggleWidget,
+  toggleWidget, // Destructure toggleWidget from props
   session,
   profile,
   currentRoomId,
