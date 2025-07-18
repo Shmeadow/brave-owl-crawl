@@ -37,16 +37,27 @@ interface HeaderProps {
 const ClockDisplay = () => { // Renamed from ClockTrigger
   const { timeString, dateString, isLoading } = useClock();
   return (
-    <div className="bg-background/50 backdrop-blur-xl text-header-button-dark-foreground font-mono text-sm px-3 hidden md:flex flex-col h-auto py-1">
-      {isLoading ? (
-        <span>--:--:--</span>
-      ) : (
-        <>
-          <span>{timeString}</span>
-          <span className="text-xs opacity-70">{dateString}</span>
-        </>
-      )}
-    </div>
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          className="bg-background/50 backdrop-blur-xl text-header-button-dark-foreground font-mono text-sm px-3 hidden md:flex flex-col h-auto py-1 hover:bg-header-button-dark/20"
+          title="View Date and Day Progress"
+        >
+          {isLoading ? (
+            <span>--:--:--</span>
+          ) : (
+            <>
+              <span>{timeString}</span>
+              <span className="text-xs opacity-70">{dateString}</span>
+            </>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0 z-[1100] bg-popover/80 backdrop-blur-lg border-white/20" align="end">
+        <TimeAndProgressDisplay />
+      </PopoverContent>
+    </Popover>
   );
 };
 

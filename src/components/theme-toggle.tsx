@@ -1,24 +1,34 @@
 "use client";
 
 import * as React from "react";
-import { Moon } from "lucide-react"; // Only Moon icon needed
-import { useTheme } from "next-themes"; // Keep useTheme to apply the class
+import { Moon, Sun } from "lucide-react"; // Import Sun icon
+import { useTheme } from "next-themes";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils"; // Import cn
+import { cn } from "@/lib/utils";
 
 interface ThemeToggleProps {
-  className?: string; // Add className prop
+  className?: string;
 }
 
 export function ThemeToggle({ className }: ThemeToggleProps) {
-  const { theme } = useTheme(); // Get current theme to potentially show different icon if needed, but no longer for setting
+  const { theme, setTheme, themes } = useTheme();
 
-  // This component now just displays a static Moon icon, as theme is fixed to dark/cozy.
+  const toggleTheme = () => {
+    // Find the next theme in the available themes list
+    const currentIndex = themes.indexOf(theme || 'dark'); // Default to 'dark' if theme is undefined
+    const nextIndex = (currentIndex + 1) % themes.length;
+    setTheme(themes[nextIndex]);
+  };
+
   return (
-    <Button variant="ghost" size="icon" className={cn("relative", className)} title="Dark Theme Active">
-      <Moon className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100" />
-      <span className="sr-only">Dark theme active</span>
+    <Button variant="ghost" size="icon" className={cn("relative", className)} onClick={toggleTheme} title="Toggle Theme">
+      {theme === 'dark' ? (
+        <Moon className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all" />
+      ) : (
+        <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all" />
+      )}
+      <span className="sr-only">Toggle theme</span>
     </Button>
   );
 }
