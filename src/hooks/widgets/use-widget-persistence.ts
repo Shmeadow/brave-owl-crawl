@@ -150,8 +150,8 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea, is
       if (isLoggedInMode && session && supabase) {
         const statesToSave = activeWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id, currentRoomId));
         if (statesToSave.length > 0) {
-          // Determine the correct onConflict target based on whether room_id is null
-          const onConflictTarget = currentRoomId === null ? 'user_id,widget_id' : 'user_id,widget_id,room_id';
+          // Always use 'user_id,widget_id,room_id' as the onConflict target
+          const onConflictTarget = 'user_id,widget_id,room_id';
           
           const { error } = await supabase.from('user_widget_states').upsert(statesToSave, { onConflict: onConflictTarget });
           if (error) {
