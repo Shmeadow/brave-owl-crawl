@@ -189,7 +189,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
                 <DynamicMobileControls>
                   <DynamicPomodoroWidget 
                     isMinimized={isPomodoroMinimized}
-                    setIsMinimized={setIsPomodoroMinimized} // Corrected typo here
+                    setIsMinimized={setIsPomodoroMinimized}
                     chatPanelWidth={0}
                     isMobile={isMobile}
                   />

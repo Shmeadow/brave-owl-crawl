@@ -17,6 +17,7 @@ import { UserNameCapsule } from "./user-name-capsule";
 import { cn } from "@/lib/utils";
 import { RoomSettingsContent } from "./spaces-widget/RoomSettingsContent";
 import { CreatePersonalRoomForm } from "./create-personal-room-form";
+import { BugReportButton } from "./bug-report-button";
 import SunCalc from 'suncalc'; // Import SunCalc
 
 // Helper function to format time manually
@@ -28,6 +29,7 @@ export const formatTimeManual = (date: Date, use24Hour: boolean) => {
 
   if (!use24Hour) {
     ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
     hours = hours ? hours : 12; // the hour '0' should be '12'
   }
 
@@ -206,7 +208,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
               >
                 <BarChart2 className="h-4 w-4" />
               </Button>
-              {/* Removed BugReportButton from here */}
+              <BugReportButton />
               <UpgradeButton />
               {session && <NotificationsDropdown />}
               <Button
@@ -290,7 +292,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
             >
               <BarChart2 className="h-4 w-4" />
             </Button>
-            {/* Removed BugReportButton from here */}
+            <BugReportButton />
             <UpgradeButton />
             <UserNameCapsule />
             {session && <NotificationsDropdown />}
