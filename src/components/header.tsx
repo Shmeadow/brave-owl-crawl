@@ -17,6 +17,7 @@ import { UserNameCapsule } from "./user-name-capsule";
 import { cn } from "@/lib/utils";
 import { RoomSettingsContent } from "./spaces-widget/RoomSettingsContent";
 import { CreatePersonalRoomForm } from "./create-personal-room-form";
+import { BugReportButton } from "./bug-report-button";
 import SunCalc from 'suncalc'; // Import SunCalc
 
 // Helper function to format time manually
@@ -135,7 +136,7 @@ interface HeaderProps {
   unreadChatCount: number;
   isMobile: boolean;
   isChatOpen: boolean;
-  headerRef?: React.RefObject<HTMLElement | null>; // Made optional
+  headerRef: React.RefObject<HTMLElement | null>; // New prop for ref
 }
 
 export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isChatOpen, headerRef }: HeaderProps) => {
@@ -154,18 +155,18 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
 
   return (
     <header
-      ref={headerRef}
+      ref={headerRef} // Assign ref here
       className={cn(
         "fixed top-0 z-[1002] w-full flex items-center justify-between py-2 px-1 gap-2",
         "bg-background/60 backdrop-blur-xl border-b border-white/20 shadow-lg",
-        isMobile ? "h-auto flex-col" : "h-14 flex-row"
+        isMobile ? "h-auto flex-col" : "h-14 flex-row" // Dynamic height and flex direction
       )}
     >
       {isMobile ? (
         <div className="flex flex-col w-full h-full">
           {/* Top Row: Icons */}
-          <div className="flex items-center justify-between w-full px-0.5 py-0.5">
-            <div className="flex items-center gap-0.5">
+          <div className="flex items-center justify-between w-full px-1 py-1">
+            <div className="flex items-center gap-1">
               <Link href="/dashboard" className="flex items-center">
                 <Button className="h-8 w-8 hover:bg-header-button-dark/20" variant="ghost" size="icon" title="Home">
                   <Home className="h-4 w-4" />
@@ -197,7 +198,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
                 </Popover>
               )}
             </div>
-            <div className="flex items-center gap-0.5">
+            <div className="flex items-center gap-1">
               <Button
                 className="h-8 w-8 hover:bg-header-button-dark/20"
                 variant="ghost"
@@ -207,6 +208,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
               >
                 <BarChart2 className="h-4 w-4" />
               </Button>
+              <BugReportButton />
               <UpgradeButton />
               {session && <NotificationsDropdown />}
               <Button
@@ -223,7 +225,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
                   </span>
                 )}
               </Button>
-              <UserNav isMobile={isMobile} />
+              <UserNav isMobile={isMobile} /> {/* Profile icon */}
             </div>
           </div>
           {/* Bottom Row: Room Name and User Name */}
@@ -290,6 +292,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
             >
               <BarChart2 className="h-4 w-4" />
             </Button>
+            <BugReportButton />
             <UpgradeButton />
             <UserNameCapsule />
             {session && <NotificationsDropdown />}
