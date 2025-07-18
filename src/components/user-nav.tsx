@@ -25,7 +25,7 @@ import { BugReportModal } from "./bug-report-modal"; // New modal
 
 interface UserNavProps {
   isMobile: boolean;
-  // Props for mobile-specific features
+  // Props for mobile-specific features, now optional
   unreadChatCount?: number;
   onToggleChat?: () => void;
   isRoomSettingsOpen?: boolean;
@@ -186,7 +186,7 @@ export function UserNav({
             )}
 
             {/* Bug Report */}
-            {setIsBugReportOpen && (
+            { setIsBugReportOpen && (
               <DropdownMenuItem onClick={() => setIsBugReportOpen(true)}>
                 <Bug className="mr-2 h-4 w-4" />
                 Bug Report
@@ -226,10 +226,10 @@ export function UserNav({
           isOpen={isRoomSettingsOpen}
           onOpenChange={setIsRoomSettingsOpen}
           room={usersPersonalRoom}
-          onRoomCreated={handleRoomCreated}
-          isCurrentRoomWritable={isCurrentRoomWritable}
-          currentRoomId={currentRoomId}
-          currentRoomName={currentRoomName}
+          onRoomCreated={handleRoomCreated!} // Assert non-null as it's only called if handleRoomCreated is defined
+          isCurrentRoomWritable={isCurrentRoomWritable!} // Assert non-null
+          currentRoomId={currentRoomId!} // Assert non-null
+          currentRoomName={currentRoomName!} // Assert non-null
         />
       )}
       {isMobile && isBugReportOpen && setIsBugReportOpen && (

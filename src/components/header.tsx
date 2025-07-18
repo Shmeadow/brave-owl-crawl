@@ -137,11 +137,11 @@ interface HeaderProps {
   isChatOpen: boolean;
   // New props added to HeaderProps
   isNotificationsOpen: boolean;
-  setIsNotificationsOpen: (isOpen: boolean) => React.Dispatch<React.SetStateAction<boolean>>;
+  setIsNotificationsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isRoomSettingsOpen: boolean;
-  setIsRoomSettingsOpen: (isOpen: boolean) => React.Dispatch<React.SetStateAction<boolean>>;
+  setIsRoomSettingsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isBugReportOpen: boolean;
-  setIsBugReportOpen: (isOpen: boolean) => React.Dispatch<React.SetStateAction<boolean>>;
+  setIsBugReportOpen: React.Dispatch<React.SetStateAction<boolean>>;
   userOwnsPersonalRoom: boolean;
   usersPersonalRoom: RoomData | null;
   handleRoomCreated: (room: RoomData) => void;
@@ -285,7 +285,13 @@ export const Header = React.memo(({
                 </span>
               )}
             </Button>
-            <UserNav isMobile={isMobile} />
+            <UserNav
+              isMobile={isMobile}
+              // For desktop, these props are not directly used by UserNav's rendering logic
+              // but are still part of its interface. We can pass default/empty values or
+              // ensure they are optional in UserNavProps.
+              // Since they are already optional in UserNavProps, we don't need to pass them here.
+            />
           </>
         )}
       </div>

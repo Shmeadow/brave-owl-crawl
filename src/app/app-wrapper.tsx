@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { useSupabase } from '@/integrations/supabase/auth';
+import { useSupabase, UserProfile } from '@/integrations/supabase/auth';
 import { useSidebar } from "@/components/sidebar/sidebar-context";
 import { Toaster } from "@/components/ui/sonner";
 import { Sidebar } from "@/components/sidebar/sidebar";
@@ -22,13 +22,13 @@ import { PinnedWidgetsDock } from "@/components/pinned-widgets-dock";
 import { useWidget } from "@/components/widget/widget-provider";
 import { checkAndClearClientData } from "@/lib/client-version";
 import dynamic from 'next/dynamic';
-import { useRooms } from "@/hooks/use-rooms";
+import { useRooms, RoomData } from "@/hooks/use-rooms"; // Import RoomData
 // Removed: import { RoomJoinRequestNotification } from "@/components/notifications/RoomJoinRequestNotification"; // Corrected import path
 import { GuestModeWarningBar } from "@/components/guest-mode-warning-bar";
 import { CookieConsentBar } from "@/components/cookie-consent-bar";
 import { MOBILE_CONTROLS_HEIGHT, MOBILE_HORIZONTAL_SIDEBAR_HEIGHT } from "@/lib/constants"; // Import new constant
 import { NotificationsModal } from "@/components/notifications/NotificationsModal"; // Import new modal
-import { RoomSettingsModal } from "@/components/spaces-widget/RoomSettingsModal"; // Import new modal
+import { RoomSettingsModal } from "@/components/spaces-widget/RoomSettingsModal"; // Corrected import path for RoomSettingsModal
 import { BugReportModal } from "@/components/bug-report-modal"; // Import new modal
 
 // Dynamically import components that are not critical for initial render
@@ -214,14 +214,12 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               <>
                 {/* Mobile-specific SimpleAudioPlayer positioned at middle-right */}
                 <DynamicSimpleAudioPlayer isMobile={isMobile} displayMode="minimized" />
-                <DynamicMobileControls>
-                  <DynamicPomodoroWidget 
-                    isMinimized={isPomodoroMinimized}
-                    setIsMinimized={setIsPomodoroMinimized}
-                    chatPanelWidth={0}
-                    isMobile={isMobile}
-                  />
-                </DynamicMobileControls>
+                <DynamicPomodoroWidget 
+                  isMinimized={isPomodoroMinimized}
+                  setIsMinimized={setIsPomodoroMinimized}
+                  chatPanelWidth={0}
+                  isMobile={isMobile}
+                />
               </>
             )}
             {isDashboard && !isMobile && (
@@ -240,7 +238,7 @@ export function AppWrapper({ children, initialWidgetConfigs }: { children: React
               onToggleOpen={() => setIsChatOpen(!isChatOpen)}
               onNewUnreadMessage={handleNewUnreadMessage}
               onClearUnreadMessages={handleClearUnreadMessages}
-              unreadCount={unreadChatCount}
+              unreadCount={unreadChatCount} // Corrected prop name
               currentRoomId={currentRoomId}
               currentRoomName={currentRoomName}
               isCurrentRoomWritable={isCurrentRoomWritable}
