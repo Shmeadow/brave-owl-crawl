@@ -82,9 +82,11 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea, is
       } else if (userWidgets) {
         const latestStates = new Map<string, DbWidgetState>();
         for (const widget of userWidgets) {
-          const existing = latestStates.get(widget.widget_id);
+          // Use a composite key for the map: widget_id + room_id (or 'null' if room_id is null)
+          const compositeKey = `${widget.widget_id}-${widget.room_id || 'null'}`;
+          const existing = latestStates.get(compositeKey);
           if (!existing || new Date(widget.updated_at) > new Date(existing.updated_at)) {
-            latestStates.set(widget.widget_id, widget);
+            latestStates.set(compositeKey, widget);
           }
         }
         loadedWidgetStates = Array.from(latestStates.values()).map(fromDbWidgetState);
@@ -148,7 +150,8 @@ export function useWidgetPersistence({ initialWidgetConfigs, mainContentArea, is
       if (isLoggedInMode && session && supabase) {
         const statesToSave = activeWidgets.map((w: WidgetState) => toDbWidgetState(w, session.user.id, currentRoomId));
         if (statesToSave.length > 0) {
-          const onConflictTarget = 'user_id,widget_id,room_id'; // Always use the composite key for upsert
+          // Determine the correct onConflict target based on whether room_id is null
+          const onConflictTarget = currentRoomId === null ? 'user_id,widget_id' : 'user_id,widget_id,room_id';
           
           const { error } = await supabase.from('user_widget_states').upsert(statesToSave, { onConflict: onConflictTarget });
           if (error) {
