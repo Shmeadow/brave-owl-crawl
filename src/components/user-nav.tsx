@@ -14,8 +14,9 @@ import { useSupabase, UserProfile } from "@/integrations/supabase/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
-import { BackgroundBlurSlider } from "./background-blur-slider"; // Import BackgroundBlurSlider
-import { cn } from "@/lib/utils"; // Import cn
+import { BackgroundBlurSlider } from "./background-blur-slider";
+import { cn } from "@/lib/utils";
+import { BugReportButton } from "./bug-report-button"; // Import BugReportButton
 
 interface UserNavProps {
   isMobile: boolean; // New prop
@@ -78,6 +79,10 @@ export function UserNav({ isMobile }: UserNavProps) {
             <DropdownMenuItem className="flex items-center justify-between">
               <span className="text-sm">Background Blur</span>
               <BackgroundBlurSlider className="mobile-only w-24" isMobile={true} />
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <BugReportButton /> {/* Render BugReportButton directly */}
+              <span className="ml-2">Submit a Bug</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
