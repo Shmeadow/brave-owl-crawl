@@ -96,7 +96,7 @@ const HeaderClockAndProgress = () => {
 
   return (
     <div className={cn(
-      "bg-background/50 backdrop-blur-xl text-header-button-dark-foreground font-mono text-sm px-3 hidden md:flex flex-col h-auto py-1 rounded-md",
+      "bg-background/50 backdrop-blur-xl text-header-button-dark-foreground font-mono text-sm px-3 flex flex-col h-auto py-1 rounded-md", // Removed hidden md:flex
       "items-center justify-center"
     )}>
       {isLoading ? (
@@ -149,7 +149,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
       "bg-background/60 backdrop-blur-xl border-b border-white/20 shadow-lg"
     )}>
       {/* Left Group */}
-      <div className="flex items-center gap-1 min-w-0">
+      <div className="flex items-center gap-1 min-w-0 flex-shrink-0">
         <Link href="/dashboard" className="flex items-center space-x-1">
           <h1 className="text-lg font-bold text-primary hidden sm:block">Cozy Hub</h1>
           <Button className="h-8 w-8 hover:bg-header-button-dark/20" variant="ghost" size="icon" title="Home">
@@ -184,9 +184,14 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
         )}
       </div>
 
+      {/* Middle Group - Clock and Progress */}
+      <div className="flex-grow flex justify-center hidden md:flex">
+        <HeaderClockAndProgress />
+      </div>
+
       {/* Right Group */}
       <div className={cn(
-        "flex items-center gap-1",
+        "flex items-center gap-1 flex-shrink-0",
         "justify-end"
       )}>
         {/* Render BackgroundBlurSlider only on desktop */}
@@ -200,8 +205,6 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
         >
           <BarChart2 className="h-4 w-4" />
         </Button>
-        {/* Directly render ClockDisplay instead of DropdownMenu */}
-        <HeaderClockAndProgress />
         <BugReportButton />
         <UpgradeButton />
         <UserNameCapsule />
