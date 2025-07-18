@@ -399,11 +399,9 @@ export function useWidgetActions({
                 mainContentArea
               );
 
-              // Destructure isMaximized from widget to avoid duplicate property error
-              const { isMaximized: _oldIsMaximized, ...restOfWidget } = widget;
-
+              // Create a new object with desired properties, explicitly setting isMaximized last
               return {
-                ...restOfWidget, // Spread the rest of the widget properties
+                ...widget, // Spread all properties from the original widget
                 isClosed: false,
                 isMinimized: false,
                 isPinned: false,
