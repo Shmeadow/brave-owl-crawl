@@ -29,6 +29,7 @@ export const formatTimeManual = (date: Date, use24Hour: boolean) => {
 
   if (!use24Hour) {
     ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
     hours = hours ? hours : 12; // the hour '0' should be '12'
   }
 
@@ -114,7 +115,7 @@ const HeaderClockAndProgress = () => {
             <span className="font-bold text-xl text-foreground">{timeString}</span>
             <span className="text-sm opacity-70">{dateString}</span>
           </div>
-          <div className="h-1.5 rounded-full overflow-hidden relative mt-1" style={{ width: `${timeDateWidth}px` }}>
+          <div className="h-1.5 rounded-full overflow-hidden relative mt-1 bg-muted" style={{ width: `${timeDateWidth}px` }}>
             <div
               className="h-full rounded-full transition-all duration-1000 ease-linear relative overflow-hidden"
               style={{ width: `${dailyProgress}%`, background: gradient }}
