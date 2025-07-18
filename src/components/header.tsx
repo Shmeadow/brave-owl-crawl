@@ -29,7 +29,6 @@ export const formatTimeManual = (date: Date, use24Hour: boolean) => {
 
   if (!use24Hour) {
     ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
     hours = hours ? hours : 12; // the hour '0' should be '12'
   }
 
@@ -193,8 +192,10 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
         )}
       </div>
 
-      {/* Clock and Progress - now directly in the header, centered by justify-between */}
-      <HeaderClockAndProgress />
+      {/* Clock and Progress - now absolutely positioned and truly centered */}
+      <div className="absolute left-1/2 -translate-x-1/2">
+        <HeaderClockAndProgress />
+      </div>
 
       {/* Right Group */}
       <div className={cn(
