@@ -58,7 +58,9 @@ export function useRoomMembership({ rooms, setRooms, fetchRooms }: UseRoomMember
       return;
     }
 
+    console.log('handleJoinRoomByPassword: Attempting to join room:', idInput);
     const resolvedRoomId = await resolveRoomId(supabase, idInput);
+    console.log('handleJoinRoomByPassword: Resolved Room ID:', resolvedRoomId);
 
     if (!resolvedRoomId) {
       toast.error("Room or User not found.");
@@ -82,6 +84,8 @@ export function useRoomMembership({ rooms, setRooms, fetchRooms }: UseRoomMember
         }
       );
 
+      console.log('handleJoinRoomByPassword: Edge function response:', response);
+
       if (response.status === 'already_joined') {
         toast.info(response.message);
       } else if (response.status === 'joined') {
@@ -94,6 +98,7 @@ export function useRoomMembership({ rooms, setRooms, fetchRooms }: UseRoomMember
         addNotification(`New join request for "${response.roomName}" from ${session.user.email}.`, room.creator_id);
       }
       window.dispatchEvent(new CustomEvent('roomJoined', { detail: { roomId: resolvedRoomId, roomName: room.name } }));
+      console.log('handleJoinRoomByPassword: After edge function, before fetchRooms');
       await fetchRooms(); // Re-fetch rooms to update membership status in UI
     } catch (error: any) {
       toast.error(`Failed to join room: ${error.message}`);

@@ -29,6 +29,7 @@ export function useCurrentRoom() {
   const [isCurrentRoomWritable, setIsCurrentRoomWritable] = useState(true);
 
   const setCurrentRoom = useCallback((id: string | null, name: string) => {
+    console.log('useCurrentRoom: setCurrentRoom called:', { id, name });
     setCurrentRoomIdState(id);
     setCurrentRoomNameState(name);
     if (id) {
@@ -42,6 +43,7 @@ export function useCurrentRoom() {
   useEffect(() => {
     const handleRoomJoined = (event: Event) => {
       if (event instanceof CustomEvent) {
+        console.log('AppWrapper: roomJoined event received:', event.detail);
         const { roomId, roomName } = event.detail;
         if (roomId && roomName) {
           setCurrentRoom(roomId, roomName);
@@ -103,6 +105,8 @@ export function useCurrentRoom() {
       }
     }
 
+    console.log('useCurrentRoom: Re-evaluating active room. Current:', { currentRoomId, currentRoomName }, 'New Target:', { newTargetRoomId, newTargetRoomName });
+
     // Only update if the new target is different from the current state
     if (newTargetRoomId !== currentRoomId || newTargetRoomName !== currentRoomName) {
       setCurrentRoomIdState(newTargetRoomId);
@@ -136,6 +140,7 @@ export function useCurrentRoom() {
 
     if (!currentRoomId) {
       setIsCurrentRoomWritable(true); // "Dashboard" (guest mode or no room selected) is always writable
+      console.log('useCurrentRoom: isCurrentRoomWritable re-evaluated: true for Dashboard');
       return;
     }
 
@@ -143,21 +148,25 @@ export function useCurrentRoom() {
 
     if (!room) {
       setIsCurrentRoomWritable(false); // Room not found in the fetched list, assume not writable
+      console.log('useCurrentRoom: isCurrentRoomWritable re-evaluated: false (room not found)');
       return;
     }
 
     if (!session?.user?.id) {
       setIsCurrentRoomWritable(false); // Not logged in, cannot write to any persistent room
+      console.log('useCurrentRoom: isCurrentRoomWritable re-evaluated: false (not logged in)');
       return;
     }
 
     // Only the creator has write access
     if (session.user.id === room.creator_id) {
       setIsCurrentRoomWritable(true);
+      console.log('useCurrentRoom: isCurrentRoomWritable re-evaluated: true (user is creator)');
       return;
     }
     
     setIsCurrentRoomWritable(false); // Default to false if no conditions met
+    console.log('useCurrentRoom: isCurrentRoomWritable re-evaluated: false (default)');
   }, [currentRoomId, session, rooms, authLoading, roomsLoading]);
 
 

@@ -277,6 +277,9 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
       return;
     }
 
+    console.log('handleDeleteRoom: Deleting room:', roomId);
+    console.log('handleDeleteRoom: Profile personal_room_id:', profile?.personal_room_id);
+
     // Optimistic update
     setRooms(prev => prev.filter(r => r.id !== roomId));
 
@@ -288,13 +291,30 @@ export function useRoomManagement({ rooms, setRooms, fetchRooms, refreshProfile 
 
     if (error) {
       toast.error("Error deleting room: " + error.message);
+      console.error("Error deleting room:", error);
       setRooms(originalRooms); // Revert on error
     } else {
+      // If the deleted room was the user's personal room, clear it from their profile
+      if (profile?.personal_room_id === roomId) {
+        console.log('handleDeleteRoom: Clearing personal_room_id from profile.');
+        const { error: profileUpdateError } = await supabase
+          .from('profiles')
+          .update({ personal_room_id: null })
+          .eq('id', session.user.id);
+
+        if (profileUpdateError) {
+          console.error("Error clearing personal_room_id:", profileUpdateError);
+          toast.error("Failed to clear personal room from your profile.");
+        } else {
+          await refreshProfile(); // Refresh profile to update local state
+        }
+      }
       toast.success("Room deleted successfully.");
       addNotification(`You deleted the room: "${roomToDelete.name}".`);
+      console.log('handleDeleteRoom: After Supabase delete, before fetchRooms');
       await fetchRooms(); // Explicitly re-fetch rooms after deletion
     }
-  }, [session, supabase, addNotification, setRooms, rooms, fetchRooms]);
+  }, [session, supabase, addNotification, setRooms, rooms, fetchRooms, profile, refreshProfile]);
 
   const handleUpdateRoomDescription = useCallback(async (roomId: string, newDescription: string | null) => {
     if (!session?.user?.id || !supabase) {
