@@ -71,25 +71,8 @@ export function Widget({
     disabled: isPinned || isMaximized || isInsideDock || isClosed,
   });
 
-  // Effect to "transfer" dnd-kit's transform to left/top when dragging starts
-  useEffect(() => {
-    if (isDragging && widgetRef.current) {
-      const style = window.getComputedStyle(widgetRef.current);
-      const matrix = new DOMMatrixReadOnly(style.transform);
-      
-      // Update the widget's position state to reflect the current transformed position
-      // This ensures the CSS `left`/`top` values are aligned with the visual position
-      // before dnd-kit's transform is cleared.
-      onSizeChange({ width: size.width, height: size.height }); // Trigger a state update to re-render with new position
-      
-      // Apply the transform's translation to the element's style directly
-      // and then clear the transform property.
-      widgetRef.current.style.left = `${position.x + matrix.e}px`;
-      widgetRef.current.style.top = `${position.y + matrix.f}px`;
-      widgetRef.current.style.transform = 'none';
-    }
-  }, [isDragging, position.x, position.y, size.width, size.height, onSizeChange]);
-
+  // Removed the problematic useEffect that caused infinite re-renders.
+  // dnd-kit's transform and CSS transitions will now handle movement smoothly.
 
   const isVisuallyMinimized = isMinimized || isPinned;
   const isResizable = !isMaximized && !isVisuallyMinimized && !isInsideDock && !isClosed && !isMobile;
