@@ -29,6 +29,7 @@ export const formatTimeManual = (date: Date, use24Hour: boolean) => {
 
   if (!use24Hour) {
     ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
     hours = hours ? hours : 12; // the hour '0' should be '12'
   }
 
@@ -203,7 +204,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
         "justify-end"
       )}>
         {/* Render BackgroundBlurSlider only on desktop */}
-        {!isMobile && <BackgroundBlurSlider className="hidden md:flex bg-background/50 rounded-full" />}
+        {!isMobile && <BackgroundBlurSlider className="hidden md:flex" />}
         <Button
           className="h-8 w-8 hover:bg-header-button-dark/20"
           variant="ghost"
