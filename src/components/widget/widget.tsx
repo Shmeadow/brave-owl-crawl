@@ -74,9 +74,18 @@ export function Widget({
 
   // Effect to control position animation based on dragging state
   useEffect(() => {
-    // If dragging, disable position animation for immediate snap
-    // If not dragging, enable position animation for smooth transitions
-    setIsAnimatingPosition(!isDragging);
+    if (isDragging) {
+      // When dragging starts, disable position animation
+      setIsAnimatingPosition(false);
+    } else {
+      // When dragging ends, re-enable position animation after a short delay
+      // This allows the position to snap first, then transitions for other changes.
+      const timer = setTimeout(() => {
+        setIsAnimatingPosition(true);
+      }, 50); // Small delay to allow position update before transition applies
+
+      return () => clearTimeout(timer);
+    }
   }, [isDragging]);
 
   const isVisuallyMinimized = isMinimized || isPinned;
