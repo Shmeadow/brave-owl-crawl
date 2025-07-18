@@ -29,7 +29,6 @@ export const formatTimeManual = (date: Date, use24Hour: boolean) => {
 
   if (!use24Hour) {
     ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
     hours = hours ? hours : 12; // the hour '0' should be '12'
   }
 
@@ -96,16 +95,16 @@ const HeaderClockAndProgress = () => {
 
   return (
     <div className={cn(
-      "bg-background/50 backdrop-blur-xl text-header-button-dark-foreground font-mono text-sm px-3 flex flex-col h-auto py-1 rounded-md", // Removed hidden md:flex
-      "items-center justify-center"
+      "bg-background/50 backdrop-blur-xl text-header-button-dark-foreground font-mono text-sm px-3 py-1 rounded-md",
+      "hidden md:flex items-center justify-center gap-2" // Changed to flex-row, added gap-2
     )}>
       {isLoading ? (
         <span>--:--:--</span>
       ) : (
         <>
-          <div className="font-bold text-lg text-foreground">{timeString}</div>
-          <div className="text-xs opacity-70">{dateString}</div>
-          <div className="w-full mt-1 h-1.5 rounded-full overflow-hidden relative bg-muted">
+          <span className="font-bold text-base text-foreground">{timeString}</span>
+          <span className="text-xs opacity-70">{dateString}</span>
+          <div className="w-16 h-1 rounded-full overflow-hidden relative bg-muted">
             <div
               className="h-full rounded-full transition-all duration-1000 ease-linear relative overflow-hidden"
               style={{ width: `${dailyProgress}%`, background: gradient }}
@@ -113,7 +112,6 @@ const HeaderClockAndProgress = () => {
               <div className="shimmer-effect"></div>
             </div>
           </div>
-          <div className="text-xs mt-0.5 w-full text-center opacity-70">Day Progress</div>
         </>
       )}
     </div>
@@ -184,10 +182,8 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
         )}
       </div>
 
-      {/* Middle Group - Clock and Progress */}
-      <div className="flex-grow flex justify-center hidden md:flex">
-        <HeaderClockAndProgress />
-      </div>
+      {/* Clock and Progress - now directly in the header, centered by justify-between */}
+      <HeaderClockAndProgress />
 
       {/* Right Group */}
       <div className={cn(
