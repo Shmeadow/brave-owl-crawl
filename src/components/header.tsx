@@ -2,23 +2,19 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Menu, LayoutGrid, MessageSquare, BarChart2, Settings } from "lucide-react";
+import { Home, LayoutGrid, MessageSquare, BarChart2, Settings } from "lucide-react";
 import { useSupabase } from "@/integrations/supabase/auth";
 import { UserNav } from "@/components/user-nav";
 import { UpgradeButton } from "@/components/upgrade-button";
 import { useCurrentRoom } from "@/hooks/use-current-room";
 import { BackgroundBlurSlider } from "@/components/background-blur-slider";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { SpacesWidget } from "@/components/widget-content/spaces-widget";
-import { ScrollArea }
- from "@/components/ui/scroll-area";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useRooms, RoomData } from "@/hooks/use-rooms";
 import Link from "next/link";
 import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
 import { useWidget } from "@/components/widget/widget-provider";
 import { UserNameCapsule } from "./user-name-capsule";
 import { cn } from "@/lib/utils";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RoomSettingsContent } from "./spaces-widget/RoomSettingsContent";
 import { CreatePersonalRoomForm } from "./create-personal-room-form";
 import { BugReportButton } from "./bug-report-button";
@@ -30,11 +26,10 @@ interface HeaderProps {
   onClearUnreadMessages: () => void;
   unreadChatCount: number;
   isMobile: boolean;
-  // Removed onToggleSidebar: () => void;
   isChatOpen: boolean;
 }
 
-const ClockDisplay = () => { // Renamed from ClockTrigger
+const ClockDisplay = () => {
   const { timeString, dateString, isLoading } = useClock();
   return (
     <Popover>
@@ -77,8 +72,8 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
 
   return (
     <header className={cn(
-      "fixed top-0 z-[1002] w-full flex items-center justify-between py-2 px-1 gap-2 h-14", // Changed h-16 to h-14
-      "bg-background/60 backdrop-blur-xl border-b border-white/20 shadow-lg" // Applied transparent background and blur here
+      "fixed top-0 z-[1002] w-full flex items-center justify-between py-2 px-1 gap-2 h-14",
+      "bg-background/60 backdrop-blur-xl border-b border-white/20 shadow-lg"
     )}>
       {/* Left Group */}
       <div className="flex items-center gap-1 min-w-0">
@@ -105,7 +100,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
                 <Settings className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+            <PopoverContent className="w-96 z-[1100] p-0 bg-popover/80 backdrop-blur-lg border-white/20" align="start" onOpenAutoFocus={(e: Event) => e.preventDefault()}>
               {userOwnsPersonalRoom && usersPersonalRoom ? (
                 <RoomSettingsContent room={usersPersonalRoom} />
               ) : (
@@ -135,6 +130,7 @@ export const Header = React.memo(({ onToggleChat, unreadChatCount, isMobile, isC
         {/* Directly render ClockDisplay instead of DropdownMenu */}
         <ClockDisplay />
         <BugReportButton />
+        <UpgradeButton />
         <UserNameCapsule />
         {session && <NotificationsDropdown />}
         {/* Chat button (now always visible) */}
